@@ -1,1 +1,7 @@
-/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/App.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/data/ResolvedPost.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/modules/Core.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/api/ApolloBackendApplication.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/data/UserRegistration.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/data/Profile.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/data/ProfileEdit.java
+/Users/jacobfranco/apollo-backend/src/main/java/com/apollo/backend/data/Post.java

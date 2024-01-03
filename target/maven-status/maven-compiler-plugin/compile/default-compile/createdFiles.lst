@@ -1,1 +1,9 @@
-com/apollo/backend/App.class
+com/apollo/backend/data/Profile.class
+com/apollo/backend/data/Post.class
+com/apollo/backend/api/ApolloBackendApplication.class
+com/apollo/backend/modules/Core$ToUserIdExtract.class
+com/apollo/backend/modules/Core$UserIdExtract.class
+com/apollo/backend/data/UserRegistration.class
+com/apollo/backend/data/ProfileEdit.class
+com/apollo/backend/data/ResolvedPost.class
+com/apollo/backend/modules/Core.class
