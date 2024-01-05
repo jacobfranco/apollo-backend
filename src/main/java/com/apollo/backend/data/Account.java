@@ -1,23 +1,30 @@
 package com.apollo.backend.data;
 
-import com.rpl.rama.RamaSerializable;
+public class Account {
 
-public class Account implements RamaSerializable {
-  public String email;
-  public String username;
-  public String displayName;
-  public String bio;
-  public String location;
-  public String profilePic;
-  public long joinedAtMillis;
+    public String username;
+    public String email;
+    public String displayName;
+    public String bio;
+    public String pwdHash;
+    public String locale;
+    public String profilePic;
+    public long joinedAtMillis;
+    public String uuid;
+    public String publicKey;
 
-  public Account(String email, String username, String displayName, String bio, String location, String profilePic, long joinedAtMillis) {
-    this.email = email;
-    this.username = username;
-    this.displayName = displayName;
-    this.bio = bio;
-    this.location = location;
-    this.profilePic = profilePic;
-    this.joinedAtMillis = joinedAtMillis;
-  }
-}
+    public Account() { }
+
+    public Account(PostAccount postAccount, String pwdHash, String uuid, String publicKey, long joinedAtMillis) {
+        this.username = postAccount.username;
+        this.email = postAccount.email;
+        this.pwdHash = pwdHash;
+        this.locale = postAccount.locale;
+        this.joinedAtMillis = joinedAtMillis;
+        this.uuid = uuid;
+        this.publicKey = publicKey;
+    }
+
+
+    }
+
