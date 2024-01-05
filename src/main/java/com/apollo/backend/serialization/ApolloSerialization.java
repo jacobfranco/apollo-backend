@@ -2,7 +2,7 @@ package com.apollo.backend.serialization;
 
 import com.apollo.backend.data.*;
 import java.util.*;
-
+// Test comment
 public class ApolloSerialization extends ThriftSerialization {
 
     @Override
