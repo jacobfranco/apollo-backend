@@ -8,15 +8,19 @@ import java.util.concurrent.CompletableFuture;
 
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
+import com.apollo.backend.pojos.PostAccount;
 import com.rpl.rama.*;
 import com.rpl.rama.cluster.ClusterManagerBase;
 
 public class ApolloApiManager {
 
+    // Modules
     public static final String CORE_MODULE_NAME = Core.class.getName();
+    public static final String RELATIONSHIPS_MODULE_NAME = Relationships.class.getName();
 
     // Depots
     private final Depot accountDepot;
+    private final Depot authCodeDepot;
 
     // PStates
     private final PState nameToUser;
@@ -29,6 +33,7 @@ public class ApolloApiManager {
 
         // Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
+        authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
 
         // PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
@@ -39,7 +44,7 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<Boolean> postAccount(PostAccount params) {
-        String pwdHash = ApolloApiHelpers.encodePassword(params.password);
+        String pwdHash = ApolloApiHelpers.encodePassword(params.getPassword());
         String uuid = UUID.randomUUID().toString();
         final ApolloWebHelpers.SigningKeyPair keys;
         try {
@@ -52,7 +57,7 @@ public class ApolloApiManager {
 
     // Using accountDepot to append the new account asynchronously
     return accountDepot.appendAsync(newAccount)
-                       .thenCompose(res -> this.getAccountUUID(params.username))
+                       .thenCompose(res -> this.getAccountUUID(params.getUsername()))
                        .thenApply(accountUUID -> accountUUID.equals(uuid));
 }
 
@@ -74,6 +79,10 @@ public CompletableFuture<AccountWithId> getAccountWithId(Long requestAccountIdMa
 
 public CompletableFuture<AccountWithId> getAccountWithId(long accountId) {
     return this.getAccountWithId(null, accountId);
+}
+
+public CompletableFuture<Boolean> postAuthCode(long accountId, String code) {
+    return authCodeDepot.appendAsync(new AddAuthCode(code, accountId)).thenApply(res -> true);
 }
 
 }

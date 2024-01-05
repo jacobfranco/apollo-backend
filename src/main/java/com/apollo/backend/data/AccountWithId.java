@@ -13,4 +13,16 @@ public class AccountWithId {
         this.account = account;
         this.metadata = metadata;
     }
+
+    public long getAccountId() {
+        return accountId;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public AccountMetadata getMetadata() {
+        return metadata;
+    }
 }

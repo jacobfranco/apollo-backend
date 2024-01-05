@@ -8,6 +8,10 @@ import org.springframework.web.server.*;
 import org.springframework.http.*;
 
 import com.apollo.backend.data.*;
+import com.apollo.backend.pojos.GetErrorDetails;
+import com.apollo.backend.pojos.GetToken;
+import com.apollo.backend.pojos.PostAccount;
+
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -17,18 +21,18 @@ public class ApolloApiController {
     public static ApolloApiManager manager;
 
     @PostMapping("/api/v1/accounts")
-    public Mono postAccount(WebSession session, ServerHttpResponse response, @RequestBody(required = true) PostAccount params) {
-        if (!params.username.matches("[a-zA-Z0-9]*")) {
+    public Mono<?> postAccount(WebSession session, ServerHttpResponse response, @RequestBody(required = true) PostAccount params) {
+        if (!params.getUsername().matches("[a-zA-Z0-9]*")) {
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
             return Mono.just(new GetErrorDetails("Username must contain only a-z or numbers", new HashMap<String, GetErrorDetails.Error>(){{
                 put("username", new GetErrorDetails.Error("ERR_INVALID", "Username must contain only a-z or numbers"));
             }}));
-        } else if(params.username.length() > ApolloApiConfig.MAX_USERNAME_LENGTH) {
+        } else if(params.getUsername().length() > ApolloApiConfig.MAX_USERNAME_LENGTH) {
           response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
           return Mono.just(new GetErrorDetails("Username too long", new HashMap<String, GetErrorDetails.Error>(){{
               put("agreement", new GetErrorDetails.Error("ERR_INVALID", "Username cannot be greater than " + ApolloApiConfig.MAX_USERNAME_LENGTH + " characters"));
           }}));
-        } else if (!params.agreement) {
+        } else if (!params.getAgreement()) {
             response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
             return Mono.just(new GetErrorDetails("The agreement has not been accepted", new HashMap<String, GetErrorDetails.Error>(){{
                 put("agreement", new GetErrorDetails.Error("ERR_ACCEPTED", "The agreement has not been accepted"));
@@ -37,7 +41,7 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.postAccount(params))
                    .flatMap(success -> {
                        if (success) {
-                           return Mono.fromFuture(manager.getAccountId(params.username))
+                           return Mono.fromFuture(manager.getAccountId(params.getUsername()))
                                       .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                                       // get the account
                                       .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
@@ -52,6 +56,15 @@ public class ApolloApiController {
                            }}));
                        }
                    });
+    }
+
+    private Mono<GetToken> loginWithAccount(WebSession session, String scope, AccountWithId accountWithId) {
+        // update session
+        session.getAttributes().put("accountId", accountWithId.getAccountId());
+        // TODO: Resolve name, should be username I think
+        session.getAttributes().put("accountName", accountWithId.getAccount().name);
+        // store the session id in the backend and return token
+        return Mono.fromFuture(manager.postAuthCode(accountWithId.getAccountId(), session.getId())).map(res -> new GetToken(session.getId(), scope));
     }
     
 }

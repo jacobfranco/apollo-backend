@@ -7,7 +7,7 @@ import com.rpl.rama.module.*;
 import com.rpl.rama.ops.Ops;
 import static com.rpl.rama.helpers.TopologyUtils.extractJavaFields;
 
-import com.apollo.backend.data.*;
+import com.apollo.backend.pojos.PostAccount;
 
 public class Core implements RamaModule {
 

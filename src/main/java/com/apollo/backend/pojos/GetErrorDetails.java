@@ -1,4 +1,4 @@
-package com.apollo.backend.data;
+package com.apollo.backend.pojos;
 
 import java.util.HashMap;
 
