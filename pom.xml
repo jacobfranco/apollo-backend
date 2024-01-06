@@ -59,6 +59,12 @@
     <artifactId>reactor-core</artifactId>
     <version>3.6.1</version>
 </dependency>
+<dependency>
+    <groupId>org.apache.thrift</groupId>
+    <artifactId>libthrift</artifactId>
+    <version>0.19.0</version> 
+</dependency>
+
     </dependencies>
 
     <properties>

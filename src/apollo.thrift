@@ -1,5 +1,13 @@
 namespace java com.apollo.backend.data
 
+typedef i64 AccountId
+typedef i64 Timestamp
+
+enum AttachmentKind {
+  Image = 1,
+  Video = 2
+}
+
 struct Account {
   1: required string username;
   2: required string email;
@@ -41,4 +49,15 @@ struct AccountWithId {
 struct AddAuthCode {
   1: required string code;
   2: required AccountId accountId;
+}
+
+struct AttachmentWithId {
+  1: required string uuid;
+  2: required Attachment attachment;
+}
+
+struct Attachment {
+  1: required AttachmentKind kind;
+  2: required string path;
+  3: required string description;
 }
