@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class Account implements org.apache.thrift.TBase<Account, Account._Fields>, java.io.Serializable, Cloneable, Comparable<Account> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Account");
 

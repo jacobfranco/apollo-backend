@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class Attachment implements org.apache.thrift.TBase<Attachment, Attachment._Fields>, java.io.Serializable, Cloneable, Comparable<Attachment> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Attachment");
 

@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class AccountMetadata implements org.apache.thrift.TBase<AccountMetadata, AccountMetadata._Fields>, java.io.Serializable, Cloneable, Comparable<AccountMetadata> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AccountMetadata");
 

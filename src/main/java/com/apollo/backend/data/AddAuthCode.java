@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
+@SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class AddAuthCode implements org.apache.thrift.TBase<AddAuthCode, AddAuthCode._Fields>, java.io.Serializable, Cloneable, Comparable<AddAuthCode> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AddAuthCode");
 
