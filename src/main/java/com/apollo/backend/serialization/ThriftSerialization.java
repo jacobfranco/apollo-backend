@@ -49,8 +49,8 @@ public abstract class ThriftSerialization<T extends TBase<?, ?>> implements Rama
         return obj;
     }
 
-    // TODO: Fix implementation
     @Override
+    @SuppressWarnings("rawtypes")
     public Class<TBase> targetType() {
         return TBase.class;
     }
