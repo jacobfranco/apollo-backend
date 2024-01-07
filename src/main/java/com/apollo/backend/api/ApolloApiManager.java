@@ -53,6 +53,7 @@ public class ApolloApiManager {
             return CompletableFuture.completedFuture(false);
         }
         // Creating a new Account object with the necessary parameters
+        // TODO: Use Account constructor from data 
     Account newAccount = new Account(params, pwdHash, uuid, keys.publicKey, System.currentTimeMillis());
 
     // Using accountDepot to append the new account asynchronously
