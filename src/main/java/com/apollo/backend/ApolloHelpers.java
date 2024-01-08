@@ -3,7 +3,6 @@ package com.apollo.backend;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.*;
-import java.lang.reflect.InvocationTargetException;
 
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
@@ -60,21 +59,33 @@ public class ApolloHelpers {
     return ret;
 }
 
-  public static Map<String, TFieldIdEnum> getTFieldCache(Class<?> thriftClass) {
+public static Map<String, TFieldIdEnum> getTFieldCache(Class<?> thriftClass) {
     Map<String, TFieldIdEnum> ret = TFIELD_CACHE.get(thriftClass);
-    if(ret==null) {
-      try {
-        Field f = thriftClass.getField("metaDataMap");
-        Map<TFieldIdEnum, Object> m = (Map) f.get(thriftClass);
-        ret = new HashMap<>();
-        for(TFieldIdEnum e: m.keySet()) ret.put(e.getFieldName(), e);
-        TFIELD_CACHE.put(thriftClass, ret);
-      } catch(Exception e) {
-        throw new RuntimeException(e);
-      }
+    if (ret == null) {
+        try {
+            Field f = thriftClass.getField("metaDataMap");
+            // Correctly casting the map with checked type safety
+            Object rawData = f.get(thriftClass);
+            if (!(rawData instanceof Map)) {
+                throw new ClassCastException("Field 'metaDataMap' is not a Map");
+            }
+            Map<?, ?> rawMap = (Map<?, ?>) rawData;
+
+            ret = new HashMap<>();
+            for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                if (!(entry.getKey() instanceof TFieldIdEnum)) {
+                    throw new ClassCastException("Incompatible key type in map");
+                }
+                ret.put(((TFieldIdEnum) entry.getKey()).getFieldName(), (TFieldIdEnum) entry.getKey());
+            }
+            TFIELD_CACHE.put(thriftClass, ret);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     return ret;
-  }
+}
+
 
       
     
