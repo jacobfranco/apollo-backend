@@ -48,7 +48,11 @@ public class Core implements RamaModule {
                    .hashPartition("*accountId")
                    .localTransform("$$accountIdToAccount", Path.key("*accountId").termVal("*data"))
                    .invokeQuery("getAccountMetadata", null, "*accountId").out("*metadata")
-                   .each((RamaFunction3<Long, Account, AccountMetadata, AccountWithId>) AccountWithId::new, "*accountId", "*data", "*metadata").out("*accountWithId")
+                   .each((RamaFunction3<Long, Account, AccountMetadata, AccountWithId>) 
+    (Long accountId, Account account, AccountMetadata metadata) ->
+        new AccountWithId(accountId.longValue(), account, metadata), 
+    "*accountId", "*data", "*metadata").out("*accountWithId")
+
                    .depotPartitionAppend("*accountWithIdDepot", "*accountWithId"));
 
         /*  TODO: Implement Account Edits
