@@ -11,17 +11,16 @@ enum AttachmentKind {
 struct Account {
   1: required string username;
   2: required string email;
-  3: required string displayName;
-  4: required string locale; 
-  5: required string pwdHash;
-  6: required string uuid;
-  7: required string publicKey;
-  8: required Timestamp timestamp;
+  3: required string locale; 
+  4: required string pwdHash;
+  5: required string uuid;
+  6: required string publicKey;
+  7: required Timestamp timestamp;
+  8: optional string displayName;
   9: optional string bio;
   10: optional AttachmentWithId avatar;
 
 /*  TODO: Fields to consider later
-7: required AccountContent content;
   11: optional bool locked;
   12: optional bool bot;
   13: optional bool discoverable;

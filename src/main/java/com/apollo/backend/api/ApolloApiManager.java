@@ -52,15 +52,21 @@ public class ApolloApiManager {
         } catch (NoSuchProviderException | NoSuchAlgorithmException | IOException e) {
             return CompletableFuture.completedFuture(false);
         }
-        // Creating a new Account object with the necessary parameters
-        // TODO: Use Account constructor from data 
-    Account newAccount = new Account(params, pwdHash, uuid, keys.publicKey, System.currentTimeMillis());
+        return accountDepot.appendAsync(
+        new Account(
+            params.getUsername(), 
+            params.getEmail(), 
+            params.getLocale(), 
+            pwdHash, 
+            uuid, 
+            keys.publicKey, 
+            System.currentTimeMillis()
+        )
+    )
+    .thenCompose(res -> this.getAccountUUID(params.getUsername()))
+    .thenApply(accountUUID -> accountUUID.equals(uuid));
 
-    // Using accountDepot to append the new account asynchronously
-    return accountDepot.appendAsync(newAccount)
-                       .thenCompose(res -> this.getAccountUUID(params.getUsername()))
-                       .thenApply(accountUUID -> accountUUID.equals(uuid));
-}
+    }
 
 public CompletableFuture<String> getAccountUUID(String username) {
     return nameToUser.selectOneAsync(Path.key(username, "uuid"));

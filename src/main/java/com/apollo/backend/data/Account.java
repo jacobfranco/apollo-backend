@@ -26,7 +26,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
 
   public @org.apache.thrift.annotation.Nullable java.lang.String username; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String email; // required
-  public @org.apache.thrift.annotation.Nullable java.lang.String displayName; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String displayName; // optional
   public @org.apache.thrift.annotation.Nullable java.lang.String locale; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String pwdHash; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String uuid; // required
@@ -127,7 +127,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
   // isset id assignments
   private static final int __TIMESTAMP_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.BIO,_Fields.AVATAR};
+  private static final _Fields optionals[] = {_Fields.DISPLAY_NAME,_Fields.BIO,_Fields.AVATAR};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -135,7 +135,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.EMAIL, new org.apache.thrift.meta_data.FieldMetaData("email", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DISPLAY_NAME, new org.apache.thrift.meta_data.FieldMetaData("displayName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.DISPLAY_NAME, new org.apache.thrift.meta_data.FieldMetaData("displayName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.LOCALE, new org.apache.thrift.meta_data.FieldMetaData("locale", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -161,7 +161,6 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
   public Account(
     java.lang.String username,
     java.lang.String email,
-    java.lang.String displayName,
     java.lang.String locale,
     java.lang.String pwdHash,
     java.lang.String uuid,
@@ -171,7 +170,6 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     this();
     this.username = username;
     this.email = email;
-    this.displayName = displayName;
     this.locale = locale;
     this.pwdHash = pwdHash;
     this.uuid = uuid;
@@ -937,14 +935,16 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       sb.append(this.email);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("displayName:");
-    if (this.displayName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.displayName);
+    if (isSetDisplayName()) {
+      if (!first) sb.append(", ");
+      sb.append("displayName:");
+      if (this.displayName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.displayName);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("locale:");
     if (this.locale == null) {
@@ -1012,9 +1012,6 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     }
     if (email == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'email' was not present! Struct: " + toString());
-    }
-    if (displayName == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'displayName' was not present! Struct: " + toString());
     }
     if (locale == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'locale' was not present! Struct: " + toString());
@@ -1184,9 +1181,11 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         oprot.writeFieldEnd();
       }
       if (struct.displayName != null) {
-        oprot.writeFieldBegin(DISPLAY_NAME_FIELD_DESC);
-        oprot.writeString(struct.displayName);
-        oprot.writeFieldEnd();
+        if (struct.isSetDisplayName()) {
+          oprot.writeFieldBegin(DISPLAY_NAME_FIELD_DESC);
+          oprot.writeString(struct.displayName);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.locale != null) {
         oprot.writeFieldBegin(LOCALE_FIELD_DESC);
@@ -1245,20 +1244,25 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeString(struct.username);
       oprot.writeString(struct.email);
-      oprot.writeString(struct.displayName);
       oprot.writeString(struct.locale);
       oprot.writeString(struct.pwdHash);
       oprot.writeString(struct.uuid);
       oprot.writeString(struct.publicKey);
       oprot.writeI64(struct.timestamp);
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetBio()) {
+      if (struct.isSetDisplayName()) {
         optionals.set(0);
       }
-      if (struct.isSetAvatar()) {
+      if (struct.isSetBio()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetAvatar()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetDisplayName()) {
+        oprot.writeString(struct.displayName);
+      }
       if (struct.isSetBio()) {
         oprot.writeString(struct.bio);
       }
@@ -1274,8 +1278,6 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       struct.setUsernameIsSet(true);
       struct.email = iprot.readString();
       struct.setEmailIsSet(true);
-      struct.displayName = iprot.readString();
-      struct.setDisplayNameIsSet(true);
       struct.locale = iprot.readString();
       struct.setLocaleIsSet(true);
       struct.pwdHash = iprot.readString();
@@ -1286,12 +1288,16 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       struct.setPublicKeyIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
+        struct.displayName = iprot.readString();
+        struct.setDisplayNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.bio = iprot.readString();
         struct.setBioIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.avatar = new AttachmentWithId();
         struct.avatar.read(iprot);
         struct.setAvatarIsSet(true);
