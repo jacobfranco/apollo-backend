@@ -5,16 +5,15 @@ import org.apache.thrift.*;
 
 import static com.apollo.backend.ApolloHelpers.*;
 
-public class ExtractField implements RamaFunction1<TBase, Object> {
+public class ExtractField implements RamaFunction1<TBase<?,?>, Object> {
   String _fieldName;
 
   public ExtractField(String name) {
     _fieldName = name;
   }
 
-// TODO: Implement getTFieldByName and resolve warnings
   @Override
-  public Object invoke(TBase obj) {
+  public Object invoke(TBase<?,?> obj) {
     return getTFieldByName(obj, _fieldName);
   }
 }
