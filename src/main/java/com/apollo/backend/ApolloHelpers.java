@@ -2,7 +2,8 @@ package com.apollo.backend;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
 
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
@@ -34,15 +35,30 @@ public class ApolloHelpers {
     return ret;
   }
 
-      public static Object getTFieldByName(TBase<?,?> obj, String fieldName) {
+  public static Object getTFieldByName(TBase<?,?> obj, String fieldName) {
     TFieldIdEnum field = getTFieldCache(obj.getClass()).get(fieldName);
-    if(field==null) throw new RuntimeException("Field " + fieldName + " does not exist on " + obj.getClass());
+    if (field == null) {
+        throw new RuntimeException("Field " + fieldName + " does not exist on " + obj.getClass());
+    }
 
     Object ret = null;
-    if(obj.isSet(field)) ret = obj.getFieldValue(field);
-    if(ret instanceof TUnion) ret = ((TUnion<?,?>) ret).getFieldValue();
+    // Use Reflection to bypass generic type issues
+    try {
+        Method isSetMethod = obj.getClass().getMethod("isSet", field.getClass());
+        Method getFieldValueMethod = obj.getClass().getMethod("getFieldValue", field.getClass());
+        
+        if ((Boolean) isSetMethod.invoke(obj, field)) {
+            ret = getFieldValueMethod.invoke(obj, field);
+        }
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        throw new RuntimeException("Reflection error: " + e.getMessage());
+    }
+
+    if (ret instanceof TUnion) {
+        ret = ((TUnion<?, ?>) ret).getFieldValue();
+    }
     return ret;
-  }
+}
 
   public static Map<String, TFieldIdEnum> getTFieldCache(Class<?> thriftClass) {
     Map<String, TFieldIdEnum> ret = TFIELD_CACHE.get(thriftClass);
