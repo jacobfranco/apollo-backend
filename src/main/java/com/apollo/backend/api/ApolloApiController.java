@@ -61,8 +61,7 @@ public class ApolloApiController {
     private Mono<GetToken> loginWithAccount(WebSession session, String scope, AccountWithId accountWithId) {
         // update session
         session.getAttributes().put("accountId", accountWithId.getAccountId());
-        // TODO: Resolve name, should be username I think
-        session.getAttributes().put("accountName", accountWithId.getAccount().name);
+        session.getAttributes().put("accountName", accountWithId.getAccount().getUsername());
         // store the session id in the backend and return token
         return Mono.fromFuture(manager.postAuthCode(accountWithId.getAccountId(), session.getId())).map(res -> new GetToken(session.getId(), scope));
     }
