@@ -1,4 +1,4 @@
-package com.apollo.backend.api;
+package com.apollo.backend;
 
 import java.io.*;
 import java.security.*;
