@@ -1,77 +1,73 @@
 package com.apollo.backend.modules;
 
 import com.rpl.rama.*;
-import com.rpl.rama.helpers.ModuleUniqueIdPState;
-import com.rpl.rama.helpers.TopologyUtils;
+import com.rpl.rama.helpers.*;
 import com.rpl.rama.module.*;
-import com.rpl.rama.ops.Ops;
-import static com.rpl.rama.helpers.TopologyUtils.extractJavaFields;
+import com.rpl.rama.ops.*;
 
-import com.apollo.backend.pojos.PostAccount;
+import com.apollo.backend.*;
+import com.apollo.backend.data.*;
+
+import static com.apollo.backend.ApolloHelpers.extractFields;
 
 public class Core implements RamaModule {
 
-    /**
-     * Declares the accounts topology, handling unique IDs and existing registrations.
-     * @param topologies The topologies object used to declare the stream topology.
-     */
     private static void declareAccountsTopology(Topologies topologies) {
-        StreamTopology accounts = topologies.stream("accounts");
+      StreamTopology stream = topologies.stream("accounts");
+      ModuleUniqueIdPState accountIdGen = new ModuleUniqueIdPState("$$accountIdGen");
+      accountIdGen.declarePState(stream);
+      stream.pstate("$$nameToUser", PState.mapSchema(String.class,
+                                                     PState.fixedKeysSchema("accountId", Long.class,
+                                                                            "uuid", String.class)));
+      stream.pstate("$$accountIdToAccount", PState.mapSchema(Long.class, Account.class));
 
-        // Unique ID generator for accounts, used to ensure each account has a unique ID.
-        ModuleUniqueIdPState accountIdGen = new ModuleUniqueIdPState("$$accountIdGen");
-        accountIdGen.declarePState(accounts);
+      /*
+        User registration does three things when that name is not already registered:
+          - generates a user id for that user
+          - updates $$nameToUser PState (which contains a mapping from name -> user id)
+          - updates $$accountIdToAccount PState (which maps user id to Account)
 
-        // Persistent state mapping account names to IDs and UUIDs.
-        // This helps in quickly checking if an account name already exists.
-        accounts.pstate("$$nameToUser", PState.mapSchema(String.class,
-                                                         PState.fixedKeysSchema("accountId", Long.class,
-                                                                                "uuid", String.class)));
+        User registration is implemented to correctly handle:
+          - Concurrent registration of same name (first one wins)
+          - Failures of topology (e.g. a machine involved in the processing dies midway through
+            processing). Streaming failures are handled by retrying from the start of the topology.
+       */
+      stream.source("*accountDepot").out("*data")
+            .macro(extractFields("*data", "*name", "*uuid"))
+            .localSelect("$$nameToUser", Path.key("*name")).out("*currInfo")
+            .each(Ops.GET, "*currInfo", "uuid").out("*currUUID")
+            // By including a UUID with each registration request, we can distinguish between:
+            //   - this name is already registered by a different request so we shouldn't override it
+            //   - this name was registered by the same request, so we should continue finishing the
+            //     registration
+            .ifTrue(new Expr(Ops.OR, new Expr(Ops.IS_NULL, "*currInfo"),
+                                     new Expr(Ops.EQUAL, "*uuid", "*currUUID")),
+              Block.macro(accountIdGen.genId("*accountId"))
+                   .localTransform("$$nameToUser", Path.key("*name").multiPath(Path.key("accountId").termVal("*accountId"),
+                                                                               Path.key("uuid").termVal("*uuid")))
+                   .hashPartition("*accountId")
+                   .localTransform("$$accountIdToAccount", Path.key("*accountId").termVal("*data"))
+                   .invokeQuery("getAccountMetadata", null, "*accountId").out("*metadata")
+                   .each((RamaFunction3<Long, Account, AccountMetadata, AccountWithId>) AccountWithId::new, "*accountId", "*data", "*metadata").out("*accountWithId")
+                   .depotPartitionAppend("*accountWithIdDepot", "*accountWithId"));
 
-        // Persistent state to store account details.
-        accounts.pstate("$$accountIdToAccount", PState.mapSchema(Long.class, PostAccount.class));
-
-
-        // Start a data stream from the "*accountDepot". This is the source of account registration data.
-accounts.source("*accountDepot").out("*registration")
-// Use a macro to extract specific fields from the registration data.
-// This macro simplifies the process of accessing fields within the registration objects.
-.macro(extractJavaFields("*registration", "*accountId", "*email", "*displayName", "*pwdHash", "*registrationUUID"))
-
-// Add the current time in milliseconds to each registration. This is likely used as the account creation time.
-.each(System::currentTimeMillis).out("*joinedAtMillis")
-
-// Process the registration data to store in the $$accountDetails persistent state.
-// This block checks if the account ID is null, which indicates a new registration.
-.localTransform("$$accountDetails",
-    Path.key("*accountId")
-        .filterPred(Ops.IS_NULL)  // Filter to process only new registrations (where accountId is null).
-        .multiPath(
-            // For each new registration, set various account details.
-            // These are likely fields in a map or similar data structure within the $$accountDetails state.
-            Path.key("email").termVal("*email"),               // Set the email.
-            Path.key("displayName").termVal("*displayName"),   // Set the display name.
-            Path.key("pwdHash").termVal("*pwdHash"),           // Set the hashed password.
-            Path.key("joinedAtMillis").termVal("*joinedAtMillis"), // Set the join date in milliseconds.
-            Path.key("registrationUUID").termVal("*registrationUUID") // Set the registration UUID.
-        ));
-
-    }
-
-    /**
-     * Extracts 'accountId' field from Java objects.
-     * This is used to hash account depots by account ID.
-     */
-    public static class AccountIdExtract extends TopologyUtils.ExtractJavaField {
-        public AccountIdExtract() {
-            super("accountId");
-        }
-    }
+        /*  TODO: Implement Account Edits
+      stream.source("*accountEditDepot", StreamSourceOptions.retryNone()).out("*editAccount")
+            .macro(extractFields("*editAccount", "*accountId", "*edits"))
+            .each(Ops.EXPLODE, "*edits").out("*edit")
+            .each((EditAccountField editAccount, OutputCollector collector) -> {
+                collector.emit(editAccount.getSetField().getFieldName(), editAccount.getFieldValue());
+            }, "*edit").out("*fieldName", "*fieldValue")
+            .localTransform("$$accountIdToAccount", Path.must("*accountId")
+                                                        .customNavBuilder(TField::new, "*fieldName")
+                                                        .termVal("*fieldValue"));
+                                                        */
+  }
 
     @Override
     public void define(Setup setup, Topologies topologies) {
         // Declaring a depot hashed by account ID for efficient processing of account-related data.
-        setup.declareDepot("*accountDepot", Depot.hashBy(AccountIdExtract.class));
+        setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
         declareAccountsTopology(topologies);
         // Additional topologies can be declared here as needed.
     }
