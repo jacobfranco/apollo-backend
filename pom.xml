@@ -2,100 +2,21 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.apollo.backend</groupId>
-    <artifactId>apollo-backend</artifactId>
-    <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <name>apollo-backend</name>
-    <url>http://maven.apache.org</url>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
+        <version>2.7.7</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-      <repositories>
-    <repository>
-    <id>nexus-releases</id>
-    <url>https://nexus.redplanetlabs.com/repository/maven-public-releases</url>
-  </repository>
-</repositories>
+    <groupId>com.apollo</groupId>
+    <artifactId>apollo-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rpl</groupId>
-            <artifactId>rama</artifactId>
-            <version>0.11.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.rpl</groupId>
-            <artifactId>rama-helpers</artifactId>
-            <version>0.9.3</version>
-        </dependency>
-        <dependency>
-    <groupId>org.springframework.security</groupId>
-    <artifactId>spring-security-crypto</artifactId>
-    <version>6.2.1</version> 
-</dependency>
-<dependency>
-    <groupId>org.bouncycastle</groupId>
-    <artifactId>bcprov-jdk18on</artifactId>
-    <version>1.77</version>
-</dependency>
-<dependency>
-    <groupId>io.projectreactor</groupId>
-    <artifactId>reactor-core</artifactId>
-    <version>3.6.1</version>
-</dependency>
-<dependency>
-    <groupId>org.apache.thrift</groupId>
-    <artifactId>libthrift</artifactId>
-    <version>0.19.0</version> 
-</dependency>
-
-    </dependencies>
-
-    <properties>
-        <java.version>17</java.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-    </properties>
-
-    <build>
-        <plugins>
-            <!-- Spring Boot Maven Plugin -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.12.1</version>
-    <configuration>
-        <source>17</source>
-        <target>17</target> 
-        <compilerArgs>
-            <arg>-Xlint:all</arg>
-            <arg>-Xlint:-unchecked</arg>
-            <arg>-Xlint:-rawtypes</arg>
-            <arg>-Xlint:-serial</arg>
-        </compilerArgs>
-    </configuration>
-</plugin>
-
-        </plugins>
-    </build>
+    <modules>
+        <module>api</module>
+        <module>backend</module>
+    </modules>
 </project>
