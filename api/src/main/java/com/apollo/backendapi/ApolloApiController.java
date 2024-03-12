@@ -19,7 +19,7 @@ public class ApolloApiController {
  * Generates a random client_secret and returns a GetApplication object with the provided redirect_uri.
  * Accepts JSON or URL-encoded request bodies.
  */
-    @PostMapping(value = "/api/v1/apps", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<GetApplication> postApplication(@RequestBody(required = true) PostApplication params) throws NoSuchAlgorithmException {
         // currently, the application isn't saved anywhere
         GetApplication app = new GetApplication();
@@ -28,7 +28,7 @@ public class ApolloApiController {
         return Mono.just(app);
     }
 
-    @PostMapping(value = "/api/v1/apps", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public Mono<GetApplication> postApplication(ServerWebExchange exchange) {
         return exchange.getFormData()
                        .flatMap(formParams -> {
