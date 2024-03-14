@@ -72,8 +72,7 @@ public class GetAccount {
         this.bot = account.bot;
         this.discoverable = account.discoverable;
 
-        if (account.content.isSetRemote()) this.url = account.content.getRemote().mainUrl;
-        else this.url = MastodonConfig.FRONTEND_URL + "/@" + account.name;
+        this.url = ApolloConfig.FRONTEND_URL + "/@" + account.name; // TODO: Maybe change
 
         if (account.isSetFields()) this.fields = account.fields.stream().map(field -> new Field(StringEscapeUtils.escapeHtml4(field.key), StringEscapeUtils.escapeHtml4(field.value))).collect(Collectors.toList());
         else this.fields = new ArrayList<>();
