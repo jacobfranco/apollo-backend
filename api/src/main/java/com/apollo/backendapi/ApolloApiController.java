@@ -181,4 +181,33 @@ public class ApolloApiController {
                         });
      }
     
+     /**
+ * Handles requests to revoke OAuth tokens, supporting both JSON and form URL-encoded data formats.
+ * This functionality is critical for maintaining the security of the application by allowing tokens
+ * to be invalidated when they are no longer needed - i.e. this is called when the user logs out.
+ * The endpoint accepts a token identifier in the request and proceeds to revoke the specified token.
+ * 
+ * - For JSON requests, the token to be revoked is specified in the body of the request.
+ * - For form URL-encoded requests, the token information is extracted from the form data.
+ * 
+ * In both cases, the token is revoked by removing any associated authorization codes or access tokens
+ * from the system, effectively disabling any further use of the token for authentication or authorization purposes.
+ */
+
+ // TODO: See if this still works
+ @PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<Object> postRevokeOauthToken(@RequestBody(required = true) PostRevokeToken params) {
+        return Mono.fromFuture(manager.postRemoveAuthCode(params.token)).map(res -> new HashMap<String, Object>());
+    }
+
+    @PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public Mono<Object> postRevokeOauthToken(ServerWebExchange exchange) {
+        return exchange.getFormData()
+                       .flatMap(formParams -> {
+                           PostRevokeToken params = ApolloApiFormParser.parseParams(formParams, new PostRevokeToken());
+                           return this.postRevokeOauthToken(params);
+                       });
+    }
+
+    
 }
