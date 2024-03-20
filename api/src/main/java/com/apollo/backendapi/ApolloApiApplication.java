@@ -49,10 +49,10 @@ public class ApolloApiApplication {
         RamaClusterManager cluster = RamaClusterManager.openInternal();
         ApolloApiController.manager = new ApolloApiManager(cluster);
         Depot accountDepot = cluster.clusterDepot(Core.class.getName(), "*accountDepot");
-        ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys();
-        accountDepot.append(new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"), "en-US", UUID.randomUUID().toString(), aliceKeys.publicKey, AccountContent.local(new LocalAccount(aliceKeys.privateKey)), System.currentTimeMillis()));
+        ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys(); 
+        accountDepot.append(new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"), "en-US", UUID.randomUUID().toString(), aliceKeys.publicKey, System.currentTimeMillis()));
         ApolloWebHelpers.SigningKeyPair bobKeys = ApolloWebHelpers.generateKeys();
-        accountDepot.append(new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US", UUID.randomUUID().toString(), bobKeys.publicKey, AccountContent.local(new LocalAccount(bobKeys.privateKey)), System.currentTimeMillis()));
+        accountDepot.append(new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US", UUID.randomUUID().toString(), bobKeys.publicKey, System.currentTimeMillis()));
         return cluster;
     }
 
@@ -88,17 +88,17 @@ public class ApolloApiApplication {
 
         Depot accountDepot = ipc.clusterDepot(coreModuleName, "*accountDepot");
         ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys();
-        accountDepot.append(new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"), "en-US", UUID.randomUUID().toString(), aliceKeys.publicKey, AccountContent.local(new LocalAccount(aliceKeys.privateKey)), ts+=1));
+        accountDepot.append(new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"), "en-US", UUID.randomUUID().toString(), aliceKeys.publicKey, ts+=1));
         ApolloWebHelpers.SigningKeyPair bobKeys = ApolloWebHelpers.generateKeys();
-        accountDepot.append(new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US", UUID.randomUUID().toString(), bobKeys.publicKey, AccountContent.local(new LocalAccount(bobKeys.privateKey)), ts+=1));
+        accountDepot.append(new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US", UUID.randomUUID().toString(), bobKeys.publicKey, ts+=1));
         ApolloWebHelpers.SigningKeyPair charlieKeys = ApolloWebHelpers.generateKeys();
-        accountDepot.append(new Account("charlie", "charlie@foo.com", ApolloApiHelpers.encodePassword("charlie"), "en-US", UUID.randomUUID().toString(), charlieKeys.publicKey, AccountContent.local(new LocalAccount(charlieKeys.privateKey)), ts+=1));
+        accountDepot.append(new Account("charlie", "charlie@foo.com", ApolloApiHelpers.encodePassword("charlie"), "en-US", UUID.randomUUID().toString(), charlieKeys.publicKey, ts+=1));
 
         List<Long> fooIds = new ArrayList<>();
         PState nameToUser = ipc.clusterPState(coreModuleName, "$$nameToUser");
         for (int i = 0; i < 50; i++) {
             ApolloWebHelpers.SigningKeyPair keys = ApolloWebHelpers.generateKeys();
-            accountDepot.append(new Account("foo" + i, "foo" + i + "@foo.com", ApolloApiHelpers.encodePassword("charlie"), "en-US", UUID.randomUUID().toString(), keys.publicKey, AccountContent.local(new LocalAccount(keys.privateKey)), ts+=1).setDiscoverable(true).setDisplayName("Foo " + i));
+            accountDepot.append(new Account("foo" + i, "foo" + i + "@foo.com", ApolloApiHelpers.encodePassword("charlie"), "en-US", UUID.randomUUID().toString(), keys.publicKey, ts+=1).setDiscoverable(true).setDisplayName("Foo " + i));
             long fooId = nameToUser.selectOne(Path.key("foo" + i, "accountId"));
             fooIds.add(fooId);
         }

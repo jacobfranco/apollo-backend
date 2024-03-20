@@ -9,26 +9,25 @@ enum AttachmentKind {
 }
 
 struct Account {
-  1: required string username;
+  1: required string name;
   2: required string email;
-  3: required string locale; 
-  4: required string pwdHash;
+  3: required string pwdHash;
+  4: required string locale;
   5: required string uuid;
-  6: required string publicKey;
+  6: required string publicKey; 
   7: required Timestamp timestamp;
   8: optional string displayName;
   9: optional string bio;
-  10: optional AttachmentWithId avatar;
-
-/*  TODO: Fields to consider later
-  11: optional bool locked;
-  12: optional bool bot;
-  13: optional bool discoverable;
-  14: optional AttachmentWithId header;
-  16: optional list<KeyValuePair> fields;
-  17: optional map<string, Marker> markers;
-  18: optional map<string, string> preferences;  */
+  10: optional bool locked;
+  11: optional bool bot;
+  12: optional bool discoverable;
+  13: optional AttachmentWithId header;
+  14: optional AttachmentWithId avatar;
+  15: optional list<KeyValuePair> fields;
+  16: optional map<string, Marker> markers;
+  17: optional map<string, string> preferences;
 }
+
 
 struct AccountMetadata {
   1: required i32 statusCount;
@@ -59,4 +58,8 @@ struct Attachment {
   1: required AttachmentKind kind;
   2: required string path;
   3: required string description;
+}
+
+struct RemoveAuthCode {
+  1: required string code;
 }

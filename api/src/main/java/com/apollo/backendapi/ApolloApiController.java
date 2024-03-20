@@ -1,6 +1,7 @@
 package com.apollo.backendapi;
 
-import com.apollo.backend.data.AccountWithId;
+import com.apollo.backend.*;
+import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
 
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,14 @@ public class ApolloApiController {
 
     public static ApolloApiManager manager;
 
+   /*
+    * Helper Functions
+    * ======================================
+    - loginWithAccount
+    - getMandatoryAccountId
+    * ======================================
+    */
+
    // Login Function
     private Mono<GetToken> loginWithAccount(WebSession session, String scope, AccountWithId accountWithId) {
         // Update Session
@@ -26,6 +35,27 @@ public class ApolloApiController {
         // Store the session id in the backend and return token
         return Mono.fromFuture(manager.postAuthCode(accountWithId.accountId, session.getId())).map(res -> new GetToken(session.getId(), scope));
     }
+
+// Extract the mandatory account ID from the session, throw an exception if not present
+private static long getMandatoryAccountId(WebSession session) {
+    // Attempt to retrieve the account ID from session attributes
+    Long requestAccountId = (Long) session.getAttributes().get("accountId"); 
+    // Throw if account ID is missing
+    if (requestAccountId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED); 
+    // Return the found account ID
+    return requestAccountId; 
+}
+
+
+   /*
+    * Apps + OAuth Actions Endpoints
+    * ======================================
+    - POST /api/apps
+    - POST /oauth/token
+    - POST /oauth/revoke
+    * ======================================
+    */
+
 
     // Define a controller method to handle POST requests for application registration with JSON payload
 @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -114,10 +144,17 @@ public Mono<Object> postRevokeOauthToken(ServerWebExchange exchange) {
                    });
 }
 
+/*
+    * Accounts + Auth Actions Endpoints
+    * ======================================
+    - POST /api/accounts
+    - GET /api/accounts/verify_credentials
+    * ======================================
+    */
 
 // TODO: Added Object return type - make sure not broken now
 // Define a POST endpoint for creating new accounts
-@PostMapping("/api/v1/accounts")
+@PostMapping("/api/accounts")
 public Mono<Object> postAccount(WebSession session, ServerHttpResponse response, @RequestBody(required = true) PostAccount params) {
     // Validate the username contains only alphanumeric characters
     if (!params.username.matches("[a-zA-Z0-9]*")) {
@@ -162,5 +199,31 @@ public Mono<Object> postAccount(WebSession session, ServerHttpResponse response,
                    }
                });
 }
+
+// Define a route for a GET request to verify account credentials
+@GetMapping("/api/accounts/verify_credentials")
+public Mono<GetAccount> getAccountVerifyCredentials(WebSession session) {
+    // Extract the mandatory account ID from the session
+    long requestAccountId = getMandatoryAccountId(session);
+    // Retrieve the account information asynchronously and convert it into a GetAccount response
+    return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+               // If the account is not found, return an HTTP 404 error
+               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+               // Convert the account information into the GetAccount DTO format
+               .map(GetAccount::new);
+}
+
+// Map a GET request to retrieve a specific account by its ID
+@GetMapping("/api/v1/accounts/{id}")
+public Mono<GetAccount> getAccount(@PathVariable("id") String accountId) {
+    // Convert the account ID from String to its proper format and retrieve account information asynchronously
+    return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(accountId)))
+               // If no account is found, return an HTTP 404 error
+               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+               // Convert the retrieved account information into the GetAccount DTO format
+               .map(GetAccount::new);
+}
+
+
 
 }
