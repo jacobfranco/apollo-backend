@@ -8,6 +8,17 @@ enum AttachmentKind {
   Video = 2
 }
 
+struct KeyValuePair {
+  1: required string key;
+  2: required string value;
+}
+
+struct Marker {
+  1: required string lastReadId; // must store the stringified id because that is how the client must receive it later
+  2: required i32 version;
+  3: required i64 timestamp;
+}
+
 struct Account {
   1: required string name;
   2: required string email;
