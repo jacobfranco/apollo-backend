@@ -1,13 +1,15 @@
 package com.apollo.backend.modules;
 
+import com.apollo.backend.ApolloHelpers;
 import com.rpl.rama.*;
 
 public class Core implements RamaModule {
 
   @Override
   public void define(Setup setup, Topologies topologies) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'define'");
+
+    setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
+      
   }
 
 }

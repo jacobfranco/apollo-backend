@@ -1,22 +1,33 @@
 package com.apollo.backendapi;
 
+// This file initializes the backend application using Spring Boot.
+
+// Apollo
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
 import com.apollo.backend.serialization.ApolloSerialization;
+
+// Rama
 import com.rpl.rama.*;
 import com.rpl.rama.test.*;
+
+// Spring
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import software.amazon.awssdk.core.exception.SdkClientException;
 
+// Java
 import java.io.*;
 import java.security.*;
 import java.util.*;
 
+// Define the main class and entry point for a Spring Boot application
 @SpringBootApplication
 public class ApolloApiApplication {
+    // Main method to start the application
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException, NoSuchProviderException {
+        // Check if more than one argument is provided to configure API URLs
         if(args.length > 1) {
           ApolloConfig.API_URL = args[1];
           ApolloConfig.API_WEB_SOCKET_URL = args[2];
@@ -24,23 +35,29 @@ public class ApolloApiApplication {
           ApolloConfig.FRONTEND_URL = args[4];
         }
 
-        // init s3
+         // Initialize Amazon S3 client
         try {
             ApolloApiHelpers.initS3Client();
         } catch (SdkClientException e) {
+            // Handle exceptions by printing stack trace and setting S3 options to null
             e.printStackTrace();
             ApolloApiConfig.S3_OPTIONS = null;
         }
 
-        // init cluster manager
+        // Initialize the cluster manager with configuration if arguments are provided
         if(args.length > 0) {
-          ApolloApiController.manager = new ApolloApiManager(RamaClusterManager.openInternal(new HashMap() {{
-            put("conductor.host", args[0]);
-            put("custom.serializations", Arrays.asList("com.apollo.backend.serialization.ApolloSerialization"));
-          }}));
-        } else initIPC();
+            ApolloApiController.manager = new ApolloApiManager(RamaClusterManager.openInternal(new HashMap<String, Object>() {{
+                // Configuration map for cluster manager
+                put("conductor.host", args[0]);
+                put("custom.serializations", Arrays.asList("com.apollo.backend.serialization.ApolloSerialization"));
+            }}));
+        } else {
+            // Initialize In-Process Cluster if no arguments are provided
+            initIPC();
+        }
+        
 
-        // init spring
+        // Start the Spring application
         SpringApplication.run(ApolloApiApplication.class, args);
     }
 
@@ -57,10 +74,14 @@ public class ApolloApiApplication {
     }
 
     public static InProcessCluster initIPC() throws NoSuchAlgorithmException, IOException, NoSuchProviderException {
+        @SuppressWarnings("rawtypes") // Suppress warnings for raw types in the list of serializers
         List<Class> sers = new ArrayList<>();
+        // Add custom serialization class to the list
         sers.add(ApolloSerialization.class);
+        // Create an InProcessCluster with the specified serializers
         InProcessCluster ipc = InProcessCluster.create(sers);
 
+       // Instantiate and launch various modules with their configurations
         Relationships relationshipsModule = new Relationships();
         String relationshipsModuleName = Relationships.class.getName();
         ipc.launchModule(relationshipsModule, new LaunchConfig(2, 1));
@@ -81,11 +102,14 @@ public class ApolloApiApplication {
         Search searchModule = new Search();
         ipc.launchModule(searchModule, new LaunchConfig(2, 1));
 
+        // Set the controller manager to a new instance of ApolloApiManager with the IPC
         ApolloApiController.manager = new ApolloApiManager(ipc);
 
+        // Time manipulation for data entries
         int weekMillis = 1000 * 60 * 60 * 24 * 7;
         long ts = System.currentTimeMillis() - weekMillis;
 
+        // Append accounts and configure their properties
         Depot accountDepot = ipc.clusterDepot(coreModuleName, "*accountDepot");
         ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys();
         accountDepot.append(new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"), "en-US", UUID.randomUUID().toString(), aliceKeys.publicKey, ts+=1));
@@ -94,6 +118,7 @@ public class ApolloApiApplication {
         ApolloWebHelpers.SigningKeyPair charlieKeys = ApolloWebHelpers.generateKeys();
         accountDepot.append(new Account("charlie", "charlie@foo.com", ApolloApiHelpers.encodePassword("charlie"), "en-US", UUID.randomUUID().toString(), charlieKeys.publicKey, ts+=1));
 
+        // Populate and manipulate data for user relationships and statuses
         List<Long> fooIds = new ArrayList<>();
         PState nameToUser = ipc.clusterPState(coreModuleName, "$$nameToUser");
         for (int i = 0; i < 50; i++) {
@@ -110,18 +135,11 @@ public class ApolloApiApplication {
         Depot followAndBlockAccountDepot = ipc.clusterDepot(relationshipsModuleName, "*followAndBlockAccountDepot");
         followAndBlockAccountDepot.append(new FollowAccount(bobId, aliceId, ts+=1));
 
+        // Loop through the generated IDs to create relationships and statuses
         for (long fooId : fooIds) {
             followAndBlockAccountDepot.append(new FollowAccount(bobId, fooId, ts+=1));
             followAndBlockAccountDepot.append(new FollowAccount(fooId, bobId, ts+=1));
             followAndBlockAccountDepot.append(new FollowAccount(fooId, aliceId, ts+=1));
-        }
-
-        Depot listDepot = ipc.clusterDepot(relationshipsModuleName, "*listDepot");
-        PState authorIdToListIds = ipc.clusterPState(relationshipsModuleName, "$$authorIdToListIds");
-        listDepot.append(new AccountList(bobId, "cool people", "list", ts+=1));
-        Long bobsListId = authorIdToListIds.selectOne(Path.key(bobId).first());
-        for (long fooId : fooIds) {
-            listDepot.append(new AccountListMember(bobsListId, fooId, ts += 1));
         }
 
         Depot statusDepot = ipc.clusterDepot(Core.class.getName(), "*statusDepot");
@@ -137,7 +155,8 @@ public class ApolloApiApplication {
             statusDepot.append(new AddStatus(UUID.randomUUID().toString(), new Status(bobId, StatusContent.reply(new ReplyStatusContent(i + " @alice this is also a public message", StatusVisibility.Public, new StatusPointer(aliceId, alicePublic))), ts)));
         }
 
-        Depot favoriteStatusDepot = ipc.clusterDepot(Core.class.getName(), "*favoriteStatusDepot");
+        // Like and boost statuses as part of the simulation
+        Depot likeStatusDepot = ipc.clusterDepot(Core.class.getName(), "*likeStatusDepot");
         StatusQueryResults aliceTimeline = null;
         try {
             aliceTimeline = ApolloApiController.manager.getAccountTimeline(null, aliceId, null, null, false, true).get();
@@ -147,7 +166,7 @@ public class ApolloApiApplication {
         StatusResultWithId aliceStatus = aliceTimeline.results.get(0);
         StatusPointer aliceStatusPointer = new StatusPointer(aliceId, aliceStatus.statusId);
         for (long fooId : fooIds) {
-            favoriteStatusDepot.append(new FavoriteStatus(fooId, aliceStatusPointer, System.currentTimeMillis()));
+            likeStatusDepot.append(new LikeStatus(fooId, aliceStatusPointer, System.currentTimeMillis()));
             statusDepot.append(new BoostStatus(UUID.randomUUID().toString(), fooId, aliceStatusPointer, System.currentTimeMillis()));
         }
 

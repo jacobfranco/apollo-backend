@@ -6,8 +6,8 @@ public class Relationships implements RamaModule {
 
   @Override
   public void define(Setup setup, Topologies topologies) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'define'");
+
+      setup.declareDepot("*authCodeDepot", Depot.hashBy(ExtractCode.class));
   }
 
 }

@@ -40,7 +40,6 @@ public class GetAccount {
         }
     }
     public List<Field> fields;
-    public List<GetCustomEmoji> emojis;
     public static class Source {
         public String note = "";
         public List<Field> fields;
@@ -62,8 +61,10 @@ public class GetAccount {
         this(accountWithId.accountId, accountWithId.account, accountWithId.metadata);
     }
 
+
+    // TODO: Change unncessary fields
     public GetAccount(long accountId, Account account, AccountMetadata metadata) {
-        this.id = MastodonHelpers.serializeAccountId(accountId);
+        this.id = ApolloHelpers.serializeAccountId(accountId);
         this.username = account.name;
         this.acct = account.name;
         this.display_name = account.isSetDisplayName() ? StringEscapeUtils.escapeHtml4(account.displayName) : "";
@@ -82,29 +83,29 @@ public class GetAccount {
         this.source.note = this.note;
         this.source.fields = this.fields;
 
-        if (MastodonApiConfig.S3_OPTIONS != null) {
+        if (ApolloApiConfig.S3_OPTIONS != null) {
             if (account.isSetAvatar() && !account.avatar.attachment.path.isEmpty()) {
-                if (MastodonApiHelpers.isValidURL(account.avatar.attachment.path)) this.avatar = account.avatar.attachment.path;
-                else this.avatar = String.format("%s/%s", MastodonApiConfig.S3_OPTIONS.url, account.avatar.attachment.path);
+                if (ApolloApiHelpers.isValidURL(account.avatar.attachment.path)) this.avatar = account.avatar.attachment.path;
+                else this.avatar = String.format("%s/%s", ApolloApiConfig.S3_OPTIONS.url, account.avatar.attachment.path);
 
                 this.avatar_static = this.avatar;
             }
             if (account.isSetHeader() && !account.header.attachment.path.isEmpty()) {
-                if (MastodonApiHelpers.isValidURL(account.header.attachment.path)) this.header = account.header.attachment.path;
-                else this.header = String.format("%s/%s", MastodonApiConfig.S3_OPTIONS.url, account.header.attachment.path);
+                if (ApolloApiHelpers.isValidURL(account.header.attachment.path)) this.header = account.header.attachment.path;
+                else this.header = String.format("%s/%s", ApolloApiConfig.S3_OPTIONS.url, account.header.attachment.path);
 
                 this.header_static = this.header;
             }
         } else {
             if (account.isSetAvatar() && !account.avatar.attachment.path.isEmpty()) {
-                if (MastodonApiHelpers.isValidURL(account.avatar.attachment.path)) this.avatar = account.avatar.attachment.path;
-                else this.avatar = String.format("%s/%s/%s", MastodonConfig.API_URL, MastodonApiConfig.STATIC_FILE_URL_PATH_NAME, account.avatar.attachment.path);
+                if (ApolloApiHelpers.isValidURL(account.avatar.attachment.path)) this.avatar = account.avatar.attachment.path;
+                else this.avatar = String.format("%s/%s/%s", ApolloConfig.API_URL, ApolloApiConfig.STATIC_FILE_URL_PATH_NAME, account.avatar.attachment.path);
 
                 this.avatar_static = this.avatar;
             }
             if (account.isSetHeader() && !account.header.attachment.path.isEmpty()) {
-                if (MastodonApiHelpers.isValidURL(account.header.attachment.path)) this.header = account.header.attachment.path;
-                else this.header = String.format("%s/%s/%s", MastodonConfig.API_URL, MastodonApiConfig.STATIC_FILE_URL_PATH_NAME, account.header.attachment.path);
+                if (ApolloApiHelpers.isValidURL(account.header.attachment.path)) this.header = account.header.attachment.path;
+                else this.header = String.format("%s/%s/%s", ApolloConfig.API_URL, ApolloApiConfig.STATIC_FILE_URL_PATH_NAME, account.header.attachment.path);
 
                 this.header_static = this.header;
             }
@@ -112,12 +113,12 @@ public class GetAccount {
 
         // default images
         if (this.header == null) {
-            this.header = MastodonConfig.API_URL + "/missing_header.png";
-            this.header_static = MastodonConfig.API_URL + "/missing_header.png";
+            this.header = ApolloConfig.API_URL + "/missing_header.png";
+            this.header_static = ApolloConfig.API_URL + "/missing_header.png";
         }
         if (this.avatar == null) {
-            this.avatar = MastodonConfig.API_URL + "/missing_avatar.png";
-            this.avatar_static = MastodonConfig.API_URL + "/missing_avatar.png";
+            this.avatar = ApolloConfig.API_URL + "/missing_avatar.png";
+            this.avatar_static = ApolloConfig.API_URL + "/missing_avatar.png";
         }
 
         this.created_at = DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(account.timestamp));
