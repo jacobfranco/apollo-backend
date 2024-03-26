@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, StatusMetadata._Fields>, java.io.Serializable, Cloneable, Comparable<StatusMetadata> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StatusMetadata");
 
@@ -951,14 +951,14 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
           case 1: // FILTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list70 = iprot.readListBegin();
-                struct.filters = new java.util.ArrayList<MatchingFilter>(_list70.size);
-                @org.apache.thrift.annotation.Nullable MatchingFilter _elem71;
-                for (int _i72 = 0; _i72 < _list70.size; ++_i72)
+                org.apache.thrift.protocol.TList _list98 = iprot.readListBegin();
+                struct.filters = new java.util.ArrayList<MatchingFilter>(_list98.size);
+                @org.apache.thrift.annotation.Nullable MatchingFilter _elem99;
+                for (int _i100 = 0; _i100 < _list98.size; ++_i100)
                 {
-                  _elem71 = new MatchingFilter();
-                  _elem71.read(iprot);
-                  struct.filters.add(_elem71);
+                  _elem99 = new MatchingFilter();
+                  _elem99.read(iprot);
+                  struct.filters.add(_elem99);
                 }
                 iprot.readListEnd();
               }
@@ -1075,9 +1075,9 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         oprot.writeFieldBegin(FILTERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.filters.size()));
-          for (MatchingFilter _iter73 : struct.filters)
+          for (MatchingFilter _iter101 : struct.filters)
           {
-            _iter73.write(oprot);
+            _iter101.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1127,9 +1127,9 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filters.size());
-        for (MatchingFilter _iter74 : struct.filters)
+        for (MatchingFilter _iter102 : struct.filters)
         {
-          _iter74.write(oprot);
+          _iter102.write(oprot);
         }
       }
       oprot.writeBool(struct.favorited);
@@ -1146,14 +1146,14 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     public void read(org.apache.thrift.protocol.TProtocol prot, StatusMetadata struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list75 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.filters = new java.util.ArrayList<MatchingFilter>(_list75.size);
-        @org.apache.thrift.annotation.Nullable MatchingFilter _elem76;
-        for (int _i77 = 0; _i77 < _list75.size; ++_i77)
+        org.apache.thrift.protocol.TList _list103 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.filters = new java.util.ArrayList<MatchingFilter>(_list103.size);
+        @org.apache.thrift.annotation.Nullable MatchingFilter _elem104;
+        for (int _i105 = 0; _i105 < _list103.size; ++_i105)
         {
-          _elem76 = new MatchingFilter();
-          _elem76.read(iprot);
-          struct.filters.add(_elem76);
+          _elem104 = new MatchingFilter();
+          _elem104.read(iprot);
+          struct.filters.add(_elem104);
         }
       }
       struct.setFiltersIsSet(true);

@@ -1,10 +1,11 @@
 package com.apollo.backendapi;
 
-import java.io.IOException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import com.apollo.backend.*;
@@ -15,6 +16,10 @@ import com.rpl.rama.*;
 import com.rpl.rama.cluster.ClusterManagerBase;
 
 public class ApolloApiManager {
+
+    private static final int MAX_PAGING_ITERATIONS = 10;
+    private static final int MAX_LIMIT = 40;
+    private static final int DEFAULT_LIMIT = 20;
 
     // Modules
     public static final String CORE_MODULE_NAME = Core.class.getName();
@@ -28,12 +33,15 @@ public class ApolloApiManager {
 
     // Core PStates
     private final PState nameToUser;
+    private final PState pinnerToStatusIds;
 
     // Core Query Topologies
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
     private final QueryTopologyClient<StatusQueryResults> getAccountTimeline;
+    private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
+
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
@@ -43,14 +51,42 @@ public class ApolloApiManager {
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
+        pinnerToStatusIds = cluster.clusterPState(CORE_MODULE_NAME, "$$pinnerToStatusIds");
 
         // Core Query Topologies
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
-
-        
-
+        getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
       }
+
+      public static CompletableFuture<StatusQueryResults> queryStatusesWithPaging(BiFunction<StatusPointer, Integer, CompletableFuture<StatusQueryResults>> fn, StatusPointer offsetMaybe, Integer limitMaybe, int iterationsLeft) {
+        if (iterationsLeft == 0) return CompletableFuture.completedFuture(new StatusQueryResults(new ArrayList(), new HashMap(), true, false));
+
+        StatusPointer offset = offsetMaybe == null ? new StatusPointer(-1, -1) : offsetMaybe;
+        int limit = Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT);
+
+        return fn.apply(offset, limit)
+                 .thenCompose(statusQueryResults -> {
+                     // if the results are less than the limit and we haven't reached the end...
+                     if (statusQueryResults.results.size() < limit && !statusQueryResults.reachedEnd) {
+                         StatusPointer nextOffset;
+                         int nextLimit = limit - statusQueryResults.results.size();
+                         if (statusQueryResults.isSetLastStatusPointer()) nextOffset = statusQueryResults.lastStatusPointer;
+                         else return CompletableFuture.completedFuture(statusQueryResults);
+                         // recursively make the new request and concat the results.
+                         return queryStatusesWithPaging(fn, nextOffset, nextLimit, iterationsLeft-1)
+                                .thenApply(nextResults -> {
+                                    List<StatusResultWithId> results = new ArrayList<>(statusQueryResults.results);
+                                    results.addAll(nextResults.results);
+                                    HashMap<String, AccountWithId> mentions = new HashMap<>(statusQueryResults.mentions);
+                                    mentions.putAll(nextResults.mentions);
+                                    StatusQueryResults combinedResults = new StatusQueryResults(results, mentions, nextResults.reachedEnd, nextResults.refreshed);
+                                    if (nextResults.isSetLastStatusPointer()) combinedResults.setLastStatusPointer(nextResults.lastStatusPointer);
+                                    return combinedResults;
+                                });
+                     } else return CompletableFuture.completedFuture(statusQueryResults);
+                 });
+    }
 
      public CompletableFuture<Boolean> postAuthCode(long accountId, String code) {
         return authCodeDepot.appendAsync(new AddAuthCode(code, accountId)).thenApply(res -> true);
@@ -90,6 +126,10 @@ public class ApolloApiManager {
                            .thenApply(accountUUID -> accountUUID.equals(uuid));
     }
 
+    public CompletableFuture<String> getAccountUUID(String username) {
+        return nameToUser.selectOneAsync(Path.key(username, "uuid"));
+    }
+
       public CompletableFuture<StatusQueryResults> getAccountTimeline(Long requestAccountIdMaybe, long timelineAccountId, StatusPointer offsetMaybe, Integer limitMaybe, boolean includeReplies, boolean includeBoosts) {
         return this.getPinnedStatuses(requestAccountIdMaybe, timelineAccountId)
                    .thenCompose(pinnedStatuses -> {
@@ -103,6 +143,19 @@ public class ApolloApiManager {
                                                  }),
                                offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
                    });
+    }
+
+    
+
+     
+    public CompletableFuture<StatusQueryResults> getPinnedStatuses(Long requestAccountIdMaybe, long authorId) {
+        return pinnerToStatusIds.selectAsync(Path.key(authorId).mapVals())
+                                .thenCompose(statusIds -> {
+                                    List<StatusPointer> pointers = new ArrayList<>();
+                                    for (Object statusId : statusIds) pointers.add(new StatusPointer(authorId, (Long) statusId));
+                                    QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+                                    return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, pointers, filterOptions);
+                                });
     }
 
 

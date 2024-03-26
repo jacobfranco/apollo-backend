@@ -1,6 +1,7 @@
 package com.apollo.backendapi;
 
 import java.io.*;
+import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -47,6 +48,15 @@ public class ApolloApiHelpers {
     public static CompletableFuture<PutObjectResponse> uploadToS3(String bucketName, String key, File file) {
         PutObjectRequest objectRequest = PutObjectRequest.builder().bucket(bucketName).key(key).build();
         return S3_CLIENT.putObject(objectRequest, AsyncRequestBody.fromFile(file));
+    }
+
+     public static boolean isValidURL(String url) {
+        try {
+            new URL(url).toURI();
+            return true;
+        } catch (MalformedURLException | URISyntaxException e) {
+            return false;
+        }
     }
 
 }

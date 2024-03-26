@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, java.io.Serializable, Cloneable, Comparable<Filter> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Filter");
 
@@ -986,15 +986,15 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
           case 3: // CONTEXTS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set112 = iprot.readSetBegin();
+                org.apache.thrift.protocol.TSet _set140 = iprot.readSetBegin();
                 struct.contexts = java.util.EnumSet.noneOf(FilterContext.class);
-                @org.apache.thrift.annotation.Nullable FilterContext _elem113;
-                for (int _i114 = 0; _i114 < _set112.size; ++_i114)
+                @org.apache.thrift.annotation.Nullable FilterContext _elem141;
+                for (int _i142 = 0; _i142 < _set140.size; ++_i142)
                 {
-                  _elem113 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
-                  if (_elem113 != null)
+                  _elem141 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
+                  if (_elem141 != null)
                   {
-                    struct.contexts.add(_elem113);
+                    struct.contexts.add(_elem141);
                   }
                 }
                 iprot.readSetEnd();
@@ -1007,14 +1007,14 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
           case 4: // KEYWORDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list115 = iprot.readListBegin();
-                struct.keywords = new java.util.ArrayList<KeywordFilter>(_list115.size);
-                @org.apache.thrift.annotation.Nullable KeywordFilter _elem116;
-                for (int _i117 = 0; _i117 < _list115.size; ++_i117)
+                org.apache.thrift.protocol.TList _list143 = iprot.readListBegin();
+                struct.keywords = new java.util.ArrayList<KeywordFilter>(_list143.size);
+                @org.apache.thrift.annotation.Nullable KeywordFilter _elem144;
+                for (int _i145 = 0; _i145 < _list143.size; ++_i145)
                 {
-                  _elem116 = new KeywordFilter();
-                  _elem116.read(iprot);
-                  struct.keywords.add(_elem116);
+                  _elem144 = new KeywordFilter();
+                  _elem144.read(iprot);
+                  struct.keywords.add(_elem144);
                 }
                 iprot.readListEnd();
               }
@@ -1026,14 +1026,14 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
           case 5: // STATUSES
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set118 = iprot.readSetBegin();
-                struct.statuses = new java.util.HashSet<StatusPointer>(2*_set118.size);
-                @org.apache.thrift.annotation.Nullable StatusPointer _elem119;
-                for (int _i120 = 0; _i120 < _set118.size; ++_i120)
+                org.apache.thrift.protocol.TSet _set146 = iprot.readSetBegin();
+                struct.statuses = new java.util.HashSet<StatusPointer>(2*_set146.size);
+                @org.apache.thrift.annotation.Nullable StatusPointer _elem147;
+                for (int _i148 = 0; _i148 < _set146.size; ++_i148)
                 {
-                  _elem119 = new StatusPointer();
-                  _elem119.read(iprot);
-                  struct.statuses.add(_elem119);
+                  _elem147 = new StatusPointer();
+                  _elem147.read(iprot);
+                  struct.statuses.add(_elem147);
                 }
                 iprot.readSetEnd();
               }
@@ -1100,9 +1100,9 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
         oprot.writeFieldBegin(CONTEXTS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I32, struct.contexts.size()));
-          for (FilterContext _iter121 : struct.contexts)
+          for (FilterContext _iter149 : struct.contexts)
           {
-            oprot.writeI32(_iter121.getValue());
+            oprot.writeI32(_iter149.getValue());
           }
           oprot.writeSetEnd();
         }
@@ -1112,9 +1112,9 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
         oprot.writeFieldBegin(KEYWORDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.keywords.size()));
-          for (KeywordFilter _iter122 : struct.keywords)
+          for (KeywordFilter _iter150 : struct.keywords)
           {
-            _iter122.write(oprot);
+            _iter150.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1124,9 +1124,9 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
         oprot.writeFieldBegin(STATUSES_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.statuses.size()));
-          for (StatusPointer _iter123 : struct.statuses)
+          for (StatusPointer _iter151 : struct.statuses)
           {
-            _iter123.write(oprot);
+            _iter151.write(oprot);
           }
           oprot.writeSetEnd();
         }
@@ -1167,23 +1167,23 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
       oprot.writeString(struct.title);
       {
         oprot.writeI32(struct.contexts.size());
-        for (FilterContext _iter124 : struct.contexts)
+        for (FilterContext _iter152 : struct.contexts)
         {
-          oprot.writeI32(_iter124.getValue());
+          oprot.writeI32(_iter152.getValue());
         }
       }
       {
         oprot.writeI32(struct.keywords.size());
-        for (KeywordFilter _iter125 : struct.keywords)
+        for (KeywordFilter _iter153 : struct.keywords)
         {
-          _iter125.write(oprot);
+          _iter153.write(oprot);
         }
       }
       {
         oprot.writeI32(struct.statuses.size());
-        for (StatusPointer _iter126 : struct.statuses)
+        for (StatusPointer _iter154 : struct.statuses)
         {
-          _iter126.write(oprot);
+          _iter154.write(oprot);
         }
       }
       oprot.writeI32(struct.action.getValue());
@@ -1206,40 +1206,40 @@ public class Filter implements org.apache.thrift.TBase<Filter, Filter._Fields>, 
       struct.title = iprot.readString();
       struct.setTitleIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set127 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
+        org.apache.thrift.protocol.TSet _set155 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
         struct.contexts = java.util.EnumSet.noneOf(FilterContext.class);
-        @org.apache.thrift.annotation.Nullable FilterContext _elem128;
-        for (int _i129 = 0; _i129 < _set127.size; ++_i129)
+        @org.apache.thrift.annotation.Nullable FilterContext _elem156;
+        for (int _i157 = 0; _i157 < _set155.size; ++_i157)
         {
-          _elem128 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
-          if (_elem128 != null)
+          _elem156 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
+          if (_elem156 != null)
           {
-            struct.contexts.add(_elem128);
+            struct.contexts.add(_elem156);
           }
         }
       }
       struct.setContextsIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list130 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.keywords = new java.util.ArrayList<KeywordFilter>(_list130.size);
-        @org.apache.thrift.annotation.Nullable KeywordFilter _elem131;
-        for (int _i132 = 0; _i132 < _list130.size; ++_i132)
+        org.apache.thrift.protocol.TList _list158 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.keywords = new java.util.ArrayList<KeywordFilter>(_list158.size);
+        @org.apache.thrift.annotation.Nullable KeywordFilter _elem159;
+        for (int _i160 = 0; _i160 < _list158.size; ++_i160)
         {
-          _elem131 = new KeywordFilter();
-          _elem131.read(iprot);
-          struct.keywords.add(_elem131);
+          _elem159 = new KeywordFilter();
+          _elem159.read(iprot);
+          struct.keywords.add(_elem159);
         }
       }
       struct.setKeywordsIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set133 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.statuses = new java.util.HashSet<StatusPointer>(2*_set133.size);
-        @org.apache.thrift.annotation.Nullable StatusPointer _elem134;
-        for (int _i135 = 0; _i135 < _set133.size; ++_i135)
+        org.apache.thrift.protocol.TSet _set161 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.statuses = new java.util.HashSet<StatusPointer>(2*_set161.size);
+        @org.apache.thrift.annotation.Nullable StatusPointer _elem162;
+        for (int _i163 = 0; _i163 < _set161.size; ++_i163)
         {
-          _elem134 = new StatusPointer();
-          _elem134.read(iprot);
-          struct.statuses.add(_elem134);
+          _elem162 = new StatusPointer();
+          _elem162.read(iprot);
+          struct.statuses.add(_elem162);
         }
       }
       struct.setStatusesIsSet(true);

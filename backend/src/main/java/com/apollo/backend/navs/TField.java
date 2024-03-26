@@ -1,6 +1,8 @@
 package com.apollo.backend.navs;
 
-import com.rpl.rama.Navigator;
+import com.apollo.backend.*;
+
+import com.rpl.rama.*;
 import org.apache.thrift.*;
 
 import static com.apollo.backend.ApolloHelpers.*;
@@ -23,4 +25,6 @@ public class TField implements Navigator<TBase> {
     setTFieldByName(obj, _fieldName, next.invokeNext(curr));
     return obj;
   }
+
+  
 }

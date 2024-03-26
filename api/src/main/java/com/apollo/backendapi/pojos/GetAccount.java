@@ -78,7 +78,7 @@ public class GetAccount {
         if (account.isSetFields()) this.fields = account.fields.stream().map(field -> new Field(StringEscapeUtils.escapeHtml4(field.key), StringEscapeUtils.escapeHtml4(field.value))).collect(Collectors.toList());
         else this.fields = new ArrayList<>();
 
-        this.emojis = new ArrayList<>();
+
         this.source = new Source();
         this.source.note = this.note;
         this.source.fields = this.fields;

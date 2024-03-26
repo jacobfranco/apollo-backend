@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, MatchingFilter._Fields>, java.io.Serializable, Cloneable, Comparable<MatchingFilter> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("MatchingFilter");
 
@@ -600,14 +600,14 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
           case 3: // KEYWORD_MATCHES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                struct.keywordMatches = new java.util.ArrayList<KeywordFilter>(_list104.size);
-                @org.apache.thrift.annotation.Nullable KeywordFilter _elem105;
-                for (int _i106 = 0; _i106 < _list104.size; ++_i106)
+                org.apache.thrift.protocol.TList _list132 = iprot.readListBegin();
+                struct.keywordMatches = new java.util.ArrayList<KeywordFilter>(_list132.size);
+                @org.apache.thrift.annotation.Nullable KeywordFilter _elem133;
+                for (int _i134 = 0; _i134 < _list132.size; ++_i134)
                 {
-                  _elem105 = new KeywordFilter();
-                  _elem105.read(iprot);
-                  struct.keywordMatches.add(_elem105);
+                  _elem133 = new KeywordFilter();
+                  _elem133.read(iprot);
+                  struct.keywordMatches.add(_elem133);
                 }
                 iprot.readListEnd();
               }
@@ -658,9 +658,9 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
         oprot.writeFieldBegin(KEYWORD_MATCHES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.keywordMatches.size()));
-          for (KeywordFilter _iter107 : struct.keywordMatches)
+          for (KeywordFilter _iter135 : struct.keywordMatches)
           {
-            _iter107.write(oprot);
+            _iter135.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -691,9 +691,9 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
       struct.filter.write(oprot);
       {
         oprot.writeI32(struct.keywordMatches.size());
-        for (KeywordFilter _iter108 : struct.keywordMatches)
+        for (KeywordFilter _iter136 : struct.keywordMatches)
         {
-          _iter108.write(oprot);
+          _iter136.write(oprot);
         }
       }
       oprot.writeBool(struct.statusFilterMatch);
@@ -708,14 +708,14 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
       struct.filter.read(iprot);
       struct.setFilterIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list109 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.keywordMatches = new java.util.ArrayList<KeywordFilter>(_list109.size);
-        @org.apache.thrift.annotation.Nullable KeywordFilter _elem110;
-        for (int _i111 = 0; _i111 < _list109.size; ++_i111)
+        org.apache.thrift.protocol.TList _list137 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.keywordMatches = new java.util.ArrayList<KeywordFilter>(_list137.size);
+        @org.apache.thrift.annotation.Nullable KeywordFilter _elem138;
+        for (int _i139 = 0; _i139 < _list137.size; ++_i139)
         {
-          _elem110 = new KeywordFilter();
-          _elem110.read(iprot);
-          struct.keywordMatches.add(_elem110);
+          _elem138 = new KeywordFilter();
+          _elem138.read(iprot);
+          struct.keywordMatches.add(_elem138);
         }
       }
       struct.setKeywordMatchesIsSet(true);

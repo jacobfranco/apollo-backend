@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class StatusResultContent extends org.apache.thrift.TUnion<StatusResultContent, StatusResultContent._Fields> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StatusResultContent");
   private static final org.apache.thrift.protocol.TField NORMAL_FIELD_DESC = new org.apache.thrift.protocol.TField("normal", org.apache.thrift.protocol.TType.STRUCT, (short)1);

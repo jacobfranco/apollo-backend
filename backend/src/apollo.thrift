@@ -107,6 +107,23 @@ struct FollowAccount {
   7: optional string followerSharedInboxUrl;
 }
 
+union EditAccountField {
+  1: string email;
+  2: string pwdHash;
+  3: string locale;
+  4: string publicKey;
+  5: string displayName;
+  6: string bio;
+  7: bool locked;
+  8: bool bot;
+  9: bool discoverable;
+  10: AttachmentWithId header;
+  11: AttachmentWithId avatar;
+  12: list<KeyValuePair> fields;
+  13: map<string, Marker> markers;
+  14: map<string, string> preferences;
+}
+
 struct Status {
   1: required AccountId authorId;
   2: required StatusContent content;
@@ -251,4 +268,9 @@ struct Filter {
 struct KeywordFilter {
   1: required string word;
   2: required bool wholeWord;
+}
+
+struct QueryFilterOptions {
+  1: required FilterContext filterContext;
+  2: required bool excludeBlockedAndMuted;
 }

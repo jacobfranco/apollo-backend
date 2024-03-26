@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class StatusResultWithId implements org.apache.thrift.TBase<StatusResultWithId, StatusResultWithId._Fields>, java.io.Serializable, Cloneable, Comparable<StatusResultWithId> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StatusResultWithId");
 

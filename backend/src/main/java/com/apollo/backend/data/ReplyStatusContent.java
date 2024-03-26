@@ -6,7 +6,7 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"rawtypes", "unchecked", "unused"})
+@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
 public class ReplyStatusContent implements org.apache.thrift.TBase<ReplyStatusContent, ReplyStatusContent._Fields>, java.io.Serializable, Cloneable, Comparable<ReplyStatusContent> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ReplyStatusContent");
 
@@ -812,14 +812,14 @@ public class ReplyStatusContent implements org.apache.thrift.TBase<ReplyStatusCo
           case 5: // ATTACHMENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list44 = iprot.readListBegin();
-                struct.attachments = new java.util.ArrayList<AttachmentWithId>(_list44.size);
-                @org.apache.thrift.annotation.Nullable AttachmentWithId _elem45;
-                for (int _i46 = 0; _i46 < _list44.size; ++_i46)
+                org.apache.thrift.protocol.TList _list72 = iprot.readListBegin();
+                struct.attachments = new java.util.ArrayList<AttachmentWithId>(_list72.size);
+                @org.apache.thrift.annotation.Nullable AttachmentWithId _elem73;
+                for (int _i74 = 0; _i74 < _list72.size; ++_i74)
                 {
-                  _elem45 = new AttachmentWithId();
-                  _elem45.read(iprot);
-                  struct.attachments.add(_elem45);
+                  _elem73 = new AttachmentWithId();
+                  _elem73.read(iprot);
+                  struct.attachments.add(_elem73);
                 }
                 iprot.readListEnd();
               }
@@ -879,9 +879,9 @@ public class ReplyStatusContent implements org.apache.thrift.TBase<ReplyStatusCo
           oprot.writeFieldBegin(ATTACHMENTS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.attachments.size()));
-            for (AttachmentWithId _iter47 : struct.attachments)
+            for (AttachmentWithId _iter75 : struct.attachments)
             {
-              _iter47.write(oprot);
+              _iter75.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -933,9 +933,9 @@ public class ReplyStatusContent implements org.apache.thrift.TBase<ReplyStatusCo
       if (struct.isSetAttachments()) {
         {
           oprot.writeI32(struct.attachments.size());
-          for (AttachmentWithId _iter48 : struct.attachments)
+          for (AttachmentWithId _iter76 : struct.attachments)
           {
-            _iter48.write(oprot);
+            _iter76.write(oprot);
           }
         }
       }
@@ -962,14 +962,14 @@ public class ReplyStatusContent implements org.apache.thrift.TBase<ReplyStatusCo
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list49 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.attachments = new java.util.ArrayList<AttachmentWithId>(_list49.size);
-          @org.apache.thrift.annotation.Nullable AttachmentWithId _elem50;
-          for (int _i51 = 0; _i51 < _list49.size; ++_i51)
+          org.apache.thrift.protocol.TList _list77 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.attachments = new java.util.ArrayList<AttachmentWithId>(_list77.size);
+          @org.apache.thrift.annotation.Nullable AttachmentWithId _elem78;
+          for (int _i79 = 0; _i79 < _list77.size; ++_i79)
           {
-            _elem50 = new AttachmentWithId();
-            _elem50.read(iprot);
-            struct.attachments.add(_elem50);
+            _elem78 = new AttachmentWithId();
+            _elem78.read(iprot);
+            struct.attachments.add(_elem78);
           }
         }
         struct.setAttachmentsIsSet(true);
