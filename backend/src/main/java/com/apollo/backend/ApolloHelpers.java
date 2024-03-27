@@ -1,5 +1,7 @@
 package com.apollo.backend;
 
+import com.apollo.backend.data.StatusPointer;
+import com.apollo.backend.data.StatusQueryResults;
 import com.apollo.backend.ops.*;
 
 import com.rpl.rama.*;
@@ -27,6 +29,10 @@ public class ApolloHelpers {
 
   public static class ExtractCode extends ExtractField {
     public ExtractCode() { super("code"); }
+  }
+
+  public static class ExtractAccountId extends ExtractField {
+    public ExtractAccountId() { super("accountId"); }
   }
 
    public static Block extractFields(Object from, String... fieldVars) {
@@ -74,6 +80,13 @@ public class ApolloHelpers {
 
   public static String serializeAccountId(long accountId) {
     return String.format("%019d", accountId) + "-a";
+  }
+
+  public static StatusQueryResults updateStatusQueryResults(StatusQueryResults statusQueryResults, List<StatusPointer> statusPointers, int limit, boolean refreshed) {
+    statusQueryResults.reachedEnd = statusPointers.size() < limit;
+    statusQueryResults.setRefreshed(refreshed);
+    if (statusPointers.size() > 0) statusQueryResults.setLastStatusPointer(statusPointers.get(statusPointers.size()-1));
+    return statusQueryResults;
   }
   
 }

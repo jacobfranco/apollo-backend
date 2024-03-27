@@ -492,13 +492,13 @@ public class PollContent implements org.apache.thrift.TBase<PollContent, PollCon
           case 1: // CHOICES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list124 = iprot.readListBegin();
-                struct.choices = new java.util.ArrayList<java.lang.String>(_list124.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem125;
-                for (int _i126 = 0; _i126 < _list124.size; ++_i126)
+                org.apache.thrift.protocol.TList _list132 = iprot.readListBegin();
+                struct.choices = new java.util.ArrayList<java.lang.String>(_list132.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem133;
+                for (int _i134 = 0; _i134 < _list132.size; ++_i134)
                 {
-                  _elem125 = iprot.readString();
-                  struct.choices.add(_elem125);
+                  _elem133 = iprot.readString();
+                  struct.choices.add(_elem133);
                 }
                 iprot.readListEnd();
               }
@@ -549,9 +549,9 @@ public class PollContent implements org.apache.thrift.TBase<PollContent, PollCon
         oprot.writeFieldBegin(CHOICES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.choices.size()));
-          for (java.lang.String _iter127 : struct.choices)
+          for (java.lang.String _iter135 : struct.choices)
           {
-            oprot.writeString(_iter127);
+            oprot.writeString(_iter135);
           }
           oprot.writeListEnd();
         }
@@ -583,9 +583,9 @@ public class PollContent implements org.apache.thrift.TBase<PollContent, PollCon
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.choices.size());
-        for (java.lang.String _iter128 : struct.choices)
+        for (java.lang.String _iter136 : struct.choices)
         {
-          oprot.writeString(_iter128);
+          oprot.writeString(_iter136);
         }
       }
       oprot.writeI64(struct.expirationMillis);
@@ -596,13 +596,13 @@ public class PollContent implements org.apache.thrift.TBase<PollContent, PollCon
     public void read(org.apache.thrift.protocol.TProtocol prot, PollContent struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list129 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-        struct.choices = new java.util.ArrayList<java.lang.String>(_list129.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem130;
-        for (int _i131 = 0; _i131 < _list129.size; ++_i131)
+        org.apache.thrift.protocol.TList _list137 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+        struct.choices = new java.util.ArrayList<java.lang.String>(_list137.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem138;
+        for (int _i139 = 0; _i139 < _list137.size; ++_i139)
         {
-          _elem130 = iprot.readString();
-          struct.choices.add(_elem130);
+          _elem138 = iprot.readString();
+          struct.choices.add(_elem138);
         }
       }
       struct.setChoicesIsSet(true);

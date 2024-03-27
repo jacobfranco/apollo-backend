@@ -951,14 +951,14 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
           case 1: // FILTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list98 = iprot.readListBegin();
-                struct.filters = new java.util.ArrayList<MatchingFilter>(_list98.size);
-                @org.apache.thrift.annotation.Nullable MatchingFilter _elem99;
-                for (int _i100 = 0; _i100 < _list98.size; ++_i100)
+                org.apache.thrift.protocol.TList _list106 = iprot.readListBegin();
+                struct.filters = new java.util.ArrayList<MatchingFilter>(_list106.size);
+                @org.apache.thrift.annotation.Nullable MatchingFilter _elem107;
+                for (int _i108 = 0; _i108 < _list106.size; ++_i108)
                 {
-                  _elem99 = new MatchingFilter();
-                  _elem99.read(iprot);
-                  struct.filters.add(_elem99);
+                  _elem107 = new MatchingFilter();
+                  _elem107.read(iprot);
+                  struct.filters.add(_elem107);
                 }
                 iprot.readListEnd();
               }
@@ -1075,9 +1075,9 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         oprot.writeFieldBegin(FILTERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.filters.size()));
-          for (MatchingFilter _iter101 : struct.filters)
+          for (MatchingFilter _iter109 : struct.filters)
           {
-            _iter101.write(oprot);
+            _iter109.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1127,9 +1127,9 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filters.size());
-        for (MatchingFilter _iter102 : struct.filters)
+        for (MatchingFilter _iter110 : struct.filters)
         {
-          _iter102.write(oprot);
+          _iter110.write(oprot);
         }
       }
       oprot.writeBool(struct.favorited);
@@ -1146,14 +1146,14 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     public void read(org.apache.thrift.protocol.TProtocol prot, StatusMetadata struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list103 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.filters = new java.util.ArrayList<MatchingFilter>(_list103.size);
-        @org.apache.thrift.annotation.Nullable MatchingFilter _elem104;
-        for (int _i105 = 0; _i105 < _list103.size; ++_i105)
+        org.apache.thrift.protocol.TList _list111 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.filters = new java.util.ArrayList<MatchingFilter>(_list111.size);
+        @org.apache.thrift.annotation.Nullable MatchingFilter _elem112;
+        for (int _i113 = 0; _i113 < _list111.size; ++_i113)
         {
-          _elem104 = new MatchingFilter();
-          _elem104.read(iprot);
-          struct.filters.add(_elem104);
+          _elem112 = new MatchingFilter();
+          _elem112.read(iprot);
+          struct.filters.add(_elem112);
         }
       }
       struct.setFiltersIsSet(true);

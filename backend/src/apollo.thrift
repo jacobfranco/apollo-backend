@@ -124,6 +124,13 @@ union EditAccountField {
   14: map<string, string> preferences;
 }
 
+struct Follower {
+  1: required AccountId accountId;
+  2: required bool showBoosts;
+  3: optional list<string> languages;
+  4: optional string sharedInboxUrl; // TODO: Maybe change
+}
+
 struct Status {
   1: required AccountId authorId;
   2: required StatusContent content;

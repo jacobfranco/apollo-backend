@@ -523,13 +523,13 @@ public class PollInfo implements org.apache.thrift.TBase<PollInfo, PollInfo._Fie
           case 2: // OWN_VOTES
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set106 = iprot.readSetBegin();
-                struct.ownVotes = new java.util.HashSet<java.lang.Integer>(2*_set106.size);
-                int _elem107;
-                for (int _i108 = 0; _i108 < _set106.size; ++_i108)
+                org.apache.thrift.protocol.TSet _set114 = iprot.readSetBegin();
+                struct.ownVotes = new java.util.HashSet<java.lang.Integer>(2*_set114.size);
+                int _elem115;
+                for (int _i116 = 0; _i116 < _set114.size; ++_i116)
                 {
-                  _elem107 = iprot.readI32();
-                  struct.ownVotes.add(_elem107);
+                  _elem115 = iprot.readI32();
+                  struct.ownVotes.add(_elem115);
                 }
                 iprot.readSetEnd();
               }
@@ -541,15 +541,15 @@ public class PollInfo implements org.apache.thrift.TBase<PollInfo, PollInfo._Fie
           case 3: // VOTE_COUNTS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map109 = iprot.readMapBegin();
-                struct.voteCounts = new java.util.HashMap<java.lang.Integer,java.lang.Integer>(2*_map109.size);
-                int _key110;
-                int _val111;
-                for (int _i112 = 0; _i112 < _map109.size; ++_i112)
+                org.apache.thrift.protocol.TMap _map117 = iprot.readMapBegin();
+                struct.voteCounts = new java.util.HashMap<java.lang.Integer,java.lang.Integer>(2*_map117.size);
+                int _key118;
+                int _val119;
+                for (int _i120 = 0; _i120 < _map117.size; ++_i120)
                 {
-                  _key110 = iprot.readI32();
-                  _val111 = iprot.readI32();
-                  struct.voteCounts.put(_key110, _val111);
+                  _key118 = iprot.readI32();
+                  _val119 = iprot.readI32();
+                  struct.voteCounts.put(_key118, _val119);
                 }
                 iprot.readMapEnd();
               }
@@ -584,9 +584,9 @@ public class PollInfo implements org.apache.thrift.TBase<PollInfo, PollInfo._Fie
         oprot.writeFieldBegin(OWN_VOTES_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I32, struct.ownVotes.size()));
-          for (int _iter113 : struct.ownVotes)
+          for (int _iter121 : struct.ownVotes)
           {
-            oprot.writeI32(_iter113);
+            oprot.writeI32(_iter121);
           }
           oprot.writeSetEnd();
         }
@@ -596,10 +596,10 @@ public class PollInfo implements org.apache.thrift.TBase<PollInfo, PollInfo._Fie
         oprot.writeFieldBegin(VOTE_COUNTS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I32, org.apache.thrift.protocol.TType.I32, struct.voteCounts.size()));
-          for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> _iter114 : struct.voteCounts.entrySet())
+          for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> _iter122 : struct.voteCounts.entrySet())
           {
-            oprot.writeI32(_iter114.getKey());
-            oprot.writeI32(_iter114.getValue());
+            oprot.writeI32(_iter122.getKey());
+            oprot.writeI32(_iter122.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -626,17 +626,17 @@ public class PollInfo implements org.apache.thrift.TBase<PollInfo, PollInfo._Fie
       oprot.writeI32(struct.totalVoters);
       {
         oprot.writeI32(struct.ownVotes.size());
-        for (int _iter115 : struct.ownVotes)
+        for (int _iter123 : struct.ownVotes)
         {
-          oprot.writeI32(_iter115);
+          oprot.writeI32(_iter123);
         }
       }
       {
         oprot.writeI32(struct.voteCounts.size());
-        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> _iter116 : struct.voteCounts.entrySet())
+        for (java.util.Map.Entry<java.lang.Integer, java.lang.Integer> _iter124 : struct.voteCounts.entrySet())
         {
-          oprot.writeI32(_iter116.getKey());
-          oprot.writeI32(_iter116.getValue());
+          oprot.writeI32(_iter124.getKey());
+          oprot.writeI32(_iter124.getValue());
         }
       }
     }
@@ -647,26 +647,26 @@ public class PollInfo implements org.apache.thrift.TBase<PollInfo, PollInfo._Fie
       struct.totalVoters = iprot.readI32();
       struct.setTotalVotersIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set117 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
-        struct.ownVotes = new java.util.HashSet<java.lang.Integer>(2*_set117.size);
-        int _elem118;
-        for (int _i119 = 0; _i119 < _set117.size; ++_i119)
+        org.apache.thrift.protocol.TSet _set125 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
+        struct.ownVotes = new java.util.HashSet<java.lang.Integer>(2*_set125.size);
+        int _elem126;
+        for (int _i127 = 0; _i127 < _set125.size; ++_i127)
         {
-          _elem118 = iprot.readI32();
-          struct.ownVotes.add(_elem118);
+          _elem126 = iprot.readI32();
+          struct.ownVotes.add(_elem126);
         }
       }
       struct.setOwnVotesIsSet(true);
       {
-        org.apache.thrift.protocol.TMap _map120 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I32, org.apache.thrift.protocol.TType.I32); 
-        struct.voteCounts = new java.util.HashMap<java.lang.Integer,java.lang.Integer>(2*_map120.size);
-        int _key121;
-        int _val122;
-        for (int _i123 = 0; _i123 < _map120.size; ++_i123)
+        org.apache.thrift.protocol.TMap _map128 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I32, org.apache.thrift.protocol.TType.I32); 
+        struct.voteCounts = new java.util.HashMap<java.lang.Integer,java.lang.Integer>(2*_map128.size);
+        int _key129;
+        int _val130;
+        for (int _i131 = 0; _i131 < _map128.size; ++_i131)
         {
-          _key121 = iprot.readI32();
-          _val122 = iprot.readI32();
-          struct.voteCounts.put(_key121, _val122);
+          _key129 = iprot.readI32();
+          _val130 = iprot.readI32();
+          struct.voteCounts.put(_key129, _val130);
         }
       }
       struct.setVoteCountsIsSet(true);

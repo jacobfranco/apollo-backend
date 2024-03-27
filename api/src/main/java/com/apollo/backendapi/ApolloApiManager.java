@@ -27,6 +27,7 @@ public class ApolloApiManager {
 
     // Core Depots
     private final Depot accountDepot;
+    private final Depot accountEditDepot;
 
      // Relationships Depots
     private final Depot authCodeDepot;
@@ -45,6 +46,8 @@ public class ApolloApiManager {
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
+        accountEditDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountEditDepot");
+        
 
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
