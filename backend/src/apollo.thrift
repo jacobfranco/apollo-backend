@@ -2,8 +2,10 @@ namespace java com.apollo.backend.data
 
 typedef i64 AccountId
 typedef i64 StatusId
+typedef i64 Index
 typedef i64 Timestamp
 typedef i64 FilterId
+typedef i64 ConversationId
 
 enum FilterContext {
   Home = 1,
@@ -28,6 +30,12 @@ enum StatusVisibility {
 enum FilterAction {
   Warn = 1,
   Hide = 2
+}
+
+enum FanoutAction {
+  Add = 1,
+  Edit = 2,
+  Remove = 3,
 }
 
 struct KeyValuePair {
@@ -77,6 +85,11 @@ struct AccountWithId {
   3: required AccountMetadata metadata;
 }
 
+struct IndexedAccountWithId {
+  1: required Index index;
+  2: required AccountWithId accountWithId;
+}
+
 struct AddAuthCode {
   1: required string code;
   2: required AccountId accountId;
@@ -104,8 +117,17 @@ struct FollowAccount {
   4: optional bool showBoosts;
   5: optional bool notify;
   6: optional list<string> languages;
-  7: optional string followerSharedInboxUrl;
 }
+
+struct FollowLockedAccount {
+  1: required AccountId accountId;
+  2: required AccountId requesterId;
+  3: required Timestamp timestamp;
+  4: optional bool showBoosts;
+  5: optional bool notify;
+  6: optional list<string> languages;
+}
+
 
 union EditAccountField {
   1: string email;
@@ -124,19 +146,73 @@ union EditAccountField {
   14: map<string, string> preferences;
 }
 
+// Note that due to the partitioning used by the followAndBlockAccountDepot
+// and the way that follow requests are accessed, `accountId` here refers
+// to the *target* of the follow request, not the originator.
+struct AcceptFollowRequest {
+  1: required AccountId accountId;
+  2: required AccountId requesterId;
+  3: required Timestamp timestamp;
+}
+
+struct RejectFollowRequest {
+  1: required AccountId accountId;
+  2: required AccountId requesterId;
+}
+
+struct RemoveFollowAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required Timestamp timestamp;
+  4: optional string followerSharedInboxUrl;
+}
+
+struct BlockAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveBlockAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required Timestamp timestamp;
+}
+
+struct MuteAccountOptions {
+  1: required bool muteNotifications;
+  2: optional Timestamp expirationMillis;
+}
+
 struct Follower {
   1: required AccountId accountId;
   2: required bool showBoosts;
   3: optional list<string> languages;
-  4: optional string sharedInboxUrl; // TODO: Maybe change
+}
+
+struct FollowerFanout {
+  1: required AccountId authorId;
+  2: required i64 nextIndex;
+  3: required FanoutAction fanoutAction;
+  4: required Status status;
+  5: required i32 task;
 }
 
 struct Status {
   1: required AccountId authorId;
   2: required StatusContent content;
   3: required Timestamp timestamp;
-  4: optional string remoteUrl;
-  5: optional string language;
+  4: optional string language;
+}
+
+struct StatusWithId {
+  1: required StatusId statusId;
+  2: required Status status;
+}
+
+struct EditStatus {
+  1: required StatusId statusId;
+  2: required Status status;
 }
 
 
@@ -146,12 +222,70 @@ struct LikeStatus {
   3: required Timestamp timestamp;
 }
 
+struct RemoveLikeStatus {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required Timestamp timestamp;
+}
+
+struct BookmarkStatus {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveBookmarkStatus {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required Timestamp timestamp;
+}
+
+struct MuteStatus {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveMuteStatus {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required Timestamp timestamp;
+}
+
+struct PinStatus {
+  1: required AccountId accountId;
+  2: required StatusId statusId;
+  3: required Timestamp timestamp;
+}
+
+struct RemovePinStatus {
+  1: required AccountId accountId;
+  2: required StatusId statusId;
+  3: required Timestamp timestamp;
+}
+
 struct BoostStatus {
   1: required string uuid;
   2: required AccountId accountId;
   3: required StatusPointer target;
   4: required Timestamp timestamp;
-  5: optional string remoteUrl;
+}
+
+struct RemoveStatus {
+  1: required AccountId accountId;
+  2: required StatusId statusId;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveStatusWithId {
+  1: required StatusId statusId;
+  2: required Status status;
+}
+
+struct RemoveBoostStatus {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required Timestamp timestamp;
 }
 
 struct NormalStatusContent {
@@ -199,7 +333,11 @@ struct StatusResult {
   4: required Timestamp timestamp;
   5: optional Timestamp editTimestamp;
   6: optional PollInfo pollInfo; // kept here because normal statuses, replies, and boosts can all have polls
-  7: optional string remoteUrl;
+}
+
+struct IndexedStatusResultWithId {
+  1: required Index index;
+  2: required StatusResultWithId statusResultWithId;
 }
 
 struct StatusQueryResults {
@@ -209,6 +347,11 @@ struct StatusQueryResults {
   4: required bool refreshed;
   // not necessarily the last one in `results` since it could've been excluded
   5: optional StatusPointer lastStatusPointer;
+}
+
+struct StatusQueryResult {
+  1: required StatusResultWithId result;
+  2: required map<string, AccountWithId> mentions;
 }
 
 struct StatusResultWithId {
@@ -232,14 +375,27 @@ union StatusResultContent {
 
 struct StatusMetadata {
   1: required list<MatchingFilter> filters;
-  2: required bool favorited;
+  2: required bool liked;
   3: required bool boosted;
   4: required bool muted;
   5: required bool bookmarked;
   6: required bool pinned;
-  7: required i32 favoriteCount;
+  7: required i32 likeCount;
   8: required i32 boostCount;
   9: required i32 replyCount;
+}
+
+struct AddScheduledStatus {
+  1: required string uuid;
+  2: required Status status;
+  3: required Timestamp publishMillis;
+}
+
+struct EditScheduledStatusPublishTime {
+  1: required AccountId accountId;
+  2: required i64 id;
+  3: required Timestamp publishMillis;
+  4: required Timestamp timestamp;
 }
 
 struct PollInfo {
@@ -272,6 +428,11 @@ struct Filter {
   8: optional i64 expirationMillis;
 }
 
+struct FilterWithId {
+  1: required FilterId filterId;
+  2: required Filter filter;
+}
+
 struct KeywordFilter {
   1: required string word;
   2: required bool wholeWord;
@@ -280,4 +441,33 @@ struct KeywordFilter {
 struct QueryFilterOptions {
   1: required FilterContext filterContext;
   2: required bool excludeBlockedAndMuted;
+}
+
+struct Conversation {
+  1: required ConversationId conversationId;
+  2: required bool unread;
+  3: required list<AccountWithId> accounts;
+  4: optional StatusQueryResult lastStatus;
+}
+
+struct IndexedConversation {
+  1: required Index index;
+  2: required Conversation conversation;
+}
+
+struct EditConversation {
+  1: required AccountId accountId;
+  2: required ConversationId conversationId;
+  3: required bool unread;
+}
+
+struct RemoveConversation {
+  1: required AccountId accountId;
+  2: required ConversationId conversationId;
+}
+
+struct HashtagFanout {
+  1: required AccountId authorId;
+  2: required StatusId statusId;
+  3: required string hashtag;
 }

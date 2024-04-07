@@ -7,25 +7,25 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fields>, java.io.Serializable, Cloneable, Comparable<Follower> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Follower");
+public class EditConversation implements org.apache.thrift.TBase<EditConversation, EditConversation._Fields>, java.io.Serializable, Cloneable, Comparable<EditConversation> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("EditConversation");
 
   private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField SHOW_BOOSTS_FIELD_DESC = new org.apache.thrift.protocol.TField("showBoosts", org.apache.thrift.protocol.TType.BOOL, (short)2);
-  private static final org.apache.thrift.protocol.TField LANGUAGES_FIELD_DESC = new org.apache.thrift.protocol.TField("languages", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField CONVERSATION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("conversationId", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField UNREAD_FIELD_DESC = new org.apache.thrift.protocol.TField("unread", org.apache.thrift.protocol.TType.BOOL, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FollowerStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FollowerTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new EditConversationStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new EditConversationTupleSchemeFactory();
 
   public long accountId; // required
-  public boolean showBoosts; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages; // optional
+  public long conversationId; // required
+  public boolean unread; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ACCOUNT_ID((short)1, "accountId"),
-    SHOW_BOOSTS((short)2, "showBoosts"),
-    LANGUAGES((short)3, "languages");
+    CONVERSATION_ID((short)2, "conversationId"),
+    UNREAD((short)3, "unread");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,10 +43,10 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       switch(fieldId) {
         case 1: // ACCOUNT_ID
           return ACCOUNT_ID;
-        case 2: // SHOW_BOOSTS
-          return SHOW_BOOSTS;
-        case 3: // LANGUAGES
-          return LANGUAGES;
+        case 2: // CONVERSATION_ID
+          return CONVERSATION_ID;
+        case 3: // UNREAD
+          return UNREAD;
         default:
           return null;
       }
@@ -91,69 +91,69 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   // isset id assignments
   private static final int __ACCOUNTID_ISSET_ID = 0;
-  private static final int __SHOWBOOSTS_ISSET_ID = 1;
+  private static final int __CONVERSATIONID_ISSET_ID = 1;
+  private static final int __UNREAD_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.LANGUAGES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.SHOW_BOOSTS, new org.apache.thrift.meta_data.FieldMetaData("showBoosts", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.CONVERSATION_ID, new org.apache.thrift.meta_data.FieldMetaData("conversationId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "ConversationId")));
+    tmpMap.put(_Fields.UNREAD, new org.apache.thrift.meta_data.FieldMetaData("unread", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.LANGUAGES, new org.apache.thrift.meta_data.FieldMetaData("languages", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Follower.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(EditConversation.class, metaDataMap);
   }
 
-  public Follower() {
+  public EditConversation() {
   }
 
-  public Follower(
+  public EditConversation(
     long accountId,
-    boolean showBoosts)
+    long conversationId,
+    boolean unread)
   {
     this();
     this.accountId = accountId;
     setAccountIdIsSet(true);
-    this.showBoosts = showBoosts;
-    setShowBoostsIsSet(true);
+    this.conversationId = conversationId;
+    setConversationIdIsSet(true);
+    this.unread = unread;
+    setUnreadIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Follower(Follower other) {
+  public EditConversation(EditConversation other) {
     __isset_bitfield = other.__isset_bitfield;
     this.accountId = other.accountId;
-    this.showBoosts = other.showBoosts;
-    if (other.isSetLanguages()) {
-      java.util.List<java.lang.String> __this__languages = new java.util.ArrayList<java.lang.String>(other.languages);
-      this.languages = __this__languages;
-    }
+    this.conversationId = other.conversationId;
+    this.unread = other.unread;
   }
 
   @Override
-  public Follower deepCopy() {
-    return new Follower(this);
+  public EditConversation deepCopy() {
+    return new EditConversation(this);
   }
 
   @Override
   public void clear() {
     setAccountIdIsSet(false);
     this.accountId = 0;
-    setShowBoostsIsSet(false);
-    this.showBoosts = false;
-    this.languages = null;
+    setConversationIdIsSet(false);
+    this.conversationId = 0;
+    setUnreadIsSet(false);
+    this.unread = false;
   }
 
   public long getAccountId() {
     return this.accountId;
   }
 
-  public Follower setAccountId(long accountId) {
+  public EditConversation setAccountId(long accountId) {
     this.accountId = accountId;
     setAccountIdIsSet(true);
     return this;
@@ -172,68 +172,50 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
-  public boolean isShowBoosts() {
-    return this.showBoosts;
+  public long getConversationId() {
+    return this.conversationId;
   }
 
-  public Follower setShowBoosts(boolean showBoosts) {
-    this.showBoosts = showBoosts;
-    setShowBoostsIsSet(true);
+  public EditConversation setConversationId(long conversationId) {
+    this.conversationId = conversationId;
+    setConversationIdIsSet(true);
     return this;
   }
 
-  public void unsetShowBoosts() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID);
+  public void unsetConversationId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CONVERSATIONID_ISSET_ID);
   }
 
-  /** Returns true if field showBoosts is set (has been assigned a value) and false otherwise */
-  public boolean isSetShowBoosts() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID);
+  /** Returns true if field conversationId is set (has been assigned a value) and false otherwise */
+  public boolean isSetConversationId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CONVERSATIONID_ISSET_ID);
   }
 
-  public void setShowBoostsIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID, value);
+  public void setConversationIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CONVERSATIONID_ISSET_ID, value);
   }
 
-  public int getLanguagesSize() {
-    return (this.languages == null) ? 0 : this.languages.size();
+  public boolean isUnread() {
+    return this.unread;
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<java.lang.String> getLanguagesIterator() {
-    return (this.languages == null) ? null : this.languages.iterator();
-  }
-
-  public void addToLanguages(java.lang.String elem) {
-    if (this.languages == null) {
-      this.languages = new java.util.ArrayList<java.lang.String>();
-    }
-    this.languages.add(elem);
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<java.lang.String> getLanguages() {
-    return this.languages;
-  }
-
-  public Follower setLanguages(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages) {
-    this.languages = languages;
+  public EditConversation setUnread(boolean unread) {
+    this.unread = unread;
+    setUnreadIsSet(true);
     return this;
   }
 
-  public void unsetLanguages() {
-    this.languages = null;
+  public void unsetUnread() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __UNREAD_ISSET_ID);
   }
 
-  /** Returns true if field languages is set (has been assigned a value) and false otherwise */
-  public boolean isSetLanguages() {
-    return this.languages != null;
+  /** Returns true if field unread is set (has been assigned a value) and false otherwise */
+  public boolean isSetUnread() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __UNREAD_ISSET_ID);
   }
 
-  public void setLanguagesIsSet(boolean value) {
-    if (!value) {
-      this.languages = null;
-    }
+  public void setUnreadIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __UNREAD_ISSET_ID, value);
   }
 
   @Override
@@ -247,19 +229,19 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       }
       break;
 
-    case SHOW_BOOSTS:
+    case CONVERSATION_ID:
       if (value == null) {
-        unsetShowBoosts();
+        unsetConversationId();
       } else {
-        setShowBoosts((java.lang.Boolean)value);
+        setConversationId((java.lang.Long)value);
       }
       break;
 
-    case LANGUAGES:
+    case UNREAD:
       if (value == null) {
-        unsetLanguages();
+        unsetUnread();
       } else {
-        setLanguages((java.util.List<java.lang.String>)value);
+        setUnread((java.lang.Boolean)value);
       }
       break;
 
@@ -273,11 +255,11 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     case ACCOUNT_ID:
       return getAccountId();
 
-    case SHOW_BOOSTS:
-      return isShowBoosts();
+    case CONVERSATION_ID:
+      return getConversationId();
 
-    case LANGUAGES:
-      return getLanguages();
+    case UNREAD:
+      return isUnread();
 
     }
     throw new java.lang.IllegalStateException();
@@ -293,22 +275,22 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     switch (field) {
     case ACCOUNT_ID:
       return isSetAccountId();
-    case SHOW_BOOSTS:
-      return isSetShowBoosts();
-    case LANGUAGES:
-      return isSetLanguages();
+    case CONVERSATION_ID:
+      return isSetConversationId();
+    case UNREAD:
+      return isSetUnread();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Follower)
-      return this.equals((Follower)that);
+    if (that instanceof EditConversation)
+      return this.equals((EditConversation)that);
     return false;
   }
 
-  public boolean equals(Follower that) {
+  public boolean equals(EditConversation that) {
     if (that == null)
       return false;
     if (this == that)
@@ -323,21 +305,21 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
         return false;
     }
 
-    boolean this_present_showBoosts = true;
-    boolean that_present_showBoosts = true;
-    if (this_present_showBoosts || that_present_showBoosts) {
-      if (!(this_present_showBoosts && that_present_showBoosts))
+    boolean this_present_conversationId = true;
+    boolean that_present_conversationId = true;
+    if (this_present_conversationId || that_present_conversationId) {
+      if (!(this_present_conversationId && that_present_conversationId))
         return false;
-      if (this.showBoosts != that.showBoosts)
+      if (this.conversationId != that.conversationId)
         return false;
     }
 
-    boolean this_present_languages = true && this.isSetLanguages();
-    boolean that_present_languages = true && that.isSetLanguages();
-    if (this_present_languages || that_present_languages) {
-      if (!(this_present_languages && that_present_languages))
+    boolean this_present_unread = true;
+    boolean that_present_unread = true;
+    if (this_present_unread || that_present_unread) {
+      if (!(this_present_unread && that_present_unread))
         return false;
-      if (!this.languages.equals(that.languages))
+      if (this.unread != that.unread)
         return false;
     }
 
@@ -350,17 +332,15 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((showBoosts) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(conversationId);
 
-    hashCode = hashCode * 8191 + ((isSetLanguages()) ? 131071 : 524287);
-    if (isSetLanguages())
-      hashCode = hashCode * 8191 + languages.hashCode();
+    hashCode = hashCode * 8191 + ((unread) ? 131071 : 524287);
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(Follower other) {
+  public int compareTo(EditConversation other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -377,22 +357,22 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetShowBoosts(), other.isSetShowBoosts());
+    lastComparison = java.lang.Boolean.compare(isSetConversationId(), other.isSetConversationId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetShowBoosts()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.showBoosts, other.showBoosts);
+    if (isSetConversationId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.conversationId, other.conversationId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetLanguages(), other.isSetLanguages());
+    lastComparison = java.lang.Boolean.compare(isSetUnread(), other.isSetUnread());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLanguages()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.languages, other.languages);
+    if (isSetUnread()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.unread, other.unread);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -418,26 +398,20 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Follower(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("EditConversation(");
     boolean first = true;
 
     sb.append("accountId:");
     sb.append(this.accountId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("showBoosts:");
-    sb.append(this.showBoosts);
+    sb.append("conversationId:");
+    sb.append(this.conversationId);
     first = false;
-    if (isSetLanguages()) {
-      if (!first) sb.append(", ");
-      sb.append("languages:");
-      if (this.languages == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.languages);
-      }
-      first = false;
-    }
+    if (!first) sb.append(", ");
+    sb.append("unread:");
+    sb.append(this.unread);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -445,7 +419,8 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
-    // alas, we cannot check 'showBoosts' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'conversationId' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'unread' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
   }
 
@@ -467,17 +442,17 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     }
   }
 
-  private static class FollowerStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class EditConversationStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FollowerStandardScheme getScheme() {
-      return new FollowerStandardScheme();
+    public EditConversationStandardScheme getScheme() {
+      return new EditConversationStandardScheme();
     }
   }
 
-  private static class FollowerStandardScheme extends org.apache.thrift.scheme.StandardScheme<Follower> {
+  private static class EditConversationStandardScheme extends org.apache.thrift.scheme.StandardScheme<EditConversation> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Follower struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, EditConversation struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -495,28 +470,18 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SHOW_BOOSTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.showBoosts = iprot.readBool();
-              struct.setShowBoostsIsSet(true);
+          case 2: // CONVERSATION_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.conversationId = iprot.readI64();
+              struct.setConversationIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // LANGUAGES
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list72 = iprot.readListBegin();
-                struct.languages = new java.util.ArrayList<java.lang.String>(_list72.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem73;
-                for (int _i74 = 0; _i74 < _list72.size; ++_i74)
-                {
-                  _elem73 = iprot.readString();
-                  struct.languages.add(_elem73);
-                }
-                iprot.readListEnd();
-              }
-              struct.setLanguagesIsSet(true);
+          case 3: // UNREAD
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.unread = iprot.readBool();
+              struct.setUnreadIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -532,94 +497,61 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       if (!struct.isSetAccountId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'accountId' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetShowBoosts()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'showBoosts' was not found in serialized data! Struct: " + toString());
+      if (!struct.isSetConversationId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'conversationId' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetUnread()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'unread' was not found in serialized data! Struct: " + toString());
       }
       struct.validate();
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Follower struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, EditConversation struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
       oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(SHOW_BOOSTS_FIELD_DESC);
-      oprot.writeBool(struct.showBoosts);
+      oprot.writeFieldBegin(CONVERSATION_ID_FIELD_DESC);
+      oprot.writeI64(struct.conversationId);
       oprot.writeFieldEnd();
-      if (struct.languages != null) {
-        if (struct.isSetLanguages()) {
-          oprot.writeFieldBegin(LANGUAGES_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.languages.size()));
-            for (java.lang.String _iter75 : struct.languages)
-            {
-              oprot.writeString(_iter75);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
-      }
+      oprot.writeFieldBegin(UNREAD_FIELD_DESC);
+      oprot.writeBool(struct.unread);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
   }
 
-  private static class FollowerTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class EditConversationTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FollowerTupleScheme getScheme() {
-      return new FollowerTupleScheme();
+    public EditConversationTupleScheme getScheme() {
+      return new EditConversationTupleScheme();
     }
   }
 
-  private static class FollowerTupleScheme extends org.apache.thrift.scheme.TupleScheme<Follower> {
+  private static class EditConversationTupleScheme extends org.apache.thrift.scheme.TupleScheme<EditConversation> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Follower struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, EditConversation struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeI64(struct.accountId);
-      oprot.writeBool(struct.showBoosts);
-      java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetLanguages()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetLanguages()) {
-        {
-          oprot.writeI32(struct.languages.size());
-          for (java.lang.String _iter76 : struct.languages)
-          {
-            oprot.writeString(_iter76);
-          }
-        }
-      }
+      oprot.writeI64(struct.conversationId);
+      oprot.writeBool(struct.unread);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Follower struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, EditConversation struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.accountId = iprot.readI64();
       struct.setAccountIdIsSet(true);
-      struct.showBoosts = iprot.readBool();
-      struct.setShowBoostsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        {
-          org.apache.thrift.protocol.TList _list77 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.languages = new java.util.ArrayList<java.lang.String>(_list77.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem78;
-          for (int _i79 = 0; _i79 < _list77.size; ++_i79)
-          {
-            _elem78 = iprot.readString();
-            struct.languages.add(_elem78);
-          }
-        }
-        struct.setLanguagesIsSet(true);
-      }
+      struct.conversationId = iprot.readI64();
+      struct.setConversationIdIsSet(true);
+      struct.unread = iprot.readBool();
+      struct.setUnreadIsSet(true);
     }
   }
 

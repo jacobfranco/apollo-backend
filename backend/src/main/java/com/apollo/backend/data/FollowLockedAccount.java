@@ -7,25 +7,34 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fields>, java.io.Serializable, Cloneable, Comparable<Follower> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Follower");
+public class FollowLockedAccount implements org.apache.thrift.TBase<FollowLockedAccount, FollowLockedAccount._Fields>, java.io.Serializable, Cloneable, Comparable<FollowLockedAccount> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FollowLockedAccount");
 
   private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField SHOW_BOOSTS_FIELD_DESC = new org.apache.thrift.protocol.TField("showBoosts", org.apache.thrift.protocol.TType.BOOL, (short)2);
-  private static final org.apache.thrift.protocol.TField LANGUAGES_FIELD_DESC = new org.apache.thrift.protocol.TField("languages", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField REQUESTER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("requesterId", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField SHOW_BOOSTS_FIELD_DESC = new org.apache.thrift.protocol.TField("showBoosts", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField NOTIFY_FIELD_DESC = new org.apache.thrift.protocol.TField("notify", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField LANGUAGES_FIELD_DESC = new org.apache.thrift.protocol.TField("languages", org.apache.thrift.protocol.TType.LIST, (short)6);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FollowerStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FollowerTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FollowLockedAccountStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FollowLockedAccountTupleSchemeFactory();
 
   public long accountId; // required
-  public boolean showBoosts; // required
+  public long requesterId; // required
+  public long timestamp; // required
+  public boolean showBoosts; // optional
+  public boolean notify; // optional
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ACCOUNT_ID((short)1, "accountId"),
-    SHOW_BOOSTS((short)2, "showBoosts"),
-    LANGUAGES((short)3, "languages");
+    REQUESTER_ID((short)2, "requesterId"),
+    TIMESTAMP((short)3, "timestamp"),
+    SHOW_BOOSTS((short)4, "showBoosts"),
+    NOTIFY((short)5, "notify"),
+    LANGUAGES((short)6, "languages");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,9 +52,15 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       switch(fieldId) {
         case 1: // ACCOUNT_ID
           return ACCOUNT_ID;
-        case 2: // SHOW_BOOSTS
+        case 2: // REQUESTER_ID
+          return REQUESTER_ID;
+        case 3: // TIMESTAMP
+          return TIMESTAMP;
+        case 4: // SHOW_BOOSTS
           return SHOW_BOOSTS;
-        case 3: // LANGUAGES
+        case 5: // NOTIFY
+          return NOTIFY;
+        case 6: // LANGUAGES
           return LANGUAGES;
         default:
           return null;
@@ -91,44 +106,59 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   // isset id assignments
   private static final int __ACCOUNTID_ISSET_ID = 0;
-  private static final int __SHOWBOOSTS_ISSET_ID = 1;
+  private static final int __REQUESTERID_ISSET_ID = 1;
+  private static final int __TIMESTAMP_ISSET_ID = 2;
+  private static final int __SHOWBOOSTS_ISSET_ID = 3;
+  private static final int __NOTIFY_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.LANGUAGES};
+  private static final _Fields optionals[] = {_Fields.SHOW_BOOSTS,_Fields.NOTIFY,_Fields.LANGUAGES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.SHOW_BOOSTS, new org.apache.thrift.meta_data.FieldMetaData("showBoosts", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.REQUESTER_ID, new org.apache.thrift.meta_data.FieldMetaData("requesterId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
+    tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
+    tmpMap.put(_Fields.SHOW_BOOSTS, new org.apache.thrift.meta_data.FieldMetaData("showBoosts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.NOTIFY, new org.apache.thrift.meta_data.FieldMetaData("notify", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.LANGUAGES, new org.apache.thrift.meta_data.FieldMetaData("languages", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Follower.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FollowLockedAccount.class, metaDataMap);
   }
 
-  public Follower() {
+  public FollowLockedAccount() {
   }
 
-  public Follower(
+  public FollowLockedAccount(
     long accountId,
-    boolean showBoosts)
+    long requesterId,
+    long timestamp)
   {
     this();
     this.accountId = accountId;
     setAccountIdIsSet(true);
-    this.showBoosts = showBoosts;
-    setShowBoostsIsSet(true);
+    this.requesterId = requesterId;
+    setRequesterIdIsSet(true);
+    this.timestamp = timestamp;
+    setTimestampIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Follower(Follower other) {
+  public FollowLockedAccount(FollowLockedAccount other) {
     __isset_bitfield = other.__isset_bitfield;
     this.accountId = other.accountId;
+    this.requesterId = other.requesterId;
+    this.timestamp = other.timestamp;
     this.showBoosts = other.showBoosts;
+    this.notify = other.notify;
     if (other.isSetLanguages()) {
       java.util.List<java.lang.String> __this__languages = new java.util.ArrayList<java.lang.String>(other.languages);
       this.languages = __this__languages;
@@ -136,16 +166,22 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
   }
 
   @Override
-  public Follower deepCopy() {
-    return new Follower(this);
+  public FollowLockedAccount deepCopy() {
+    return new FollowLockedAccount(this);
   }
 
   @Override
   public void clear() {
     setAccountIdIsSet(false);
     this.accountId = 0;
+    setRequesterIdIsSet(false);
+    this.requesterId = 0;
+    setTimestampIsSet(false);
+    this.timestamp = 0;
     setShowBoostsIsSet(false);
     this.showBoosts = false;
+    setNotifyIsSet(false);
+    this.notify = false;
     this.languages = null;
   }
 
@@ -153,7 +189,7 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     return this.accountId;
   }
 
-  public Follower setAccountId(long accountId) {
+  public FollowLockedAccount setAccountId(long accountId) {
     this.accountId = accountId;
     setAccountIdIsSet(true);
     return this;
@@ -172,11 +208,57 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
+  public long getRequesterId() {
+    return this.requesterId;
+  }
+
+  public FollowLockedAccount setRequesterId(long requesterId) {
+    this.requesterId = requesterId;
+    setRequesterIdIsSet(true);
+    return this;
+  }
+
+  public void unsetRequesterId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __REQUESTERID_ISSET_ID);
+  }
+
+  /** Returns true if field requesterId is set (has been assigned a value) and false otherwise */
+  public boolean isSetRequesterId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __REQUESTERID_ISSET_ID);
+  }
+
+  public void setRequesterIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __REQUESTERID_ISSET_ID, value);
+  }
+
+  public long getTimestamp() {
+    return this.timestamp;
+  }
+
+  public FollowLockedAccount setTimestamp(long timestamp) {
+    this.timestamp = timestamp;
+    setTimestampIsSet(true);
+    return this;
+  }
+
+  public void unsetTimestamp() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
+  }
+
+  /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
+  public boolean isSetTimestamp() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
+  }
+
+  public void setTimestampIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
+  }
+
   public boolean isShowBoosts() {
     return this.showBoosts;
   }
 
-  public Follower setShowBoosts(boolean showBoosts) {
+  public FollowLockedAccount setShowBoosts(boolean showBoosts) {
     this.showBoosts = showBoosts;
     setShowBoostsIsSet(true);
     return this;
@@ -193,6 +275,29 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   public void setShowBoostsIsSet(boolean value) {
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID, value);
+  }
+
+  public boolean isNotify() {
+    return this.notify;
+  }
+
+  public FollowLockedAccount setNotify(boolean notify) {
+    this.notify = notify;
+    setNotifyIsSet(true);
+    return this;
+  }
+
+  public void unsetNotify() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __NOTIFY_ISSET_ID);
+  }
+
+  /** Returns true if field notify is set (has been assigned a value) and false otherwise */
+  public boolean isSetNotify() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __NOTIFY_ISSET_ID);
+  }
+
+  public void setNotifyIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __NOTIFY_ISSET_ID, value);
   }
 
   public int getLanguagesSize() {
@@ -216,7 +321,7 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     return this.languages;
   }
 
-  public Follower setLanguages(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages) {
+  public FollowLockedAccount setLanguages(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages) {
     this.languages = languages;
     return this;
   }
@@ -247,11 +352,35 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       }
       break;
 
+    case REQUESTER_ID:
+      if (value == null) {
+        unsetRequesterId();
+      } else {
+        setRequesterId((java.lang.Long)value);
+      }
+      break;
+
+    case TIMESTAMP:
+      if (value == null) {
+        unsetTimestamp();
+      } else {
+        setTimestamp((java.lang.Long)value);
+      }
+      break;
+
     case SHOW_BOOSTS:
       if (value == null) {
         unsetShowBoosts();
       } else {
         setShowBoosts((java.lang.Boolean)value);
+      }
+      break;
+
+    case NOTIFY:
+      if (value == null) {
+        unsetNotify();
+      } else {
+        setNotify((java.lang.Boolean)value);
       }
       break;
 
@@ -273,8 +402,17 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     case ACCOUNT_ID:
       return getAccountId();
 
+    case REQUESTER_ID:
+      return getRequesterId();
+
+    case TIMESTAMP:
+      return getTimestamp();
+
     case SHOW_BOOSTS:
       return isShowBoosts();
+
+    case NOTIFY:
+      return isNotify();
 
     case LANGUAGES:
       return getLanguages();
@@ -293,8 +431,14 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     switch (field) {
     case ACCOUNT_ID:
       return isSetAccountId();
+    case REQUESTER_ID:
+      return isSetRequesterId();
+    case TIMESTAMP:
+      return isSetTimestamp();
     case SHOW_BOOSTS:
       return isSetShowBoosts();
+    case NOTIFY:
+      return isSetNotify();
     case LANGUAGES:
       return isSetLanguages();
     }
@@ -303,12 +447,12 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Follower)
-      return this.equals((Follower)that);
+    if (that instanceof FollowLockedAccount)
+      return this.equals((FollowLockedAccount)that);
     return false;
   }
 
-  public boolean equals(Follower that) {
+  public boolean equals(FollowLockedAccount that) {
     if (that == null)
       return false;
     if (this == that)
@@ -323,12 +467,39 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
         return false;
     }
 
-    boolean this_present_showBoosts = true;
-    boolean that_present_showBoosts = true;
+    boolean this_present_requesterId = true;
+    boolean that_present_requesterId = true;
+    if (this_present_requesterId || that_present_requesterId) {
+      if (!(this_present_requesterId && that_present_requesterId))
+        return false;
+      if (this.requesterId != that.requesterId)
+        return false;
+    }
+
+    boolean this_present_timestamp = true;
+    boolean that_present_timestamp = true;
+    if (this_present_timestamp || that_present_timestamp) {
+      if (!(this_present_timestamp && that_present_timestamp))
+        return false;
+      if (this.timestamp != that.timestamp)
+        return false;
+    }
+
+    boolean this_present_showBoosts = true && this.isSetShowBoosts();
+    boolean that_present_showBoosts = true && that.isSetShowBoosts();
     if (this_present_showBoosts || that_present_showBoosts) {
       if (!(this_present_showBoosts && that_present_showBoosts))
         return false;
       if (this.showBoosts != that.showBoosts)
+        return false;
+    }
+
+    boolean this_present_notify = true && this.isSetNotify();
+    boolean that_present_notify = true && that.isSetNotify();
+    if (this_present_notify || that_present_notify) {
+      if (!(this_present_notify && that_present_notify))
+        return false;
+      if (this.notify != that.notify)
         return false;
     }
 
@@ -350,7 +521,17 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((showBoosts) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(requesterId);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
+
+    hashCode = hashCode * 8191 + ((isSetShowBoosts()) ? 131071 : 524287);
+    if (isSetShowBoosts())
+      hashCode = hashCode * 8191 + ((showBoosts) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetNotify()) ? 131071 : 524287);
+    if (isSetNotify())
+      hashCode = hashCode * 8191 + ((notify) ? 131071 : 524287);
 
     hashCode = hashCode * 8191 + ((isSetLanguages()) ? 131071 : 524287);
     if (isSetLanguages())
@@ -360,7 +541,7 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
   }
 
   @Override
-  public int compareTo(Follower other) {
+  public int compareTo(FollowLockedAccount other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -377,12 +558,42 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetRequesterId(), other.isSetRequesterId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRequesterId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.requesterId, other.requesterId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTimestamp(), other.isSetTimestamp());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTimestamp()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, other.timestamp);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = java.lang.Boolean.compare(isSetShowBoosts(), other.isSetShowBoosts());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetShowBoosts()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.showBoosts, other.showBoosts);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetNotify(), other.isSetNotify());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetNotify()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.notify, other.notify);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -418,16 +629,32 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Follower(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("FollowLockedAccount(");
     boolean first = true;
 
     sb.append("accountId:");
     sb.append(this.accountId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("showBoosts:");
-    sb.append(this.showBoosts);
+    sb.append("requesterId:");
+    sb.append(this.requesterId);
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("timestamp:");
+    sb.append(this.timestamp);
+    first = false;
+    if (isSetShowBoosts()) {
+      if (!first) sb.append(", ");
+      sb.append("showBoosts:");
+      sb.append(this.showBoosts);
+      first = false;
+    }
+    if (isSetNotify()) {
+      if (!first) sb.append(", ");
+      sb.append("notify:");
+      sb.append(this.notify);
+      first = false;
+    }
     if (isSetLanguages()) {
       if (!first) sb.append(", ");
       sb.append("languages:");
@@ -445,7 +672,8 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
-    // alas, we cannot check 'showBoosts' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'requesterId' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
   }
 
@@ -467,17 +695,17 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     }
   }
 
-  private static class FollowerStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FollowLockedAccountStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FollowerStandardScheme getScheme() {
-      return new FollowerStandardScheme();
+    public FollowLockedAccountStandardScheme getScheme() {
+      return new FollowLockedAccountStandardScheme();
     }
   }
 
-  private static class FollowerStandardScheme extends org.apache.thrift.scheme.StandardScheme<Follower> {
+  private static class FollowLockedAccountStandardScheme extends org.apache.thrift.scheme.StandardScheme<FollowLockedAccount> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Follower struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, FollowLockedAccount struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -495,7 +723,23 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SHOW_BOOSTS
+          case 2: // REQUESTER_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.requesterId = iprot.readI64();
+              struct.setRequesterIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // TIMESTAMP
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.timestamp = iprot.readI64();
+              struct.setTimestampIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // SHOW_BOOSTS
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.showBoosts = iprot.readBool();
               struct.setShowBoostsIsSet(true);
@@ -503,16 +747,24 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // LANGUAGES
+          case 5: // NOTIFY
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.notify = iprot.readBool();
+              struct.setNotifyIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // LANGUAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list72 = iprot.readListBegin();
-                struct.languages = new java.util.ArrayList<java.lang.String>(_list72.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem73;
-                for (int _i74 = 0; _i74 < _list72.size; ++_i74)
+                org.apache.thrift.protocol.TList _list36 = iprot.readListBegin();
+                struct.languages = new java.util.ArrayList<java.lang.String>(_list36.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem37;
+                for (int _i38 = 0; _i38 < _list36.size; ++_i38)
                 {
-                  _elem73 = iprot.readString();
-                  struct.languages.add(_elem73);
+                  _elem37 = iprot.readString();
+                  struct.languages.add(_elem37);
                 }
                 iprot.readListEnd();
               }
@@ -532,31 +784,47 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       if (!struct.isSetAccountId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'accountId' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetShowBoosts()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'showBoosts' was not found in serialized data! Struct: " + toString());
+      if (!struct.isSetRequesterId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'requesterId' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetTimestamp()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'timestamp' was not found in serialized data! Struct: " + toString());
       }
       struct.validate();
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Follower struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, FollowLockedAccount struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
       oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(SHOW_BOOSTS_FIELD_DESC);
-      oprot.writeBool(struct.showBoosts);
+      oprot.writeFieldBegin(REQUESTER_ID_FIELD_DESC);
+      oprot.writeI64(struct.requesterId);
       oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
+      oprot.writeI64(struct.timestamp);
+      oprot.writeFieldEnd();
+      if (struct.isSetShowBoosts()) {
+        oprot.writeFieldBegin(SHOW_BOOSTS_FIELD_DESC);
+        oprot.writeBool(struct.showBoosts);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetNotify()) {
+        oprot.writeFieldBegin(NOTIFY_FIELD_DESC);
+        oprot.writeBool(struct.notify);
+        oprot.writeFieldEnd();
+      }
       if (struct.languages != null) {
         if (struct.isSetLanguages()) {
           oprot.writeFieldBegin(LANGUAGES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.languages.size()));
-            for (java.lang.String _iter75 : struct.languages)
+            for (java.lang.String _iter39 : struct.languages)
             {
-              oprot.writeString(_iter75);
+              oprot.writeString(_iter39);
             }
             oprot.writeListEnd();
           }
@@ -569,53 +837,76 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   }
 
-  private static class FollowerTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FollowLockedAccountTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FollowerTupleScheme getScheme() {
-      return new FollowerTupleScheme();
+    public FollowLockedAccountTupleScheme getScheme() {
+      return new FollowLockedAccountTupleScheme();
     }
   }
 
-  private static class FollowerTupleScheme extends org.apache.thrift.scheme.TupleScheme<Follower> {
+  private static class FollowLockedAccountTupleScheme extends org.apache.thrift.scheme.TupleScheme<FollowLockedAccount> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Follower struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, FollowLockedAccount struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeI64(struct.accountId);
-      oprot.writeBool(struct.showBoosts);
+      oprot.writeI64(struct.requesterId);
+      oprot.writeI64(struct.timestamp);
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetLanguages()) {
+      if (struct.isSetShowBoosts()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetNotify()) {
+        optionals.set(1);
+      }
+      if (struct.isSetLanguages()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetShowBoosts()) {
+        oprot.writeBool(struct.showBoosts);
+      }
+      if (struct.isSetNotify()) {
+        oprot.writeBool(struct.notify);
+      }
       if (struct.isSetLanguages()) {
         {
           oprot.writeI32(struct.languages.size());
-          for (java.lang.String _iter76 : struct.languages)
+          for (java.lang.String _iter40 : struct.languages)
           {
-            oprot.writeString(_iter76);
+            oprot.writeString(_iter40);
           }
         }
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Follower struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, FollowLockedAccount struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.accountId = iprot.readI64();
       struct.setAccountIdIsSet(true);
-      struct.showBoosts = iprot.readBool();
-      struct.setShowBoostsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
+      struct.requesterId = iprot.readI64();
+      struct.setRequesterIdIsSet(true);
+      struct.timestamp = iprot.readI64();
+      struct.setTimestampIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
+        struct.showBoosts = iprot.readBool();
+        struct.setShowBoostsIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.notify = iprot.readBool();
+        struct.setNotifyIsSet(true);
+      }
+      if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list77 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.languages = new java.util.ArrayList<java.lang.String>(_list77.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem78;
-          for (int _i79 = 0; _i79 < _list77.size; ++_i79)
+          org.apache.thrift.protocol.TList _list41 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.languages = new java.util.ArrayList<java.lang.String>(_list41.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem42;
+          for (int _i43 = 0; _i43 < _list41.size; ++_i43)
           {
-            _elem78 = iprot.readString();
-            struct.languages.add(_elem78);
+            _elem42 = iprot.readString();
+            struct.languages.add(_elem42);
           }
         }
         struct.setLanguagesIsSet(true);

@@ -7,28 +7,28 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, java.io.Serializable, Cloneable, Comparable<Status> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Status");
+public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollowAccount, RemoveFollowAccount._Fields>, java.io.Serializable, Cloneable, Comparable<RemoveFollowAccount> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RemoveFollowAccount");
 
-  private static final org.apache.thrift.protocol.TField AUTHOR_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("authorId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField CONTENT_FIELD_DESC = new org.apache.thrift.protocol.TField("content", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField TARGET_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("targetId", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField LANGUAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("language", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField FOLLOWER_SHARED_INBOX_URL_FIELD_DESC = new org.apache.thrift.protocol.TField("followerSharedInboxUrl", org.apache.thrift.protocol.TType.STRING, (short)4);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new StatusStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new StatusTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new RemoveFollowAccountStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new RemoveFollowAccountTupleSchemeFactory();
 
-  public long authorId; // required
-  public @org.apache.thrift.annotation.Nullable StatusContent content; // required
+  public long accountId; // required
+  public long targetId; // required
   public long timestamp; // required
-  public @org.apache.thrift.annotation.Nullable java.lang.String language; // optional
+  public @org.apache.thrift.annotation.Nullable java.lang.String followerSharedInboxUrl; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    AUTHOR_ID((short)1, "authorId"),
-    CONTENT((short)2, "content"),
+    ACCOUNT_ID((short)1, "accountId"),
+    TARGET_ID((short)2, "targetId"),
     TIMESTAMP((short)3, "timestamp"),
-    LANGUAGE((short)4, "language");
+    FOLLOWER_SHARED_INBOX_URL((short)4, "followerSharedInboxUrl");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -44,14 +44,14 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // AUTHOR_ID
-          return AUTHOR_ID;
-        case 2: // CONTENT
-          return CONTENT;
+        case 1: // ACCOUNT_ID
+          return ACCOUNT_ID;
+        case 2: // TARGET_ID
+          return TARGET_ID;
         case 3: // TIMESTAMP
           return TIMESTAMP;
-        case 4: // LANGUAGE
-          return LANGUAGE;
+        case 4: // FOLLOWER_SHARED_INBOX_URL
+          return FOLLOWER_SHARED_INBOX_URL;
         default:
           return null;
       }
@@ -95,37 +95,39 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
   }
 
   // isset id assignments
-  private static final int __AUTHORID_ISSET_ID = 0;
-  private static final int __TIMESTAMP_ISSET_ID = 1;
+  private static final int __ACCOUNTID_ISSET_ID = 0;
+  private static final int __TARGETID_ISSET_ID = 1;
+  private static final int __TIMESTAMP_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.LANGUAGE};
+  private static final _Fields optionals[] = {_Fields.FOLLOWER_SHARED_INBOX_URL};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.AUTHOR_ID, new org.apache.thrift.meta_data.FieldMetaData("authorId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.CONTENT, new org.apache.thrift.meta_data.FieldMetaData("content", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StatusContent.class)));
+    tmpMap.put(_Fields.TARGET_ID, new org.apache.thrift.meta_data.FieldMetaData("targetId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
-    tmpMap.put(_Fields.LANGUAGE, new org.apache.thrift.meta_data.FieldMetaData("language", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.FOLLOWER_SHARED_INBOX_URL, new org.apache.thrift.meta_data.FieldMetaData("followerSharedInboxUrl", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Status.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RemoveFollowAccount.class, metaDataMap);
   }
 
-  public Status() {
+  public RemoveFollowAccount() {
   }
 
-  public Status(
-    long authorId,
-    StatusContent content,
+  public RemoveFollowAccount(
+    long accountId,
+    long targetId,
     long timestamp)
   {
     this();
-    this.authorId = authorId;
-    setAuthorIdIsSet(true);
-    this.content = content;
+    this.accountId = accountId;
+    setAccountIdIsSet(true);
+    this.targetId = targetId;
+    setTargetIdIsSet(true);
     this.timestamp = timestamp;
     setTimestampIsSet(true);
   }
@@ -133,86 +135,83 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Status(Status other) {
+  public RemoveFollowAccount(RemoveFollowAccount other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.authorId = other.authorId;
-    if (other.isSetContent()) {
-      this.content = new StatusContent(other.content);
-    }
+    this.accountId = other.accountId;
+    this.targetId = other.targetId;
     this.timestamp = other.timestamp;
-    if (other.isSetLanguage()) {
-      this.language = other.language;
+    if (other.isSetFollowerSharedInboxUrl()) {
+      this.followerSharedInboxUrl = other.followerSharedInboxUrl;
     }
   }
 
   @Override
-  public Status deepCopy() {
-    return new Status(this);
+  public RemoveFollowAccount deepCopy() {
+    return new RemoveFollowAccount(this);
   }
 
   @Override
   public void clear() {
-    setAuthorIdIsSet(false);
-    this.authorId = 0;
-    this.content = null;
+    setAccountIdIsSet(false);
+    this.accountId = 0;
+    setTargetIdIsSet(false);
+    this.targetId = 0;
     setTimestampIsSet(false);
     this.timestamp = 0;
-    this.language = null;
+    this.followerSharedInboxUrl = null;
   }
 
-  public long getAuthorId() {
-    return this.authorId;
+  public long getAccountId() {
+    return this.accountId;
   }
 
-  public Status setAuthorId(long authorId) {
-    this.authorId = authorId;
-    setAuthorIdIsSet(true);
+  public RemoveFollowAccount setAccountId(long accountId) {
+    this.accountId = accountId;
+    setAccountIdIsSet(true);
     return this;
   }
 
-  public void unsetAuthorId() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AUTHORID_ISSET_ID);
+  public void unsetAccountId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ACCOUNTID_ISSET_ID);
   }
 
-  /** Returns true if field authorId is set (has been assigned a value) and false otherwise */
-  public boolean isSetAuthorId() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AUTHORID_ISSET_ID);
+  /** Returns true if field accountId is set (has been assigned a value) and false otherwise */
+  public boolean isSetAccountId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ACCOUNTID_ISSET_ID);
   }
 
-  public void setAuthorIdIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AUTHORID_ISSET_ID, value);
+  public void setAccountIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public StatusContent getContent() {
-    return this.content;
+  public long getTargetId() {
+    return this.targetId;
   }
 
-  public Status setContent(@org.apache.thrift.annotation.Nullable StatusContent content) {
-    this.content = content;
+  public RemoveFollowAccount setTargetId(long targetId) {
+    this.targetId = targetId;
+    setTargetIdIsSet(true);
     return this;
   }
 
-  public void unsetContent() {
-    this.content = null;
+  public void unsetTargetId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TARGETID_ISSET_ID);
   }
 
-  /** Returns true if field content is set (has been assigned a value) and false otherwise */
-  public boolean isSetContent() {
-    return this.content != null;
+  /** Returns true if field targetId is set (has been assigned a value) and false otherwise */
+  public boolean isSetTargetId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TARGETID_ISSET_ID);
   }
 
-  public void setContentIsSet(boolean value) {
-    if (!value) {
-      this.content = null;
-    }
+  public void setTargetIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TARGETID_ISSET_ID, value);
   }
 
   public long getTimestamp() {
     return this.timestamp;
   }
 
-  public Status setTimestamp(long timestamp) {
+  public RemoveFollowAccount setTimestamp(long timestamp) {
     this.timestamp = timestamp;
     setTimestampIsSet(true);
     return this;
@@ -232,46 +231,46 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.lang.String getLanguage() {
-    return this.language;
+  public java.lang.String getFollowerSharedInboxUrl() {
+    return this.followerSharedInboxUrl;
   }
 
-  public Status setLanguage(@org.apache.thrift.annotation.Nullable java.lang.String language) {
-    this.language = language;
+  public RemoveFollowAccount setFollowerSharedInboxUrl(@org.apache.thrift.annotation.Nullable java.lang.String followerSharedInboxUrl) {
+    this.followerSharedInboxUrl = followerSharedInboxUrl;
     return this;
   }
 
-  public void unsetLanguage() {
-    this.language = null;
+  public void unsetFollowerSharedInboxUrl() {
+    this.followerSharedInboxUrl = null;
   }
 
-  /** Returns true if field language is set (has been assigned a value) and false otherwise */
-  public boolean isSetLanguage() {
-    return this.language != null;
+  /** Returns true if field followerSharedInboxUrl is set (has been assigned a value) and false otherwise */
+  public boolean isSetFollowerSharedInboxUrl() {
+    return this.followerSharedInboxUrl != null;
   }
 
-  public void setLanguageIsSet(boolean value) {
+  public void setFollowerSharedInboxUrlIsSet(boolean value) {
     if (!value) {
-      this.language = null;
+      this.followerSharedInboxUrl = null;
     }
   }
 
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case AUTHOR_ID:
+    case ACCOUNT_ID:
       if (value == null) {
-        unsetAuthorId();
+        unsetAccountId();
       } else {
-        setAuthorId((java.lang.Long)value);
+        setAccountId((java.lang.Long)value);
       }
       break;
 
-    case CONTENT:
+    case TARGET_ID:
       if (value == null) {
-        unsetContent();
+        unsetTargetId();
       } else {
-        setContent((StatusContent)value);
+        setTargetId((java.lang.Long)value);
       }
       break;
 
@@ -283,11 +282,11 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
       }
       break;
 
-    case LANGUAGE:
+    case FOLLOWER_SHARED_INBOX_URL:
       if (value == null) {
-        unsetLanguage();
+        unsetFollowerSharedInboxUrl();
       } else {
-        setLanguage((java.lang.String)value);
+        setFollowerSharedInboxUrl((java.lang.String)value);
       }
       break;
 
@@ -298,17 +297,17 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
   @Override
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case AUTHOR_ID:
-      return getAuthorId();
+    case ACCOUNT_ID:
+      return getAccountId();
 
-    case CONTENT:
-      return getContent();
+    case TARGET_ID:
+      return getTargetId();
 
     case TIMESTAMP:
       return getTimestamp();
 
-    case LANGUAGE:
-      return getLanguage();
+    case FOLLOWER_SHARED_INBOX_URL:
+      return getFollowerSharedInboxUrl();
 
     }
     throw new java.lang.IllegalStateException();
@@ -322,46 +321,46 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
     }
 
     switch (field) {
-    case AUTHOR_ID:
-      return isSetAuthorId();
-    case CONTENT:
-      return isSetContent();
+    case ACCOUNT_ID:
+      return isSetAccountId();
+    case TARGET_ID:
+      return isSetTargetId();
     case TIMESTAMP:
       return isSetTimestamp();
-    case LANGUAGE:
-      return isSetLanguage();
+    case FOLLOWER_SHARED_INBOX_URL:
+      return isSetFollowerSharedInboxUrl();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Status)
-      return this.equals((Status)that);
+    if (that instanceof RemoveFollowAccount)
+      return this.equals((RemoveFollowAccount)that);
     return false;
   }
 
-  public boolean equals(Status that) {
+  public boolean equals(RemoveFollowAccount that) {
     if (that == null)
       return false;
     if (this == that)
       return true;
 
-    boolean this_present_authorId = true;
-    boolean that_present_authorId = true;
-    if (this_present_authorId || that_present_authorId) {
-      if (!(this_present_authorId && that_present_authorId))
+    boolean this_present_accountId = true;
+    boolean that_present_accountId = true;
+    if (this_present_accountId || that_present_accountId) {
+      if (!(this_present_accountId && that_present_accountId))
         return false;
-      if (this.authorId != that.authorId)
+      if (this.accountId != that.accountId)
         return false;
     }
 
-    boolean this_present_content = true && this.isSetContent();
-    boolean that_present_content = true && that.isSetContent();
-    if (this_present_content || that_present_content) {
-      if (!(this_present_content && that_present_content))
+    boolean this_present_targetId = true;
+    boolean that_present_targetId = true;
+    if (this_present_targetId || that_present_targetId) {
+      if (!(this_present_targetId && that_present_targetId))
         return false;
-      if (!this.content.equals(that.content))
+      if (this.targetId != that.targetId)
         return false;
     }
 
@@ -374,12 +373,12 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
         return false;
     }
 
-    boolean this_present_language = true && this.isSetLanguage();
-    boolean that_present_language = true && that.isSetLanguage();
-    if (this_present_language || that_present_language) {
-      if (!(this_present_language && that_present_language))
+    boolean this_present_followerSharedInboxUrl = true && this.isSetFollowerSharedInboxUrl();
+    boolean that_present_followerSharedInboxUrl = true && that.isSetFollowerSharedInboxUrl();
+    if (this_present_followerSharedInboxUrl || that_present_followerSharedInboxUrl) {
+      if (!(this_present_followerSharedInboxUrl && that_present_followerSharedInboxUrl))
         return false;
-      if (!this.language.equals(that.language))
+      if (!this.followerSharedInboxUrl.equals(that.followerSharedInboxUrl))
         return false;
     }
 
@@ -390,45 +389,43 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(authorId);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((isSetContent()) ? 131071 : 524287);
-    if (isSetContent())
-      hashCode = hashCode * 8191 + content.hashCode();
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(targetId);
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
 
-    hashCode = hashCode * 8191 + ((isSetLanguage()) ? 131071 : 524287);
-    if (isSetLanguage())
-      hashCode = hashCode * 8191 + language.hashCode();
+    hashCode = hashCode * 8191 + ((isSetFollowerSharedInboxUrl()) ? 131071 : 524287);
+    if (isSetFollowerSharedInboxUrl())
+      hashCode = hashCode * 8191 + followerSharedInboxUrl.hashCode();
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(Status other) {
+  public int compareTo(RemoveFollowAccount other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetAuthorId(), other.isSetAuthorId());
+    lastComparison = java.lang.Boolean.compare(isSetAccountId(), other.isSetAccountId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAuthorId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.authorId, other.authorId);
+    if (isSetAccountId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.accountId, other.accountId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetContent(), other.isSetContent());
+    lastComparison = java.lang.Boolean.compare(isSetTargetId(), other.isSetTargetId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetContent()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.content, other.content);
+    if (isSetTargetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.targetId, other.targetId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -443,12 +440,12 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetLanguage(), other.isSetLanguage());
+    lastComparison = java.lang.Boolean.compare(isSetFollowerSharedInboxUrl(), other.isSetFollowerSharedInboxUrl());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLanguage()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.language, other.language);
+    if (isSetFollowerSharedInboxUrl()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.followerSharedInboxUrl, other.followerSharedInboxUrl);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -474,31 +471,27 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Status(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("RemoveFollowAccount(");
     boolean first = true;
 
-    sb.append("authorId:");
-    sb.append(this.authorId);
+    sb.append("accountId:");
+    sb.append(this.accountId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("content:");
-    if (this.content == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.content);
-    }
+    sb.append("targetId:");
+    sb.append(this.targetId);
     first = false;
     if (!first) sb.append(", ");
     sb.append("timestamp:");
     sb.append(this.timestamp);
     first = false;
-    if (isSetLanguage()) {
+    if (isSetFollowerSharedInboxUrl()) {
       if (!first) sb.append(", ");
-      sb.append("language:");
-      if (this.language == null) {
+      sb.append("followerSharedInboxUrl:");
+      if (this.followerSharedInboxUrl == null) {
         sb.append("null");
       } else {
-        sb.append(this.language);
+        sb.append(this.followerSharedInboxUrl);
       }
       first = false;
     }
@@ -508,10 +501,8 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    // alas, we cannot check 'authorId' because it's a primitive and you chose the non-beans generator.
-    if (content == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'content' was not present! Struct: " + toString());
-    }
+    // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'targetId' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
   }
@@ -534,17 +525,17 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
     }
   }
 
-  private static class StatusStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class RemoveFollowAccountStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public StatusStandardScheme getScheme() {
-      return new StatusStandardScheme();
+    public RemoveFollowAccountStandardScheme getScheme() {
+      return new RemoveFollowAccountStandardScheme();
     }
   }
 
-  private static class StatusStandardScheme extends org.apache.thrift.scheme.StandardScheme<Status> {
+  private static class RemoveFollowAccountStandardScheme extends org.apache.thrift.scheme.StandardScheme<RemoveFollowAccount> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Status struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, RemoveFollowAccount struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -554,19 +545,18 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
           break;
         }
         switch (schemeField.id) {
-          case 1: // AUTHOR_ID
+          case 1: // ACCOUNT_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.authorId = iprot.readI64();
-              struct.setAuthorIdIsSet(true);
+              struct.accountId = iprot.readI64();
+              struct.setAccountIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // CONTENT
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.content = new StatusContent();
-              struct.content.read(iprot);
-              struct.setContentIsSet(true);
+          case 2: // TARGET_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.targetId = iprot.readI64();
+              struct.setTargetIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -579,10 +569,10 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // LANGUAGE
+          case 4: // FOLLOWER_SHARED_INBOX_URL
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.language = iprot.readString();
-              struct.setLanguageIsSet(true);
+              struct.followerSharedInboxUrl = iprot.readString();
+              struct.setFollowerSharedInboxUrlIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -595,8 +585,11 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
       iprot.readStructEnd();
 
       // check for required fields of primitive type, which can't be checked in the validate method
-      if (!struct.isSetAuthorId()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'authorId' was not found in serialized data! Struct: " + toString());
+      if (!struct.isSetAccountId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'accountId' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetTargetId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'targetId' was not found in serialized data! Struct: " + toString());
       }
       if (!struct.isSetTimestamp()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'timestamp' was not found in serialized data! Struct: " + toString());
@@ -605,25 +598,23 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Status struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, RemoveFollowAccount struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(AUTHOR_ID_FIELD_DESC);
-      oprot.writeI64(struct.authorId);
+      oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
+      oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      if (struct.content != null) {
-        oprot.writeFieldBegin(CONTENT_FIELD_DESC);
-        struct.content.write(oprot);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(TARGET_ID_FIELD_DESC);
+      oprot.writeI64(struct.targetId);
+      oprot.writeFieldEnd();
       oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
-      if (struct.language != null) {
-        if (struct.isSetLanguage()) {
-          oprot.writeFieldBegin(LANGUAGE_FIELD_DESC);
-          oprot.writeString(struct.language);
+      if (struct.followerSharedInboxUrl != null) {
+        if (struct.isSetFollowerSharedInboxUrl()) {
+          oprot.writeFieldBegin(FOLLOWER_SHARED_INBOX_URL_FIELD_DESC);
+          oprot.writeString(struct.followerSharedInboxUrl);
           oprot.writeFieldEnd();
         }
       }
@@ -633,45 +624,44 @@ public class Status implements org.apache.thrift.TBase<Status, Status._Fields>, 
 
   }
 
-  private static class StatusTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class RemoveFollowAccountTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public StatusTupleScheme getScheme() {
-      return new StatusTupleScheme();
+    public RemoveFollowAccountTupleScheme getScheme() {
+      return new RemoveFollowAccountTupleScheme();
     }
   }
 
-  private static class StatusTupleScheme extends org.apache.thrift.scheme.TupleScheme<Status> {
+  private static class RemoveFollowAccountTupleScheme extends org.apache.thrift.scheme.TupleScheme<RemoveFollowAccount> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Status struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, RemoveFollowAccount struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeI64(struct.authorId);
-      struct.content.write(oprot);
+      oprot.writeI64(struct.accountId);
+      oprot.writeI64(struct.targetId);
       oprot.writeI64(struct.timestamp);
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetLanguage()) {
+      if (struct.isSetFollowerSharedInboxUrl()) {
         optionals.set(0);
       }
       oprot.writeBitSet(optionals, 1);
-      if (struct.isSetLanguage()) {
-        oprot.writeString(struct.language);
+      if (struct.isSetFollowerSharedInboxUrl()) {
+        oprot.writeString(struct.followerSharedInboxUrl);
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Status struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, RemoveFollowAccount struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.authorId = iprot.readI64();
-      struct.setAuthorIdIsSet(true);
-      struct.content = new StatusContent();
-      struct.content.read(iprot);
-      struct.setContentIsSet(true);
+      struct.accountId = iprot.readI64();
+      struct.setAccountIdIsSet(true);
+      struct.targetId = iprot.readI64();
+      struct.setTargetIdIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.language = iprot.readString();
-        struct.setLanguageIsSet(true);
+        struct.followerSharedInboxUrl = iprot.readString();
+        struct.setFollowerSharedInboxUrlIsSet(true);
       }
     }
   }

@@ -7,28 +7,22 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, MatchingFilter._Fields>, java.io.Serializable, Cloneable, Comparable<MatchingFilter> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("MatchingFilter");
+public class FilterWithId implements org.apache.thrift.TBase<FilterWithId, FilterWithId._Fields>, java.io.Serializable, Cloneable, Comparable<FilterWithId> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FilterWithId");
 
   private static final org.apache.thrift.protocol.TField FILTER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("filterId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("filter", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-  private static final org.apache.thrift.protocol.TField KEYWORD_MATCHES_FIELD_DESC = new org.apache.thrift.protocol.TField("keywordMatches", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField STATUS_FILTER_MATCH_FIELD_DESC = new org.apache.thrift.protocol.TField("statusFilterMatch", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new MatchingFilterStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new MatchingFilterTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FilterWithIdStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FilterWithIdTupleSchemeFactory();
 
   public long filterId; // required
   public @org.apache.thrift.annotation.Nullable Filter filter; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<KeywordFilter> keywordMatches; // required
-  public boolean statusFilterMatch; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FILTER_ID((short)1, "filterId"),
-    FILTER((short)2, "filter"),
-    KEYWORD_MATCHES((short)3, "keywordMatches"),
-    STATUS_FILTER_MATCH((short)4, "statusFilterMatch");
+    FILTER((short)2, "filter");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -48,10 +42,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
           return FILTER_ID;
         case 2: // FILTER
           return FILTER;
-        case 3: // KEYWORD_MATCHES
-          return KEYWORD_MATCHES;
-        case 4: // STATUS_FILTER_MATCH
-          return STATUS_FILTER_MATCH;
         default:
           return null;
       }
@@ -96,7 +86,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
 
   // isset id assignments
   private static final int __FILTERID_ISSET_ID = 0;
-  private static final int __STATUSFILTERMATCH_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -105,55 +94,37 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "FilterId")));
     tmpMap.put(_Fields.FILTER, new org.apache.thrift.meta_data.FieldMetaData("filter", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Filter.class)));
-    tmpMap.put(_Fields.KEYWORD_MATCHES, new org.apache.thrift.meta_data.FieldMetaData("keywordMatches", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, KeywordFilter.class))));
-    tmpMap.put(_Fields.STATUS_FILTER_MATCH, new org.apache.thrift.meta_data.FieldMetaData("statusFilterMatch", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(MatchingFilter.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FilterWithId.class, metaDataMap);
   }
 
-  public MatchingFilter() {
+  public FilterWithId() {
   }
 
-  public MatchingFilter(
+  public FilterWithId(
     long filterId,
-    Filter filter,
-    java.util.List<KeywordFilter> keywordMatches,
-    boolean statusFilterMatch)
+    Filter filter)
   {
     this();
     this.filterId = filterId;
     setFilterIdIsSet(true);
     this.filter = filter;
-    this.keywordMatches = keywordMatches;
-    this.statusFilterMatch = statusFilterMatch;
-    setStatusFilterMatchIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public MatchingFilter(MatchingFilter other) {
+  public FilterWithId(FilterWithId other) {
     __isset_bitfield = other.__isset_bitfield;
     this.filterId = other.filterId;
     if (other.isSetFilter()) {
       this.filter = new Filter(other.filter);
     }
-    if (other.isSetKeywordMatches()) {
-      java.util.List<KeywordFilter> __this__keywordMatches = new java.util.ArrayList<KeywordFilter>(other.keywordMatches.size());
-      for (KeywordFilter other_element : other.keywordMatches) {
-        __this__keywordMatches.add(new KeywordFilter(other_element));
-      }
-      this.keywordMatches = __this__keywordMatches;
-    }
-    this.statusFilterMatch = other.statusFilterMatch;
   }
 
   @Override
-  public MatchingFilter deepCopy() {
-    return new MatchingFilter(this);
+  public FilterWithId deepCopy() {
+    return new FilterWithId(this);
   }
 
   @Override
@@ -161,16 +132,13 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
     setFilterIdIsSet(false);
     this.filterId = 0;
     this.filter = null;
-    this.keywordMatches = null;
-    setStatusFilterMatchIsSet(false);
-    this.statusFilterMatch = false;
   }
 
   public long getFilterId() {
     return this.filterId;
   }
 
-  public MatchingFilter setFilterId(long filterId) {
+  public FilterWithId setFilterId(long filterId) {
     this.filterId = filterId;
     setFilterIdIsSet(true);
     return this;
@@ -194,7 +162,7 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
     return this.filter;
   }
 
-  public MatchingFilter setFilter(@org.apache.thrift.annotation.Nullable Filter filter) {
+  public FilterWithId setFilter(@org.apache.thrift.annotation.Nullable Filter filter) {
     this.filter = filter;
     return this;
   }
@@ -212,70 +180,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
     if (!value) {
       this.filter = null;
     }
-  }
-
-  public int getKeywordMatchesSize() {
-    return (this.keywordMatches == null) ? 0 : this.keywordMatches.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<KeywordFilter> getKeywordMatchesIterator() {
-    return (this.keywordMatches == null) ? null : this.keywordMatches.iterator();
-  }
-
-  public void addToKeywordMatches(KeywordFilter elem) {
-    if (this.keywordMatches == null) {
-      this.keywordMatches = new java.util.ArrayList<KeywordFilter>();
-    }
-    this.keywordMatches.add(elem);
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<KeywordFilter> getKeywordMatches() {
-    return this.keywordMatches;
-  }
-
-  public MatchingFilter setKeywordMatches(@org.apache.thrift.annotation.Nullable java.util.List<KeywordFilter> keywordMatches) {
-    this.keywordMatches = keywordMatches;
-    return this;
-  }
-
-  public void unsetKeywordMatches() {
-    this.keywordMatches = null;
-  }
-
-  /** Returns true if field keywordMatches is set (has been assigned a value) and false otherwise */
-  public boolean isSetKeywordMatches() {
-    return this.keywordMatches != null;
-  }
-
-  public void setKeywordMatchesIsSet(boolean value) {
-    if (!value) {
-      this.keywordMatches = null;
-    }
-  }
-
-  public boolean isStatusFilterMatch() {
-    return this.statusFilterMatch;
-  }
-
-  public MatchingFilter setStatusFilterMatch(boolean statusFilterMatch) {
-    this.statusFilterMatch = statusFilterMatch;
-    setStatusFilterMatchIsSet(true);
-    return this;
-  }
-
-  public void unsetStatusFilterMatch() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __STATUSFILTERMATCH_ISSET_ID);
-  }
-
-  /** Returns true if field statusFilterMatch is set (has been assigned a value) and false otherwise */
-  public boolean isSetStatusFilterMatch() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __STATUSFILTERMATCH_ISSET_ID);
-  }
-
-  public void setStatusFilterMatchIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __STATUSFILTERMATCH_ISSET_ID, value);
   }
 
   @Override
@@ -297,22 +201,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
       }
       break;
 
-    case KEYWORD_MATCHES:
-      if (value == null) {
-        unsetKeywordMatches();
-      } else {
-        setKeywordMatches((java.util.List<KeywordFilter>)value);
-      }
-      break;
-
-    case STATUS_FILTER_MATCH:
-      if (value == null) {
-        unsetStatusFilterMatch();
-      } else {
-        setStatusFilterMatch((java.lang.Boolean)value);
-      }
-      break;
-
     }
   }
 
@@ -325,12 +213,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
 
     case FILTER:
       return getFilter();
-
-    case KEYWORD_MATCHES:
-      return getKeywordMatches();
-
-    case STATUS_FILTER_MATCH:
-      return isStatusFilterMatch();
 
     }
     throw new java.lang.IllegalStateException();
@@ -348,22 +230,18 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
       return isSetFilterId();
     case FILTER:
       return isSetFilter();
-    case KEYWORD_MATCHES:
-      return isSetKeywordMatches();
-    case STATUS_FILTER_MATCH:
-      return isSetStatusFilterMatch();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof MatchingFilter)
-      return this.equals((MatchingFilter)that);
+    if (that instanceof FilterWithId)
+      return this.equals((FilterWithId)that);
     return false;
   }
 
-  public boolean equals(MatchingFilter that) {
+  public boolean equals(FilterWithId that) {
     if (that == null)
       return false;
     if (this == that)
@@ -387,24 +265,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
         return false;
     }
 
-    boolean this_present_keywordMatches = true && this.isSetKeywordMatches();
-    boolean that_present_keywordMatches = true && that.isSetKeywordMatches();
-    if (this_present_keywordMatches || that_present_keywordMatches) {
-      if (!(this_present_keywordMatches && that_present_keywordMatches))
-        return false;
-      if (!this.keywordMatches.equals(that.keywordMatches))
-        return false;
-    }
-
-    boolean this_present_statusFilterMatch = true;
-    boolean that_present_statusFilterMatch = true;
-    if (this_present_statusFilterMatch || that_present_statusFilterMatch) {
-      if (!(this_present_statusFilterMatch && that_present_statusFilterMatch))
-        return false;
-      if (this.statusFilterMatch != that.statusFilterMatch)
-        return false;
-    }
-
     return true;
   }
 
@@ -418,17 +278,11 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
     if (isSetFilter())
       hashCode = hashCode * 8191 + filter.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetKeywordMatches()) ? 131071 : 524287);
-    if (isSetKeywordMatches())
-      hashCode = hashCode * 8191 + keywordMatches.hashCode();
-
-    hashCode = hashCode * 8191 + ((statusFilterMatch) ? 131071 : 524287);
-
     return hashCode;
   }
 
   @Override
-  public int compareTo(MatchingFilter other) {
+  public int compareTo(FilterWithId other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -455,26 +309,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetKeywordMatches(), other.isSetKeywordMatches());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetKeywordMatches()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keywordMatches, other.keywordMatches);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetStatusFilterMatch(), other.isSetStatusFilterMatch());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetStatusFilterMatch()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.statusFilterMatch, other.statusFilterMatch);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -496,7 +330,7 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("MatchingFilter(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("FilterWithId(");
     boolean first = true;
 
     sb.append("filterId:");
@@ -510,18 +344,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
       sb.append(this.filter);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("keywordMatches:");
-    if (this.keywordMatches == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.keywordMatches);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("statusFilterMatch:");
-    sb.append(this.statusFilterMatch);
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -532,10 +354,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
     if (filter == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'filter' was not present! Struct: " + toString());
     }
-    if (keywordMatches == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'keywordMatches' was not present! Struct: " + toString());
-    }
-    // alas, we cannot check 'statusFilterMatch' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
     if (filter != null) {
       filter.validate();
@@ -560,17 +378,17 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
     }
   }
 
-  private static class MatchingFilterStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FilterWithIdStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public MatchingFilterStandardScheme getScheme() {
-      return new MatchingFilterStandardScheme();
+    public FilterWithIdStandardScheme getScheme() {
+      return new FilterWithIdStandardScheme();
     }
   }
 
-  private static class MatchingFilterStandardScheme extends org.apache.thrift.scheme.StandardScheme<MatchingFilter> {
+  private static class FilterWithIdStandardScheme extends org.apache.thrift.scheme.StandardScheme<FilterWithId> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, MatchingFilter struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, FilterWithId struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -597,33 +415,6 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // KEYWORD_MATCHES
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list158 = iprot.readListBegin();
-                struct.keywordMatches = new java.util.ArrayList<KeywordFilter>(_list158.size);
-                @org.apache.thrift.annotation.Nullable KeywordFilter _elem159;
-                for (int _i160 = 0; _i160 < _list158.size; ++_i160)
-                {
-                  _elem159 = new KeywordFilter();
-                  _elem159.read(iprot);
-                  struct.keywordMatches.add(_elem159);
-                }
-                iprot.readListEnd();
-              }
-              struct.setKeywordMatchesIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 4: // STATUS_FILTER_MATCH
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.statusFilterMatch = iprot.readBool();
-              struct.setStatusFilterMatchIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -635,14 +426,11 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
       if (!struct.isSetFilterId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'filterId' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetStatusFilterMatch()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'statusFilterMatch' was not found in serialized data! Struct: " + toString());
-      }
       struct.validate();
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, MatchingFilter struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, FilterWithId struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -654,73 +442,36 @@ public class MatchingFilter implements org.apache.thrift.TBase<MatchingFilter, M
         struct.filter.write(oprot);
         oprot.writeFieldEnd();
       }
-      if (struct.keywordMatches != null) {
-        oprot.writeFieldBegin(KEYWORD_MATCHES_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.keywordMatches.size()));
-          for (KeywordFilter _iter161 : struct.keywordMatches)
-          {
-            _iter161.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldBegin(STATUS_FILTER_MATCH_FIELD_DESC);
-      oprot.writeBool(struct.statusFilterMatch);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
   }
 
-  private static class MatchingFilterTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class FilterWithIdTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public MatchingFilterTupleScheme getScheme() {
-      return new MatchingFilterTupleScheme();
+    public FilterWithIdTupleScheme getScheme() {
+      return new FilterWithIdTupleScheme();
     }
   }
 
-  private static class MatchingFilterTupleScheme extends org.apache.thrift.scheme.TupleScheme<MatchingFilter> {
+  private static class FilterWithIdTupleScheme extends org.apache.thrift.scheme.TupleScheme<FilterWithId> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, MatchingFilter struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, FilterWithId struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeI64(struct.filterId);
       struct.filter.write(oprot);
-      {
-        oprot.writeI32(struct.keywordMatches.size());
-        for (KeywordFilter _iter162 : struct.keywordMatches)
-        {
-          _iter162.write(oprot);
-        }
-      }
-      oprot.writeBool(struct.statusFilterMatch);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, MatchingFilter struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, FilterWithId struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.filterId = iprot.readI64();
       struct.setFilterIdIsSet(true);
       struct.filter = new Filter();
       struct.filter.read(iprot);
       struct.setFilterIsSet(true);
-      {
-        org.apache.thrift.protocol.TList _list163 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.keywordMatches = new java.util.ArrayList<KeywordFilter>(_list163.size);
-        @org.apache.thrift.annotation.Nullable KeywordFilter _elem164;
-        for (int _i165 = 0; _i165 < _list163.size; ++_i165)
-        {
-          _elem164 = new KeywordFilter();
-          _elem164.read(iprot);
-          struct.keywordMatches.add(_elem164);
-        }
-      }
-      struct.setKeywordMatchesIsSet(true);
-      struct.statusFilterMatch = iprot.readBool();
-      struct.setStatusFilterMatchIsSet(true);
     }
   }
 

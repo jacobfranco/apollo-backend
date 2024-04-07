@@ -16,7 +16,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
   private static final org.apache.thrift.protocol.TField SHOW_BOOSTS_FIELD_DESC = new org.apache.thrift.protocol.TField("showBoosts", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField NOTIFY_FIELD_DESC = new org.apache.thrift.protocol.TField("notify", org.apache.thrift.protocol.TType.BOOL, (short)5);
   private static final org.apache.thrift.protocol.TField LANGUAGES_FIELD_DESC = new org.apache.thrift.protocol.TField("languages", org.apache.thrift.protocol.TType.LIST, (short)6);
-  private static final org.apache.thrift.protocol.TField FOLLOWER_SHARED_INBOX_URL_FIELD_DESC = new org.apache.thrift.protocol.TField("followerSharedInboxUrl", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FollowAccountStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FollowAccountTupleSchemeFactory();
@@ -27,7 +26,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
   public boolean showBoosts; // optional
   public boolean notify; // optional
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages; // optional
-  public @org.apache.thrift.annotation.Nullable java.lang.String followerSharedInboxUrl; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -36,8 +34,7 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
     TIMESTAMP((short)3, "timestamp"),
     SHOW_BOOSTS((short)4, "showBoosts"),
     NOTIFY((short)5, "notify"),
-    LANGUAGES((short)6, "languages"),
-    FOLLOWER_SHARED_INBOX_URL((short)7, "followerSharedInboxUrl");
+    LANGUAGES((short)6, "languages");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -65,8 +62,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
           return NOTIFY;
         case 6: // LANGUAGES
           return LANGUAGES;
-        case 7: // FOLLOWER_SHARED_INBOX_URL
-          return FOLLOWER_SHARED_INBOX_URL;
         default:
           return null;
       }
@@ -116,7 +111,7 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
   private static final int __SHOWBOOSTS_ISSET_ID = 3;
   private static final int __NOTIFY_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.SHOW_BOOSTS,_Fields.NOTIFY,_Fields.LANGUAGES,_Fields.FOLLOWER_SHARED_INBOX_URL};
+  private static final _Fields optionals[] = {_Fields.SHOW_BOOSTS,_Fields.NOTIFY,_Fields.LANGUAGES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -133,8 +128,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
     tmpMap.put(_Fields.LANGUAGES, new org.apache.thrift.meta_data.FieldMetaData("languages", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.FOLLOWER_SHARED_INBOX_URL, new org.apache.thrift.meta_data.FieldMetaData("followerSharedInboxUrl", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FollowAccount.class, metaDataMap);
   }
@@ -170,9 +163,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
       java.util.List<java.lang.String> __this__languages = new java.util.ArrayList<java.lang.String>(other.languages);
       this.languages = __this__languages;
     }
-    if (other.isSetFollowerSharedInboxUrl()) {
-      this.followerSharedInboxUrl = other.followerSharedInboxUrl;
-    }
   }
 
   @Override
@@ -193,7 +183,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
     setNotifyIsSet(false);
     this.notify = false;
     this.languages = null;
-    this.followerSharedInboxUrl = null;
   }
 
   public long getAccountId() {
@@ -352,31 +341,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getFollowerSharedInboxUrl() {
-    return this.followerSharedInboxUrl;
-  }
-
-  public FollowAccount setFollowerSharedInboxUrl(@org.apache.thrift.annotation.Nullable java.lang.String followerSharedInboxUrl) {
-    this.followerSharedInboxUrl = followerSharedInboxUrl;
-    return this;
-  }
-
-  public void unsetFollowerSharedInboxUrl() {
-    this.followerSharedInboxUrl = null;
-  }
-
-  /** Returns true if field followerSharedInboxUrl is set (has been assigned a value) and false otherwise */
-  public boolean isSetFollowerSharedInboxUrl() {
-    return this.followerSharedInboxUrl != null;
-  }
-
-  public void setFollowerSharedInboxUrlIsSet(boolean value) {
-    if (!value) {
-      this.followerSharedInboxUrl = null;
-    }
-  }
-
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -428,14 +392,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
       }
       break;
 
-    case FOLLOWER_SHARED_INBOX_URL:
-      if (value == null) {
-        unsetFollowerSharedInboxUrl();
-      } else {
-        setFollowerSharedInboxUrl((java.lang.String)value);
-      }
-      break;
-
     }
   }
 
@@ -461,9 +417,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
     case LANGUAGES:
       return getLanguages();
 
-    case FOLLOWER_SHARED_INBOX_URL:
-      return getFollowerSharedInboxUrl();
-
     }
     throw new java.lang.IllegalStateException();
   }
@@ -488,8 +441,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
       return isSetNotify();
     case LANGUAGES:
       return isSetLanguages();
-    case FOLLOWER_SHARED_INBOX_URL:
-      return isSetFollowerSharedInboxUrl();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -561,15 +512,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
         return false;
     }
 
-    boolean this_present_followerSharedInboxUrl = true && this.isSetFollowerSharedInboxUrl();
-    boolean that_present_followerSharedInboxUrl = true && that.isSetFollowerSharedInboxUrl();
-    if (this_present_followerSharedInboxUrl || that_present_followerSharedInboxUrl) {
-      if (!(this_present_followerSharedInboxUrl && that_present_followerSharedInboxUrl))
-        return false;
-      if (!this.followerSharedInboxUrl.equals(that.followerSharedInboxUrl))
-        return false;
-    }
-
     return true;
   }
 
@@ -594,10 +536,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
     hashCode = hashCode * 8191 + ((isSetLanguages()) ? 131071 : 524287);
     if (isSetLanguages())
       hashCode = hashCode * 8191 + languages.hashCode();
-
-    hashCode = hashCode * 8191 + ((isSetFollowerSharedInboxUrl()) ? 131071 : 524287);
-    if (isSetFollowerSharedInboxUrl())
-      hashCode = hashCode * 8191 + followerSharedInboxUrl.hashCode();
 
     return hashCode;
   }
@@ -670,16 +608,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetFollowerSharedInboxUrl(), other.isSetFollowerSharedInboxUrl());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFollowerSharedInboxUrl()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.followerSharedInboxUrl, other.followerSharedInboxUrl);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -734,16 +662,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
         sb.append("null");
       } else {
         sb.append(this.languages);
-      }
-      first = false;
-    }
-    if (isSetFollowerSharedInboxUrl()) {
-      if (!first) sb.append(", ");
-      sb.append("followerSharedInboxUrl:");
-      if (this.followerSharedInboxUrl == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.followerSharedInboxUrl);
       }
       first = false;
     }
@@ -855,14 +773,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // FOLLOWER_SHARED_INBOX_URL
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.followerSharedInboxUrl = iprot.readString();
-              struct.setFollowerSharedInboxUrlIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -921,13 +831,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
           oprot.writeFieldEnd();
         }
       }
-      if (struct.followerSharedInboxUrl != null) {
-        if (struct.isSetFollowerSharedInboxUrl()) {
-          oprot.writeFieldBegin(FOLLOWER_SHARED_INBOX_URL_FIELD_DESC);
-          oprot.writeString(struct.followerSharedInboxUrl);
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -959,10 +862,7 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
       if (struct.isSetLanguages()) {
         optionals.set(2);
       }
-      if (struct.isSetFollowerSharedInboxUrl()) {
-        optionals.set(3);
-      }
-      oprot.writeBitSet(optionals, 4);
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetShowBoosts()) {
         oprot.writeBool(struct.showBoosts);
       }
@@ -978,9 +878,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
           }
         }
       }
-      if (struct.isSetFollowerSharedInboxUrl()) {
-        oprot.writeString(struct.followerSharedInboxUrl);
-      }
     }
 
     @Override
@@ -992,7 +889,7 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
       struct.setTargetIdIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(4);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.showBoosts = iprot.readBool();
         struct.setShowBoostsIsSet(true);
@@ -1013,10 +910,6 @@ public class FollowAccount implements org.apache.thrift.TBase<FollowAccount, Fol
           }
         }
         struct.setLanguagesIsSet(true);
-      }
-      if (incoming.get(3)) {
-        struct.followerSharedInboxUrl = iprot.readString();
-        struct.setFollowerSharedInboxUrlIsSet(true);
       }
     }
   }

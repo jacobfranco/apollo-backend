@@ -16,7 +16,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)4);
   private static final org.apache.thrift.protocol.TField EDIT_TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("editTimestamp", org.apache.thrift.protocol.TType.I64, (short)5);
   private static final org.apache.thrift.protocol.TField POLL_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("pollInfo", org.apache.thrift.protocol.TType.STRUCT, (short)6);
-  private static final org.apache.thrift.protocol.TField REMOTE_URL_FIELD_DESC = new org.apache.thrift.protocol.TField("remoteUrl", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new StatusResultStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new StatusResultTupleSchemeFactory();
@@ -27,7 +26,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
   public long timestamp; // required
   public long editTimestamp; // optional
   public @org.apache.thrift.annotation.Nullable PollInfo pollInfo; // optional
-  public @org.apache.thrift.annotation.Nullable java.lang.String remoteUrl; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -36,8 +34,7 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
     METADATA((short)3, "metadata"),
     TIMESTAMP((short)4, "timestamp"),
     EDIT_TIMESTAMP((short)5, "editTimestamp"),
-    POLL_INFO((short)6, "pollInfo"),
-    REMOTE_URL((short)7, "remoteUrl");
+    POLL_INFO((short)6, "pollInfo");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -65,8 +62,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
           return EDIT_TIMESTAMP;
         case 6: // POLL_INFO
           return POLL_INFO;
-        case 7: // REMOTE_URL
-          return REMOTE_URL;
         default:
           return null;
       }
@@ -113,7 +108,7 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
   private static final int __TIMESTAMP_ISSET_ID = 0;
   private static final int __EDITTIMESTAMP_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.EDIT_TIMESTAMP,_Fields.POLL_INFO,_Fields.REMOTE_URL};
+  private static final _Fields optionals[] = {_Fields.EDIT_TIMESTAMP,_Fields.POLL_INFO};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -129,8 +124,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
     tmpMap.put(_Fields.POLL_INFO, new org.apache.thrift.meta_data.FieldMetaData("pollInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PollInfo.class)));
-    tmpMap.put(_Fields.REMOTE_URL, new org.apache.thrift.meta_data.FieldMetaData("remoteUrl", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StatusResult.class, metaDataMap);
   }
@@ -171,9 +164,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
     if (other.isSetPollInfo()) {
       this.pollInfo = new PollInfo(other.pollInfo);
     }
-    if (other.isSetRemoteUrl()) {
-      this.remoteUrl = other.remoteUrl;
-    }
   }
 
   @Override
@@ -191,7 +181,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
     setEditTimestampIsSet(false);
     this.editTimestamp = 0;
     this.pollInfo = null;
-    this.remoteUrl = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -340,31 +329,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getRemoteUrl() {
-    return this.remoteUrl;
-  }
-
-  public StatusResult setRemoteUrl(@org.apache.thrift.annotation.Nullable java.lang.String remoteUrl) {
-    this.remoteUrl = remoteUrl;
-    return this;
-  }
-
-  public void unsetRemoteUrl() {
-    this.remoteUrl = null;
-  }
-
-  /** Returns true if field remoteUrl is set (has been assigned a value) and false otherwise */
-  public boolean isSetRemoteUrl() {
-    return this.remoteUrl != null;
-  }
-
-  public void setRemoteUrlIsSet(boolean value) {
-    if (!value) {
-      this.remoteUrl = null;
-    }
-  }
-
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -416,14 +380,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
       }
       break;
 
-    case REMOTE_URL:
-      if (value == null) {
-        unsetRemoteUrl();
-      } else {
-        setRemoteUrl((java.lang.String)value);
-      }
-      break;
-
     }
   }
 
@@ -449,9 +405,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
     case POLL_INFO:
       return getPollInfo();
 
-    case REMOTE_URL:
-      return getRemoteUrl();
-
     }
     throw new java.lang.IllegalStateException();
   }
@@ -476,8 +429,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
       return isSetEditTimestamp();
     case POLL_INFO:
       return isSetPollInfo();
-    case REMOTE_URL:
-      return isSetRemoteUrl();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -549,15 +500,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
         return false;
     }
 
-    boolean this_present_remoteUrl = true && this.isSetRemoteUrl();
-    boolean that_present_remoteUrl = true && that.isSetRemoteUrl();
-    if (this_present_remoteUrl || that_present_remoteUrl) {
-      if (!(this_present_remoteUrl && that_present_remoteUrl))
-        return false;
-      if (!this.remoteUrl.equals(that.remoteUrl))
-        return false;
-    }
-
     return true;
   }
 
@@ -586,10 +528,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
     hashCode = hashCode * 8191 + ((isSetPollInfo()) ? 131071 : 524287);
     if (isSetPollInfo())
       hashCode = hashCode * 8191 + pollInfo.hashCode();
-
-    hashCode = hashCode * 8191 + ((isSetRemoteUrl()) ? 131071 : 524287);
-    if (isSetRemoteUrl())
-      hashCode = hashCode * 8191 + remoteUrl.hashCode();
 
     return hashCode;
   }
@@ -662,16 +600,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetRemoteUrl(), other.isSetRemoteUrl());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetRemoteUrl()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.remoteUrl, other.remoteUrl);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -736,16 +664,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
         sb.append("null");
       } else {
         sb.append(this.pollInfo);
-      }
-      first = false;
-    }
-    if (isSetRemoteUrl()) {
-      if (!first) sb.append(", ");
-      sb.append("remoteUrl:");
-      if (this.remoteUrl == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.remoteUrl);
       }
       first = false;
     }
@@ -867,14 +785,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // REMOTE_URL
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.remoteUrl = iprot.readString();
-              struct.setRemoteUrlIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -924,13 +834,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
           oprot.writeFieldEnd();
         }
       }
-      if (struct.remoteUrl != null) {
-        if (struct.isSetRemoteUrl()) {
-          oprot.writeFieldBegin(REMOTE_URL_FIELD_DESC);
-          oprot.writeString(struct.remoteUrl);
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -960,18 +863,12 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
       if (struct.isSetPollInfo()) {
         optionals.set(1);
       }
-      if (struct.isSetRemoteUrl()) {
-        optionals.set(2);
-      }
-      oprot.writeBitSet(optionals, 3);
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetEditTimestamp()) {
         oprot.writeI64(struct.editTimestamp);
       }
       if (struct.isSetPollInfo()) {
         struct.pollInfo.write(oprot);
-      }
-      if (struct.isSetRemoteUrl()) {
-        oprot.writeString(struct.remoteUrl);
       }
     }
 
@@ -989,7 +886,7 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
       struct.setMetadataIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.editTimestamp = iprot.readI64();
         struct.setEditTimestampIsSet(true);
@@ -998,10 +895,6 @@ public class StatusResult implements org.apache.thrift.TBase<StatusResult, Statu
         struct.pollInfo = new PollInfo();
         struct.pollInfo.read(iprot);
         struct.setPollInfoIsSet(true);
-      }
-      if (incoming.get(2)) {
-        struct.remoteUrl = iprot.readString();
-        struct.setRemoteUrlIsSet(true);
       }
     }
   }

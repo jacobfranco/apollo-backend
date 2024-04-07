@@ -11,12 +11,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StatusMetadata");
 
   private static final org.apache.thrift.protocol.TField FILTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("filters", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField FAVORITED_FIELD_DESC = new org.apache.thrift.protocol.TField("favorited", org.apache.thrift.protocol.TType.BOOL, (short)2);
+  private static final org.apache.thrift.protocol.TField LIKED_FIELD_DESC = new org.apache.thrift.protocol.TField("liked", org.apache.thrift.protocol.TType.BOOL, (short)2);
   private static final org.apache.thrift.protocol.TField BOOSTED_FIELD_DESC = new org.apache.thrift.protocol.TField("boosted", org.apache.thrift.protocol.TType.BOOL, (short)3);
   private static final org.apache.thrift.protocol.TField MUTED_FIELD_DESC = new org.apache.thrift.protocol.TField("muted", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField BOOKMARKED_FIELD_DESC = new org.apache.thrift.protocol.TField("bookmarked", org.apache.thrift.protocol.TType.BOOL, (short)5);
   private static final org.apache.thrift.protocol.TField PINNED_FIELD_DESC = new org.apache.thrift.protocol.TField("pinned", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField FAVORITE_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("favoriteCount", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField LIKE_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("likeCount", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField BOOST_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("boostCount", org.apache.thrift.protocol.TType.I32, (short)8);
   private static final org.apache.thrift.protocol.TField REPLY_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("replyCount", org.apache.thrift.protocol.TType.I32, (short)9);
 
@@ -24,24 +24,24 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new StatusMetadataTupleSchemeFactory();
 
   public @org.apache.thrift.annotation.Nullable java.util.List<MatchingFilter> filters; // required
-  public boolean favorited; // required
+  public boolean liked; // required
   public boolean boosted; // required
   public boolean muted; // required
   public boolean bookmarked; // required
   public boolean pinned; // required
-  public int favoriteCount; // required
+  public int likeCount; // required
   public int boostCount; // required
   public int replyCount; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FILTERS((short)1, "filters"),
-    FAVORITED((short)2, "favorited"),
+    LIKED((short)2, "liked"),
     BOOSTED((short)3, "boosted"),
     MUTED((short)4, "muted"),
     BOOKMARKED((short)5, "bookmarked"),
     PINNED((short)6, "pinned"),
-    FAVORITE_COUNT((short)7, "favoriteCount"),
+    LIKE_COUNT((short)7, "likeCount"),
     BOOST_COUNT((short)8, "boostCount"),
     REPLY_COUNT((short)9, "replyCount");
 
@@ -61,8 +61,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       switch(fieldId) {
         case 1: // FILTERS
           return FILTERS;
-        case 2: // FAVORITED
-          return FAVORITED;
+        case 2: // LIKED
+          return LIKED;
         case 3: // BOOSTED
           return BOOSTED;
         case 4: // MUTED
@@ -71,8 +71,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
           return BOOKMARKED;
         case 6: // PINNED
           return PINNED;
-        case 7: // FAVORITE_COUNT
-          return FAVORITE_COUNT;
+        case 7: // LIKE_COUNT
+          return LIKE_COUNT;
         case 8: // BOOST_COUNT
           return BOOST_COUNT;
         case 9: // REPLY_COUNT
@@ -120,12 +120,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
   }
 
   // isset id assignments
-  private static final int __FAVORITED_ISSET_ID = 0;
+  private static final int __LIKED_ISSET_ID = 0;
   private static final int __BOOSTED_ISSET_ID = 1;
   private static final int __MUTED_ISSET_ID = 2;
   private static final int __BOOKMARKED_ISSET_ID = 3;
   private static final int __PINNED_ISSET_ID = 4;
-  private static final int __FAVORITECOUNT_ISSET_ID = 5;
+  private static final int __LIKECOUNT_ISSET_ID = 5;
   private static final int __BOOSTCOUNT_ISSET_ID = 6;
   private static final int __REPLYCOUNT_ISSET_ID = 7;
   private byte __isset_bitfield = 0;
@@ -135,7 +135,7 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     tmpMap.put(_Fields.FILTERS, new org.apache.thrift.meta_data.FieldMetaData("filters", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, MatchingFilter.class))));
-    tmpMap.put(_Fields.FAVORITED, new org.apache.thrift.meta_data.FieldMetaData("favorited", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.LIKED, new org.apache.thrift.meta_data.FieldMetaData("liked", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.BOOSTED, new org.apache.thrift.meta_data.FieldMetaData("boosted", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
@@ -145,7 +145,7 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.PINNED, new org.apache.thrift.meta_data.FieldMetaData("pinned", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.FAVORITE_COUNT, new org.apache.thrift.meta_data.FieldMetaData("favoriteCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.LIKE_COUNT, new org.apache.thrift.meta_data.FieldMetaData("likeCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.BOOST_COUNT, new org.apache.thrift.meta_data.FieldMetaData("boostCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
@@ -160,19 +160,19 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
 
   public StatusMetadata(
     java.util.List<MatchingFilter> filters,
-    boolean favorited,
+    boolean liked,
     boolean boosted,
     boolean muted,
     boolean bookmarked,
     boolean pinned,
-    int favoriteCount,
+    int likeCount,
     int boostCount,
     int replyCount)
   {
     this();
     this.filters = filters;
-    this.favorited = favorited;
-    setFavoritedIsSet(true);
+    this.liked = liked;
+    setLikedIsSet(true);
     this.boosted = boosted;
     setBoostedIsSet(true);
     this.muted = muted;
@@ -181,8 +181,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     setBookmarkedIsSet(true);
     this.pinned = pinned;
     setPinnedIsSet(true);
-    this.favoriteCount = favoriteCount;
-    setFavoriteCountIsSet(true);
+    this.likeCount = likeCount;
+    setLikeCountIsSet(true);
     this.boostCount = boostCount;
     setBoostCountIsSet(true);
     this.replyCount = replyCount;
@@ -201,12 +201,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       }
       this.filters = __this__filters;
     }
-    this.favorited = other.favorited;
+    this.liked = other.liked;
     this.boosted = other.boosted;
     this.muted = other.muted;
     this.bookmarked = other.bookmarked;
     this.pinned = other.pinned;
-    this.favoriteCount = other.favoriteCount;
+    this.likeCount = other.likeCount;
     this.boostCount = other.boostCount;
     this.replyCount = other.replyCount;
   }
@@ -219,8 +219,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
   @Override
   public void clear() {
     this.filters = null;
-    setFavoritedIsSet(false);
-    this.favorited = false;
+    setLikedIsSet(false);
+    this.liked = false;
     setBoostedIsSet(false);
     this.boosted = false;
     setMutedIsSet(false);
@@ -229,8 +229,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     this.bookmarked = false;
     setPinnedIsSet(false);
     this.pinned = false;
-    setFavoriteCountIsSet(false);
-    this.favoriteCount = 0;
+    setLikeCountIsSet(false);
+    this.likeCount = 0;
     setBoostCountIsSet(false);
     this.boostCount = 0;
     setReplyCountIsSet(false);
@@ -278,27 +278,27 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     }
   }
 
-  public boolean isFavorited() {
-    return this.favorited;
+  public boolean isLiked() {
+    return this.liked;
   }
 
-  public StatusMetadata setFavorited(boolean favorited) {
-    this.favorited = favorited;
-    setFavoritedIsSet(true);
+  public StatusMetadata setLiked(boolean liked) {
+    this.liked = liked;
+    setLikedIsSet(true);
     return this;
   }
 
-  public void unsetFavorited() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __FAVORITED_ISSET_ID);
+  public void unsetLiked() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LIKED_ISSET_ID);
   }
 
-  /** Returns true if field favorited is set (has been assigned a value) and false otherwise */
-  public boolean isSetFavorited() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __FAVORITED_ISSET_ID);
+  /** Returns true if field liked is set (has been assigned a value) and false otherwise */
+  public boolean isSetLiked() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LIKED_ISSET_ID);
   }
 
-  public void setFavoritedIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FAVORITED_ISSET_ID, value);
+  public void setLikedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LIKED_ISSET_ID, value);
   }
 
   public boolean isBoosted() {
@@ -393,27 +393,27 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __PINNED_ISSET_ID, value);
   }
 
-  public int getFavoriteCount() {
-    return this.favoriteCount;
+  public int getLikeCount() {
+    return this.likeCount;
   }
 
-  public StatusMetadata setFavoriteCount(int favoriteCount) {
-    this.favoriteCount = favoriteCount;
-    setFavoriteCountIsSet(true);
+  public StatusMetadata setLikeCount(int likeCount) {
+    this.likeCount = likeCount;
+    setLikeCountIsSet(true);
     return this;
   }
 
-  public void unsetFavoriteCount() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __FAVORITECOUNT_ISSET_ID);
+  public void unsetLikeCount() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LIKECOUNT_ISSET_ID);
   }
 
-  /** Returns true if field favoriteCount is set (has been assigned a value) and false otherwise */
-  public boolean isSetFavoriteCount() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __FAVORITECOUNT_ISSET_ID);
+  /** Returns true if field likeCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetLikeCount() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LIKECOUNT_ISSET_ID);
   }
 
-  public void setFavoriteCountIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FAVORITECOUNT_ISSET_ID, value);
+  public void setLikeCountIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LIKECOUNT_ISSET_ID, value);
   }
 
   public int getBoostCount() {
@@ -473,11 +473,11 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       }
       break;
 
-    case FAVORITED:
+    case LIKED:
       if (value == null) {
-        unsetFavorited();
+        unsetLiked();
       } else {
-        setFavorited((java.lang.Boolean)value);
+        setLiked((java.lang.Boolean)value);
       }
       break;
 
@@ -513,11 +513,11 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       }
       break;
 
-    case FAVORITE_COUNT:
+    case LIKE_COUNT:
       if (value == null) {
-        unsetFavoriteCount();
+        unsetLikeCount();
       } else {
-        setFavoriteCount((java.lang.Integer)value);
+        setLikeCount((java.lang.Integer)value);
       }
       break;
 
@@ -547,8 +547,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     case FILTERS:
       return getFilters();
 
-    case FAVORITED:
-      return isFavorited();
+    case LIKED:
+      return isLiked();
 
     case BOOSTED:
       return isBoosted();
@@ -562,8 +562,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     case PINNED:
       return isPinned();
 
-    case FAVORITE_COUNT:
-      return getFavoriteCount();
+    case LIKE_COUNT:
+      return getLikeCount();
 
     case BOOST_COUNT:
       return getBoostCount();
@@ -585,8 +585,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     switch (field) {
     case FILTERS:
       return isSetFilters();
-    case FAVORITED:
-      return isSetFavorited();
+    case LIKED:
+      return isSetLiked();
     case BOOSTED:
       return isSetBoosted();
     case MUTED:
@@ -595,8 +595,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       return isSetBookmarked();
     case PINNED:
       return isSetPinned();
-    case FAVORITE_COUNT:
-      return isSetFavoriteCount();
+    case LIKE_COUNT:
+      return isSetLikeCount();
     case BOOST_COUNT:
       return isSetBoostCount();
     case REPLY_COUNT:
@@ -627,12 +627,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         return false;
     }
 
-    boolean this_present_favorited = true;
-    boolean that_present_favorited = true;
-    if (this_present_favorited || that_present_favorited) {
-      if (!(this_present_favorited && that_present_favorited))
+    boolean this_present_liked = true;
+    boolean that_present_liked = true;
+    if (this_present_liked || that_present_liked) {
+      if (!(this_present_liked && that_present_liked))
         return false;
-      if (this.favorited != that.favorited)
+      if (this.liked != that.liked)
         return false;
     }
 
@@ -672,12 +672,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         return false;
     }
 
-    boolean this_present_favoriteCount = true;
-    boolean that_present_favoriteCount = true;
-    if (this_present_favoriteCount || that_present_favoriteCount) {
-      if (!(this_present_favoriteCount && that_present_favoriteCount))
+    boolean this_present_likeCount = true;
+    boolean that_present_likeCount = true;
+    if (this_present_likeCount || that_present_likeCount) {
+      if (!(this_present_likeCount && that_present_likeCount))
         return false;
-      if (this.favoriteCount != that.favoriteCount)
+      if (this.likeCount != that.likeCount)
         return false;
     }
 
@@ -710,7 +710,7 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     if (isSetFilters())
       hashCode = hashCode * 8191 + filters.hashCode();
 
-    hashCode = hashCode * 8191 + ((favorited) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + ((liked) ? 131071 : 524287);
 
     hashCode = hashCode * 8191 + ((boosted) ? 131071 : 524287);
 
@@ -720,7 +720,7 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
 
     hashCode = hashCode * 8191 + ((pinned) ? 131071 : 524287);
 
-    hashCode = hashCode * 8191 + favoriteCount;
+    hashCode = hashCode * 8191 + likeCount;
 
     hashCode = hashCode * 8191 + boostCount;
 
@@ -747,12 +747,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetFavorited(), other.isSetFavorited());
+    lastComparison = java.lang.Boolean.compare(isSetLiked(), other.isSetLiked());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFavorited()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.favorited, other.favorited);
+    if (isSetLiked()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.liked, other.liked);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -797,12 +797,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetFavoriteCount(), other.isSetFavoriteCount());
+    lastComparison = java.lang.Boolean.compare(isSetLikeCount(), other.isSetLikeCount());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFavoriteCount()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.favoriteCount, other.favoriteCount);
+    if (isSetLikeCount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.likeCount, other.likeCount);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -859,8 +859,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("favorited:");
-    sb.append(this.favorited);
+    sb.append("liked:");
+    sb.append(this.liked);
     first = false;
     if (!first) sb.append(", ");
     sb.append("boosted:");
@@ -879,8 +879,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     sb.append(this.pinned);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("favoriteCount:");
-    sb.append(this.favoriteCount);
+    sb.append("likeCount:");
+    sb.append(this.likeCount);
     first = false;
     if (!first) sb.append(", ");
     sb.append("boostCount:");
@@ -899,12 +899,12 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     if (filters == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'filters' was not present! Struct: " + toString());
     }
-    // alas, we cannot check 'favorited' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'liked' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'boosted' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'muted' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'bookmarked' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'pinned' because it's a primitive and you chose the non-beans generator.
-    // alas, we cannot check 'favoriteCount' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'likeCount' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'boostCount' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'replyCount' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
@@ -951,14 +951,14 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
           case 1: // FILTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list106 = iprot.readListBegin();
-                struct.filters = new java.util.ArrayList<MatchingFilter>(_list106.size);
-                @org.apache.thrift.annotation.Nullable MatchingFilter _elem107;
-                for (int _i108 = 0; _i108 < _list106.size; ++_i108)
+                org.apache.thrift.protocol.TList _list124 = iprot.readListBegin();
+                struct.filters = new java.util.ArrayList<MatchingFilter>(_list124.size);
+                @org.apache.thrift.annotation.Nullable MatchingFilter _elem125;
+                for (int _i126 = 0; _i126 < _list124.size; ++_i126)
                 {
-                  _elem107 = new MatchingFilter();
-                  _elem107.read(iprot);
-                  struct.filters.add(_elem107);
+                  _elem125 = new MatchingFilter();
+                  _elem125.read(iprot);
+                  struct.filters.add(_elem125);
                 }
                 iprot.readListEnd();
               }
@@ -967,10 +967,10 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // FAVORITED
+          case 2: // LIKED
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.favorited = iprot.readBool();
-              struct.setFavoritedIsSet(true);
+              struct.liked = iprot.readBool();
+              struct.setLikedIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1007,10 +1007,10 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // FAVORITE_COUNT
+          case 7: // LIKE_COUNT
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.favoriteCount = iprot.readI32();
-              struct.setFavoriteCountIsSet(true);
+              struct.likeCount = iprot.readI32();
+              struct.setLikeCountIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1039,8 +1039,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       iprot.readStructEnd();
 
       // check for required fields of primitive type, which can't be checked in the validate method
-      if (!struct.isSetFavorited()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'favorited' was not found in serialized data! Struct: " + toString());
+      if (!struct.isSetLiked()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'liked' was not found in serialized data! Struct: " + toString());
       }
       if (!struct.isSetBoosted()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'boosted' was not found in serialized data! Struct: " + toString());
@@ -1054,8 +1054,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       if (!struct.isSetPinned()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'pinned' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetFavoriteCount()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'favoriteCount' was not found in serialized data! Struct: " + toString());
+      if (!struct.isSetLikeCount()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'likeCount' was not found in serialized data! Struct: " + toString());
       }
       if (!struct.isSetBoostCount()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'boostCount' was not found in serialized data! Struct: " + toString());
@@ -1075,16 +1075,16 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
         oprot.writeFieldBegin(FILTERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.filters.size()));
-          for (MatchingFilter _iter109 : struct.filters)
+          for (MatchingFilter _iter127 : struct.filters)
           {
-            _iter109.write(oprot);
+            _iter127.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(FAVORITED_FIELD_DESC);
-      oprot.writeBool(struct.favorited);
+      oprot.writeFieldBegin(LIKED_FIELD_DESC);
+      oprot.writeBool(struct.liked);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(BOOSTED_FIELD_DESC);
       oprot.writeBool(struct.boosted);
@@ -1098,8 +1098,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       oprot.writeFieldBegin(PINNED_FIELD_DESC);
       oprot.writeBool(struct.pinned);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(FAVORITE_COUNT_FIELD_DESC);
-      oprot.writeI32(struct.favoriteCount);
+      oprot.writeFieldBegin(LIKE_COUNT_FIELD_DESC);
+      oprot.writeI32(struct.likeCount);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(BOOST_COUNT_FIELD_DESC);
       oprot.writeI32(struct.boostCount);
@@ -1127,17 +1127,17 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filters.size());
-        for (MatchingFilter _iter110 : struct.filters)
+        for (MatchingFilter _iter128 : struct.filters)
         {
-          _iter110.write(oprot);
+          _iter128.write(oprot);
         }
       }
-      oprot.writeBool(struct.favorited);
+      oprot.writeBool(struct.liked);
       oprot.writeBool(struct.boosted);
       oprot.writeBool(struct.muted);
       oprot.writeBool(struct.bookmarked);
       oprot.writeBool(struct.pinned);
-      oprot.writeI32(struct.favoriteCount);
+      oprot.writeI32(struct.likeCount);
       oprot.writeI32(struct.boostCount);
       oprot.writeI32(struct.replyCount);
     }
@@ -1146,19 +1146,19 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
     public void read(org.apache.thrift.protocol.TProtocol prot, StatusMetadata struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list111 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.filters = new java.util.ArrayList<MatchingFilter>(_list111.size);
-        @org.apache.thrift.annotation.Nullable MatchingFilter _elem112;
-        for (int _i113 = 0; _i113 < _list111.size; ++_i113)
+        org.apache.thrift.protocol.TList _list129 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.filters = new java.util.ArrayList<MatchingFilter>(_list129.size);
+        @org.apache.thrift.annotation.Nullable MatchingFilter _elem130;
+        for (int _i131 = 0; _i131 < _list129.size; ++_i131)
         {
-          _elem112 = new MatchingFilter();
-          _elem112.read(iprot);
-          struct.filters.add(_elem112);
+          _elem130 = new MatchingFilter();
+          _elem130.read(iprot);
+          struct.filters.add(_elem130);
         }
       }
       struct.setFiltersIsSet(true);
-      struct.favorited = iprot.readBool();
-      struct.setFavoritedIsSet(true);
+      struct.liked = iprot.readBool();
+      struct.setLikedIsSet(true);
       struct.boosted = iprot.readBool();
       struct.setBoostedIsSet(true);
       struct.muted = iprot.readBool();
@@ -1167,8 +1167,8 @@ public class StatusMetadata implements org.apache.thrift.TBase<StatusMetadata, S
       struct.setBookmarkedIsSet(true);
       struct.pinned = iprot.readBool();
       struct.setPinnedIsSet(true);
-      struct.favoriteCount = iprot.readI32();
-      struct.setFavoriteCountIsSet(true);
+      struct.likeCount = iprot.readI32();
+      struct.setLikeCountIsSet(true);
       struct.boostCount = iprot.readI32();
       struct.setBoostCountIsSet(true);
       struct.replyCount = iprot.readI32();

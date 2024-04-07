@@ -7,27 +7,27 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostStatus._Fields>, java.io.Serializable, Cloneable, Comparable<BoostStatus> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BoostStatus");
+public class EditScheduledStatusPublishTime implements org.apache.thrift.TBase<EditScheduledStatusPublishTime, EditScheduledStatusPublishTime._Fields>, java.io.Serializable, Cloneable, Comparable<EditScheduledStatusPublishTime> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("EditScheduledStatusPublishTime");
 
-  private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField TARGET_FIELD_DESC = new org.apache.thrift.protocol.TField("target", org.apache.thrift.protocol.TType.STRUCT, (short)3);
+  private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField PUBLISH_MILLIS_FIELD_DESC = new org.apache.thrift.protocol.TField("publishMillis", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)4);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new BoostStatusStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new BoostStatusTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new EditScheduledStatusPublishTimeStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new EditScheduledStatusPublishTimeTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable java.lang.String uuid; // required
   public long accountId; // required
-  public @org.apache.thrift.annotation.Nullable StatusPointer target; // required
+  public long id; // required
+  public long publishMillis; // required
   public long timestamp; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    UUID((short)1, "uuid"),
-    ACCOUNT_ID((short)2, "accountId"),
-    TARGET((short)3, "target"),
+    ACCOUNT_ID((short)1, "accountId"),
+    ID((short)2, "id"),
+    PUBLISH_MILLIS((short)3, "publishMillis"),
     TIMESTAMP((short)4, "timestamp");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -44,12 +44,12 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // UUID
-          return UUID;
-        case 2: // ACCOUNT_ID
+        case 1: // ACCOUNT_ID
           return ACCOUNT_ID;
-        case 3: // TARGET
-          return TARGET;
+        case 2: // ID
+          return ID;
+        case 3: // PUBLISH_MILLIS
+          return PUBLISH_MILLIS;
         case 4: // TIMESTAMP
           return TIMESTAMP;
         default:
@@ -96,37 +96,41 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
 
   // isset id assignments
   private static final int __ACCOUNTID_ISSET_ID = 0;
-  private static final int __TIMESTAMP_ISSET_ID = 1;
+  private static final int __ID_ISSET_ID = 1;
+  private static final int __PUBLISHMILLIS_ISSET_ID = 2;
+  private static final int __TIMESTAMP_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.TARGET, new org.apache.thrift.meta_data.FieldMetaData("target", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StatusPointer.class)));
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.PUBLISH_MILLIS, new org.apache.thrift.meta_data.FieldMetaData("publishMillis", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BoostStatus.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(EditScheduledStatusPublishTime.class, metaDataMap);
   }
 
-  public BoostStatus() {
+  public EditScheduledStatusPublishTime() {
   }
 
-  public BoostStatus(
-    java.lang.String uuid,
+  public EditScheduledStatusPublishTime(
     long accountId,
-    StatusPointer target,
+    long id,
+    long publishMillis,
     long timestamp)
   {
     this();
-    this.uuid = uuid;
     this.accountId = accountId;
     setAccountIdIsSet(true);
-    this.target = target;
+    this.id = id;
+    setIdIsSet(true);
+    this.publishMillis = publishMillis;
+    setPublishMillisIsSet(true);
     this.timestamp = timestamp;
     setTimestampIsSet(true);
   }
@@ -134,63 +138,36 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public BoostStatus(BoostStatus other) {
+  public EditScheduledStatusPublishTime(EditScheduledStatusPublishTime other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetUuid()) {
-      this.uuid = other.uuid;
-    }
     this.accountId = other.accountId;
-    if (other.isSetTarget()) {
-      this.target = new StatusPointer(other.target);
-    }
+    this.id = other.id;
+    this.publishMillis = other.publishMillis;
     this.timestamp = other.timestamp;
   }
 
   @Override
-  public BoostStatus deepCopy() {
-    return new BoostStatus(this);
+  public EditScheduledStatusPublishTime deepCopy() {
+    return new EditScheduledStatusPublishTime(this);
   }
 
   @Override
   public void clear() {
-    this.uuid = null;
     setAccountIdIsSet(false);
     this.accountId = 0;
-    this.target = null;
+    setIdIsSet(false);
+    this.id = 0;
+    setPublishMillisIsSet(false);
+    this.publishMillis = 0;
     setTimestampIsSet(false);
     this.timestamp = 0;
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getUuid() {
-    return this.uuid;
-  }
-
-  public BoostStatus setUuid(@org.apache.thrift.annotation.Nullable java.lang.String uuid) {
-    this.uuid = uuid;
-    return this;
-  }
-
-  public void unsetUuid() {
-    this.uuid = null;
-  }
-
-  /** Returns true if field uuid is set (has been assigned a value) and false otherwise */
-  public boolean isSetUuid() {
-    return this.uuid != null;
-  }
-
-  public void setUuidIsSet(boolean value) {
-    if (!value) {
-      this.uuid = null;
-    }
   }
 
   public long getAccountId() {
     return this.accountId;
   }
 
-  public BoostStatus setAccountId(long accountId) {
+  public EditScheduledStatusPublishTime setAccountId(long accountId) {
     this.accountId = accountId;
     setAccountIdIsSet(true);
     return this;
@@ -209,36 +186,57 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public StatusPointer getTarget() {
-    return this.target;
+  public long getId() {
+    return this.id;
   }
 
-  public BoostStatus setTarget(@org.apache.thrift.annotation.Nullable StatusPointer target) {
-    this.target = target;
+  public EditScheduledStatusPublishTime setId(long id) {
+    this.id = id;
+    setIdIsSet(true);
     return this;
   }
 
-  public void unsetTarget() {
-    this.target = null;
+  public void unsetId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
   }
 
-  /** Returns true if field target is set (has been assigned a value) and false otherwise */
-  public boolean isSetTarget() {
-    return this.target != null;
+  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  public boolean isSetId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
   }
 
-  public void setTargetIsSet(boolean value) {
-    if (!value) {
-      this.target = null;
-    }
+  public void setIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
+  }
+
+  public long getPublishMillis() {
+    return this.publishMillis;
+  }
+
+  public EditScheduledStatusPublishTime setPublishMillis(long publishMillis) {
+    this.publishMillis = publishMillis;
+    setPublishMillisIsSet(true);
+    return this;
+  }
+
+  public void unsetPublishMillis() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __PUBLISHMILLIS_ISSET_ID);
+  }
+
+  /** Returns true if field publishMillis is set (has been assigned a value) and false otherwise */
+  public boolean isSetPublishMillis() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __PUBLISHMILLIS_ISSET_ID);
+  }
+
+  public void setPublishMillisIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __PUBLISHMILLIS_ISSET_ID, value);
   }
 
   public long getTimestamp() {
     return this.timestamp;
   }
 
-  public BoostStatus setTimestamp(long timestamp) {
+  public EditScheduledStatusPublishTime setTimestamp(long timestamp) {
     this.timestamp = timestamp;
     setTimestampIsSet(true);
     return this;
@@ -260,14 +258,6 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case UUID:
-      if (value == null) {
-        unsetUuid();
-      } else {
-        setUuid((java.lang.String)value);
-      }
-      break;
-
     case ACCOUNT_ID:
       if (value == null) {
         unsetAccountId();
@@ -276,11 +266,19 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
       }
       break;
 
-    case TARGET:
+    case ID:
       if (value == null) {
-        unsetTarget();
+        unsetId();
       } else {
-        setTarget((StatusPointer)value);
+        setId((java.lang.Long)value);
+      }
+      break;
+
+    case PUBLISH_MILLIS:
+      if (value == null) {
+        unsetPublishMillis();
+      } else {
+        setPublishMillis((java.lang.Long)value);
       }
       break;
 
@@ -299,14 +297,14 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
   @Override
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case UUID:
-      return getUuid();
-
     case ACCOUNT_ID:
       return getAccountId();
 
-    case TARGET:
-      return getTarget();
+    case ID:
+      return getId();
+
+    case PUBLISH_MILLIS:
+      return getPublishMillis();
 
     case TIMESTAMP:
       return getTimestamp();
@@ -323,12 +321,12 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
     }
 
     switch (field) {
-    case UUID:
-      return isSetUuid();
     case ACCOUNT_ID:
       return isSetAccountId();
-    case TARGET:
-      return isSetTarget();
+    case ID:
+      return isSetId();
+    case PUBLISH_MILLIS:
+      return isSetPublishMillis();
     case TIMESTAMP:
       return isSetTimestamp();
     }
@@ -337,25 +335,16 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof BoostStatus)
-      return this.equals((BoostStatus)that);
+    if (that instanceof EditScheduledStatusPublishTime)
+      return this.equals((EditScheduledStatusPublishTime)that);
     return false;
   }
 
-  public boolean equals(BoostStatus that) {
+  public boolean equals(EditScheduledStatusPublishTime that) {
     if (that == null)
       return false;
     if (this == that)
       return true;
-
-    boolean this_present_uuid = true && this.isSetUuid();
-    boolean that_present_uuid = true && that.isSetUuid();
-    if (this_present_uuid || that_present_uuid) {
-      if (!(this_present_uuid && that_present_uuid))
-        return false;
-      if (!this.uuid.equals(that.uuid))
-        return false;
-    }
 
     boolean this_present_accountId = true;
     boolean that_present_accountId = true;
@@ -366,12 +355,21 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
         return false;
     }
 
-    boolean this_present_target = true && this.isSetTarget();
-    boolean that_present_target = true && that.isSetTarget();
-    if (this_present_target || that_present_target) {
-      if (!(this_present_target && that_present_target))
+    boolean this_present_id = true;
+    boolean that_present_id = true;
+    if (this_present_id || that_present_id) {
+      if (!(this_present_id && that_present_id))
         return false;
-      if (!this.target.equals(that.target))
+      if (this.id != that.id)
+        return false;
+    }
+
+    boolean this_present_publishMillis = true;
+    boolean that_present_publishMillis = true;
+    if (this_present_publishMillis || that_present_publishMillis) {
+      if (!(this_present_publishMillis && that_present_publishMillis))
+        return false;
+      if (this.publishMillis != that.publishMillis)
         return false;
     }
 
@@ -391,15 +389,11 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetUuid()) ? 131071 : 524287);
-    if (isSetUuid())
-      hashCode = hashCode * 8191 + uuid.hashCode();
-
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((isSetTarget()) ? 131071 : 524287);
-    if (isSetTarget())
-      hashCode = hashCode * 8191 + target.hashCode();
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(id);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(publishMillis);
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
 
@@ -407,23 +401,13 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
   }
 
   @Override
-  public int compareTo(BoostStatus other) {
+  public int compareTo(EditScheduledStatusPublishTime other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetUuid(), other.isSetUuid());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetUuid()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.uuid, other.uuid);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = java.lang.Boolean.compare(isSetAccountId(), other.isSetAccountId());
     if (lastComparison != 0) {
       return lastComparison;
@@ -434,12 +418,22 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetTarget(), other.isSetTarget());
+    lastComparison = java.lang.Boolean.compare(isSetId(), other.isSetId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTarget()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.target, other.target);
+    if (isSetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetPublishMillis(), other.isSetPublishMillis());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPublishMillis()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.publishMillis, other.publishMillis);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -475,27 +469,19 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("BoostStatus(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("EditScheduledStatusPublishTime(");
     boolean first = true;
 
-    sb.append("uuid:");
-    if (this.uuid == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.uuid);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("accountId:");
     sb.append(this.accountId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("target:");
-    if (this.target == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.target);
-    }
+    sb.append("id:");
+    sb.append(this.id);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("publishMillis:");
+    sb.append(this.publishMillis);
     first = false;
     if (!first) sb.append(", ");
     sb.append("timestamp:");
@@ -507,18 +493,11 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (uuid == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'uuid' was not present! Struct: " + toString());
-    }
     // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
-    if (target == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'target' was not present! Struct: " + toString());
-    }
+    // alas, we cannot check 'id' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'publishMillis' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
-    if (target != null) {
-      target.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -539,17 +518,17 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
     }
   }
 
-  private static class BoostStatusStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class EditScheduledStatusPublishTimeStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public BoostStatusStandardScheme getScheme() {
-      return new BoostStatusStandardScheme();
+    public EditScheduledStatusPublishTimeStandardScheme getScheme() {
+      return new EditScheduledStatusPublishTimeStandardScheme();
     }
   }
 
-  private static class BoostStatusStandardScheme extends org.apache.thrift.scheme.StandardScheme<BoostStatus> {
+  private static class EditScheduledStatusPublishTimeStandardScheme extends org.apache.thrift.scheme.StandardScheme<EditScheduledStatusPublishTime> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, BoostStatus struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, EditScheduledStatusPublishTime struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -559,15 +538,7 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
           break;
         }
         switch (schemeField.id) {
-          case 1: // UUID
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.uuid = iprot.readString();
-              struct.setUuidIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // ACCOUNT_ID
+          case 1: // ACCOUNT_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.accountId = iprot.readI64();
               struct.setAccountIdIsSet(true);
@@ -575,11 +546,18 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TARGET
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.target = new StatusPointer();
-              struct.target.read(iprot);
-              struct.setTargetIsSet(true);
+          case 2: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.id = iprot.readI64();
+              struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // PUBLISH_MILLIS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.publishMillis = iprot.readI64();
+              struct.setPublishMillisIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -603,6 +581,12 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
       if (!struct.isSetAccountId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'accountId' was not found in serialized data! Struct: " + toString());
       }
+      if (!struct.isSetId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'id' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetPublishMillis()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'publishMillis' was not found in serialized data! Struct: " + toString());
+      }
       if (!struct.isSetTimestamp()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'timestamp' was not found in serialized data! Struct: " + toString());
       }
@@ -610,23 +594,19 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, BoostStatus struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, EditScheduledStatusPublishTime struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.uuid != null) {
-        oprot.writeFieldBegin(UUID_FIELD_DESC);
-        oprot.writeString(struct.uuid);
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
       oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      if (struct.target != null) {
-        oprot.writeFieldBegin(TARGET_FIELD_DESC);
-        struct.target.write(oprot);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(ID_FIELD_DESC);
+      oprot.writeI64(struct.id);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(PUBLISH_MILLIS_FIELD_DESC);
+      oprot.writeI64(struct.publishMillis);
+      oprot.writeFieldEnd();
       oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
@@ -636,34 +616,33 @@ public class BoostStatus implements org.apache.thrift.TBase<BoostStatus, BoostSt
 
   }
 
-  private static class BoostStatusTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class EditScheduledStatusPublishTimeTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public BoostStatusTupleScheme getScheme() {
-      return new BoostStatusTupleScheme();
+    public EditScheduledStatusPublishTimeTupleScheme getScheme() {
+      return new EditScheduledStatusPublishTimeTupleScheme();
     }
   }
 
-  private static class BoostStatusTupleScheme extends org.apache.thrift.scheme.TupleScheme<BoostStatus> {
+  private static class EditScheduledStatusPublishTimeTupleScheme extends org.apache.thrift.scheme.TupleScheme<EditScheduledStatusPublishTime> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, BoostStatus struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, EditScheduledStatusPublishTime struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.uuid);
       oprot.writeI64(struct.accountId);
-      struct.target.write(oprot);
+      oprot.writeI64(struct.id);
+      oprot.writeI64(struct.publishMillis);
       oprot.writeI64(struct.timestamp);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, BoostStatus struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, EditScheduledStatusPublishTime struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.uuid = iprot.readString();
-      struct.setUuidIsSet(true);
       struct.accountId = iprot.readI64();
       struct.setAccountIdIsSet(true);
-      struct.target = new StatusPointer();
-      struct.target.read(iprot);
-      struct.setTargetIsSet(true);
+      struct.id = iprot.readI64();
+      struct.setIdIsSet(true);
+      struct.publishMillis = iprot.readI64();
+      struct.setPublishMillisIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
     }

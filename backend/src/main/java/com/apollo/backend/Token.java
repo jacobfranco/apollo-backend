@@ -26,7 +26,6 @@ public class Token implements RamaSerializable {
         LINK,
         HASHTAG,
         MENTION,
-        REMOTE_MENTION
     }
 
     public TokenKind kind;
@@ -44,7 +43,7 @@ public class Token implements RamaSerializable {
         List<Token> tokens = new ArrayList<>();
         Token currentToken = new Token(TokenKind.BOUNDARY, "");
         for (char ch : content.toCharArray()) {
-            boolean linkParsing = currentToken.kind == TokenKind.LINK || currentToken.kind == TokenKind.REMOTE_MENTION;
+            boolean linkParsing = currentToken.kind == TokenKind.LINK;
             Set<Character> chars = linkParsing ? linkBoundaryChars : boundaryChars;
             if (chars.contains(ch)) {
                 if (currentToken.kind == TokenKind.BOUNDARY) currentToken.content += ch;
@@ -57,16 +56,11 @@ public class Token implements RamaSerializable {
                 currentToken = new Token(TokenKind.BOUNDARY, "#");
                 finishToken(tokens, currentToken);
                 currentToken = new Token(TokenKind.HASHTAG, "");
-            } else if (!linkParsing && ch == '@') {
-                if (currentToken.kind == TokenKind.MENTION) {
-                    currentToken.content += ch;
-                    currentToken.kind = TokenKind.REMOTE_MENTION;
-                }  else {
+            } else if (!linkParsing && ch == '@') { // TODO: Maybe fix ? 
                     finishToken(tokens, currentToken);
                     currentToken = new Token(TokenKind.BOUNDARY, "@");
                     finishToken(tokens, currentToken);
                     currentToken = new Token(TokenKind.MENTION, "");
-                }
             }
             else {
                 if (currentToken.kind == TokenKind.BOUNDARY) {
@@ -91,7 +85,7 @@ public class Token implements RamaSerializable {
     public static Set<String> filterMentions(List<Token> tokens) {
         HashSet<String> mentions = new HashSet<>();
         for(Token token : tokens) {
-            if(token.kind == TokenKind.MENTION || token.kind == TokenKind.REMOTE_MENTION) mentions.add(token.content);
+            if(token.kind == TokenKind.MENTION) mentions.add(token.content);
         }
         return mentions;
     }
