@@ -6,8 +6,7 @@ public class Search implements RamaModule {
 
     @Override
     public void define(Setup setup, Topologies topologies) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'define'");
+        
     }
 
 }

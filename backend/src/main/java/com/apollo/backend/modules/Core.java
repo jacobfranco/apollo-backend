@@ -1995,7 +1995,7 @@ public class Core implements RamaModule {
     setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
     setup.declareDepot("*accountWithIdDepot", Depot.disallow());
     setup.declareDepot("*accountEditDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*favoriteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*likeStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
     setup.declareDepot("*bookmarkStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
     setup.declareDepot("*muteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
     setup.declareDepot("*pinStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));

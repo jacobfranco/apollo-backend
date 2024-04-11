@@ -62,7 +62,8 @@ public class Relationships implements RamaModule {
     StreamTopology stream = topologies.stream("relationshipsStream");
 
     // filter pstates
-    stream.pstate("$$accountIdToFilterIdToFilter", PState.mapSchema(Long.class, PState.mapSchema(Long.class, Filter.class)));
+    stream.pstate("$$accountIdToFilterIdToFilter",
+        PState.mapSchema(Long.class, PState.mapSchema(Long.class, Filter.class)));
 
     // account id -> requesting account ids
     KeyToLinkedEntitySetPStateGroup accountIdToFollowRequests = new KeyToLinkedEntitySetPStateGroup(
@@ -105,12 +106,16 @@ public class Relationships implements RamaModule {
     // account ID to list of account IDs on which partitioned followers are kept
     stream.pstate("$$partitionedFollowersControl", PState.mapSchema(Long.class, List.class));
     // account ID -> follower ID -> task
-    // stream.pstate("$$partitionedFollowerTasks", PState.mapSchema(Long.class,
-    // PState.mapSchema(Long.class, Integer.class).subindexed())); TODO: Uncomment
-    // when needed
+    stream.pstate("$$partitionedFollowerTasks", PState.mapSchema(Long.class,
+    PState.mapSchema(Long.class, Integer.class).subindexed())); 
 
     stream.pstate("$$partitionedFollowers",
         PState.mapSchema(Long.class, PState.mapSchema(Long.class, Follower.class).subindexed()));
+
+    // We keep an extra PState tracking only followers who've requested
+    // notifications for the notifications module
+    stream.pstate("$$followeeToNotifiedFollowerIds",
+        PState.mapSchema(Long.class, PState.setSchema(Long.class).subindexed()));
 
     stream.pstate("$$accountIdToSuppressions",
         PState.mapSchema(Long.class,
