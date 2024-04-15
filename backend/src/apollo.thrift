@@ -146,6 +146,12 @@ union EditAccountField {
   14: map<string, string> preferences;
 }
 
+struct EditAccount {
+  1: required AccountId accountId;
+  2: required list<EditAccountField> edits;
+  3: required Timestamp timestamp;
+}
+
 // Note that due to the partitioning used by the followAndBlockAccountDepot
 // and the way that follow requests are accessed, `accountId` here refers
 // to the *target* of the follow request, not the originator.
@@ -237,6 +243,31 @@ struct BookmarkStatus {
 struct RemoveBookmarkStatus {
   1: required AccountId accountId;
   2: required StatusPointer target;
+  3: required Timestamp timestamp;
+}
+
+struct FeatureAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveFeatureAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required Timestamp timestamp;
+}
+
+struct MuteAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required MuteAccountOptions options;
+  4: required Timestamp timestamp;
+}
+
+struct RemoveMuteAccount {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
   3: required Timestamp timestamp;
 }
 
@@ -471,3 +502,159 @@ struct HashtagFanout {
   2: required StatusId statusId;
   3: required string hashtag;
 }
+
+struct FollowHashtag {
+  1: required AccountId accountId;
+  2: required string token;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveFollowHashtag {
+  1: required AccountId accountId;
+  2: required string token;
+  3: required Timestamp timestamp;
+}
+
+struct FeatureHashtag {
+  1: required AccountId accountId;
+  2: required string hashtag;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveFeatureHashtag {
+  1: required AccountId accountId;
+  2: required string hashtag;
+  3: required Timestamp timestamp;
+}
+
+struct FeaturedHashtagInfo {
+  1: required string hashtag;
+  2: required i32 numStatuses;
+  3: required Timestamp timestamp;
+}
+
+struct AddFilter {
+  1: required Filter filter;
+  2: required string uuid;
+}
+
+struct RemoveFilter {
+  1: required FilterId filterId;
+  2: required AccountId accountId;
+  3: required Timestamp timestamp;
+}
+
+struct AddStatusToFilter {
+  1: required FilterId filterId;
+  2: required AccountId accountId;
+  3: required StatusPointer target;
+}
+
+struct RemoveStatusFromFilter {
+  1: required FilterId filterId;
+  2: required AccountId accountId;
+  3: required StatusPointer target;
+}
+
+struct UpdateKeyword {
+  1: required string currentWord; // this is a compound id of filterid + keyword
+  2: required string newWord;
+  3: required bool wholeWord;
+}
+
+
+union EditFilterKeyword {
+  1: UpdateKeyword updateKeyword;
+  2: string destroyKeyword; // keyword id to remove
+  3: KeywordFilter addKeyword;
+}
+
+struct EditFilter {
+  1: required FilterId filterId;
+  2: required AccountId accountId;
+  3: required Timestamp timestamp;
+  4: required list<EditFilterKeyword> keywords;
+  5: optional string title;
+  6: optional set<FilterContext> context;
+  7: optional FilterAction action;
+  8: optional i64 expirationMillis;
+}
+
+struct Note {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+  3: required string note;
+}
+
+struct ProfileSearchRecord {
+  1: set<string> otherProfileTerms;
+  2: string username;
+}
+
+struct StatusSearchRecord {
+  1: set<string> terms;
+  2: AccountId accountId;
+  3: StatusId statusId;
+}
+
+struct AccountRelationshipQueryResult {
+  1: required AccountId accountId;
+  2: required bool following;
+  3: required bool showingBoosts;
+  4: required bool notifying;
+  5: required list<string> languages;
+  6: required bool followedBy;
+  7: required bool blocking;
+  8: required bool blockedBy;
+  9: required bool muting;
+  10: required bool mutingNotifications;
+  11: required bool requested;
+  12: required bool domainBlocking;
+  13: required bool endorsed;
+  14: required string note;
+}
+
+struct ReviewItem {
+  1: required string item;
+  2: required Timestamp timestamp;
+}
+
+struct RemoveReviewItem {
+  1: required string item;
+  2: required Timestamp timestamp;
+}
+
+struct DayBucket {
+  1: required i32 uses;
+  2: required i32 accounts;
+}
+
+struct ItemStats {
+  1: required map<i64, DayBucket> dayBuckets;
+  2: required i64 statusCount;
+  3: required Timestamp latestStatusMillis;
+  4: required bool isReviewed;
+}
+
+struct StatusResponseNotificationContent {
+  1: required AccountId responderAccountId;
+  2: required StatusPointer target;
+}
+
+union NotificationContent {
+  1: StatusPointer mention;
+  2: AccountId follow;
+  3: AccountId followRequest;
+  4: StatusResponseNotificationContent favorite;
+  5: StatusResponseNotificationContent boost;
+  6: StatusPointer pollComplete;
+  7: StatusPointer boostedUpdate;
+  8: StatusPointer followeeStatus;
+}
+
+struct Notification {
+  1: required NotificationContent content;
+  2: required Timestamp timestamp;
+}
+
+

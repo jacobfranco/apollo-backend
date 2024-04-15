@@ -7,6 +7,8 @@ import com.rpl.rama.*;
 import com.rpl.rama.ops.*;
 
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 import org.apache.thrift.*;
 
 public class ApolloHelpers {
+
+  public static final int BULK_FETCH_SIZE = 1000;
 
    public static final ConcurrentHashMap<Class, Map<String, TFieldIdEnum>> TFIELD_CACHE = new ConcurrentHashMap<>();
 
@@ -32,6 +36,10 @@ public class ApolloHelpers {
     public ExtractCode() { super("code"); }
   }
 
+  public static class ExtractToken extends ExtractField {
+    public ExtractToken() { super("token"); }
+  }
+
   public static class ExtractAccountId extends ExtractField {
     public ExtractAccountId() { super("accountId"); }
   }
@@ -40,11 +48,25 @@ public class ApolloHelpers {
     public ExtractUuid() { super("uuid"); }
   }
 
+  public static class ExtractItem extends ExtractField {
+    public ExtractItem() { super("item"); }
+  }
+
   public static class ExtractTargetAuthorId implements RamaFunction1<Object, Long> {
     @Override
     public Long invoke(Object o) {
       StatusPointer target = (StatusPointer) getTFieldByName((TBase) o, "target");
       return target.authorId;
+    }
+  }
+
+  public static class ExtractFilterAccountId implements RamaFunction1<Object, Long> {
+    @Override
+    public Long invoke(Object o) {
+      if (o instanceof AddFilter) return ((AddFilter) o).getFilter().getAccountId();
+      if (o instanceof Filter) return ((Filter) o).getAccountId();
+      if (o instanceof FilterWithId) return ((FilterWithId) o).getFilter().getAccountId();
+      else return (Long) getTFieldByName((TBase) o, "accountId");
     }
   }
 
@@ -57,6 +79,12 @@ public class ApolloHelpers {
       ret = ret.each(new ExtractField(name), from).out(f);
     }
     return ret;
+  }
+
+  public static String normalizeURL(String url) throws URISyntaxException {
+    String norm = new URI(url).normalize().toString();
+    if(norm.endsWith("/")) norm = norm.substring(0, norm.length() - 1);
+    return norm;
   }
 
   public static Object getTFieldByName(TBase obj, String fieldName) {

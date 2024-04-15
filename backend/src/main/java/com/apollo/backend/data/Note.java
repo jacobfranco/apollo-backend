@@ -7,25 +7,25 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fields>, java.io.Serializable, Cloneable, Comparable<Follower> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Follower");
+public class Note implements org.apache.thrift.TBase<Note, Note._Fields>, java.io.Serializable, Cloneable, Comparable<Note> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Note");
 
   private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField SHOW_BOOSTS_FIELD_DESC = new org.apache.thrift.protocol.TField("showBoosts", org.apache.thrift.protocol.TType.BOOL, (short)2);
-  private static final org.apache.thrift.protocol.TField LANGUAGES_FIELD_DESC = new org.apache.thrift.protocol.TField("languages", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField TARGET_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("targetId", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField NOTE_FIELD_DESC = new org.apache.thrift.protocol.TField("note", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FollowerStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FollowerTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new NoteStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new NoteTupleSchemeFactory();
 
   public long accountId; // required
-  public boolean showBoosts; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages; // optional
+  public long targetId; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String note; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ACCOUNT_ID((short)1, "accountId"),
-    SHOW_BOOSTS((short)2, "showBoosts"),
-    LANGUAGES((short)3, "languages");
+    TARGET_ID((short)2, "targetId"),
+    NOTE((short)3, "note");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,10 +43,10 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       switch(fieldId) {
         case 1: // ACCOUNT_ID
           return ACCOUNT_ID;
-        case 2: // SHOW_BOOSTS
-          return SHOW_BOOSTS;
-        case 3: // LANGUAGES
-          return LANGUAGES;
+        case 2: // TARGET_ID
+          return TARGET_ID;
+        case 3: // NOTE
+          return NOTE;
         default:
           return null;
       }
@@ -91,69 +91,68 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   // isset id assignments
   private static final int __ACCOUNTID_ISSET_ID = 0;
-  private static final int __SHOWBOOSTS_ISSET_ID = 1;
+  private static final int __TARGETID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.LANGUAGES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.SHOW_BOOSTS, new org.apache.thrift.meta_data.FieldMetaData("showBoosts", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.LANGUAGES, new org.apache.thrift.meta_data.FieldMetaData("languages", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.TARGET_ID, new org.apache.thrift.meta_data.FieldMetaData("targetId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
+    tmpMap.put(_Fields.NOTE, new org.apache.thrift.meta_data.FieldMetaData("note", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Follower.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Note.class, metaDataMap);
   }
 
-  public Follower() {
+  public Note() {
   }
 
-  public Follower(
+  public Note(
     long accountId,
-    boolean showBoosts)
+    long targetId,
+    java.lang.String note)
   {
     this();
     this.accountId = accountId;
     setAccountIdIsSet(true);
-    this.showBoosts = showBoosts;
-    setShowBoostsIsSet(true);
+    this.targetId = targetId;
+    setTargetIdIsSet(true);
+    this.note = note;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Follower(Follower other) {
+  public Note(Note other) {
     __isset_bitfield = other.__isset_bitfield;
     this.accountId = other.accountId;
-    this.showBoosts = other.showBoosts;
-    if (other.isSetLanguages()) {
-      java.util.List<java.lang.String> __this__languages = new java.util.ArrayList<java.lang.String>(other.languages);
-      this.languages = __this__languages;
+    this.targetId = other.targetId;
+    if (other.isSetNote()) {
+      this.note = other.note;
     }
   }
 
   @Override
-  public Follower deepCopy() {
-    return new Follower(this);
+  public Note deepCopy() {
+    return new Note(this);
   }
 
   @Override
   public void clear() {
     setAccountIdIsSet(false);
     this.accountId = 0;
-    setShowBoostsIsSet(false);
-    this.showBoosts = false;
-    this.languages = null;
+    setTargetIdIsSet(false);
+    this.targetId = 0;
+    this.note = null;
   }
 
   public long getAccountId() {
     return this.accountId;
   }
 
-  public Follower setAccountId(long accountId) {
+  public Note setAccountId(long accountId) {
     this.accountId = accountId;
     setAccountIdIsSet(true);
     return this;
@@ -172,67 +171,51 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
-  public boolean isShowBoosts() {
-    return this.showBoosts;
+  public long getTargetId() {
+    return this.targetId;
   }
 
-  public Follower setShowBoosts(boolean showBoosts) {
-    this.showBoosts = showBoosts;
-    setShowBoostsIsSet(true);
+  public Note setTargetId(long targetId) {
+    this.targetId = targetId;
+    setTargetIdIsSet(true);
     return this;
   }
 
-  public void unsetShowBoosts() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID);
+  public void unsetTargetId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TARGETID_ISSET_ID);
   }
 
-  /** Returns true if field showBoosts is set (has been assigned a value) and false otherwise */
-  public boolean isSetShowBoosts() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID);
+  /** Returns true if field targetId is set (has been assigned a value) and false otherwise */
+  public boolean isSetTargetId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TARGETID_ISSET_ID);
   }
 
-  public void setShowBoostsIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SHOWBOOSTS_ISSET_ID, value);
-  }
-
-  public int getLanguagesSize() {
-    return (this.languages == null) ? 0 : this.languages.size();
+  public void setTargetIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TARGETID_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<java.lang.String> getLanguagesIterator() {
-    return (this.languages == null) ? null : this.languages.iterator();
+  public java.lang.String getNote() {
+    return this.note;
   }
 
-  public void addToLanguages(java.lang.String elem) {
-    if (this.languages == null) {
-      this.languages = new java.util.ArrayList<java.lang.String>();
-    }
-    this.languages.add(elem);
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<java.lang.String> getLanguages() {
-    return this.languages;
-  }
-
-  public Follower setLanguages(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> languages) {
-    this.languages = languages;
+  public Note setNote(@org.apache.thrift.annotation.Nullable java.lang.String note) {
+    this.note = note;
     return this;
   }
 
-  public void unsetLanguages() {
-    this.languages = null;
+  public void unsetNote() {
+    this.note = null;
   }
 
-  /** Returns true if field languages is set (has been assigned a value) and false otherwise */
-  public boolean isSetLanguages() {
-    return this.languages != null;
+  /** Returns true if field note is set (has been assigned a value) and false otherwise */
+  public boolean isSetNote() {
+    return this.note != null;
   }
 
-  public void setLanguagesIsSet(boolean value) {
+  public void setNoteIsSet(boolean value) {
     if (!value) {
-      this.languages = null;
+      this.note = null;
     }
   }
 
@@ -247,19 +230,19 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       }
       break;
 
-    case SHOW_BOOSTS:
+    case TARGET_ID:
       if (value == null) {
-        unsetShowBoosts();
+        unsetTargetId();
       } else {
-        setShowBoosts((java.lang.Boolean)value);
+        setTargetId((java.lang.Long)value);
       }
       break;
 
-    case LANGUAGES:
+    case NOTE:
       if (value == null) {
-        unsetLanguages();
+        unsetNote();
       } else {
-        setLanguages((java.util.List<java.lang.String>)value);
+        setNote((java.lang.String)value);
       }
       break;
 
@@ -273,11 +256,11 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     case ACCOUNT_ID:
       return getAccountId();
 
-    case SHOW_BOOSTS:
-      return isShowBoosts();
+    case TARGET_ID:
+      return getTargetId();
 
-    case LANGUAGES:
-      return getLanguages();
+    case NOTE:
+      return getNote();
 
     }
     throw new java.lang.IllegalStateException();
@@ -293,22 +276,22 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     switch (field) {
     case ACCOUNT_ID:
       return isSetAccountId();
-    case SHOW_BOOSTS:
-      return isSetShowBoosts();
-    case LANGUAGES:
-      return isSetLanguages();
+    case TARGET_ID:
+      return isSetTargetId();
+    case NOTE:
+      return isSetNote();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Follower)
-      return this.equals((Follower)that);
+    if (that instanceof Note)
+      return this.equals((Note)that);
     return false;
   }
 
-  public boolean equals(Follower that) {
+  public boolean equals(Note that) {
     if (that == null)
       return false;
     if (this == that)
@@ -323,21 +306,21 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
         return false;
     }
 
-    boolean this_present_showBoosts = true;
-    boolean that_present_showBoosts = true;
-    if (this_present_showBoosts || that_present_showBoosts) {
-      if (!(this_present_showBoosts && that_present_showBoosts))
+    boolean this_present_targetId = true;
+    boolean that_present_targetId = true;
+    if (this_present_targetId || that_present_targetId) {
+      if (!(this_present_targetId && that_present_targetId))
         return false;
-      if (this.showBoosts != that.showBoosts)
+      if (this.targetId != that.targetId)
         return false;
     }
 
-    boolean this_present_languages = true && this.isSetLanguages();
-    boolean that_present_languages = true && that.isSetLanguages();
-    if (this_present_languages || that_present_languages) {
-      if (!(this_present_languages && that_present_languages))
+    boolean this_present_note = true && this.isSetNote();
+    boolean that_present_note = true && that.isSetNote();
+    if (this_present_note || that_present_note) {
+      if (!(this_present_note && that_present_note))
         return false;
-      if (!this.languages.equals(that.languages))
+      if (!this.note.equals(that.note))
         return false;
     }
 
@@ -350,17 +333,17 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((showBoosts) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(targetId);
 
-    hashCode = hashCode * 8191 + ((isSetLanguages()) ? 131071 : 524287);
-    if (isSetLanguages())
-      hashCode = hashCode * 8191 + languages.hashCode();
+    hashCode = hashCode * 8191 + ((isSetNote()) ? 131071 : 524287);
+    if (isSetNote())
+      hashCode = hashCode * 8191 + note.hashCode();
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(Follower other) {
+  public int compareTo(Note other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -377,22 +360,22 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetShowBoosts(), other.isSetShowBoosts());
+    lastComparison = java.lang.Boolean.compare(isSetTargetId(), other.isSetTargetId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetShowBoosts()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.showBoosts, other.showBoosts);
+    if (isSetTargetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.targetId, other.targetId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetLanguages(), other.isSetLanguages());
+    lastComparison = java.lang.Boolean.compare(isSetNote(), other.isSetNote());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLanguages()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.languages, other.languages);
+    if (isSetNote()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.note, other.note);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -418,26 +401,24 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Follower(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("Note(");
     boolean first = true;
 
     sb.append("accountId:");
     sb.append(this.accountId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("showBoosts:");
-    sb.append(this.showBoosts);
+    sb.append("targetId:");
+    sb.append(this.targetId);
     first = false;
-    if (isSetLanguages()) {
-      if (!first) sb.append(", ");
-      sb.append("languages:");
-      if (this.languages == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.languages);
-      }
-      first = false;
+    if (!first) sb.append(", ");
+    sb.append("note:");
+    if (this.note == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.note);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -445,7 +426,10 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
-    // alas, we cannot check 'showBoosts' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'targetId' because it's a primitive and you chose the non-beans generator.
+    if (note == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'note' was not present! Struct: " + toString());
+    }
     // check for sub-struct validity
   }
 
@@ -467,17 +451,17 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
     }
   }
 
-  private static class FollowerStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class NoteStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FollowerStandardScheme getScheme() {
-      return new FollowerStandardScheme();
+    public NoteStandardScheme getScheme() {
+      return new NoteStandardScheme();
     }
   }
 
-  private static class FollowerStandardScheme extends org.apache.thrift.scheme.StandardScheme<Follower> {
+  private static class NoteStandardScheme extends org.apache.thrift.scheme.StandardScheme<Note> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Follower struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, Note struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -495,28 +479,18 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SHOW_BOOSTS
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.showBoosts = iprot.readBool();
-              struct.setShowBoostsIsSet(true);
+          case 2: // TARGET_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.targetId = iprot.readI64();
+              struct.setTargetIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // LANGUAGES
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list80 = iprot.readListBegin();
-                struct.languages = new java.util.ArrayList<java.lang.String>(_list80.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem81;
-                for (int _i82 = 0; _i82 < _list80.size; ++_i82)
-                {
-                  _elem81 = iprot.readString();
-                  struct.languages.add(_elem81);
-                }
-                iprot.readListEnd();
-              }
-              struct.setLanguagesIsSet(true);
+          case 3: // NOTE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.note = iprot.readString();
+              struct.setNoteIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -532,36 +506,27 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       if (!struct.isSetAccountId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'accountId' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetShowBoosts()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'showBoosts' was not found in serialized data! Struct: " + toString());
+      if (!struct.isSetTargetId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'targetId' was not found in serialized data! Struct: " + toString());
       }
       struct.validate();
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Follower struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, Note struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
       oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(SHOW_BOOSTS_FIELD_DESC);
-      oprot.writeBool(struct.showBoosts);
+      oprot.writeFieldBegin(TARGET_ID_FIELD_DESC);
+      oprot.writeI64(struct.targetId);
       oprot.writeFieldEnd();
-      if (struct.languages != null) {
-        if (struct.isSetLanguages()) {
-          oprot.writeFieldBegin(LANGUAGES_FIELD_DESC);
-          {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.languages.size()));
-            for (java.lang.String _iter83 : struct.languages)
-            {
-              oprot.writeString(_iter83);
-            }
-            oprot.writeListEnd();
-          }
-          oprot.writeFieldEnd();
-        }
+      if (struct.note != null) {
+        oprot.writeFieldBegin(NOTE_FIELD_DESC);
+        oprot.writeString(struct.note);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -569,57 +534,32 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
 
   }
 
-  private static class FollowerTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class NoteTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public FollowerTupleScheme getScheme() {
-      return new FollowerTupleScheme();
+    public NoteTupleScheme getScheme() {
+      return new NoteTupleScheme();
     }
   }
 
-  private static class FollowerTupleScheme extends org.apache.thrift.scheme.TupleScheme<Follower> {
+  private static class NoteTupleScheme extends org.apache.thrift.scheme.TupleScheme<Note> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Follower struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, Note struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeI64(struct.accountId);
-      oprot.writeBool(struct.showBoosts);
-      java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetLanguages()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetLanguages()) {
-        {
-          oprot.writeI32(struct.languages.size());
-          for (java.lang.String _iter84 : struct.languages)
-          {
-            oprot.writeString(_iter84);
-          }
-        }
-      }
+      oprot.writeI64(struct.targetId);
+      oprot.writeString(struct.note);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Follower struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, Note struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.accountId = iprot.readI64();
       struct.setAccountIdIsSet(true);
-      struct.showBoosts = iprot.readBool();
-      struct.setShowBoostsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        {
-          org.apache.thrift.protocol.TList _list85 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.languages = new java.util.ArrayList<java.lang.String>(_list85.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem86;
-          for (int _i87 = 0; _i87 < _list85.size; ++_i87)
-          {
-            _elem86 = iprot.readString();
-            struct.languages.add(_elem86);
-          }
-        }
-        struct.setLanguagesIsSet(true);
-      }
+      struct.targetId = iprot.readI64();
+      struct.setTargetIdIsSet(true);
+      struct.note = iprot.readString();
+      struct.setNoteIsSet(true);
     }
   }
 

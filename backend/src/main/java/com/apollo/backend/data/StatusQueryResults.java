@@ -691,14 +691,14 @@ public class StatusQueryResults implements org.apache.thrift.TBase<StatusQueryRe
           case 1: // RESULTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                struct.results = new java.util.ArrayList<StatusResultWithId>(_list96.size);
-                @org.apache.thrift.annotation.Nullable StatusResultWithId _elem97;
-                for (int _i98 = 0; _i98 < _list96.size; ++_i98)
+                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
+                struct.results = new java.util.ArrayList<StatusResultWithId>(_list104.size);
+                @org.apache.thrift.annotation.Nullable StatusResultWithId _elem105;
+                for (int _i106 = 0; _i106 < _list104.size; ++_i106)
                 {
-                  _elem97 = new StatusResultWithId();
-                  _elem97.read(iprot);
-                  struct.results.add(_elem97);
+                  _elem105 = new StatusResultWithId();
+                  _elem105.read(iprot);
+                  struct.results.add(_elem105);
                 }
                 iprot.readListEnd();
               }
@@ -710,16 +710,16 @@ public class StatusQueryResults implements org.apache.thrift.TBase<StatusQueryRe
           case 2: // MENTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map99 = iprot.readMapBegin();
-                struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map99.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key100;
-                @org.apache.thrift.annotation.Nullable AccountWithId _val101;
-                for (int _i102 = 0; _i102 < _map99.size; ++_i102)
+                org.apache.thrift.protocol.TMap _map107 = iprot.readMapBegin();
+                struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map107.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key108;
+                @org.apache.thrift.annotation.Nullable AccountWithId _val109;
+                for (int _i110 = 0; _i110 < _map107.size; ++_i110)
                 {
-                  _key100 = iprot.readString();
-                  _val101 = new AccountWithId();
-                  _val101.read(iprot);
-                  struct.mentions.put(_key100, _val101);
+                  _key108 = iprot.readString();
+                  _val109 = new AccountWithId();
+                  _val109.read(iprot);
+                  struct.mentions.put(_key108, _val109);
                 }
                 iprot.readMapEnd();
               }
@@ -779,9 +779,9 @@ public class StatusQueryResults implements org.apache.thrift.TBase<StatusQueryRe
         oprot.writeFieldBegin(RESULTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.results.size()));
-          for (StatusResultWithId _iter103 : struct.results)
+          for (StatusResultWithId _iter111 : struct.results)
           {
-            _iter103.write(oprot);
+            _iter111.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -791,10 +791,10 @@ public class StatusQueryResults implements org.apache.thrift.TBase<StatusQueryRe
         oprot.writeFieldBegin(MENTIONS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.mentions.size()));
-          for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter104 : struct.mentions.entrySet())
+          for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter112 : struct.mentions.entrySet())
           {
-            oprot.writeString(_iter104.getKey());
-            _iter104.getValue().write(oprot);
+            oprot.writeString(_iter112.getKey());
+            _iter112.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -833,17 +833,17 @@ public class StatusQueryResults implements org.apache.thrift.TBase<StatusQueryRe
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.results.size());
-        for (StatusResultWithId _iter105 : struct.results)
+        for (StatusResultWithId _iter113 : struct.results)
         {
-          _iter105.write(oprot);
+          _iter113.write(oprot);
         }
       }
       {
         oprot.writeI32(struct.mentions.size());
-        for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter106 : struct.mentions.entrySet())
+        for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter114 : struct.mentions.entrySet())
         {
-          oprot.writeString(_iter106.getKey());
-          _iter106.getValue().write(oprot);
+          oprot.writeString(_iter114.getKey());
+          _iter114.getValue().write(oprot);
         }
       }
       oprot.writeBool(struct.reachedEnd);
@@ -862,28 +862,28 @@ public class StatusQueryResults implements org.apache.thrift.TBase<StatusQueryRe
     public void read(org.apache.thrift.protocol.TProtocol prot, StatusQueryResults struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list107 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.results = new java.util.ArrayList<StatusResultWithId>(_list107.size);
-        @org.apache.thrift.annotation.Nullable StatusResultWithId _elem108;
-        for (int _i109 = 0; _i109 < _list107.size; ++_i109)
+        org.apache.thrift.protocol.TList _list115 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.results = new java.util.ArrayList<StatusResultWithId>(_list115.size);
+        @org.apache.thrift.annotation.Nullable StatusResultWithId _elem116;
+        for (int _i117 = 0; _i117 < _list115.size; ++_i117)
         {
-          _elem108 = new StatusResultWithId();
-          _elem108.read(iprot);
-          struct.results.add(_elem108);
+          _elem116 = new StatusResultWithId();
+          _elem116.read(iprot);
+          struct.results.add(_elem116);
         }
       }
       struct.setResultsIsSet(true);
       {
-        org.apache.thrift.protocol.TMap _map110 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-        struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map110.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _key111;
-        @org.apache.thrift.annotation.Nullable AccountWithId _val112;
-        for (int _i113 = 0; _i113 < _map110.size; ++_i113)
+        org.apache.thrift.protocol.TMap _map118 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
+        struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map118.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _key119;
+        @org.apache.thrift.annotation.Nullable AccountWithId _val120;
+        for (int _i121 = 0; _i121 < _map118.size; ++_i121)
         {
-          _key111 = iprot.readString();
-          _val112 = new AccountWithId();
-          _val112.read(iprot);
-          struct.mentions.put(_key111, _val112);
+          _key119 = iprot.readString();
+          _val120 = new AccountWithId();
+          _val120.read(iprot);
+          struct.mentions.put(_key119, _val120);
         }
       }
       struct.setMentionsIsSet(true);

@@ -440,16 +440,16 @@ public class StatusQueryResult implements org.apache.thrift.TBase<StatusQueryRes
           case 2: // MENTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map114 = iprot.readMapBegin();
-                struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map114.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key115;
-                @org.apache.thrift.annotation.Nullable AccountWithId _val116;
-                for (int _i117 = 0; _i117 < _map114.size; ++_i117)
+                org.apache.thrift.protocol.TMap _map122 = iprot.readMapBegin();
+                struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map122.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key123;
+                @org.apache.thrift.annotation.Nullable AccountWithId _val124;
+                for (int _i125 = 0; _i125 < _map122.size; ++_i125)
                 {
-                  _key115 = iprot.readString();
-                  _val116 = new AccountWithId();
-                  _val116.read(iprot);
-                  struct.mentions.put(_key115, _val116);
+                  _key123 = iprot.readString();
+                  _val124 = new AccountWithId();
+                  _val124.read(iprot);
+                  struct.mentions.put(_key123, _val124);
                 }
                 iprot.readMapEnd();
               }
@@ -483,10 +483,10 @@ public class StatusQueryResult implements org.apache.thrift.TBase<StatusQueryRes
         oprot.writeFieldBegin(MENTIONS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.mentions.size()));
-          for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter118 : struct.mentions.entrySet())
+          for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter126 : struct.mentions.entrySet())
           {
-            oprot.writeString(_iter118.getKey());
-            _iter118.getValue().write(oprot);
+            oprot.writeString(_iter126.getKey());
+            _iter126.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -513,10 +513,10 @@ public class StatusQueryResult implements org.apache.thrift.TBase<StatusQueryRes
       struct.result.write(oprot);
       {
         oprot.writeI32(struct.mentions.size());
-        for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter119 : struct.mentions.entrySet())
+        for (java.util.Map.Entry<java.lang.String, AccountWithId> _iter127 : struct.mentions.entrySet())
         {
-          oprot.writeString(_iter119.getKey());
-          _iter119.getValue().write(oprot);
+          oprot.writeString(_iter127.getKey());
+          _iter127.getValue().write(oprot);
         }
       }
     }
@@ -528,16 +528,16 @@ public class StatusQueryResult implements org.apache.thrift.TBase<StatusQueryRes
       struct.result.read(iprot);
       struct.setResultIsSet(true);
       {
-        org.apache.thrift.protocol.TMap _map120 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-        struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map120.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _key121;
-        @org.apache.thrift.annotation.Nullable AccountWithId _val122;
-        for (int _i123 = 0; _i123 < _map120.size; ++_i123)
+        org.apache.thrift.protocol.TMap _map128 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
+        struct.mentions = new java.util.HashMap<java.lang.String,AccountWithId>(2*_map128.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _key129;
+        @org.apache.thrift.annotation.Nullable AccountWithId _val130;
+        for (int _i131 = 0; _i131 < _map128.size; ++_i131)
         {
-          _key121 = iprot.readString();
-          _val122 = new AccountWithId();
-          _val122.read(iprot);
-          struct.mentions.put(_key121, _val122);
+          _key129 = iprot.readString();
+          _val130 = new AccountWithId();
+          _val130.read(iprot);
+          struct.mentions.put(_key129, _val130);
         }
       }
       struct.setMentionsIsSet(true);
