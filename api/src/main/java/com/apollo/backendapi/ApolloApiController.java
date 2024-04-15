@@ -214,7 +214,7 @@ public Mono<GetAccount> getAccountVerifyCredentials(WebSession session) {
 }
 
 // Map a GET request to retrieve a specific account by its ID
-@GetMapping("/api/v1/accounts/{id}")
+@GetMapping("/api/accounts/{id}")
 public Mono<GetAccount> getAccount(@PathVariable("id") String accountId) {
     // Convert the account ID from String to its proper format and retrieve account information asynchronously
     return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(accountId)))

@@ -7,6 +7,10 @@ import org.bouncycastle.util.io.pem.*;
 
 public class ApolloWebHelpers {
 
+    static {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
+
     public static class SigningKeyPair {
         public String publicKey;
         public String privateKey;

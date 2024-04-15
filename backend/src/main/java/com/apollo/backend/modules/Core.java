@@ -2739,20 +2739,20 @@ public class Core implements RamaModule {
         @Override
         public void define(Setup setup, Topologies topologies) {
 
-                setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
-                setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
-                setup.declareDepot("*statusWithIdDepot", Depot.disallow());
-                setup.declareDepot("*statusAttachmentWithIdDepot", Depot.hashBy(ApolloHelpers.ExtractUuid.class));
-                setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
-                setup.declareDepot("*accountWithIdDepot", Depot.disallow());
-                setup.declareDepot("*accountEditDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-                setup.declareDepot("*favoriteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-                setup.declareDepot("*bookmarkStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-                setup.declareDepot("*muteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-                setup.declareDepot("*pinStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-                setup.declareDepot("*conversationDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-                setup.declareDepot("*pollVoteDepot", Depot.hashBy(ApolloHelpers.ExtractTargetAuthorId.class));
-                setup.declareTickDepot("*scheduledStatusTick", scheduledStatusTickMillis);
+        setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
+    setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
+    setup.declareDepot("*statusWithIdDepot", Depot.disallow());
+    setup.declareDepot("*statusAttachmentWithIdDepot", Depot.hashBy(ApolloHelpers.ExtractUuid.class));
+    setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
+    setup.declareDepot("*accountWithIdDepot", Depot.disallow());
+    setup.declareDepot("*accountEditDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*likeStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*bookmarkStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*muteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*pinStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*conversationDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+    setup.declareDepot("*pollVoteDepot", Depot.hashBy(ApolloHelpers.ExtractTargetAuthorId.class));
+    setup.declareTickDepot("*scheduledStatusTick", scheduledStatusTickMillis);
 
                 setup.declareObject("*homeTimelines", new HomeTimelines(timelineMaxAmount, enableHomeTimelineRefresh));
 
