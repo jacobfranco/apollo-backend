@@ -38,6 +38,10 @@ enum FanoutAction {
   Remove = 3,
 }
 
+enum LocalTimeline {
+  Public = 1
+}
+
 struct KeyValuePair {
   1: required string key;
   2: required string value;
@@ -656,5 +660,6 @@ struct Notification {
   1: required NotificationContent content;
   2: required Timestamp timestamp;
 }
+
 
 

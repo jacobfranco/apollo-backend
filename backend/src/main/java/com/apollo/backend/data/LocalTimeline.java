@@ -7,16 +7,12 @@
 package com.apollo.backend.data;
 
 
-public enum FilterContext implements org.apache.thrift.TEnum {
-  Home(1),
-  Notifications(2),
-  Public(3),
-  Thread(4),
-  Account(5);
+public enum LocalTimeline implements org.apache.thrift.TEnum {
+  Public(1);
 
   private final int value;
 
-  private FilterContext(int value) {
+  private LocalTimeline(int value) {
     this.value = value;
   }
 
@@ -33,18 +29,10 @@ public enum FilterContext implements org.apache.thrift.TEnum {
    * @return null if the value is not found.
    */
   @org.apache.thrift.annotation.Nullable
-  public static FilterContext findByValue(int value) { 
+  public static LocalTimeline findByValue(int value) { 
     switch (value) {
       case 1:
-        return Home;
-      case 2:
-        return Notifications;
-      case 3:
         return Public;
-      case 4:
-        return Thread;
-      case 5:
-        return Account;
       default:
         return null;
     }

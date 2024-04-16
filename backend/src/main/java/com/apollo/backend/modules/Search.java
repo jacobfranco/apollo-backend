@@ -352,19 +352,13 @@ public class Search implements RamaModule {
                                 .out("*allAccountIds")
                                 .invokeQuery("*getAccountsFromAccountIds", null, "*allAccountIds").out("*allAccounts")
                                 .each((List<AccountWithId> awids) -> awids.stream()
-                                        .filter(awid -> awid.account.discoverable).map(awid -> awid.accountId)
+                                        .filter(awid -> awid.account.discoverable)
+                                        .map(awid -> awid.accountId)
                                         .collect(Collectors.toList()), "*allAccounts")
                                 .out("*discoverableAccountIds")
-                                .each((List<AccountWithId> awids) -> awids.stream()
-                                        .filter(awid -> awid.account.discoverable && awid.account.content.isSetLocal())
-                                        .map(awid -> awid.accountId).collect(Collectors.toList()), "*allAccounts")
-                                .out("*localDiscoverableAccountIds")
                                 .globalPartition()
-                                .localTransform("$$allActiveAccountIds",
-                                        Path.term(Search::prependIds, "*discoverableAccountIds", maxDirectorySize))
-                                .localTransform("$$localActiveAccountIds",
-                                        Path.term(Search::prependIds, "*localDiscoverableAccountIds",
-                                                maxDirectorySize)))
+                                .localTransform("$$activeAccountIds",
+                                        Path.term(Search::prependIds, "*discoverableAccountIds", maxDirectorySize)))
 
                 .explodeMicrobatch("*microbatch").out("*statusWithId")
                 .keepTrue(new Expr(Ops.OR, new Expr(Ops.IS_INSTANCE_OF, EditStatus.class, "*statusWithId"),
@@ -421,23 +415,17 @@ public class Search implements RamaModule {
         search.source("*accountWithIdDepot").out("*microbatch")
                 .explodeMicrobatch("*microbatch").out("*accountWithId")
                 .macro(extractFields("*accountWithId", "*accountId", "*account"))
-                .macro(extractFields("*account", "*name", "*timestamp", "*displayName", "*content", "*discoverable"))
+                .macro(extractFields("*account", "*name", "*timestamp", "*displayName", "*discoverable"))
                 .atomicBlock(Block.macro(finishProfileTermIndexing(profileTerms, "*name", "*displayName")))
                 // update directories
                 .globalPartition()
                 // update active account directory
-                .localTransform("$$allActiveAccountIds",
+                .localTransform("$$activeAccountIds",
                         Path.term(Search::prependId, "*accountId", maxDirectorySize, "*discoverable"))
-                .ifTrue(new Expr(Ops.IS_INSTANCE_OF, LocalAccount.class, "*content"),
-                        Block.localTransform("$$localActiveAccountIds",
-                                Path.term(Search::prependId, "*accountId", maxDirectorySize, "*discoverable")))
                 // update new account directory
                 .keepTrue("*discoverable")
                 .each(Ops.TUPLE, "*accountId", "*timestamp").out("*tuple")
-                .agg("$$allNewAccountIds",
-                        Agg.topMonotonic(maxDirectorySize, "*tuple").idFunction(Ops.FIRST).sortValFunction(Ops.LAST))
-                .keepTrue(new Expr(Ops.IS_INSTANCE_OF, LocalAccount.class, "*content"))
-                .agg("$$localNewAccountIds",
+                .agg("$$newAccountIds",
                         Agg.topMonotonic(maxDirectorySize, "*tuple").idFunction(Ops.FIRST).sortValFunction(Ops.LAST));
 
         search.source("*accountEditDepot").out("*microbatch")
@@ -460,24 +448,15 @@ public class Search implements RamaModule {
                 .out("*editDiscoverable")
                 .keepTrue(new Expr(Ops.IS_NOT_NULL, "*editDiscoverable"))
                 .globalPartition()
-                // update active account directory
-                .localTransform("$$allActiveAccountIds",
+                // update active account directory, considering all accounts as local
+                .localTransform("$$activeAccountIds",
                         Path.term(Search::prependId, "*accountId", maxDirectorySize, "*editDiscoverable"))
-                .ifTrue(new Expr(Ops.IS_INSTANCE_OF, LocalAccount.class, "*content"),
-                        Block.localTransform("$$localActiveAccountIds",
-                                Path.term(Search::prependId, "*accountId", maxDirectorySize, "*editDiscoverable")))
                 // update new account directory
                 .ifTrue("*editDiscoverable",
                         Block.each(Ops.TUPLE, "*accountId", "*timestamp").out("*tuple")
-                                .agg("$$allNewAccountIds",
+                                .agg("$$newAccountIds",
                                         Agg.topMonotonic(maxDirectorySize, "*tuple").idFunction(Ops.FIRST)
-                                                .sortValFunction(Ops.LAST))
-                                .keepTrue(new Expr(Ops.IS_INSTANCE_OF, LocalAccount.class, "*content"))
-                                .agg("$$localNewAccountIds",
-                                        Agg.topMonotonic(maxDirectorySize, "*tuple").idFunction(Ops.FIRST)
-                                                .sortValFunction(Ops.LAST)),
-                        Block.localTransform("$$allNewAccountIds", Path.term(Search::removeId, "*accountId"))
-                                .localTransform("$$localNewAccountIds", Path.term(Search::removeId, "*accountId")));
+                                                .sortValFunction(Ops.LAST)));
 
         search.source("*reviewHashtagDepot").out("*microbatch")
                 .explodeMicrobatch("*microbatch").out("*data")
