@@ -52,7 +52,7 @@ public class Notifications implements RamaModule {
         setup.declareDepot("*dismissDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
 
         setup.clusterDepot("*statusWithIdDepot", Core.class.getName(), "*statusWithIdDepot");
-        setup.clusterDepot("*favoriteStatusDepot", Core.class.getName(), "*favoriteStatusDepot");
+        setup.clusterDepot("*likeStatusDepot", Core.class.getName(), "*likeStatusDepot");
         setup.clusterDepot("*followAndBlockAccountDepot", Relationships.class.getName(), "*followAndBlockAccountDepot");
 
         setup.clusterPState("$$accountIdToSuppressions", Relationships.class.getName(), "$$accountIdToSuppressions");
@@ -271,7 +271,7 @@ public class Notifications implements RamaModule {
                 .hashPartition("*followerId")
                 .macro(accountIdToNotificationsTimeline.addItem("*followerId", "*notification"));
 
-        notifications.source("*favoriteStatusDepot").out("*microbatch")
+        notifications.source("*likeStatusDepot").out("*microbatch")
                 .explodeMicrobatch("*microbatch").out("*data")
                 .keepTrue(new Expr(Ops.IS_INSTANCE_OF, LikeStatus.class, "*data"))
                 .macro(extractFields("*data", "*accountId", "*target", "*timestamp"))
