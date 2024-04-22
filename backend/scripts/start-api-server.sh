@@ -33,4 +33,5 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd "$DIR"/../../api
 
 # Start the Spring Boot application with the specified JVM arguments.
-mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xss2m"
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xss2m -XX:ReservedCodeCacheSize=256m"
+
