@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.apollo.backend.ApolloHelpers.*;
 
 /*
- * This module handles Mastodon's local timeline, which shows all
+ * This module handles Apollo's local timeline, which shows all
  * statuses happening on the platform. The last 800 statuses on the local
  * timeline are kept.
  */

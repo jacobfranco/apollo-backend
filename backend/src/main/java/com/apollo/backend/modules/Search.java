@@ -338,10 +338,8 @@ public class Search implements RamaModule {
                 "$$reviewedHashtagPrefixes", 10000, String.class, String.class);
         reviewedHashtagPrefixes.declarePStates(search);
 
-        search.pstate("$$allNewAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
-        search.pstate("$$allActiveAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
-        search.pstate("$$localNewAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
-        search.pstate("$$localActiveAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
+        search.pstate("$$newAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
+        search.pstate("$$activeAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
 
         search.source("*statusWithIdDepot").out("*microbatch")
                 // update directories
@@ -448,7 +446,7 @@ public class Search implements RamaModule {
                 .out("*editDiscoverable")
                 .keepTrue(new Expr(Ops.IS_NOT_NULL, "*editDiscoverable"))
                 .globalPartition()
-                // update active account directory, considering all accounts as local
+                // update active account directory
                 .localTransform("$$activeAccountIds",
                         Path.term(Search::prependId, "*accountId", maxDirectorySize, "*editDiscoverable"))
                 // update new account directory

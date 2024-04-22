@@ -22,6 +22,13 @@ import static com.apollo.backend.ApolloHelpers.extractFields;
 
 import com.clearspring.analytics.stream.membership.BloomFilter;
 
+/*
+ * This module implements the main parts of Mastodon – timelines, statuses, and profiles. They're
+ * kept colocated together because the most important part of the app, rendering a page of a home timeline,
+ * needs to fetch a lot of timeline, status, and profile data at the same time. Keeping them colocated
+ * increases the efficiency of these queries and lowers the latency.
+ */
+
 public class Core implements RamaModule {
 
         private static final int DESCENDANT_SEARCH_LIMIT = 5000;
@@ -369,7 +376,7 @@ public class Core implements RamaModule {
                                 .out(outNextIdVar);
         }
 
-        public Block safeFetchMapLocalFollowers(String pstateVar, String keyVar, Object startId, Object fanoutLimit,
+        public Block safeFetchMapFollowers(String pstateVar, String keyVar, Object startId, Object fanoutLimit,
                         String outFollowerIdsVar, String outNextIdVar) {
                 return safeFetchFollowers(true, pstateVar, keyVar, startId, fanoutLimit, outFollowerIdsVar,
                                 outNextIdVar);
@@ -461,7 +468,7 @@ public class Core implements RamaModule {
                 MicrobatchTopology fan = topologies.microbatch("fanout");
 
                 // fanout pstates
-                fan.pstate("$$statusIdToLocalFollowerFanouts", PState.mapSchema(Long.class, List.class)); // List<FollowerFanout>
+                fan.pstate("$$statusIdToFollowerFanouts", PState.mapSchema(Long.class, List.class)); // List<FollowerFanout>
                 fan.pstate("$$hashtagFanoutToIndex", PState.mapSchema(HashtagFanout.class, Long.class));
 
                 // conversations
@@ -504,12 +511,10 @@ public class Core implements RamaModule {
                                                                 .macro(accountIdToConvoIds.removeFromLinkedSet(
                                                                                 "*accountId", "*conversationId")));
 
-                KeyToUniqueFixedItemsPStateGroup listIdToListTimeline = new KeyToUniqueFixedItemsPStateGroup(
-                                "$$listIdToListTimeline", timelineMaxAmount, Long.class, StatusPointer.class);
-                listIdToListTimeline.declarePStates(fan);
                 KeyToLinkedEntitySetPStateGroup accountIdToDirectMessages =
                                 // stores all DMs in a flat list
-                                // necessary for the old (deprecated) DM timeline and for the streaming API
+                                // necessary for the old (deprecated) DM timeline and for the streaming API --
+                                // TODO: Maybe remove
                                 new KeyToLinkedEntitySetPStateGroup("$$accountIdToDirectMessages", Long.class,
                                                 StatusPointer.class).descending();
                 accountIdToDirectMessages.declarePStates(fan);
@@ -517,11 +522,11 @@ public class Core implements RamaModule {
                 fan.source("*statusWithIdDepot").out("*microbatch")
                                 .anchor("FanoutRoot")
 
-                                // continue fanout of new statuses to local followers
+                                // continue fanout of new statuses to followers
                                 .allPartition()
-                                .localSelect("$$statusIdToLocalFollowerFanouts", Path.all()).out("*keyAndVal")
+                                .localSelect("$$statusIdToFollowerFanouts", Path.all()).out("*keyAndVal")
                                 .each(Ops.EXPAND, "*keyAndVal").out("*statusId", "*followerFanouts")
-                                .localTransform("$$statusIdToLocalFollowerFanouts", Path.key("*statusId").termVoid())
+                                .localTransform("$$statusIdToFollowerFanouts", Path.key("*statusId").termVoid())
                                 .each(Ops.EXPLODE, "*followerFanouts").out("*followerFanout")
                                 .macro(extractFields("*followerFanout", "*authorId", "*nextIndex", "*fanoutAction",
                                                 "*status", "*task"))
@@ -531,7 +536,7 @@ public class Core implements RamaModule {
                                                 "*statusId")
                                 .out("*statusPointer")
                                 .directPartition("$$partitionedFollowers", "*task")
-                                .anchor("LocalFollowerFanoutContinue")
+                                .anchor("FollowerFanoutContinue")
 
                                 // continue fanout of new statuses to hashtags
                                 .hook("FanoutRoot")
@@ -629,9 +634,9 @@ public class Core implements RamaModule {
                                                 Block.directPartition("$$partitionedFollowers", "*task"))
                                 .anchor("NormalFanout")
 
-                                // fanout new status to local followers
-                                .unify("NormalFanout", "LocalFollowerFanoutContinue")
-                                .macro(safeFetchMapLocalFollowers("$$partitionedFollowers", "*authorId", "*nextIndex",
+                                // fanout new status to followers
+                                .unify("NormalFanout", "FollowerFanoutContinue")
+                                .macro(safeFetchMapFollowers("$$partitionedFollowers", "*authorId", "*nextIndex",
                                                 rangeQueryLimit, "*fetchedFollowers", "*nextFollowerId"))
                                 // update fanout pstate if necessary
                                 .ifTrue(new Expr(Ops.IS_NOT_NULL, "*nextFollowerId"),
@@ -640,7 +645,7 @@ public class Core implements RamaModule {
                                                                 new Expr(FanoutAction::findByValue,
                                                                                 "*fanoutActionValue"),
                                                                 "*status", "*task").out("*followerFanout")
-                                                                .localTransform("$$statusIdToLocalFollowerFanouts", Path
+                                                                .localTransform("$$statusIdToFollowerFanouts", Path
                                                                                 .key("*statusId").nullToList()
                                                                                 .afterElem()
                                                                                 .termVal("*followerFanout")))
@@ -2739,20 +2744,20 @@ public class Core implements RamaModule {
         @Override
         public void define(Setup setup, Topologies topologies) {
 
-        setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
-    setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
-    setup.declareDepot("*statusWithIdDepot", Depot.disallow());
-    setup.declareDepot("*statusAttachmentWithIdDepot", Depot.hashBy(ApolloHelpers.ExtractUuid.class));
-    setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
-    setup.declareDepot("*accountWithIdDepot", Depot.disallow());
-    setup.declareDepot("*accountEditDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*likeStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*bookmarkStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*muteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*pinStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*conversationDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
-    setup.declareDepot("*pollVoteDepot", Depot.hashBy(ApolloHelpers.ExtractTargetAuthorId.class));
-    setup.declareTickDepot("*scheduledStatusTick", scheduledStatusTickMillis);
+                setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
+                setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
+                setup.declareDepot("*statusWithIdDepot", Depot.disallow());
+                setup.declareDepot("*statusAttachmentWithIdDepot", Depot.hashBy(ApolloHelpers.ExtractUuid.class));
+                setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
+                setup.declareDepot("*accountWithIdDepot", Depot.disallow());
+                setup.declareDepot("*accountEditDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*likeStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*bookmarkStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*muteStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*pinStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*conversationDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*pollVoteDepot", Depot.hashBy(ApolloHelpers.ExtractTargetAuthorId.class));
+                setup.declareTickDepot("*scheduledStatusTick", scheduledStatusTickMillis);
 
                 setup.declareObject("*homeTimelines", new HomeTimelines(timelineMaxAmount, enableHomeTimelineRefresh));
 
