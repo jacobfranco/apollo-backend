@@ -37,6 +37,7 @@ public class ApolloApiManager {
 
      // Relationships Depots
     private final Depot authCodeDepot;
+    private final Depot followAndBlockAccountDepot;
 
     // Core PStates
     private final PState nameToUser;
@@ -50,6 +51,9 @@ public class ApolloApiManager {
     private final QueryTopologyClient<StatusQueryResults> getAccountTimeline;
     private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
 
+    // Relationship Query Topologies
+    private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
+
     public ApolloApiManager(ClusterManagerBase cluster) {
 
 
@@ -61,6 +65,7 @@ public class ApolloApiManager {
         
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
+        followAndBlockAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followAndBlockAccountDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
@@ -73,6 +78,10 @@ public class ApolloApiManager {
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
+
+        // Relationships Query Topologies
+        getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
+
       }
 
       public static class QueryResults<T, O> {
@@ -330,6 +339,47 @@ public class ApolloApiManager {
 
     public CompletableFuture<Void> cancelScheduledStatus(StatusPointer statusPointer) {
         return scheduledStatusDepot.appendAsync(new RemoveStatus(statusPointer.authorId, statusPointer.statusId, Instant.now().toEpochMilli()));
+    }
+
+    public CompletableFuture<SimpleEntry<AccountWithId, AccountWithId>> getAccountWithIdPair(long firstAccountId, long secondAccountId) {
+        return getAccountsFromAccountIds.invokeAsync(null, Arrays.asList(firstAccountId, secondAccountId))
+                                        .thenApply(accountWithIds -> {
+                                            if (accountWithIds.size() != 2) return null;
+                                            return new SimpleEntry<>(accountWithIds.get(0), accountWithIds.get(1));
+                                        });
+    }
+
+    public CompletableFuture<Boolean> postFollowAccount(long followerId, long followeeId, String sharedInboxUrl, PostFollow params) {
+        return getAccountWithId(followeeId)
+            .thenCompose((followee) -> {
+                if (followee != null && followee.account != null && followee.account.locked) {
+                    FollowLockedAccount req = new FollowLockedAccount(followeeId, followerId, System.currentTimeMillis());
+                    if (params != null) {
+                        if (params.reposts != null) req.setShowBoosts(params.reposts);
+                        if (params.notify != null) req.setNotify(params.notify);
+                        if (params.languages != null) req.setLanguages(params.languages);
+                    }
+                    return followAndBlockAccountDepot.appendAsync(req);
+                } else {
+                    FollowAccount req = new FollowAccount(followerId, followeeId, System.currentTimeMillis());
+                    if (params != null) {
+                        if (params.reposts != null ) req.setShowBoosts(params.reposts);
+                        if (params.notify != null) req.setNotify(params.notify);
+                        if (params.languages != null) req.setLanguages(params.languages);
+                    }
+                    return followAndBlockAccountDepot.appendAsync(req);
+                }
+            }).thenApply(res -> true);
+    }
+
+    public CompletableFuture<AccountRelationshipQueryResult> getAccountRelationship(long sourceId, long targetId) {
+        return getAccountRelationship.invokeAsync(sourceId, targetId);
+    }
+
+    public CompletableFuture<Boolean> postRemoveFollowAccount(long followerId, long followeeId, String sharedInboxUrl) {
+        RemoveFollowAccount removeFollowAccount = new RemoveFollowAccount(followerId, followeeId, System.currentTimeMillis());
+        if (sharedInboxUrl != null) removeFollowAccount.setFollowerSharedInboxUrl(sharedInboxUrl);
+        return followAndBlockAccountDepot.appendAsync(removeFollowAccount).thenApply(res -> true);
     }
 
 

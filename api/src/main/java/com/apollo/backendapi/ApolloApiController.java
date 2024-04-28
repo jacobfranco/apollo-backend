@@ -286,14 +286,15 @@ public class ApolloApiController {
      * ======================================
      */
 
-     @PostMapping(value = "/api/statuses", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/statuses", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<Object> postStatus(WebSession session, @RequestBody(required = true) PostStatus params) {
         long requestAccountId = getMandatoryAccountId(session);
         validateStatus(params.status, params.spoiler_text, params.language, params.poll);
         if (params.scheduled_at != null) {
-          return Mono.fromFuture(manager.postScheduledStatus(requestAccountId, params, null))
-                     .map(GetScheduledStatus::new);
-        } else return Mono.fromFuture(manager.postStatus(requestAccountId, params, null)).map(GetStatus::new);
+            return Mono.fromFuture(manager.postScheduledStatus(requestAccountId, params, null))
+                    .map(GetScheduledStatus::new);
+        } else
+            return Mono.fromFuture(manager.postStatus(requestAccountId, params, null)).map(GetStatus::new);
     }
 
     @PostMapping(value = "/api/statuses", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -309,12 +310,19 @@ public class ApolloApiController {
             @RequestPart(value = "media_ids[]", required = false) List<Part> media_ids,
             @RequestPart(value = "poll[options][]", required = false) List<Part> poll_options,
             @RequestPart(value = "poll[expires_in]", required = false) String poll_expires_in,
-            @RequestPart(value = "poll[multiple]", required = false) String poll_multiple
-    ) {
-        List<Mono<DataBuffer>> mediaContent = media_ids.stream().map(part -> part.content().single()).collect(Collectors.toList());
-        List<Mono<DataBuffer>> pollOptions = poll_options.stream().map(part -> part.content().single()).collect(Collectors.toList());
-        return (mediaContent.size() > 0 ? Mono.zip(mediaContent, res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset())).collect(Collectors.toList())) : Mono.just(new ArrayList<>()))
-                .flatMap(mediaContentResults -> (pollOptions.size() > 0 ? Mono.zip(pollOptions, res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset())).collect(Collectors.toList())) : Mono.just(new ArrayList<>()))
+            @RequestPart(value = "poll[multiple]", required = false) String poll_multiple) {
+        List<Mono<DataBuffer>> mediaContent = media_ids.stream().map(part -> part.content().single())
+                .collect(Collectors.toList());
+        List<Mono<DataBuffer>> pollOptions = poll_options.stream().map(part -> part.content().single())
+                .collect(Collectors.toList());
+        return (mediaContent.size() > 0 ? Mono.zip(mediaContent,
+                res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset()))
+                        .collect(Collectors.toList()))
+                : Mono.just(new ArrayList<>()))
+                .flatMap(mediaContentResults -> (pollOptions.size() > 0 ? Mono.zip(pollOptions,
+                        res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset()))
+                                .collect(Collectors.toList()))
+                        : Mono.just(new ArrayList<>()))
                         .flatMap(pollOptionsResults -> {
                             PostStatus postStatus = new PostStatus(status, in_reply_to_id, visibility, scheduled_at);
                             postStatus.spoiler_text = spoiler_text;
@@ -325,7 +333,8 @@ public class ApolloApiController {
                                 postStatus.poll = new PostStatus.Poll();
                                 postStatus.poll.options = (List<String>) pollOptionsResults;
                                 postStatus.poll.expires_in = Long.parseLong(poll_expires_in);
-                                postStatus.poll.multiple = poll_multiple != null ? Boolean.parseBoolean(poll_multiple) : false;
+                                postStatus.poll.multiple = poll_multiple != null ? Boolean.parseBoolean(poll_multiple)
+                                        : false;
                             }
                             return this.postStatus(session, postStatus);
                         }));
@@ -333,47 +342,87 @@ public class ApolloApiController {
 
     @GetMapping("/api/scheduled_statuses")
     public Mono<List<GetScheduledStatus>> getScheduledStatuses(ServerWebExchange exchange, WebSession session,
-                                                               @RequestParam(required = false) String max_id,
-                                                               @RequestParam(required = false) Integer limit) {
+            @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getScheduledStatuses(requestAccountId, statusPointer, limit))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return queryResults.results.stream()
-                                                  .map(GetScheduledStatus::new)
-                                                  .collect(Collectors.toList());
-                   });
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return queryResults.results.stream()
+                            .map(GetScheduledStatus::new)
+                            .collect(Collectors.toList());
+                });
     }
 
     @GetMapping("/api/scheduled_statuses/{id}")
     public Mono<GetScheduledStatus> getScheduledStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        if (statusPointer.authorId != requestAccountId)
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         return Mono.fromFuture(manager.getScheduledStatus(statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetScheduledStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetScheduledStatus::new);
     }
 
     @PutMapping("/api/v1/scheduled_statuses/{id}")
     public Mono<GetScheduledStatus> updateScheduledStatus(WebSession session,
-                                                          @PathVariable("id") String id,
-                                                          @RequestBody PutScheduledStatus putScheduledStatus) {
+            @PathVariable("id") String id,
+            @RequestBody PutScheduledStatus putScheduledStatus) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        if (statusPointer.authorId != requestAccountId)
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         return Mono.fromFuture(manager.updateScheduledStatus(statusPointer, putScheduledStatus.scheduled_at))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetScheduledStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetScheduledStatus::new);
     }
 
     @DeleteMapping("/api/v1/scheduled_statuses/{id}")
     public Mono<Void> cancelScheduledStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        if (statusPointer.authorId != requestAccountId)
+            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         return Mono.fromFuture(manager.cancelScheduledStatus(statusPointer));
+    }
+
+    /*
+     * Follow Actions Endpoints
+     * ======================================
+     * - POST /api/accounts/{id}/follow
+     * - POST /api/accounts/{id}/unfollow
+     * ======================================
+     */
+
+    @PostMapping("/api/accounts/{id}/follow")
+    public Mono<GetRelationship> postFollowAccount(WebSession session, @PathVariable("id") String id,
+            @RequestBody(required = false) PostFollow params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long followeeId = ApolloHelpers.parseAccountId(id);
+
+        return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, followeeId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithIdPair -> {
+                    return Mono.fromFuture(manager.postFollowAccount(requestAccountId, followeeId, null, params));
+                })
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followeeId)))
+                .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/v1/accounts/{id}/unfollow")
+    public Mono<GetRelationship> postUnfollowAccount(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long followeeId = ApolloHelpers.parseAccountId(id);
+
+        return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, followeeId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithIdPair -> {
+                    return Mono.fromFuture(manager.postRemoveFollowAccount(requestAccountId, followeeId, null));
+                })
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followeeId)))
+                .map(result -> new GetRelationship(id, result));
     }
 
 }
