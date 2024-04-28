@@ -649,7 +649,7 @@ union NotificationContent {
   1: StatusPointer mention;
   2: AccountId follow;
   3: AccountId followRequest;
-  4: StatusResponseNotificationContent favorite;
+  4: StatusResponseNotificationContent like;
   5: StatusResponseNotificationContent boost;
   6: StatusPointer pollComplete;
   7: StatusPointer boostedUpdate;

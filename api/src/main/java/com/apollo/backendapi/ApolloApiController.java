@@ -8,222 +8,323 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.*;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.*;
+import org.springframework.http.codec.multipart.Part;
+import org.springframework.core.io.buffer.DataBuffer;
+
 import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.stream.Collectors;
+import java.nio.charset.Charset;
 
 @RestController
-@CrossOrigin(exposedHeaders = {"Link"})
+@CrossOrigin(exposedHeaders = { "Link" })
 public class ApolloApiController {
 
     public static ApolloApiManager manager;
 
-   /*
-    * Helper Functions
-    * ======================================
-    - loginWithAccount
-    - getMandatoryAccountId
-    * ======================================
-    */
+    /*
+     * Helper Functions
+     * ======================================
+     * - loginWithAccount
+     * - getMandatoryAccountId
+     * - validateStatus
+     * ======================================
+     */
 
-   // Login Function
+    // Login Function
     private Mono<GetToken> loginWithAccount(WebSession session, String scope, AccountWithId accountWithId) {
         // Update Session
         session.getAttributes().put("accountId", accountWithId.accountId);
         session.getAttributes().put("accountName", accountWithId.account.displayName);
         // Store the session id in the backend and return token
-        return Mono.fromFuture(manager.postAuthCode(accountWithId.accountId, session.getId())).map(res -> new GetToken(session.getId(), scope));
+        return Mono.fromFuture(manager.postAuthCode(accountWithId.accountId, session.getId()))
+                .map(res -> new GetToken(session.getId(), scope));
     }
 
-// Extract the mandatory account ID from the session, throw an exception if not present
-private static long getMandatoryAccountId(WebSession session) {
-    // Attempt to retrieve the account ID from session attributes
-    Long requestAccountId = (Long) session.getAttributes().get("accountId"); 
-    // Throw if account ID is missing
-    if (requestAccountId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED); 
-    // Return the found account ID
-    return requestAccountId; 
-}
-
-
-   /*
-    * Apps + OAuth Actions Endpoints
-    * ======================================
-    - POST /api/apps
-    - POST /oauth/token
-    - POST /oauth/revoke
-    * ======================================
-    */
-
-
-    // Define a controller method to handle POST requests for application registration with JSON payload
-@PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_JSON_VALUE)
-public Mono<GetApplication> postApplication(@RequestBody(required = true) PostApplication params) throws NoSuchAlgorithmException {
-    // Initialize a new GetApplication instance to hold the application data
-    GetApplication app = new GetApplication();
-    app.redirect_uri = params.redirect_uris;
-    // Generate a new client secret for the application
-    app.client_secret = "secret_" + ApolloApiHelpers.randomString(16);
-    // Currently returns the application without storing it, needs future implementation for storage
-    return Mono.just(app);
-}
-
-// Define a controller method to handle POST requests for application registration with form URL encoded payload
-@PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-public Mono<GetApplication> postApplication(ServerWebExchange exchange) {
-    // Parse form data and delegate to the JSON payload handling method
-    return exchange.getFormData()
-                   .flatMap(formParams -> {
-                       PostApplication params = ApolloApiFormParser.parseParams(formParams, new PostApplication());
-                       try {
-                           return this.postApplication(params);
-                       } catch (NoSuchAlgorithmException e) {
-                           // Wrap the NoSuchAlgorithmException in a RuntimeException
-                           throw new RuntimeException(e);
-                       }
-                   });
-}
-
-// Define a controller method to handle POST requests for OAuth token generation with JSON payload
-@PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_JSON_VALUE)
-public Mono<GetToken> postOauthToken(WebSession session, @RequestBody(required = true) PostToken params) {
-    // Handle the "password" grant type
-    if ("password".equals(params.grant_type)) {
-        return Mono.fromFuture(manager.getAccountId(params.username))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username not found")))
-                   // Attempt to retrieve the account using the account ID
-                   .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username not found")))
-                   // Validate the password and log in the user
-                   .flatMap(accountWithId -> {
-                       if (!ApolloApiHelpers.matchesPassword(params.password, accountWithId.account.pwdHash)) {
-                           throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password does not match");
-                       }
-                       return this.loginWithAccount(session, params.scope, accountWithId);
-                   });
-    } else if ("client_credentials".equals(params.grant_type)) {
-        // Handle the "client_credentials" grant type
-        return Mono.just(new GetToken(session.getId(), params.scope));
-    } else {
-        // Handle unsupported grant types
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    // Extract the mandatory account ID from the session, throw an exception if not
+    // present
+    private static long getMandatoryAccountId(WebSession session) {
+        // Attempt to retrieve the account ID from session attributes
+        Long requestAccountId = (Long) session.getAttributes().get("accountId");
+        // Throw if account ID is missing
+        if (requestAccountId == null)
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        // Return the found account ID
+        return requestAccountId;
     }
-}
 
-// Define a controller method to handle POST requests for OAuth token generation with form URL encoded payload
-@PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-public Mono<GetToken> postOauthToken(WebSession session, ServerWebExchange exchange) {
-    // Parse form data and delegate to the JSON payload handling method
-    return exchange.getFormData()
-                   .flatMap(formParams -> {
-                       PostToken params = ApolloApiFormParser.parseParams(formParams, new PostToken());
-                       return this.postOauthToken(session, params);
-                   });
-}
-
-
- // TODO: See if this still works
-// Define a POST endpoint for revoking OAuth tokens with JSON payload
-@PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
-public Mono<Object> postRevokeOauthToken(@RequestBody(required = true) PostRevokeToken params) {
-    // Invoke the manager to remove the authorization code using the token provided and return an empty map as the response
-    return Mono.fromFuture(manager.postRemoveAuthCode(params.token)).map(res -> new HashMap<String, Object>());
-}
-
-// Overloaded POST endpoint for revoking OAuth tokens using form-urlencoded payload
-@PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-public Mono<Object> postRevokeOauthToken(ServerWebExchange exchange) {
-    // Extract form data from the request
-    return exchange.getFormData()
-                   .flatMap(formParams -> {
-                       // Parse form parameters into a PostRevokeToken object
-                       PostRevokeToken params = ApolloApiFormParser.parseParams(formParams, new PostRevokeToken());
-                       // Delegate to the other postRevokeOauthToken method for processing
-                       return this.postRevokeOauthToken(params);
-                   });
-}
-
-/*
-    * Accounts + Auth Actions Endpoints
-    * ======================================
-    - POST /api/accounts
-    - GET /api/accounts/verify_credentials
-    * ======================================
-    */
-
-// TODO: Added Object return type - make sure not broken now
-// Define a POST endpoint for creating new accounts
-@PostMapping("/api/accounts")
-public Mono<Object> postAccount(WebSession session, ServerHttpResponse response, @RequestBody(required = true) PostAccount params) {
-    // Validate the username contains only alphanumeric characters
-    if (!params.username.matches("[a-zA-Z0-9]*")) {
-        response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-        return Mono.just(new GetErrorDetails("Username must contain only a-z or numbers", new HashMap<String, GetErrorDetails.Error>(){{
-            put("username", new GetErrorDetails.Error("ERR_INVALID", "Username must contain only a-z or numbers"));
-        }}));
-    } 
-    // Check if the username length exceeds the maximum allowed length
-    else if(params.username.length() > ApolloApiConfig.MAX_USERNAME_LENGTH) {
-      response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-      return Mono.just(new GetErrorDetails("Username too long", new HashMap<String, GetErrorDetails.Error>(){{
-          put("agreement", new GetErrorDetails.Error("ERR_INVALID", "Username cannot be greater than " + ApolloApiConfig.MAX_USERNAME_LENGTH + " characters"));
-      }}));
-    } 
-    // Ensure the user agreement is accepted
-    else if (!params.agreement) {
-        response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-        return Mono.just(new GetErrorDetails("The agreement has not been accepted", new HashMap<String, GetErrorDetails.Error>(){{
-            put("agreement", new GetErrorDetails.Error("ERR_ACCEPTED", "The agreement has not been accepted"));
-        }}));
+    private void validateStatus(String content, String spoilerText, String language, PostStatus.Poll poll) {
+        if (content.length() > ApolloApiConfig.MAX_STATUS_LENGTH)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Status too long");
+        if (spoilerText != null && spoilerText.length() > ApolloApiConfig.MAX_STATUS_LENGTH)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Spoiler text too long");
+        if (language != null && language.length() > ApolloApiConfig.MAX_STATUS_LENGTH)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Language string too long");
+        if (poll != null && poll.options != null) {
+            if (poll.options.size() > 4)
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Too many poll choices");
+            for (String option : poll.options) {
+                if (option.length() > ApolloApiConfig.MAX_POLL_CHOICE_LENGTH)
+                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Poll choice too long");
+            }
+        }
     }
-    // Attempt to create the account with provided parameters
-    return Mono.fromFuture(manager.postAccount(params))
-               .flatMap(success -> {
-                   if (success) {
-                       // On success, retrieve the newly created account's ID
-                       return Mono.fromFuture(manager.getAccountId(params.username))
-                                  .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                                  // Retrieve the complete account information using the ID
-                                  .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
-                                  .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                                  // Log in the user and update the session with the account information
-                                  .flatMap(accountWithId -> this.loginWithAccount(session, "read write follow push", accountWithId));
-                   }
-                   else {
-                       // If the account creation fails due to the username being already in use
-                       response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
-                       return Mono.just(new GetErrorDetails("Validation failed", new HashMap<String, GetErrorDetails.Error>(){{
-                           put("username", new GetErrorDetails.Error("ERR_TAKEN", "Username already in use"));
-                       }}));
-                   }
-               });
-}
 
-// Define a route for a GET request to verify account credentials
-@GetMapping("/api/accounts/verify_credentials")
-public Mono<GetAccount> getAccountVerifyCredentials(WebSession session) {
-    // Extract the mandatory account ID from the session
-    long requestAccountId = getMandatoryAccountId(session);
-    // Retrieve the account information asynchronously and convert it into a GetAccount response
-    return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
-               // If the account is not found, return an HTTP 404 error
-               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-               // Convert the account information into the GetAccount DTO format
-               .map(GetAccount::new);
-}
+    /*
+     * Apps + OAuth Actions Endpoints
+     * ======================================
+     * - POST /api/apps
+     * - POST /oauth/token
+     * - POST /oauth/revoke
+     * ======================================
+     */
 
-// Map a GET request to retrieve a specific account by its ID
-@GetMapping("/api/accounts/{id}")
-public Mono<GetAccount> getAccount(@PathVariable("id") String accountId) {
-    // Convert the account ID from String to its proper format and retrieve account information asynchronously
-    return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(accountId)))
-               // If no account is found, return an HTTP 404 error
-               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-               // Convert the retrieved account information into the GetAccount DTO format
-               .map(GetAccount::new);
-}
+    // Define a controller method to handle POST requests for application
+    // registration with JSON payload
+    @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GetApplication> postApplication(@RequestBody(required = true) PostApplication params)
+            throws NoSuchAlgorithmException {
+        // Initialize a new GetApplication instance to hold the application data
+        GetApplication app = new GetApplication();
+        app.redirect_uri = params.redirect_uris;
+        // Generate a new client secret for the application
+        app.client_secret = "secret_" + ApolloApiHelpers.randomString(16);
+        // Currently returns the application without storing it, needs future
+        // implementation for storage
+        return Mono.just(app);
+    }
 
+    // Define a controller method to handle POST requests for application
+    // registration with form URL encoded payload
+    @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public Mono<GetApplication> postApplication(ServerWebExchange exchange) {
+        // Parse form data and delegate to the JSON payload handling method
+        return exchange.getFormData()
+                .flatMap(formParams -> {
+                    PostApplication params = ApolloApiFormParser.parseParams(formParams, new PostApplication());
+                    try {
+                        return this.postApplication(params);
+                    } catch (NoSuchAlgorithmException e) {
+                        // Wrap the NoSuchAlgorithmException in a RuntimeException
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
 
+    // Define a controller method to handle POST requests for OAuth token generation
+    // with JSON payload
+    @PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GetToken> postOauthToken(WebSession session, @RequestBody(required = true) PostToken params) {
+        // Handle the "password" grant type
+        if ("password".equals(params.grant_type)) {
+            return Mono.fromFuture(manager.getAccountId(params.username))
+                    .switchIfEmpty(
+                            Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username not found")))
+                    // Attempt to retrieve the account using the account ID
+                    .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
+                    .switchIfEmpty(
+                            Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username not found")))
+                    // Validate the password and log in the user
+                    .flatMap(accountWithId -> {
+                        if (!ApolloApiHelpers.matchesPassword(params.password, accountWithId.account.pwdHash)) {
+                            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password does not match");
+                        }
+                        return this.loginWithAccount(session, params.scope, accountWithId);
+                    });
+        } else if ("client_credentials".equals(params.grant_type)) {
+            // Handle the "client_credentials" grant type
+            return Mono.just(new GetToken(session.getId(), params.scope));
+        } else {
+            // Handle unsupported grant types
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // Define a controller method to handle POST requests for OAuth token generation
+    // with form URL encoded payload
+    @PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public Mono<GetToken> postOauthToken(WebSession session, ServerWebExchange exchange) {
+        // Parse form data and delegate to the JSON payload handling method
+        return exchange.getFormData()
+                .flatMap(formParams -> {
+                    PostToken params = ApolloApiFormParser.parseParams(formParams, new PostToken());
+                    return this.postOauthToken(session, params);
+                });
+    }
+
+    // TODO: See if this still works
+    // Define a POST endpoint for revoking OAuth tokens with JSON payload
+    @PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<Object> postRevokeOauthToken(@RequestBody(required = true) PostRevokeToken params) {
+        // Invoke the manager to remove the authorization code using the token provided
+        // and return an empty map as the response
+        return Mono.fromFuture(manager.postRemoveAuthCode(params.token)).map(res -> new HashMap<String, Object>());
+    }
+
+    // Overloaded POST endpoint for revoking OAuth tokens using form-urlencoded
+    // payload
+    @PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public Mono<Object> postRevokeOauthToken(ServerWebExchange exchange) {
+        // Extract form data from the request
+        return exchange.getFormData()
+                .flatMap(formParams -> {
+                    // Parse form parameters into a PostRevokeToken object
+                    PostRevokeToken params = ApolloApiFormParser.parseParams(formParams, new PostRevokeToken());
+                    // Delegate to the other postRevokeOauthToken method for processing
+                    return this.postRevokeOauthToken(params);
+                });
+    }
+
+    /*
+     * Accounts + Auth Actions Endpoints
+     * ======================================
+     * - POST /api/accounts
+     * - GET /api/accounts/verify_credentials
+     * ======================================
+     */
+
+    // TODO: Added Object return type - make sure not broken now
+    // Define a POST endpoint for creating new accounts
+    @PostMapping("/api/accounts")
+    public Mono<Object> postAccount(WebSession session, ServerHttpResponse response,
+            @RequestBody(required = true) PostAccount params) {
+        // Validate the username contains only alphanumeric characters
+        if (!params.username.matches("[a-zA-Z0-9]*")) {
+            response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+            return Mono.just(new GetErrorDetails("Username must contain only a-z or numbers",
+                    new HashMap<String, GetErrorDetails.Error>() {
+                        {
+                            put("username", new GetErrorDetails.Error("ERR_INVALID",
+                                    "Username must contain only a-z or numbers"));
+                        }
+                    }));
+        }
+        // Check if the username length exceeds the maximum allowed length
+        else if (params.username.length() > ApolloApiConfig.MAX_USERNAME_LENGTH) {
+            response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+            return Mono.just(new GetErrorDetails("Username too long", new HashMap<String, GetErrorDetails.Error>() {
+                {
+                    put("agreement", new GetErrorDetails.Error("ERR_INVALID",
+                            "Username cannot be greater than " + ApolloApiConfig.MAX_USERNAME_LENGTH + " characters"));
+                }
+            }));
+        }
+        // Ensure the user agreement is accepted
+        else if (!params.agreement) {
+            response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+            return Mono.just(new GetErrorDetails("The agreement has not been accepted",
+                    new HashMap<String, GetErrorDetails.Error>() {
+                        {
+                            put("agreement",
+                                    new GetErrorDetails.Error("ERR_ACCEPTED", "The agreement has not been accepted"));
+                        }
+                    }));
+        }
+        // Attempt to create the account with provided parameters
+        return Mono.fromFuture(manager.postAccount(params))
+                .flatMap(success -> {
+                    if (success) {
+                        // On success, retrieve the newly created account's ID
+                        return Mono.fromFuture(manager.getAccountId(params.username))
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                                // Retrieve the complete account information using the ID
+                                .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                                // Log in the user and update the session with the account information
+                                .flatMap(accountWithId -> this.loginWithAccount(session, "read write follow push",
+                                        accountWithId));
+                    } else {
+                        // If the account creation fails due to the username being already in use
+                        response.setStatusCode(HttpStatus.UNPROCESSABLE_ENTITY);
+                        return Mono.just(
+                                new GetErrorDetails("Validation failed", new HashMap<String, GetErrorDetails.Error>() {
+                                    {
+                                        put("username",
+                                                new GetErrorDetails.Error("ERR_TAKEN", "Username already in use"));
+                                    }
+                                }));
+                    }
+                });
+    }
+
+    // Define a route for a GET request to verify account credentials
+    @GetMapping("/api/accounts/verify_credentials")
+    public Mono<GetAccount> getAccountVerifyCredentials(WebSession session) {
+        // Extract the mandatory account ID from the session
+        long requestAccountId = getMandatoryAccountId(session);
+        // Retrieve the account information asynchronously and convert it into a
+        // GetAccount response
+        return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+                // If the account is not found, return an HTTP 404 error
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                // Convert the account information into the GetAccount DTO format
+                .map(GetAccount::new);
+    }
+
+    // Map a GET request to retrieve a specific account by its ID
+    @GetMapping("/api/accounts/{id}")
+    public Mono<GetAccount> getAccount(@PathVariable("id") String accountId) {
+        // Convert the account ID from String to its proper format and retrieve account
+        // information asynchronously
+        return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(accountId)))
+                // If no account is found, return an HTTP 404 error
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                // Convert the retrieved account information into the GetAccount DTO format
+                .map(GetAccount::new);
+    }
+
+    /*
+     * Status Actions Endpoints
+     * ======================================
+     * - POST /api/statuses
+     * ======================================
+     */
+
+     @PostMapping(value = "/api/statuses", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<Object> postStatus(WebSession session, @RequestBody(required = true) PostStatus params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        validateStatus(params.status, params.spoiler_text, params.language, params.poll);
+        if (params.scheduled_at != null) {
+          return Mono.fromFuture(manager.postScheduledStatus(requestAccountId, params, null))
+                     .map(GetScheduledStatus::new);
+        } else return Mono.fromFuture(manager.postStatus(requestAccountId, params, null)).map(GetStatus::new);
+    }
+
+    @PostMapping(value = "/api/statuses", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<Object> postStatus(
+            WebSession session,
+            @RequestPart(value = "status", required = false) String status,
+            @RequestPart(value = "in_reply_to_id", required = false) String in_reply_to_id,
+            @RequestPart(value = "sensitive", required = false) String sensitive,
+            @RequestPart(value = "spoiler_text", required = false) String spoiler_text,
+            @RequestPart(value = "visibility", required = false) String visibility,
+            @RequestPart(value = "language", required = false) String language,
+            @RequestPart(value = "scheduled_at", required = false) String scheduled_at,
+            @RequestPart(value = "media_ids[]", required = false) List<Part> media_ids,
+            @RequestPart(value = "poll[options][]", required = false) List<Part> poll_options,
+            @RequestPart(value = "poll[expires_in]", required = false) String poll_expires_in,
+            @RequestPart(value = "poll[multiple]", required = false) String poll_multiple
+    ) {
+        List<Mono<DataBuffer>> mediaContent = media_ids.stream().map(part -> part.content().single()).collect(Collectors.toList());
+        List<Mono<DataBuffer>> pollOptions = poll_options.stream().map(part -> part.content().single()).collect(Collectors.toList());
+        return (mediaContent.size() > 0 ? Mono.zip(mediaContent, res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset())).collect(Collectors.toList())) : Mono.just(new ArrayList<>()))
+                .flatMap(mediaContentResults -> (pollOptions.size() > 0 ? Mono.zip(pollOptions, res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset())).collect(Collectors.toList())) : Mono.just(new ArrayList<>()))
+                        .flatMap(pollOptionsResults -> {
+                            PostStatus postStatus = new PostStatus(status, in_reply_to_id, visibility, scheduled_at);
+                            postStatus.spoiler_text = spoiler_text;
+                            postStatus.language = language;
+                            postStatus.sensitive = sensitive != null ? Boolean.parseBoolean(sensitive) : null;
+                            postStatus.media_ids = (List<String>) mediaContentResults;
+                            if (pollOptionsResults.size() > 0 && poll_expires_in != null) {
+                                postStatus.poll = new PostStatus.Poll();
+                                postStatus.poll.options = (List<String>) pollOptionsResults;
+                                postStatus.poll.expires_in = Long.parseLong(poll_expires_in);
+                                postStatus.poll.multiple = poll_multiple != null ? Boolean.parseBoolean(poll_multiple) : false;
+                            }
+                            return this.postStatus(session, postStatus);
+                        }));
+    }
 
 }

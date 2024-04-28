@@ -13,7 +13,7 @@ import java.util.*;
 
 /*
  * This module implements notifications, which include: boosts of your status, replies to your status,
- * favorites to your status, a poll you created or voted on completing, a status you boosted being edited,
+ * likes to your status, a poll you created or voted on completing, a status you boosted being edited,
  * mentions, new followers, and statuses from users you requested notifications for.
  */
 public class Notifications implements RamaModule {
@@ -280,7 +280,7 @@ public class Notifications implements RamaModule {
                 .macro(keepNonSuppressedMacro("*authorId", "*accountId", "*authorId", "*statusId"))
                 .hashPartition("*authorId")
                 .each((Long accountId, Long authorId, Long statusId, Long timestamp) -> new Notification(
-                        NotificationContent.favorite(new StatusResponseNotificationContent(accountId,
+                        NotificationContent.like(new StatusResponseNotificationContent(accountId,
                                 new StatusPointer(authorId, statusId))),
                         timestamp),
                         "*accountId", "*authorId", "*statusId", "*timestamp")

@@ -5,6 +5,8 @@ public class ApolloApiConfig {
     //TODO: OAUth Client ID
     public static final String OAUTH_CLIENT_ID = "";
     public static final String STATIC_FILE_URL_PATH_NAME = "uploads";
+    public static final int MAX_STATUS_LENGTH = 500;
+    public static final int MAX_POLL_CHOICE_LENGTH = 30;
     
     public static final int MAX_USERNAME_LENGTH = 30;
     public static class S3Options {

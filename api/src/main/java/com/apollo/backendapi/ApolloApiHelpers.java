@@ -1,5 +1,7 @@
 package com.apollo.backendapi;
 
+import com.apollo.backend.data.*;
+
 import java.io.*;
 import java.net.*;
 import java.security.*;
@@ -9,6 +11,8 @@ import java.util.concurrent.CompletableFuture;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.security.crypto.password.*;
+import org.springframework.web.server.*;
+import org.springframework.http.*;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -57,6 +61,43 @@ public class ApolloApiHelpers {
         } catch (MalformedURLException | URISyntaxException e) {
             return false;
         }
+    }
+
+    public static String createFilterContext(FilterContext context) {
+        switch (context) {
+            case Home: return "home";
+            case Notifications: return "notifications";
+            case Public: return "public";
+            case Thread: return "thread";
+            case Account: return "account";
+        }
+        throw new RuntimeException("Invalid filter context");
+    }
+
+    public static String createFilterAction(FilterAction action) {
+        switch (action) {
+            case Warn: return "warn";
+            case Hide: return "hide";
+        }
+        throw new RuntimeException("Invalid filter action");
+    }
+
+    public static StatusVisibility createStatusVisibility(String visibilityStr) {
+        if ("public".equals(visibilityStr)) return StatusVisibility.Public;
+        else if ("unlisted".equals(visibilityStr)) return StatusVisibility.Unlisted;
+        else if ("private".equals(visibilityStr)) return StatusVisibility.Private;
+        else if ("direct".equals(visibilityStr)) return StatusVisibility.Direct;
+        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
+    public static String createStatusVisibility(StatusVisibility visibility) {
+        switch (visibility) {
+            case Public: return "public";
+            case Unlisted: return "unlisted";
+            case Private: return "private";
+            case Direct: return "direct";
+        }
+        throw new RuntimeException("Invalid visibility");
     }
 
 }

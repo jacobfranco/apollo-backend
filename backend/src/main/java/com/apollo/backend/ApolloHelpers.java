@@ -357,5 +357,22 @@ public class ApolloHelpers {
     else if(content instanceof ReplyStatusContent) return ((ReplyStatusContent) content).getPollContent();
     else return null;
   }
+
+  public static String serializeStatusPointer(StatusPointer statusPointer) {
+    // the id is a statusId-authorId combo. the author id is necessary so
+    // we don't have to query for the author separately when requesting the status.
+    // they are padded with zeroes to ensure that sorting works correctly.
+    return String.format("%019d", statusPointer.statusId) + "-" + String.format("%019d", statusPointer.authorId) + "-sa";
+  }
+
+  public static StatusPointer parseStatusPointer(String id) {
+    if (id == null) return null;
+    String[] parts = id.split("-");
+    if ("sa".equals(parts[parts.length-1]) && parts.length == 3) {
+      long statusId = Long.parseLong(parts[0]);
+      long authorId = Long.parseLong(parts[1]);
+      return new StatusPointer(authorId, statusId);
+    } else throw new RuntimeException("Not a status pointer: " + id);
+  }
   
 }

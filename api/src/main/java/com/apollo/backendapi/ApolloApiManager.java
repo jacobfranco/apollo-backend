@@ -1,5 +1,7 @@
 package com.apollo.backendapi;
 
+import clojure.lang.PersistentVector;
+
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -7,11 +9,12 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.time.Instant;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
-import com.apollo.backendapi.pojos.PostAccount;
+import com.apollo.backendapi.pojos.*;
 import com.rpl.rama.*;
 import com.rpl.rama.cluster.ClusterManagerBase;
 
@@ -28,6 +31,8 @@ public class ApolloApiManager {
     // Core Depots
     private final Depot accountDepot;
     private final Depot accountEditDepot;
+    private final Depot statusDepot;
+    private final Depot scheduledStatusDepot;
 
      // Relationships Depots
     private final Depot authCodeDepot;
@@ -35,6 +40,9 @@ public class ApolloApiManager {
     // Core PStates
     private final PState nameToUser;
     private final PState pinnerToStatusIds;
+    private final PState uuidToAttachment;
+    private final PState postUUIDToStatusId;
+    private final PState accountIdToScheduledStatuses;
 
     // Core Query Topologies
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
@@ -47,20 +55,63 @@ public class ApolloApiManager {
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
         accountEditDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountEditDepot");
+        statusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*statusDepot");
+        scheduledStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*scheduledStatusDepot");
         
-
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
         pinnerToStatusIds = cluster.clusterPState(CORE_MODULE_NAME, "$$pinnerToStatusIds");
+        accountIdToScheduledStatuses = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToScheduledStatuses");
+        postUUIDToStatusId = cluster.clusterPState(CORE_MODULE_NAME, "$$postUUIDToStatusId");
+        uuidToAttachment = cluster.clusterPState(CORE_MODULE_NAME, "$$uuidToAttachment");
 
         // Core Query Topologies
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
       }
+
+      CompletableFuture<Status> createStatusFromParams(long accountId, PostStatus params) {
+        List<CompletableFuture<Object>> mediaFutures =
+            params.media_ids.stream()
+                            .distinct()
+                            .map(attachmentId -> uuidToAttachment.selectOneAsync(Path.key(attachmentId)))
+                            .collect(Collectors.toList());
+        List<CompletableFuture> mentionFutures = new ArrayList<>();
+
+        return CompletableFuture.allOf(mediaFutures.toArray(new CompletableFuture<?>[0]))
+            .allOf(mentionFutures.toArray(new CompletableFuture<?>[0]))
+            .thenApply(_result -> {
+                List<AttachmentWithId> attachments = new ArrayList<>();
+                for (int i = 0; i < mediaFutures.size(); i++) {
+                  attachments.add(new AttachmentWithId(params.media_ids.get(i), (Attachment) mediaFutures.get(i).join()));
+                }
+
+                // create status
+                StatusVisibility visibility = ApolloApiHelpers.createStatusVisibility(params.visibility);
+                long ts = System.currentTimeMillis();
+                final Status status;
+                if (params.in_reply_to_id != null) {
+                    StatusPointer parentPointer = ApolloHelpers.parseStatusPointer(params.in_reply_to_id);
+                    ReplyStatusContent content = new ReplyStatusContent(params.status, visibility, parentPointer);
+                    content.setAttachments(attachments);
+                    if (params.poll != null) content.setPollContent(new PollContent(params.poll.options, ts + (params.poll.expires_in * 1000), params.poll.multiple));
+                    if (params.sensitive != null && params.sensitive) content.setSensitiveWarning(params.spoiler_text != null ? params.spoiler_text : "");
+                    status = new Status(accountId, StatusContent.reply(content), ts);
+                } else {
+                    NormalStatusContent content = new NormalStatusContent(params.status, visibility);
+                    content.setAttachments(attachments);
+                    if (params.poll != null) content.setPollContent(new PollContent(params.poll.options, ts + (params.poll.expires_in * 1000), params.poll.multiple));
+                    if (params.sensitive != null && params.sensitive) content.setSensitiveWarning(params.spoiler_text != null ? params.spoiler_text : "");
+                    status = new Status(accountId, StatusContent.normal(content), ts);
+                }
+
+                return status;
+            });
+    }
 
       public static CompletableFuture<StatusQueryResults> queryStatusesWithPaging(BiFunction<StatusPointer, Integer, CompletableFuture<StatusQueryResults>> fn, StatusPointer offsetMaybe, Integer limitMaybe, int iterationsLeft) {
         if (iterationsLeft == 0) return CompletableFuture.completedFuture(new StatusQueryResults(new ArrayList(), new HashMap(), true, false));
@@ -159,6 +210,50 @@ public class ApolloApiManager {
                                     QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
                                     return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, pointers, filterOptions);
                                 });
+    }
+
+    public CompletableFuture<StatusQueryResult> postStatus(long accountId, PostStatus params, String remoteUrl) {
+        String uuid = UUID.randomUUID().toString();
+        return createStatusFromParams(accountId, params)
+            .thenComposeAsync(status -> {
+                AddStatus addStatus = new AddStatus(uuid, status);
+                return statusDepot.appendAsync(addStatus);
+            })
+            .thenCompose(res -> postUUIDToStatusId.selectOneAsync(accountId, Path.key(uuid)))
+            .thenCompose(statusId -> {
+                if (statusId == null) return CompletableFuture.completedFuture(null);
+                StatusPointer newPointer = new StatusPointer(accountId, (Long) statusId);
+                return this.getStatus(accountId, newPointer);
+          });
+    }
+
+    public CompletableFuture<StatusWithId> postScheduledStatus(long accountId, PostStatus params, Object object) {
+        String uuid = UUID.randomUUID().toString();
+        return createStatusFromParams(accountId, params)
+            .thenComposeAsync(status -> {
+                AddScheduledStatus addScheduledStatus = new AddScheduledStatus(uuid, status, Instant.parse(params.scheduled_at).toEpochMilli());
+                return scheduledStatusDepot.appendAsync(addScheduledStatus);
+            })
+            .thenCompose(res -> postUUIDToStatusId.selectOneAsync(accountId, Path.key(uuid)))
+            .thenCompose(statusId -> {
+                if (statusId == null) return CompletableFuture.completedFuture(null);
+                return accountIdToScheduledStatuses.selectOneAsync(Path.key(accountId, statusId, "status"))
+                                                   .thenApply(status -> new StatusWithId((long) statusId, (Status) status));
+            });
+    }
+
+    public CompletableFuture<StatusQueryResult> getStatus(Long requestAccountIdMaybe, StatusPointer pointer, QueryFilterOptions filterOptions) {
+        return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, PersistentVector.EMPTY.cons(new StatusPointer(pointer.authorId, pointer.statusId)), filterOptions)
+                                      .thenApply(statusQueryResults -> {
+                                          if (statusQueryResults.results.size() == 0) return null;
+                                          StatusResultWithId result = statusQueryResults.results.get(0);
+                                          return new StatusQueryResult(result, statusQueryResults.mentions);
+                                      });
+    }
+
+    public CompletableFuture<StatusQueryResult> getStatus(Long requestAccountIdMaybe, StatusPointer pointer) {
+        QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+        return this.getStatus(requestAccountIdMaybe, pointer, filterOptions);
     }
 
 
