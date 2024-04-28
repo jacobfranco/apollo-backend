@@ -1,5 +1,6 @@
 package com.apollo.backendapi;
 
+import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 
 import java.io.*;
@@ -7,12 +8,14 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.AbstractMap.SimpleEntry;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.security.crypto.password.*;
 import org.springframework.web.server.*;
 import org.springframework.http.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -98,6 +101,23 @@ public class ApolloApiHelpers {
             case Direct: return "direct";
         }
         throw new RuntimeException("Invalid visibility");
+    }
+
+    public static <T, O> void setLinkHeader(ServerWebExchange exchange, ApolloApiManager.QueryResults<T, O> queryResults) {
+        if (queryResults.linkHeaderParams != null && !queryResults.reachedEnd) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(ApolloConfig.API_URL);
+            builder.path(exchange.getRequest().getPath().pathWithinApplication().value());
+            // collect the existing query params
+            for (Map.Entry<String, List<String>> entry : exchange.getRequest().getQueryParams().entrySet()) {
+                builder.queryParam(entry.getKey(), entry.getValue());
+            }
+            // collect the new params (these will override the existing ones)
+            for (SimpleEntry<String, String> entry : queryResults.linkHeaderParams) {
+                builder.replaceQueryParam(entry.getKey(), entry.getValue());
+            }
+            // set the header
+            exchange.getResponse().getHeaders().add("Link", String.format("<%s>; rel=\"next\"", builder.toUriString()));
+        }
     }
 
 }

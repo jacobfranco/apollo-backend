@@ -182,6 +182,7 @@ public class ApolloApiController {
      * ======================================
      * - POST /api/accounts
      * - GET /api/accounts/verify_credentials
+     * - GET /api/accounts/{id}
      * ======================================
      */
 
@@ -279,6 +280,9 @@ public class ApolloApiController {
      * Status Actions Endpoints
      * ======================================
      * - POST /api/statuses
+     * - GET /api/scheduled_statuses
+     * - PUT /api/scheduled_statuses/{id}
+     * - DELETE /api/scheduled_statuses/{id}
      * ======================================
      */
 
@@ -325,6 +329,51 @@ public class ApolloApiController {
                             }
                             return this.postStatus(session, postStatus);
                         }));
+    }
+
+    @GetMapping("/api/scheduled_statuses")
+    public Mono<List<GetScheduledStatus>> getScheduledStatuses(ServerWebExchange exchange, WebSession session,
+                                                               @RequestParam(required = false) String max_id,
+                                                               @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getScheduledStatuses(requestAccountId, statusPointer, limit))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return queryResults.results.stream()
+                                                  .map(GetScheduledStatus::new)
+                                                  .collect(Collectors.toList());
+                   });
+    }
+
+    @GetMapping("/api/scheduled_statuses/{id}")
+    public Mono<GetScheduledStatus> getScheduledStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        return Mono.fromFuture(manager.getScheduledStatus(statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetScheduledStatus::new);
+    }
+
+    @PutMapping("/api/v1/scheduled_statuses/{id}")
+    public Mono<GetScheduledStatus> updateScheduledStatus(WebSession session,
+                                                          @PathVariable("id") String id,
+                                                          @RequestBody PutScheduledStatus putScheduledStatus) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        return Mono.fromFuture(manager.updateScheduledStatus(statusPointer, putScheduledStatus.scheduled_at))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetScheduledStatus::new);
+    }
+
+    @DeleteMapping("/api/v1/scheduled_statuses/{id}")
+    public Mono<Void> cancelScheduledStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        return Mono.fromFuture(manager.cancelScheduledStatus(statusPointer));
     }
 
 }

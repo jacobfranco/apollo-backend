@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.time.Instant;
+import java.util.AbstractMap.SimpleEntry;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
@@ -73,6 +74,20 @@ public class ApolloApiManager {
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
       }
+
+      public static class QueryResults<T, O> {
+        public List<T> results;
+        public boolean reachedEnd;
+        public O offset; // offset to use in the next query
+        public List<SimpleEntry<String, String>> linkHeaderParams; // query params to send to the client via the Link header
+
+        public QueryResults(List<T> results, boolean reachedEnd, O offset, List<SimpleEntry<String, String>> linkHeaderParams) {
+            this.results = results;
+            this.reachedEnd = reachedEnd;
+            this.offset = offset;
+            this.linkHeaderParams = linkHeaderParams;
+        }
+    }
 
       CompletableFuture<Status> createStatusFromParams(long accountId, PostStatus params) {
         List<CompletableFuture<Object>> mediaFutures =
@@ -254,6 +269,67 @@ public class ApolloApiManager {
     public CompletableFuture<StatusQueryResult> getStatus(Long requestAccountIdMaybe, StatusPointer pointer) {
         QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
         return this.getStatus(requestAccountIdMaybe, pointer, filterOptions);
+    }
+
+    public CompletableFuture<StatusWithId> getScheduledStatus(StatusPointer statusPointer) {
+        return accountIdToScheduledStatuses.selectOneAsync(Path.key(statusPointer.authorId, statusPointer.statusId, "status"))
+                                           .thenApply(status -> {
+                                               if (status == null) return null;
+                                               return new StatusWithId(statusPointer.statusId, (Status) status);
+                                           });
+      }
+
+      public CompletableFuture<QueryResults<StatusWithId, Long>> getScheduledStatuses(Long accountId, StatusPointer offsetMaybe, Integer limitMaybe) {
+        long offset = offsetMaybe == null ? -1L : offsetMaybe.statusId;
+        int limit = Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT);
+        SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+        return accountIdToScheduledStatuses
+                .selectAsync(Path.key(accountId)
+                                 .sortedMapRangeFrom(offset, options)
+                                 .all()
+                                 .collectOne(Path.first())
+                                 .last()
+                                 .key("status"))
+                .thenApply((List<Object> results) -> {
+                    List<StatusWithId> statuses =
+                            results.stream()
+                                   .map(result -> {
+                                      List<Object> resultList = (List<Object>) result;
+                                      Long statusId = (Long) resultList.get(0);
+                                      Status status = (Status) resultList.get(1);
+                                      return new StatusWithId(statusId, status);
+                                   }).collect(Collectors.toList());
+                    Long lastId = null;
+                    List<SimpleEntry<String, String>> linkHeaderParams = null;
+                    if (statuses.size() > 0) {
+                        StatusWithId lastStatus = statuses.get(statuses.size()-1);
+                        lastId = lastStatus.statusId;
+                        linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", ApolloHelpers.serializeStatusPointer(new StatusPointer(lastStatus.status.authorId, lastStatus.statusId))));
+                    }
+                    return new QueryResults<>(statuses, results.size() < limit, lastId, linkHeaderParams);
+                });
+    }
+
+    public CompletableFuture<StatusWithId> updateScheduledStatus(StatusPointer statusPointer, String scheduledAt) {
+        long publishAt = Instant.parse(scheduledAt).toEpochMilli();
+        long timestamp = Instant.now().toEpochMilli();
+        return scheduledStatusDepot.appendAsync(new EditScheduledStatusPublishTime(statusPointer.authorId, statusPointer.statusId, publishAt, timestamp))
+          .thenComposeAsync(result -> {
+            return accountIdToScheduledStatuses.selectOneAsync(Path.key(statusPointer.authorId)
+                                                                   .must(statusPointer.statusId)
+                                                                   .collectOne(Path.key("publishMillis"))
+                                                                   .key("status"));
+        }).thenApply(result -> {
+            List<Object> publishMillisAndStatus = (List<Object>) result;
+            Long publishMillis = (Long) publishMillisAndStatus.get(0);
+            Status status = (Status) publishMillisAndStatus.get(1);
+            status.timestamp = publishMillis;
+            return new StatusWithId(statusPointer.statusId, status);
+        });
+    }
+
+    public CompletableFuture<Void> cancelScheduledStatus(StatusPointer statusPointer) {
+        return scheduledStatusDepot.appendAsync(new RemoveStatus(statusPointer.authorId, statusPointer.statusId, Instant.now().toEpochMilli()));
     }
 
 
