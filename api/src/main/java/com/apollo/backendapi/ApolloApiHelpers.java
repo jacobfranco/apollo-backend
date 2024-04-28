@@ -2,6 +2,7 @@ package com.apollo.backendapi;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
+import com.apollo.backendapi.pojos.*;
 
 import java.io.*;
 import java.net.*;
@@ -118,6 +119,18 @@ public class ApolloApiHelpers {
             // set the header
             exchange.getResponse().getHeaders().add("Link", String.format("<%s>; rel=\"next\"", builder.toUriString()));
         }
+    }
+
+    public static List<GetAccount> createGetAccounts(List<AccountWithId> results) {
+        List<GetAccount> getAccounts = new ArrayList<>();
+        for (AccountWithId result : results) getAccounts.add(new GetAccount(result));
+        return getAccounts;
+    }
+
+    public static List<GetConversation> createGetConversations(List<Conversation> convos) {
+        List<GetConversation> getConversations = new ArrayList<>();
+        for (Conversation convo : convos) getConversations.add(new GetConversation(convo));
+        return getConversations;
     }
 
 }

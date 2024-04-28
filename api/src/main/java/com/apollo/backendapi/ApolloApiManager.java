@@ -34,6 +34,8 @@ public class ApolloApiManager {
     private final Depot accountEditDepot;
     private final Depot statusDepot;
     private final Depot scheduledStatusDepot;
+    private final Depot conversationDepot;
+    
 
      // Relationships Depots
     private final Depot authCodeDepot;
@@ -48,11 +50,14 @@ public class ApolloApiManager {
     private final PState uuidToAttachment;
     private final PState postUUIDToStatusId;
     private final PState accountIdToScheduledStatuses;
+    private final PState accountIdToConvoIds;
 
     // Core Query Topologies
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
     private final QueryTopologyClient<StatusQueryResults> getAccountTimeline;
     private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
+    private final QueryTopologyClient<Conversation> getConversation;
+    private final QueryTopologyClient<List<Conversation>> getConversationTimeline;
 
     // Relationship Query Topologies
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
@@ -65,6 +70,7 @@ public class ApolloApiManager {
         accountEditDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountEditDepot");
         statusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*statusDepot");
         scheduledStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*scheduledStatusDepot");
+        conversationDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*conversationDepot");
         
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -78,11 +84,14 @@ public class ApolloApiManager {
         accountIdToScheduledStatuses = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToScheduledStatuses");
         postUUIDToStatusId = cluster.clusterPState(CORE_MODULE_NAME, "$$postUUIDToStatusId");
         uuidToAttachment = cluster.clusterPState(CORE_MODULE_NAME, "$$uuidToAttachment");
+        accountIdToConvoIds = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToConvoIds");
 
         // Core Query Topologies
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
+        getConversation = cluster.clusterQuery(CORE_MODULE_NAME, "getConversation");
+        getConversationTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getConversationTimeline");
 
         // Relationships Query Topologies
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
@@ -413,6 +422,41 @@ public class ApolloApiManager {
     public CompletableFuture<Boolean> postRemoveFeatureAccount(long featurerId, long featureeId) {
         return featureAccountDepot.appendAsync(new RemoveFeatureAccount(featurerId, featureeId, System.currentTimeMillis()))
                                   .thenApply(res -> true);
+    }
+
+    public CompletableFuture<Conversation> postConversation(long accountId, long conversationId, boolean unread) {
+        return conversationDepot.appendAsync(new EditConversation(accountId, conversationId, unread))
+                                .thenCompose(result -> getConversation.invokeAsync(accountId, conversationId)
+                                                                      .thenApply(convoMaybe -> {
+                                                                         if (convoMaybe == null) return null;
+                                                                         // the change was processed in a microbatch
+                                                                         // so the query won't necessarily return the
+                                                                         // most up-to-date value, so we're updating it manually.
+                                                                         convoMaybe.unread = unread;
+                                                                         return convoMaybe;
+                                                                      }));
+    }
+
+    public CompletableFuture<QueryResults<Conversation, Long>> getConversationTimeline(long accountId, Long offsetMaybe, Integer limitMaybe) {
+        CompletableFuture<Long> timelineIndexFuture =
+                offsetMaybe == null ? CompletableFuture.completedFuture(-1L)
+                                    : accountIdToConvoIds.selectOneAsync(Path.key(accountId, offsetMaybe).nullToVal(-1L));
+        int limit = Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT);
+        return timelineIndexFuture.thenCompose(timelineIndex ->
+                getConversationTimeline.invokeAsync(accountId, timelineIndex, limit)
+                                       .thenApply(conversations -> {
+                                           Long lastId = null;
+                                           List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                           if (conversations.size() > 0) {
+                                               lastId = conversations.get(conversations.size()-1).conversationId;
+                                               linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", lastId+""));
+                                           }
+                                           return new QueryResults<>(conversations, conversations.size() < limit, lastId, linkHeaderParams);
+                                       }));
+    }
+
+    public CompletableFuture<Boolean> deleteConversation(long accountId, long conversationId) {
+        return conversationDepot.appendAsync(new RemoveConversation(accountId, conversationId)).thenApply(res -> true);
     }
 
 

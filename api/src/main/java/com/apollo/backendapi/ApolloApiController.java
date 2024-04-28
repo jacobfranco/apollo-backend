@@ -518,4 +518,39 @@ public class ApolloApiController {
                    .map(result -> new GetRelationship(id, result));
     }
 
+    /*
+     * Conversation Actions Endpoints
+     * ======================================
+     * - POST /api/conversations/{id}/read
+     * - GET /api/conversations
+     * - DELETE /api/conversations/{id}
+     * ======================================
+     */
+
+    @PostMapping("/api/conversations/{id}/read")
+    public Mono<GetConversation> postConversation(WebSession session, @PathVariable("id") Long conversationId) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.postConversation(requestAccountId, conversationId, false))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetConversation::new);
+    }
+
+    @GetMapping("/api/conversations")
+    public Mono<List<GetConversation>> getConversations(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getConversationTimeline(requestAccountId, max_id, limit))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetConversations(queryResults.results);
+                   });
+    }
+
+    @DeleteMapping("/api/conversations/{id}")
+    public Mono deleteConversation(WebSession session, @PathVariable("id") Long conversationId) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.deleteConversation(requestAccountId, conversationId))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(result -> new HashMap());
+    }
+
 }
