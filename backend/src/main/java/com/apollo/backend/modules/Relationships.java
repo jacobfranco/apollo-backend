@@ -410,7 +410,7 @@ public class Relationships implements RamaModule {
                 .directPartition("*targetTask")
                 .localTransform("$$partitionedFollowers", Path.key("*targetId", "*accountId").termVal("*follower")),
             SubSource.create(RemoveFollowAccount.class)
-                .macro(extractFields("*data", "*accountId", "*targetId", "*followerSharedInboxUrl"))
+                .macro(extractFields("*data", "*accountId", "*targetId"))
                 .hashPartition("*accountId")
                 .macro(followerToFollowees.removeFromLinkedSetByEntityId("*accountId", "*targetId"))
                 .hashPartition("*targetId")

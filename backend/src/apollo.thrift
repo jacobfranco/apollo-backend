@@ -174,7 +174,6 @@ struct RemoveFollowAccount {
   1: required AccountId accountId;
   2: required AccountId targetId;
   3: required Timestamp timestamp;
-  4: optional string followerSharedInboxUrl;
 }
 
 struct BlockAccount {

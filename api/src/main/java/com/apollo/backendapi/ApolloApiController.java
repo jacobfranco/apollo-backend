@@ -405,7 +405,7 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, followeeId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(accountWithIdPair -> {
-                    return Mono.fromFuture(manager.postFollowAccount(requestAccountId, followeeId, null, params));
+                    return Mono.fromFuture(manager.postFollowAccount(requestAccountId, followeeId, params));
                 })
                 .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followeeId)))
                 .map(result -> new GetRelationship(id, result));
@@ -419,10 +419,77 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, followeeId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(accountWithIdPair -> {
-                    return Mono.fromFuture(manager.postRemoveFollowAccount(requestAccountId, followeeId, null));
+                    return Mono.fromFuture(manager.postRemoveFollowAccount(requestAccountId, followeeId));
                 })
                 .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followeeId)))
                 .map(result -> new GetRelationship(id, result));
+    }
+
+    /*
+     * Suppression Actions Endpoints
+     * ======================================
+     * - POST /api/accounts/{id}/mute
+     * - POST /api/accounts/{id}/unmute
+     * - POST /api/accounts/{id}/block
+     * - POST /api/accounts/{id}/unblock
+     * - POST /api/accounts/{id}/remove_from_followers
+     * ======================================
+     */
+
+    @PostMapping("/api/accounts/{id}/mute")
+    public Mono<GetRelationship> postMuteAccount(WebSession session, @PathVariable("id") String id,
+            @RequestBody(required = true) PostMute params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long muteeId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.postMuteAccount(requestAccountId, muteeId, params))
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, muteeId)))
+                .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/accounts/{id}/unmute")
+    public Mono<GetRelationship> postUnmuteAccount(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long muteeId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.postRemoveMuteAccount(requestAccountId, muteeId))
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, muteeId)))
+                .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/accounts/{id}/block")
+    public Mono<GetRelationship> postBlockAccount(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long blockeeId = ApolloHelpers.parseAccountId(id);
+
+        return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, blockeeId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithIdPair -> {
+                    return Mono.fromFuture(manager.postBlockAccount(requestAccountId, blockeeId));
+                })
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, blockeeId)))
+                .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/accounts/{id}/unblock")
+    public Mono<GetRelationship> postUnblockAccount(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long blockeeId = ApolloHelpers.parseAccountId(id);
+
+        return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, blockeeId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithIdPair -> {
+                    return Mono.fromFuture(manager.postRemoveBlockAccount(requestAccountId, blockeeId));
+                })
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, blockeeId)))
+                .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/accounts/{id}/remove_from_followers")
+    public Mono<GetRelationship> postRemoveFromFollowers(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long followerId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.postRemoveFollowAccount(followerId, requestAccountId))
+                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followerId)))
+                   .map(result -> new GetRelationship(id, result));
     }
 
 }

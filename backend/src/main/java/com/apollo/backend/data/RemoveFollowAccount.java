@@ -13,7 +13,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
   private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField TARGET_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("targetId", org.apache.thrift.protocol.TType.I64, (short)2);
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField FOLLOWER_SHARED_INBOX_URL_FIELD_DESC = new org.apache.thrift.protocol.TField("followerSharedInboxUrl", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new RemoveFollowAccountStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new RemoveFollowAccountTupleSchemeFactory();
@@ -21,14 +20,12 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
   public long accountId; // required
   public long targetId; // required
   public long timestamp; // required
-  public @org.apache.thrift.annotation.Nullable java.lang.String followerSharedInboxUrl; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ACCOUNT_ID((short)1, "accountId"),
     TARGET_ID((short)2, "targetId"),
-    TIMESTAMP((short)3, "timestamp"),
-    FOLLOWER_SHARED_INBOX_URL((short)4, "followerSharedInboxUrl");
+    TIMESTAMP((short)3, "timestamp");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -50,8 +47,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
           return TARGET_ID;
         case 3: // TIMESTAMP
           return TIMESTAMP;
-        case 4: // FOLLOWER_SHARED_INBOX_URL
-          return FOLLOWER_SHARED_INBOX_URL;
         default:
           return null;
       }
@@ -99,7 +94,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
   private static final int __TARGETID_ISSET_ID = 1;
   private static final int __TIMESTAMP_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.FOLLOWER_SHARED_INBOX_URL};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -109,8 +103,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
-    tmpMap.put(_Fields.FOLLOWER_SHARED_INBOX_URL, new org.apache.thrift.meta_data.FieldMetaData("followerSharedInboxUrl", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RemoveFollowAccount.class, metaDataMap);
   }
@@ -140,9 +132,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
     this.accountId = other.accountId;
     this.targetId = other.targetId;
     this.timestamp = other.timestamp;
-    if (other.isSetFollowerSharedInboxUrl()) {
-      this.followerSharedInboxUrl = other.followerSharedInboxUrl;
-    }
   }
 
   @Override
@@ -158,7 +147,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
     this.targetId = 0;
     setTimestampIsSet(false);
     this.timestamp = 0;
-    this.followerSharedInboxUrl = null;
   }
 
   public long getAccountId() {
@@ -230,31 +218,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getFollowerSharedInboxUrl() {
-    return this.followerSharedInboxUrl;
-  }
-
-  public RemoveFollowAccount setFollowerSharedInboxUrl(@org.apache.thrift.annotation.Nullable java.lang.String followerSharedInboxUrl) {
-    this.followerSharedInboxUrl = followerSharedInboxUrl;
-    return this;
-  }
-
-  public void unsetFollowerSharedInboxUrl() {
-    this.followerSharedInboxUrl = null;
-  }
-
-  /** Returns true if field followerSharedInboxUrl is set (has been assigned a value) and false otherwise */
-  public boolean isSetFollowerSharedInboxUrl() {
-    return this.followerSharedInboxUrl != null;
-  }
-
-  public void setFollowerSharedInboxUrlIsSet(boolean value) {
-    if (!value) {
-      this.followerSharedInboxUrl = null;
-    }
-  }
-
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -282,14 +245,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
       }
       break;
 
-    case FOLLOWER_SHARED_INBOX_URL:
-      if (value == null) {
-        unsetFollowerSharedInboxUrl();
-      } else {
-        setFollowerSharedInboxUrl((java.lang.String)value);
-      }
-      break;
-
     }
   }
 
@@ -305,9 +260,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
 
     case TIMESTAMP:
       return getTimestamp();
-
-    case FOLLOWER_SHARED_INBOX_URL:
-      return getFollowerSharedInboxUrl();
 
     }
     throw new java.lang.IllegalStateException();
@@ -327,8 +279,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
       return isSetTargetId();
     case TIMESTAMP:
       return isSetTimestamp();
-    case FOLLOWER_SHARED_INBOX_URL:
-      return isSetFollowerSharedInboxUrl();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -373,15 +323,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
         return false;
     }
 
-    boolean this_present_followerSharedInboxUrl = true && this.isSetFollowerSharedInboxUrl();
-    boolean that_present_followerSharedInboxUrl = true && that.isSetFollowerSharedInboxUrl();
-    if (this_present_followerSharedInboxUrl || that_present_followerSharedInboxUrl) {
-      if (!(this_present_followerSharedInboxUrl && that_present_followerSharedInboxUrl))
-        return false;
-      if (!this.followerSharedInboxUrl.equals(that.followerSharedInboxUrl))
-        return false;
-    }
-
     return true;
   }
 
@@ -394,10 +335,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(targetId);
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
-
-    hashCode = hashCode * 8191 + ((isSetFollowerSharedInboxUrl()) ? 131071 : 524287);
-    if (isSetFollowerSharedInboxUrl())
-      hashCode = hashCode * 8191 + followerSharedInboxUrl.hashCode();
 
     return hashCode;
   }
@@ -440,16 +377,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetFollowerSharedInboxUrl(), other.isSetFollowerSharedInboxUrl());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFollowerSharedInboxUrl()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.followerSharedInboxUrl, other.followerSharedInboxUrl);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -485,16 +412,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
     sb.append("timestamp:");
     sb.append(this.timestamp);
     first = false;
-    if (isSetFollowerSharedInboxUrl()) {
-      if (!first) sb.append(", ");
-      sb.append("followerSharedInboxUrl:");
-      if (this.followerSharedInboxUrl == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.followerSharedInboxUrl);
-      }
-      first = false;
-    }
     sb.append(")");
     return sb.toString();
   }
@@ -569,14 +486,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // FOLLOWER_SHARED_INBOX_URL
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.followerSharedInboxUrl = iprot.readString();
-              struct.setFollowerSharedInboxUrlIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -611,13 +520,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
       oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
-      if (struct.followerSharedInboxUrl != null) {
-        if (struct.isSetFollowerSharedInboxUrl()) {
-          oprot.writeFieldBegin(FOLLOWER_SHARED_INBOX_URL_FIELD_DESC);
-          oprot.writeString(struct.followerSharedInboxUrl);
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -639,14 +541,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
       oprot.writeI64(struct.accountId);
       oprot.writeI64(struct.targetId);
       oprot.writeI64(struct.timestamp);
-      java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetFollowerSharedInboxUrl()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetFollowerSharedInboxUrl()) {
-        oprot.writeString(struct.followerSharedInboxUrl);
-      }
     }
 
     @Override
@@ -658,11 +552,6 @@ public class RemoveFollowAccount implements org.apache.thrift.TBase<RemoveFollow
       struct.setTargetIdIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        struct.followerSharedInboxUrl = iprot.readString();
-        struct.setFollowerSharedInboxUrlIsSet(true);
-      }
     }
   }
 

@@ -38,6 +38,7 @@ public class ApolloApiManager {
      // Relationships Depots
     private final Depot authCodeDepot;
     private final Depot followAndBlockAccountDepot;
+    private final Depot muteAccountDepot;
 
     // Core PStates
     private final PState nameToUser;
@@ -66,6 +67,7 @@ public class ApolloApiManager {
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
         followAndBlockAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followAndBlockAccountDepot");
+        muteAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*muteAccountDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
@@ -349,7 +351,7 @@ public class ApolloApiManager {
                                         });
     }
 
-    public CompletableFuture<Boolean> postFollowAccount(long followerId, long followeeId, String sharedInboxUrl, PostFollow params) {
+    public CompletableFuture<Boolean> postFollowAccount(long followerId, long followeeId, PostFollow params) {
         return getAccountWithId(followeeId)
             .thenCompose((followee) -> {
                 if (followee != null && followee.account != null && followee.account.locked) {
@@ -376,10 +378,29 @@ public class ApolloApiManager {
         return getAccountRelationship.invokeAsync(sourceId, targetId);
     }
 
-    public CompletableFuture<Boolean> postRemoveFollowAccount(long followerId, long followeeId, String sharedInboxUrl) {
+    public CompletableFuture<Boolean> postRemoveFollowAccount(long followerId, long followeeId) {
         RemoveFollowAccount removeFollowAccount = new RemoveFollowAccount(followerId, followeeId, System.currentTimeMillis());
-        if (sharedInboxUrl != null) removeFollowAccount.setFollowerSharedInboxUrl(sharedInboxUrl);
         return followAndBlockAccountDepot.appendAsync(removeFollowAccount).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postMuteAccount(long muterId, long muteeId, PostMute params) {
+        MuteAccountOptions options = new MuteAccountOptions(params.notifications);
+        if(params.duration != null) options.setExpirationMillis(System.currentTimeMillis() + params.duration * 1000);
+        return muteAccountDepot.appendAsync(new MuteAccount(muterId, muteeId, options, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postRemoveMuteAccount(long muterId, long muteeId) {
+        return muteAccountDepot.appendAsync(new RemoveMuteAccount(muterId, muteeId, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postBlockAccount(long blockerId, long blockeeId) {
+        return followAndBlockAccountDepot.appendAsync(new BlockAccount(blockerId, blockeeId, System.currentTimeMillis()))
+                                         .thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postRemoveBlockAccount(long blockerId, long blockeeId) {
+        return followAndBlockAccountDepot.appendAsync(new RemoveBlockAccount(blockerId, blockeeId, System.currentTimeMillis()))
+                                         .thenApply(res -> true);
     }
 
 
