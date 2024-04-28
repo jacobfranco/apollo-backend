@@ -39,6 +39,8 @@ public class ApolloApiManager {
     private final Depot authCodeDepot;
     private final Depot followAndBlockAccountDepot;
     private final Depot muteAccountDepot;
+    private final Depot featureAccountDepot;
+    
 
     // Core PStates
     private final PState nameToUser;
@@ -68,6 +70,7 @@ public class ApolloApiManager {
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
         followAndBlockAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followAndBlockAccountDepot");
         muteAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*muteAccountDepot");
+        featureAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*featureAccountDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
@@ -401,6 +404,15 @@ public class ApolloApiManager {
     public CompletableFuture<Boolean> postRemoveBlockAccount(long blockerId, long blockeeId) {
         return followAndBlockAccountDepot.appendAsync(new RemoveBlockAccount(blockerId, blockeeId, System.currentTimeMillis()))
                                          .thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postFeatureAccount(long featurerId, long featureeId) {
+        return featureAccountDepot.appendAsync(new FeatureAccount(featurerId, featureeId, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postRemoveFeatureAccount(long featurerId, long featureeId) {
+        return featureAccountDepot.appendAsync(new RemoveFeatureAccount(featurerId, featureeId, System.currentTimeMillis()))
+                                  .thenApply(res -> true);
     }
 
 

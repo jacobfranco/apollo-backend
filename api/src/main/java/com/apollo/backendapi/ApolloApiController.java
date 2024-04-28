@@ -366,7 +366,7 @@ public class ApolloApiController {
                 .map(GetScheduledStatus::new);
     }
 
-    @PutMapping("/api/v1/scheduled_statuses/{id}")
+    @PutMapping("/api/scheduled_statuses/{id}")
     public Mono<GetScheduledStatus> updateScheduledStatus(WebSession session,
             @PathVariable("id") String id,
             @RequestBody PutScheduledStatus putScheduledStatus) {
@@ -379,7 +379,7 @@ public class ApolloApiController {
                 .map(GetScheduledStatus::new);
     }
 
-    @DeleteMapping("/api/v1/scheduled_statuses/{id}")
+    @DeleteMapping("/api/scheduled_statuses/{id}")
     public Mono<Void> cancelScheduledStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
@@ -411,7 +411,7 @@ public class ApolloApiController {
                 .map(result -> new GetRelationship(id, result));
     }
 
-    @PostMapping("/api/v1/accounts/{id}/unfollow")
+    @PostMapping("/api/accounts/{id}/unfollow")
     public Mono<GetRelationship> postUnfollowAccount(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         long followeeId = ApolloHelpers.parseAccountId(id);
@@ -489,6 +489,32 @@ public class ApolloApiController {
         long followerId = ApolloHelpers.parseAccountId(id);
         return Mono.fromFuture(manager.postRemoveFollowAccount(followerId, requestAccountId))
                    .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followerId)))
+                   .map(result -> new GetRelationship(id, result));
+    }
+
+    /*
+     * Pin Actions Endpoints
+     * ======================================
+     * - POST /api/accounts/{id}/pin
+     * - POST /api/accounts/{id}/unpin
+     * ======================================
+     */
+
+    @PostMapping("/api/accounts/{id}/pin")
+    public Mono<GetRelationship> postFeatureAccount(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long featureeId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.postFeatureAccount(requestAccountId, featureeId))
+                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
+                   .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/accounts/{id}/unpin")
+    public Mono<GetRelationship> postRemoveFeatureAccount(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long featureeId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.postRemoveFeatureAccount(requestAccountId, featureeId))
+                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
                    .map(result -> new GetRelationship(id, result));
     }
 
