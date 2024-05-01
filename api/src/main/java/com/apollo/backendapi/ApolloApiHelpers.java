@@ -133,4 +133,42 @@ public class ApolloApiHelpers {
         return getConversations;
     }
 
+    public static GetTag createGetTag(String hashtag, ItemStats stats, boolean isFollowing) {
+        GetTag tag = new GetTag(hashtag);
+        Map<Long, DayBucket> buckets = stats.dayBuckets;
+        buckets.forEach((Long day, DayBucket b) -> {
+            tag.history.add(new GetTag.HistoryItem(day, b.uses, b.accounts));
+        });
+        tag.following = isFollowing;
+        return tag;
+    }
+
+    public static List<GetTag> createGetTags(Map<String, ItemStats> hashtagToStats) {
+        List<GetTag> getTags = new ArrayList<>();
+        hashtagToStats.forEach((String hashtag, ItemStats stats) -> {
+            getTags.add(createGetTag(hashtag, stats, false));
+        });
+        return getTags;
+    }
+
+    public static List<GetTag> createGetTags(List<SimpleEntry<String, ItemStats>> hashtagToStats) {
+        List<GetTag> getTags = new ArrayList<>();
+        for (SimpleEntry<String, ItemStats> entry : hashtagToStats) {
+            getTags.add(createGetTag(entry.getKey(), entry.getValue(), false));
+        }
+        return getTags;
+    }
+
+    public static List<GetStatus> createGetStatuses(StatusQueryResults statusQueryResults) {
+        List<GetStatus> getStatuses = new ArrayList<>();
+        for (StatusResultWithId result : statusQueryResults.results) getStatuses.add(new GetStatus(result, statusQueryResults.mentions));
+        return getStatuses;
+    }
+
+    public static List<GetStatus> createGetStatuses(List<StatusQueryResult> statusQueryResults) {
+        List<GetStatus> getStatuses = new ArrayList<>();
+        for (StatusQueryResult statusQueryResult : statusQueryResults) getStatuses.add(new GetStatus(statusQueryResult.result, statusQueryResult.mentions));
+        return getStatuses;
+    }
+
 }

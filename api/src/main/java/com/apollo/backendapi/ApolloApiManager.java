@@ -28,6 +28,7 @@ public class ApolloApiManager {
     // Modules
     public static final String CORE_MODULE_NAME = Core.class.getName();
     public static final String RELATIONSHIPS_MODULE_NAME = Relationships.class.getName();
+    public static final String HASHTAGS_MODULE_NAME = TrendsAndHashtags.class.getName();
 
     // Core Depots
     private final Depot accountDepot;
@@ -52,15 +53,25 @@ public class ApolloApiManager {
     private final PState accountIdToScheduledStatuses;
     private final PState accountIdToConvoIds;
 
-    // Core Query Topologies
+    // Relationship PStates
+    private final PState authCodeToAccountId;
+
+    // Hashtag/Trends PStates
+    private final PState hashtagTrends;
+    private final PState statusTrends;
+
+    // Core Queries
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
     private final QueryTopologyClient<StatusQueryResults> getAccountTimeline;
     private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
     private final QueryTopologyClient<Conversation> getConversation;
     private final QueryTopologyClient<List<Conversation>> getConversationTimeline;
 
-    // Relationship Query Topologies
+    // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
+
+    // Hashtag Queries
+    private final QueryTopologyClient<Map<String, ItemStats>> batchHashtagStats;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -86,15 +97,25 @@ public class ApolloApiManager {
         uuidToAttachment = cluster.clusterPState(CORE_MODULE_NAME, "$$uuidToAttachment");
         accountIdToConvoIds = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToConvoIds");
 
-        // Core Query Topologies
+        // Relationship PStates
+        authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
+
+        // Hashtag/Trends PStates
+        hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
+        statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
+        
+        // Core Queries
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
         getConversation = cluster.clusterQuery(CORE_MODULE_NAME, "getConversation");
         getConversationTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getConversationTimeline");
 
-        // Relationships Query Topologies
+        // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
+
+        // Hashtag Queries
+        batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
 
       }
 
@@ -458,6 +479,31 @@ public class ApolloApiManager {
     public CompletableFuture<Boolean> deleteConversation(long accountId, long conversationId) {
         return conversationDepot.appendAsync(new RemoveConversation(accountId, conversationId)).thenApply(res -> true);
     }
+
+    public CompletableFuture<Long> getAccountIdFromAuthCode(String code) {
+        return authCodeToAccountId.selectOneAsync(Path.key(code));
+    }
+
+
+    public CompletableFuture<Map<String, ItemStats>> getTrendingHashtags(Integer limitMaybe, Integer offsetMaybe) {
+        long offset = offsetMaybe == null ? 0 : offsetMaybe;
+        int defaultLimit = 10;
+        int maxLimit = 20;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+        return hashtagTrends.selectAsync(Path.all().first())
+                            .thenApply(tags -> tags.stream().skip(offset).limit(limit).collect(Collectors.toList()))
+                            .thenCompose(batchHashtagStats::invokeAsync)
+                            .thenApply(res -> res == null ? new HashMap<>() : res);
+    }
+
+    public CompletableFuture<StatusQueryResults> getTrendingStatuses(Long requestAccountIdMaybe, Integer limitMaybe, Integer offsetMaybe) {
+        long offset = offsetMaybe == null ? 0 : offsetMaybe;
+        int limit = Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT);
+        return statusTrends.selectAsync(Path.all().first())
+                           .thenApply(statuses -> statuses.stream().skip(offset).limit(limit).collect(Collectors.toList()))
+                           .thenCompose(statusPointers -> getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, statusPointers, new QueryFilterOptions(FilterContext.Public, false)));
+    }
+
 
 
 }

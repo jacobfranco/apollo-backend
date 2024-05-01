@@ -285,6 +285,7 @@ public class ApolloApiController {
      * - DELETE /api/scheduled_statuses/{id}
      * ======================================
      */
+    
 
     @PostMapping(value = "/api/statuses", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<Object> postStatus(WebSession session, @RequestBody(required = true) PostStatus params) {
@@ -551,6 +552,26 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.deleteConversation(requestAccountId, conversationId))
                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                    .map(result -> new HashMap());
+    }
+
+    /*
+     * Trends Actions Endpoints
+     * ======================================
+     * - GET /api/trends
+     * - GET /api/trends/statuses
+     * ======================================
+     */
+
+
+    @GetMapping("/api/trends")
+    public Mono<List<GetTag>> getTrendingTags(@RequestParam(required = false) Integer limit, @RequestParam(required = false) Integer offset) {
+        return Mono.fromFuture(manager.getTrendingHashtags(limit, offset)).map(ApolloApiHelpers::createGetTags);
+    }
+
+    @GetMapping("/api/v1/trends/statuses")
+    public Mono<List<GetStatus>> getTrendingStatuses(WebSession session, @RequestParam(required = false) Integer limit, @RequestParam(required = false) Integer offset) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        return Mono.fromFuture(manager.getTrendingStatuses(requestAccountId, limit, offset)).map(ApolloApiHelpers::createGetStatuses);
     }
 
 }

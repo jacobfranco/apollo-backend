@@ -46,6 +46,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
             (Class<? extends TBase<?, ?>>) HashtagFanout.class,
             (Class<? extends TBase<?, ?>>) IndexedAccountWithId.class,
             (Class<? extends TBase<?, ?>>) IndexedStatusResultWithId.class,
+            (Class<? extends TBase<?, ?>>) ItemStats.class,
             (Class<? extends TBase<?, ?>>) KeyValuePair.class,
             (Class<? extends TBase<?, ?>>) LikeStatus.class,
             (Class<? extends TBase<?, ?>>) Marker.class,
