@@ -55,6 +55,10 @@ public class ApolloApiManager {
 
     // Relationship PStates
     private final PState authCodeToAccountId;
+    private final PState followerToFolloweesById;
+    private final PState followeeToFollowersById;
+    private final PState accountIdToFollowRequests;
+    private final PState accountIdToFollowRequestsById;
 
     // Hashtag/Trends PStates
     private final PState hashtagTrends;
@@ -66,6 +70,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
     private final QueryTopologyClient<Conversation> getConversation;
     private final QueryTopologyClient<List<Conversation>> getConversationTimeline;
+    
 
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
@@ -99,6 +104,10 @@ public class ApolloApiManager {
 
         // Relationship PStates
         authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
+        followerToFolloweesById = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$followerToFolloweesById");
+        followeeToFollowersById = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$followeeToFollowersById");
+        accountIdToFollowRequests = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFollowRequests");
+        accountIdToFollowRequestsById = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFollowRequestsById");
 
         // Hashtag/Trends PStates
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
@@ -503,6 +512,131 @@ public class ApolloApiManager {
                            .thenApply(statuses -> statuses.stream().skip(offset).limit(limit).collect(Collectors.toList()))
                            .thenCompose(statusPointers -> getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, statusPointers, new QueryFilterOptions(FilterContext.Public, false)));
     }
+
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getAccountFollowees(long followerId, Long offsetMaybe, Integer limitMaybe) {
+        long offset = offsetMaybe == null ? -1L : offsetMaybe;
+        int limit = Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT);
+        SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+        CompletableFuture<List<List>> followeesFuture = followerToFolloweesById.selectAsync(Path.key(followerId).sortedMapRangeFrom(offset, options).all());
+        return followeesFuture.thenCompose(keyVals -> getAccountWithTimelineIndexes(keyVals, limit))
+                              .thenApply(accountWithTimelineIndexes -> {
+                                  List<SimpleEntry<Long, AccountWithId>> results = accountWithTimelineIndexes.getKey();
+                                  List<AccountWithId> accountWithIds = results.stream().map(SimpleEntry::getValue).collect(Collectors.toList());
+                                  boolean reachedEnd = accountWithTimelineIndexes.getValue();
+                                  Long lastId = null;
+                                  List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                  if (results.size() > 0) {
+                                      lastId = results.get(results.size()-1).getKey();
+                                      linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", lastId+""));
+                                  }
+                                  return new QueryResults<>(accountWithIds, reachedEnd, lastId, linkHeaderParams);
+                              });
+    }
+
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getAccountFollowers(long followeeId, Long offsetMaybe, Integer limitMaybe) {
+        long offset = offsetMaybe == null ? -1L : offsetMaybe;
+        int limit = Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT);
+        SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+        CompletableFuture<List<List>> followeesFuture = followeeToFollowersById.selectAsync(Path.key(followeeId).sortedMapRangeFrom(offset, options).all());
+        return followeesFuture.thenCompose(keyVals -> getAccountWithTimelineIndexes(keyVals, limit))
+                              .thenApply(accountWithTimelineIndexes -> {
+                                  List<SimpleEntry<Long, AccountWithId>> results = accountWithTimelineIndexes.getKey();
+                                  List<AccountWithId> accountWithIds = results.stream().map(SimpleEntry::getValue).collect(Collectors.toList());
+                                  boolean reachedEnd = accountWithTimelineIndexes.getValue();
+                                  Long lastId = null;
+                                  List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                  if (results.size() > 0) {
+                                      lastId = results.get(results.size()-1).getKey();
+                                      linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", lastId+""));
+                                  }
+                                  return new QueryResults<>(accountWithIds, reachedEnd, lastId, linkHeaderParams);
+                              });
+    }
+
+    public CompletableFuture<SimpleEntry<List<SimpleEntry<Long, AccountWithId>>, Boolean>> getAccountWithTimelineIndexes(List<List> keyVals, long limit) {
+        List<Long> accountIds = keyVals.stream().map(l -> ((Follower) l.get(1)).accountId).collect(Collectors.toList());
+        return this.getAccountsFromAccountIds(accountIds)
+                   .thenApply(accountWithIds -> {
+                       List<SimpleEntry<Long, AccountWithId>> accountWithTimelineIndexes = new ArrayList<>();
+                       int i = 0;
+                       for (AccountWithId accountWithId : accountWithIds) {
+                           accountWithTimelineIndexes.add(new SimpleEntry<>((Long) keyVals.get(i).get(0), accountWithId));
+                           i++;
+                       }
+                       return new SimpleEntry<>(accountWithTimelineIndexes, accountWithIds.size() < limit);
+                   });
+    }
+
+    private CompletableFuture<List<AccountWithId>> getAccountsFromAccountIds(List<Long> accountIds) {
+        return getAccountsFromAccountIds.invokeAsync(null, accountIds);
+    }
+
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getFollowRequests(long requestAccountId, Long offsetMaybe, Integer limitMaybe) {
+        return queryWithPaging(
+            (offset, limit) -> {
+                SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                CompletableFuture<List<Long>> future = accountIdToFollowRequestsById.selectAsync(Path.key(requestAccountId).sortedMapRangeFrom(offset, options).mapVals().customNav(new com.apollo.backend.navs.TField("requesterId")));
+                return future.thenCompose(requesterIds -> getAccountsFromAccountIds.invokeAsync(requestAccountId, requesterIds))
+                             .thenApply(accountWithIds -> {
+                                 Long lastId = null;
+                                 List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                 if (accountWithIds.size() > 0) {
+                                     AccountWithId lastAccount = accountWithIds.get(accountWithIds.size()-1);
+                                     lastId = lastAccount.accountId;
+                                     linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", ApolloHelpers.serializeAccountId(lastAccount.accountId)));
+                                 }
+                                 return new QueryResults<>(accountWithIds, accountWithIds.size() < limit, lastId, linkHeaderParams);
+                             });
+            },
+            offsetMaybe == null ? -1L : offsetMaybe,
+            Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT),
+            MAX_PAGING_ITERATIONS
+        );
+    }
+
+    public CompletableFuture<Boolean> acceptFollowRequest(long accountId, long requesterId) {
+        return accountIdToFollowRequests.selectOneAsync(Path.key(accountId, requesterId))
+                                        .thenCompose(existingRequest -> {
+                                            if (existingRequest != null) {
+                                                return followAndBlockAccountDepot.appendAsync(new AcceptFollowRequest(accountId, requesterId, System.currentTimeMillis()))
+                                                                                 .thenApply(res -> true);
+                                            } else return CompletableFuture.completedFuture(false);
+                                        });
+    }
+
+    public CompletableFuture<Boolean> rejectFollowRequest(long accountId, long requesterId) {
+        return accountIdToFollowRequests.selectOneAsync(Path.key(accountId, requesterId))
+                                        .thenCompose(existingRequest -> {
+                                            if (existingRequest != null) {
+                                                return followAndBlockAccountDepot.appendAsync(new RejectFollowRequest(accountId, requesterId))
+                                                                                 .thenApply(res -> true);
+                                            } else return CompletableFuture.completedFuture(false);
+                                        });
+    }
+
+    public static <T, O> CompletableFuture<QueryResults<T, O>> queryWithPaging(BiFunction<O, Integer, CompletableFuture<QueryResults<T, O>>> fn, O offset, int limit, int iterationsLeft) {
+        if (iterationsLeft == 0) return CompletableFuture.completedFuture(new QueryResults<>(new ArrayList<>(), true, null, null));
+
+        return fn.apply(offset, limit)
+                 .thenCompose(queryResults -> {
+                     // if the results are less than the limit and we haven't reached the end...
+                     if (queryResults.results.size() < limit && !queryResults.reachedEnd) {
+                         O nextOffset;
+                         int nextLimit = limit - queryResults.results.size();
+                         if (queryResults.offset != null) nextOffset = queryResults.offset;
+                         else return CompletableFuture.completedFuture(queryResults);
+                         // recursively make the new request and concat the results.
+                         return queryWithPaging(fn, nextOffset, nextLimit, iterationsLeft-1)
+                                .thenApply(nextResults -> {
+                                    List<T> results = new ArrayList<>(queryResults.results);
+                                    results.addAll(nextResults.results);
+                                    return new QueryResults<>(results, nextResults.reachedEnd, nextResults.offset, nextResults.linkHeaderParams);
+                                });
+                     } else return CompletableFuture.completedFuture(queryResults);
+                 });
+    }
+
+
 
 
 

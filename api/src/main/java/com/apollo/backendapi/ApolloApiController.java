@@ -394,6 +394,8 @@ public class ApolloApiController {
      * ======================================
      * - POST /api/accounts/{id}/follow
      * - POST /api/accounts/{id}/unfollow
+     * - GET api/accounts/{id}/following
+     * - GET api/accounts/{id}/followers
      * ======================================
      */
 
@@ -424,6 +426,26 @@ public class ApolloApiController {
                 })
                 .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followeeId)))
                 .map(result -> new GetRelationship(id, result));
+    }
+
+        @GetMapping("/api/accounts/{id}/following")
+    public Mono<List<GetAccount>> getAccountFollowees(ServerWebExchange exchange, @PathVariable("id") String accountId, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+        return Mono.fromFuture(manager.getAccountFollowees(ApolloHelpers.parseAccountId(accountId), max_id, limit))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                   });
+    }
+
+    @GetMapping("/api/accounts/{id}/followers")
+    public Mono<List<GetAccount>> getAccountFollowers(ServerWebExchange exchange, @PathVariable("id") String accountId, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+        return Mono.fromFuture(manager.getAccountFollowers(ApolloHelpers.parseAccountId(accountId), max_id, limit))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                   });
     }
 
     /*
@@ -572,6 +594,47 @@ public class ApolloApiController {
     public Mono<List<GetStatus>> getTrendingStatuses(WebSession session, @RequestParam(required = false) Integer limit, @RequestParam(required = false) Integer offset) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         return Mono.fromFuture(manager.getTrendingStatuses(requestAccountId, limit, offset)).map(ApolloApiHelpers::createGetStatuses);
+    }
+
+    /*
+     * Follow Requests Actions Endpoints
+     * ======================================
+     * - GET /api/follow_requests
+     * - POST /api/follow_requests/{id}/authorize
+     * - POST /api/follow_requests/{id}/reject
+     * ======================================
+     */
+
+    @GetMapping("/api/follow_requests")
+    public Mono<List<GetAccount>> getFollowRequests(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getFollowRequests(requestAccountId, max_id, limit))
+                   .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                   });
+    }
+
+    @PostMapping("/api/follow_requests/{id}/authorize")
+    public Mono<GetRelationship> acceptFollowRequest(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long requesterId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.acceptFollowRequest(requestAccountId, requesterId))
+                   .filter(isRequestExists -> isRequestExists)
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
+                   .map(result -> new GetRelationship(id, result));
+    }
+
+    @PostMapping("/api/follow_requests/{id}/reject")
+    public Mono<GetRelationship> rejectFollowRequest(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        long requesterId = ApolloHelpers.parseAccountId(id);
+        return Mono.fromFuture(manager.rejectFollowRequest(requestAccountId, requesterId))
+                   .filter(isRequestExists -> isRequestExists)
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
+                   .map(result -> new GetRelationship(id, result));
     }
 
 }
