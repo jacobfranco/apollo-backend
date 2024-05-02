@@ -24,6 +24,8 @@ public class ApolloApiManager {
     private static final int MAX_PAGING_ITERATIONS = 10;
     private static final int MAX_LIMIT = 40;
     private static final int DEFAULT_LIMIT = 20;
+    private static final int ANCESTORS_LIMIT = 20;
+    private static final int DESCENDANTS_LIMIT = 20;
 
     // Modules
     public static final String CORE_MODULE_NAME = Core.class.getName();
@@ -56,6 +58,8 @@ public class ApolloApiManager {
     private final PState postUUIDToStatusId;
     private final PState accountIdToScheduledStatuses;
     private final PState accountIdToConvoIds;
+    private final PState accountIdToStatuses;
+    private final PState bookmarkerToStatusPointers;
 
     // Relationship PStates
     private final PState authCodeToAccountId;
@@ -75,8 +79,9 @@ public class ApolloApiManager {
     private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
     private final QueryTopologyClient<Conversation> getConversation;
     private final QueryTopologyClient<List<Conversation>> getConversationTimeline;
+    private final QueryTopologyClient<StatusQueryResults> getAncestors;
+    private final QueryTopologyClient<StatusQueryResults> getDescendants;
     
-
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
 
@@ -110,6 +115,8 @@ public class ApolloApiManager {
         postUUIDToStatusId = cluster.clusterPState(CORE_MODULE_NAME, "$$postUUIDToStatusId");
         uuidToAttachment = cluster.clusterPState(CORE_MODULE_NAME, "$$uuidToAttachment");
         accountIdToConvoIds = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToConvoIds");
+        accountIdToStatuses = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToStatuses");
+        bookmarkerToStatusPointers = cluster.clusterPState(CORE_MODULE_NAME, "$$bookmarkerToStatusPointers");
 
         // Relationship PStates
         authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
@@ -129,6 +136,8 @@ public class ApolloApiManager {
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
         getConversation = cluster.clusterQuery(CORE_MODULE_NAME, "getConversation");
         getConversationTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getConversationTimeline");
+        getAncestors = cluster.clusterQuery(CORE_MODULE_NAME, "getAncestors");
+        getDescendants = cluster.clusterQuery(CORE_MODULE_NAME, "getDescendants");
 
         // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
@@ -807,6 +816,68 @@ public class ApolloApiManager {
                                  statusQueryResult.result.status.metadata.pinned = false;
                                  return statusQueryResult;
                              });
+    }
+
+    public CompletableFuture<StatusQueryResult> putStatus(StatusPointer statusPointer, PutStatus params) {
+        List<CompletableFuture<Object>> mediaFutures =
+            params.media_ids.stream()
+                            .distinct()
+                            .map(attachmentId -> uuidToAttachment.selectOneAsync(Path.key(attachmentId)))
+                            .collect(Collectors.toList());
+        return CompletableFuture.allOf(mediaFutures.toArray(new CompletableFuture<?>[0]))
+                .thenCompose(_result -> {
+                    List<AttachmentWithId> attachments = new ArrayList<>();
+                    for (int i = 0; i < mediaFutures.size(); i++) {
+                      attachments.add(new AttachmentWithId(params.media_ids.get(i), (Attachment) mediaFutures.get(i).join()));
+                    }
+                    return accountIdToStatuses.selectOneAsync(Path.key(statusPointer.authorId, statusPointer.statusId).first())
+                                              .thenCompose(statusMaybe -> {
+                                                  if (statusMaybe == null) return CompletableFuture.completedFuture(null);
+                                                  Status edit = (Status) statusMaybe;
+                                                  if (edit.content.isSetNormal()) {
+                                                      NormalStatusContent content = edit.content.getNormal();
+                                                      content.text = params.status;
+                                                      content.setAttachments(attachments);
+                                                      if (params.poll != null && content.isSetPollContent()) content.setPollContent(new PollContent(params.poll.options, content.pollContent.expirationMillis, params.poll.multiple));
+                                                      if (params.sensitive != null && params.sensitive) content.setSensitiveWarning(params.spoiler_text != null ? params.spoiler_text : "");
+                                                      else content.unsetSensitiveWarning();
+                                                  }
+                                                  else if (edit.content.isSetReply()) {
+                                                      ReplyStatusContent content = edit.content.getReply();
+                                                      content.text = params.status;
+                                                      content.setAttachments(attachments);
+                                                      if (params.poll != null && content.isSetPollContent()) content.setPollContent(new PollContent(params.poll.options, content.pollContent.expirationMillis, params.poll.multiple));
+                                                      if (params.sensitive != null && params.sensitive) content.setSensitiveWarning(params.spoiler_text != null ? params.spoiler_text : "");
+                                                      else content.unsetSensitiveWarning();
+                                                  }
+                                                  else if (edit.content.isSetBoost()) return CompletableFuture.completedFuture(null); // you can't edit boosts
+                                                  return statusDepot.appendAsync(new EditStatus(statusPointer.statusId, edit))
+                                                                    .thenCompose(res -> this.getStatus(statusPointer.authorId, statusPointer));
+                                              });
+            });
+    }
+
+    public CompletableFuture<Boolean> deleteStatus(long accountId, long statusId) {
+        return statusDepot.appendAsync(new RemoveStatus(accountId, statusId, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
+    public CompletableFuture<StatusQueryResults> getAncestors(Long requestAccountIdMaybe, StatusPointer pointer) {
+        return getAncestors.invokeAsync(requestAccountIdMaybe, pointer.authorId, pointer.statusId, ANCESTORS_LIMIT);
+    }
+
+    public CompletableFuture<StatusQueryResults> getDescendants(Long requestAccountIdMaybe, StatusPointer pointer) {
+        return getDescendants.invokeAsync(requestAccountIdMaybe, pointer.authorId, pointer.statusId, DESCENDANTS_LIMIT);
+    }
+
+    public CompletableFuture<StatusQueryResults> getBookmarks(long bookmarkerId, StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging((offset, limit) -> {
+                    SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                    return bookmarkerToStatusPointers.selectAsync(Path.key(bookmarkerId).sortedMapRangeFrom(offset, options).mapKeys())
+                                                     .thenCompose(statusPointers -> {
+                                                         QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+                                                         return getStatusesFromPointers.invokeAsync(bookmarkerId, statusPointers, filterOptions);
+                                                     });
+                }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 
 

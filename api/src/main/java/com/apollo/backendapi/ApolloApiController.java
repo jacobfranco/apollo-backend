@@ -12,6 +12,7 @@ import org.springframework.http.codec.multipart.Part;
 import org.springframework.core.io.buffer.DataBuffer;
 
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.util.*;
 import java.security.NoSuchAlgorithmException;
@@ -280,6 +281,12 @@ public class ApolloApiController {
      * Status Actions Endpoints
      * ======================================
      * - POST /api/statuses
+     * - PUT /api/statuses/{id}
+     * - DELETE /api/statuses/{id}
+     * - GET /api/statuses/{id}/source
+     * - GET /api/statuses/{id}/context
+     * - GET /api/statuses/{id}/context/ancestors
+     * - GET /api/statuses/{id}/context/descendents
      * ======================================
      */
     
@@ -337,6 +344,95 @@ public class ApolloApiController {
                             return this.postStatus(session, postStatus);
                         }));
     }
+
+    @PutMapping(value = "/api/statuses/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GetStatus> putStatus(WebSession session, @PathVariable("id") String id, @RequestBody(required = true) PutStatus params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        validateStatus(params.status, params.spoiler_text, params.language, params.poll);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return Mono.fromFuture(manager.putStatus(statusPointer, params))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PutMapping(value = "/api/statuses/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<GetStatus> putStatus(
+            WebSession session,
+            @PathVariable("id") String id,
+            @RequestPart(value = "status", required = false) String status,
+            @RequestPart(value = "sensitive", required = false) String sensitive,
+            @RequestPart(value = "spoiler_text", required = false) String spoiler_text,
+            @RequestPart(value = "language", required = false) String language,
+            @RequestPart(value = "media_ids[]", required = false) List<Part> media_ids
+    ) {
+        List<Mono<DataBuffer>> mediaContent = media_ids.stream().map(part -> part.content().single()).collect(Collectors.toList());
+        return (mediaContent.size() > 0 ? Mono.zip(mediaContent, res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset())).collect(Collectors.toList())) : Mono.just(new ArrayList<>()))
+                .flatMap(mediaContentResults -> {
+                    PutStatus putStatus = new PutStatus(status);
+                    putStatus.spoiler_text = spoiler_text;
+                    putStatus.language = language;
+                    putStatus.sensitive = sensitive != null ? Boolean.parseBoolean(sensitive) : null;
+                    putStatus.media_ids = (List<String>) mediaContentResults;
+                    return this.putStatus(session, id, putStatus);
+                });
+    }
+
+    @DeleteMapping("/api/statuses/{id}")
+    public Mono<GetStatus> deleteStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .flatMap(status -> Mono.zip(Mono.just(status), Mono.fromFuture(manager.deleteStatus(requestAccountId, statusPointer.statusId))))
+                   .map(Tuple2::getT1)
+                   .map(GetStatus::new);
+    }
+
+    @GetMapping("/api/statuses/{id}/source")
+    public Mono<GetStatusSource> getStatusSource(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatusSource::new);
+    }
+
+    @GetMapping("/api/v1/statuses/{id}/context")
+    public Mono<GetContext> getContext(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.zip(Mono.fromFuture(manager.getAncestors(requestAccountId, statusPointer)),
+                        Mono.fromFuture(manager.getDescendants(requestAccountId, statusPointer)))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(result -> new GetContext(
+                           ApolloApiHelpers.createGetStatuses(result.getT1()),
+                           ApolloApiHelpers.createGetStatuses(result.getT2())
+                   ));
+    }
+
+    @GetMapping("/api/statuses/{id}/context/ancestors")
+public Mono<List<GetStatus>> getAncestors(WebSession session, @PathVariable("id") String id) {
+    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+
+    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+
+    return Mono.fromFuture(manager.getAncestors(requestAccountId, statusPointer))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+            .map(ApolloApiHelpers::createGetStatuses);
+}
+
+@GetMapping("/api/statuses/{id}/context/descendants")
+public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("id") String id) {
+    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+
+    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+
+    return Mono.fromFuture(manager.getDescendants(requestAccountId, statusPointer))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+            .map(ApolloApiHelpers::createGetStatuses);
+}
 
     /*
      * Scheduled Status Actions Endpoints
@@ -654,7 +750,7 @@ public class ApolloApiController {
                    .map(result -> new GetRelationship(id, result));
     }
 
-      /*
+    /*
      * Status Interactions Endpoints
      * ======================================
      * - POST /api/statuses/{id}/like
@@ -771,5 +867,26 @@ public class ApolloApiController {
                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
                    .map(GetStatus::new);
     }
+
+         /*
+     * User Metrics Endpoints
+     * ======================================
+     * - GET /api/bookmarks
+     * ======================================
+     */
+
+
+    @GetMapping("/api/bookmarks")
+    public Mono<List<GetStatus>> getBookmarks(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getBookmarks(requestAccountId, statusPointer, limit))
+                   .map(statusQueryResults -> {
+                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                   });
+    }
+
+
 
 }

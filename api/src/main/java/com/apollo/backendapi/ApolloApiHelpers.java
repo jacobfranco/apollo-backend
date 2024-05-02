@@ -171,4 +171,26 @@ public class ApolloApiHelpers {
         return getStatuses;
     }
 
+    public static String getStatusResultContentText(StatusResultContent content) {
+        if (content.isSetNormal()) return content.getNormal().text;
+        else if (content.isSetReply()) return content.getReply().text;
+        else if (content.isSetBoost()) return getStatusResultContentText(content.getBoost().status.content);
+        return "";
+    }
+
+    public static void setStatusLinkHeader(ServerWebExchange exchange, StatusQueryResults statusQueryResults) {
+        if (statusQueryResults.isSetLastStatusPointer() && !statusQueryResults.reachedEnd) {
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(ApolloConfig.API_URL);
+            builder.path(exchange.getRequest().getPath().pathWithinApplication().value());
+            // collect the existing query params
+            for (Map.Entry<String, List<String>> entry : exchange.getRequest().getQueryParams().entrySet()) {
+                builder.queryParam(entry.getKey(), entry.getValue());
+            }
+            // collect the new params (these will override the existing ones)
+            builder.replaceQueryParam("max_id", ApolloHelpers.serializeStatusPointer(statusQueryResults.lastStatusPointer));
+            // set the header
+            exchange.getResponse().getHeaders().add("Link", String.format("<%s>; rel=\"next\"", builder.toUriString()));
+        }
+    }
+
 }
