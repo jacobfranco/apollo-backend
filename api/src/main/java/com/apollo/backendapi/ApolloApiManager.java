@@ -60,6 +60,7 @@ public class ApolloApiManager {
     private final PState accountIdToConvoIds;
     private final PState accountIdToStatuses;
     private final PState bookmarkerToStatusPointers;
+    private final PState likerToStatusPointers;
 
     // Relationship PStates
     private final PState authCodeToAccountId;
@@ -117,6 +118,7 @@ public class ApolloApiManager {
         accountIdToConvoIds = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToConvoIds");
         accountIdToStatuses = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToStatuses");
         bookmarkerToStatusPointers = cluster.clusterPState(CORE_MODULE_NAME, "$$bookmarkerToStatusPointers");
+        likerToStatusPointers = cluster.clusterPState(CORE_MODULE_NAME, "$$likerToStatusPointers");
 
         // Relationship PStates
         authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
@@ -877,6 +879,17 @@ public class ApolloApiManager {
                                                          QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
                                                          return getStatusesFromPointers.invokeAsync(bookmarkerId, statusPointers, filterOptions);
                                                      });
+                }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<StatusQueryResults> getLikes(long likerId, StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging((offset, limit) -> {
+                    SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                    return likerToStatusPointers.selectAsync(Path.key(likerId).sortedMapRangeFrom(offset, options).mapKeys())
+                                                    .thenCompose(statusPointers -> {
+                                                        QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+                                                        return getStatusesFromPointers.invokeAsync(likerId, statusPointers, filterOptions);
+                                                    });
                 }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 

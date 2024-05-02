@@ -872,6 +872,7 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      * User Metrics Endpoints
      * ======================================
      * - GET /api/bookmarks
+     * - GET /api/likes
      * ======================================
      */
 
@@ -881,6 +882,17 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getBookmarks(requestAccountId, statusPointer, limit))
+                   .map(statusQueryResults -> {
+                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                   });
+    }
+
+    @GetMapping("/api/likes")
+    public Mono<List<GetStatus>> getFavorites(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getLikes(requestAccountId, statusPointer, limit))
                    .map(statusQueryResults -> {
                        ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
                        return ApolloApiHelpers.createGetStatuses(statusQueryResults);
