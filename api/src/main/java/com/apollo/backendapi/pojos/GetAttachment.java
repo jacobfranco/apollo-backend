@@ -11,7 +11,6 @@ public class GetAttachment {
     public String type; // unknown, image, gifv, video, audio
     public String url;
     public String preview_url;
-    public String remote_url; // nullable
     public Map meta;
     public String description; // nullable
     public String blurhash;

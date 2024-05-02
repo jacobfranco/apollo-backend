@@ -36,6 +36,10 @@ public class ApolloApiManager {
     private final Depot statusDepot;
     private final Depot scheduledStatusDepot;
     private final Depot conversationDepot;
+    private final Depot likeStatusDepot;
+    private final Depot bookmarkStatusDepot;
+    private final Depot muteStatusDepot;
+    private final Depot pinStatusDepot;
     
 
      // Relationships Depots
@@ -88,6 +92,10 @@ public class ApolloApiManager {
         statusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*statusDepot");
         scheduledStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*scheduledStatusDepot");
         conversationDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*conversationDepot");
+        likeStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*likeStatusDepot");
+        bookmarkStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*bookmarkStatusDepot");
+        muteStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*muteStatusDepot");
+        pinStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pinStatusDepot");
         
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -282,7 +290,7 @@ public class ApolloApiManager {
                                 });
     }
 
-    public CompletableFuture<StatusQueryResult> postStatus(long accountId, PostStatus params, String remoteUrl) {
+    public CompletableFuture<StatusQueryResult> postStatus(long accountId, PostStatus params) {
         String uuid = UUID.randomUUID().toString();
         return createStatusFromParams(accountId, params)
             .thenComposeAsync(status -> {
@@ -659,6 +667,148 @@ public class ApolloApiManager {
             MAX_PAGING_ITERATIONS
         );
     }
+
+    public CompletableFuture<StatusQueryResult> postLikeStatus(long favoriterId, StatusPointer pointer) {
+        return likeStatusDepot.appendAsync(new LikeStatus(favoriterId, pointer, System.currentTimeMillis()))
+                                  .thenCompose(res -> this.getStatus(favoriterId, pointer))
+                                  .thenApply(resultMaybe -> {
+                                      if (resultMaybe == null) return null;
+                                      // the change was processed in a microbatch
+                                      // so the query won't necessarily return the
+                                      // most up-to-date value, so we're updating it manually.
+                                      StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                      statusQueryResult.result.status.metadata.liked = true;
+                                      return statusQueryResult;
+                                  });
+    }
+
+    public CompletableFuture<StatusQueryResult> postRemoveLikeStatus(long favoriterId, StatusPointer pointer) {
+        return likeStatusDepot.appendAsync(new LikeStatus(favoriterId, pointer, System.currentTimeMillis()))
+                                  .thenCompose(res -> this.getStatus(favoriterId, pointer))
+                                  .thenApply(resultMaybe -> {
+                                      if (resultMaybe == null) return null;
+                                      // the change was processed in a microbatch
+                                      // so the query won't necessarily return the
+                                      // most up-to-date value, so we're updating it manually.
+                                      StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                      statusQueryResult.result.status.metadata.liked = false;
+                                      return statusQueryResult;
+                                  });
+    }
+
+    public CompletableFuture<StatusQueryResult> postBoostStatus(long boosterId, StatusPointer pointer) {
+        BoostStatus boostStatus = new BoostStatus(UUID.randomUUID().toString(), boosterId, pointer, System.currentTimeMillis());
+        return statusDepot.appendAsync(boostStatus)
+                          .thenCompose(res -> this.getStatus(boosterId, pointer))
+                          .thenApply(resultMaybe -> {
+                              if (resultMaybe == null) return null;
+                              // the change was processed in a microbatch
+                              // so the query won't necessarily return the
+                              // most up-to-date value, so we're updating it manually.
+                              StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                              statusQueryResult.result.status.metadata.boosted = true;
+                              return statusQueryResult;
+                          });
+    }
+
+    public CompletableFuture<StatusQueryResult> postRemoveBoostStatus(long boosterId, StatusPointer pointer) {
+        return statusDepot.appendAsync(new RemoveBoostStatus(boosterId, pointer, System.currentTimeMillis()))
+                          .thenCompose(res -> this.getStatus(boosterId, pointer))
+                          .thenApply(resultMaybe -> {
+                              if (resultMaybe == null) return null;
+                              // the change was processed in a microbatch
+                              // so the query won't necessarily return the
+                              // most up-to-date value, so we're updating it manually.
+                              StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                              statusQueryResult.result.status.metadata.boosted = false;
+                              return statusQueryResult;
+                          });
+    }
+
+    public CompletableFuture<StatusQueryResult> postBookmarkStatus(long bookmarkerId, StatusPointer pointer) {
+        return bookmarkStatusDepot.appendAsync(new BookmarkStatus(bookmarkerId, pointer, System.currentTimeMillis()))
+                                  .thenCompose(res -> this.getStatus(bookmarkerId, pointer))
+                                  .thenApply(resultMaybe -> {
+                                      if (resultMaybe == null) return null;
+                                      // the change was processed in a microbatch
+                                      // so the query won't necessarily return the
+                                      // most up-to-date value, so we're updating it manually.
+                                      StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                      statusQueryResult.result.status.metadata.bookmarked = true;
+                                      return statusQueryResult;
+                                  });
+    }
+
+    public CompletableFuture<StatusQueryResult> postRemoveBookmarkStatus(long bookmarkerId, StatusPointer pointer) {
+        return bookmarkStatusDepot.appendAsync(new RemoveBookmarkStatus(bookmarkerId, pointer, System.currentTimeMillis()))
+                                  .thenCompose(res -> this.getStatus(bookmarkerId, pointer))
+                                  .thenApply(resultMaybe -> {
+                                      if (resultMaybe == null) return null;
+                                      // the change was processed in a microbatch
+                                      // so the query won't necessarily return the
+                                      // most up-to-date value, so we're updating it manually.
+                                      StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                      statusQueryResult.result.status.metadata.bookmarked = false;
+                                      return statusQueryResult;
+                                  });
+    }
+
+    public CompletableFuture<StatusQueryResult> postMuteStatus(long muterId, StatusPointer pointer) {
+        return muteStatusDepot.appendAsync(new MuteStatus(muterId, pointer, System.currentTimeMillis()))
+                              .thenCompose(res -> this.getStatus(muterId, pointer))
+                              .thenApply(resultMaybe -> {
+                                  if (resultMaybe == null) return null;
+                                  // the change was processed in a microbatch
+                                  // so the query won't necessarily return the
+                                  // most up-to-date value, so we're updating it manually.
+                                  StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                  statusQueryResult.result.status.metadata.muted = true;
+                                  return statusQueryResult;
+                              });
+    }
+
+    public CompletableFuture<StatusQueryResult> postRemoveMuteStatus(long muterId, StatusPointer pointer) {
+        return muteStatusDepot.appendAsync(new RemoveMuteStatus(muterId, pointer, System.currentTimeMillis()))
+                              .thenCompose(res -> this.getStatus(muterId, pointer))
+                              .thenApply(resultMaybe -> {
+                                  if (resultMaybe == null) return null;
+                                  // the change was processed in a microbatch
+                                  // so the query won't necessarily return the
+                                  // most up-to-date value, so we're updating it manually.
+                                  StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                  statusQueryResult.result.status.metadata.muted = false;
+                                  return statusQueryResult;
+                              });
+    }
+
+       public CompletableFuture<StatusQueryResult> postPinStatus(long pinnerId, StatusPointer pointer) {
+        return pinStatusDepot.appendAsync(new PinStatus(pinnerId, pointer.statusId, System.currentTimeMillis()))
+                             .thenCompose(res -> this.getStatus(pinnerId, pointer))
+                             .thenApply(resultMaybe -> {
+                                 if (resultMaybe == null) return null;
+                                 // the change was processed in a microbatch
+                                 // so the query won't necessarily return the
+                                 // most up-to-date value, so we're updating it manually.
+                                 StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                 statusQueryResult.result.status.metadata.pinned = true;
+                                 return statusQueryResult;
+                             });
+    }
+
+    public CompletableFuture<StatusQueryResult> postRemovePinStatus(long pinnerId, StatusPointer pointer) {
+        return pinStatusDepot.appendAsync(new RemovePinStatus(pinnerId, pointer.statusId, System.currentTimeMillis()))
+                             .thenCompose(res -> this.getStatus(pinnerId, pointer))
+                             .thenApply(resultMaybe -> {
+                                 if (resultMaybe == null) return null;
+                                 // the change was processed in a microbatch
+                                 // so the query won't necessarily return the
+                                 // most up-to-date value, so we're updating it manually.
+                                 StatusQueryResult statusQueryResult = (StatusQueryResult) resultMaybe;
+                                 statusQueryResult.result.status.metadata.pinned = false;
+                                 return statusQueryResult;
+                             });
+    }
+
 
 
 

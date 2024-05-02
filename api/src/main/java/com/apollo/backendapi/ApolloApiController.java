@@ -280,9 +280,6 @@ public class ApolloApiController {
      * Status Actions Endpoints
      * ======================================
      * - POST /api/statuses
-     * - GET /api/scheduled_statuses
-     * - PUT /api/scheduled_statuses/{id}
-     * - DELETE /api/scheduled_statuses/{id}
      * ======================================
      */
     
@@ -295,7 +292,7 @@ public class ApolloApiController {
             return Mono.fromFuture(manager.postScheduledStatus(requestAccountId, params, null))
                     .map(GetScheduledStatus::new);
         } else
-            return Mono.fromFuture(manager.postStatus(requestAccountId, params, null)).map(GetStatus::new);
+            return Mono.fromFuture(manager.postStatus(requestAccountId, params)).map(GetStatus::new);
     }
 
     @PostMapping(value = "/api/statuses", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -340,6 +337,15 @@ public class ApolloApiController {
                             return this.postStatus(session, postStatus);
                         }));
     }
+
+    /*
+     * Scheduled Status Actions Endpoints
+     * ======================================
+     * - GET /api/scheduled_statuses
+     * - PUT /api/scheduled_statuses/{id}
+     * - DELETE /api/scheduled_statuses/{id}
+     * ======================================
+     */
 
     @GetMapping("/api/scheduled_statuses")
     public Mono<List<GetScheduledStatus>> getScheduledStatuses(ServerWebExchange exchange, WebSession session,
@@ -646,6 +652,124 @@ public class ApolloApiController {
                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                    .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
                    .map(result -> new GetRelationship(id, result));
+    }
+
+      /*
+     * Status Interactions Endpoints
+     * ======================================
+     * - POST /api/statuses/{id}/like
+     * - POST /api/statuses/{id}/unlike
+     * - POST /api/statuses/{id}/repost
+     * - POST /api/statuses/{id}/unrepost
+     * - POST /api/statuses/{id}/bookmark
+     * - POST /api/statuses/{id}/unbookmark
+     * - POST /api/statuses/{id}/mute
+     * - POST /api/statuses/{id}/unmute
+     * - POST /api/statuses/{id}/pin
+     * - POST /api/statuses/{id}/unpin
+     * ======================================
+     */
+
+
+
+     @PostMapping("/api/statuses/{id}/like")
+     public Mono<GetStatus> postFavoriteStatus(WebSession session, @PathVariable("id") String id) {
+         long requestAccountId = getMandatoryAccountId(session);
+     
+         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+     
+         return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                 .flatMap(statusQueryResult -> Mono.fromFuture(manager.postLikeStatus(requestAccountId, statusPointer)))
+                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                 .map(GetStatus::new);
+     }
+
+     @PostMapping("/api/statuses/{id}/unlike")
+     public Mono<GetStatus> postRemoveFavoriteStatus(WebSession session, @PathVariable("id") String id) {
+         long requestAccountId = getMandatoryAccountId(session);
+     
+         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+     
+         return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                 .flatMap(statusQueryResult -> Mono.fromFuture(manager.postRemoveLikeStatus(requestAccountId, statusPointer)))
+                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                 .map(GetStatus::new);
+     }
+
+    @PostMapping("/api/statuses/{id}/repost")
+    public Mono<GetStatus> postBoostStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.postBoostStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/unrepost")
+    public Mono<GetStatus> postRemoveBoostStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.postRemoveBoostStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/bookmark")
+    public Mono<GetStatus> postBookmarkStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.postBookmarkStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/unbookmark")
+    public Mono<GetStatus> postRemoveBookmarkStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.postRemoveBookmarkStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/mute")
+    public Mono<GetStatus> postMuteStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.postMuteStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/unmute")
+    public Mono<GetStatus> postRemoveMuteStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.postRemoveMuteStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/pin")
+    public Mono<GetStatus> postPinStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        return Mono.fromFuture(manager.postPinStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
+                   .map(GetStatus::new);
+    }
+
+    @PostMapping("/api/statuses/{id}/unpin")
+    public Mono<GetStatus> postRemovePinStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        if (statusPointer.authorId != requestAccountId) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        return Mono.fromFuture(manager.postRemovePinStatus(requestAccountId, statusPointer))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
+                   .map(GetStatus::new);
     }
 
 }
