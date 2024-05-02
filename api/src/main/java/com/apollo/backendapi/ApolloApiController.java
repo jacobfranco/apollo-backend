@@ -453,6 +453,7 @@ public class ApolloApiController {
      * ======================================
      * - POST /api/accounts/{id}/mute
      * - POST /api/accounts/{id}/unmute
+     * - GET /api/blocks
      * - POST /api/accounts/{id}/block
      * - POST /api/accounts/{id}/unblock
      * - POST /api/accounts/{id}/remove_from_followers
@@ -476,6 +477,16 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.postRemoveMuteAccount(requestAccountId, muteeId))
                 .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, muteeId)))
                 .map(result -> new GetRelationship(id, result));
+    }
+
+    @GetMapping("/api/blocks")
+    public Mono<List<GetAccount>> getBlocks(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getBlocks(requestAccountId, ApolloHelpers.parseAccountId(max_id), limit))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                   });
     }
 
     @PostMapping("/api/accounts/{id}/block")

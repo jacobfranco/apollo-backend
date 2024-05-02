@@ -59,6 +59,7 @@ public class ApolloApiManager {
     private final PState followeeToFollowersById;
     private final PState accountIdToFollowRequests;
     private final PState accountIdToFollowRequestsById;
+    private final PState accountIdToSuppressions;
 
     // Hashtag/Trends PStates
     private final PState hashtagTrends;
@@ -108,6 +109,7 @@ public class ApolloApiManager {
         followeeToFollowersById = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$followeeToFollowersById");
         accountIdToFollowRequests = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFollowRequests");
         accountIdToFollowRequestsById = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFollowRequestsById");
+        accountIdToSuppressions = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToSuppressions");
 
         // Hashtag/Trends PStates
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
@@ -634,6 +636,28 @@ public class ApolloApiManager {
                                 });
                      } else return CompletableFuture.completedFuture(queryResults);
                  });
+    }
+
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getBlocks(long blockerId, Long offsetMaybe, Integer limitMaybe) {
+        return queryWithPaging(
+            (offset, limit) -> {
+                SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                CompletableFuture<List<Long>> blockeeIdsFuture = accountIdToSuppressions.selectAsync(Path.key(blockerId, "blocked").sortedSetRangeFrom(offset, options).all());
+                return blockeeIdsFuture.thenCompose(this::getAccountsFromAccountIds)
+                                       .thenApply(accountWithIds -> {
+                                           Long lastId = null;
+                                           List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                           if (accountWithIds.size() > 0) {
+                                               lastId = accountWithIds.get(accountWithIds.size()-1).accountId;
+                                               linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", ApolloHelpers.serializeAccountId(lastId)));
+                                           }
+                                           return new QueryResults<>(accountWithIds, accountWithIds.size() < limit, lastId, linkHeaderParams);
+                                       });
+            },
+            offsetMaybe == null ? -1L : offsetMaybe,
+            Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT),
+            MAX_PAGING_ITERATIONS
+        );
     }
 
 
