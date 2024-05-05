@@ -1251,6 +1251,7 @@ public class ApolloApiController {
      * - GET /api/bookmarks
      * - GET /api/likes
      * - GET /api/reports
+     * - GET /api/directory
      * ======================================
      */
 
@@ -1288,6 +1289,21 @@ public class ApolloApiController {
                             requestAccountId, params);
                     return ApolloApiHelpers.createGetReport(params, accountWithId);
                 });
+    }
+
+    @GetMapping("/api/directory")
+    public Mono<List<GetAccount>> getDirectory(
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) String order,
+            @RequestParam(required = false) Boolean local
+    ) {
+        HashSet<String> orders = new HashSet<>(Arrays.asList(null, "active", "new"));
+        if (!orders.contains(order)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        boolean showAll = local == null || !local;
+        boolean sortByActive = order == null || order.equals("active");
+        return Mono.fromFuture(manager.getDirectory(showAll, sortByActive, limit, offset))
+                   .map(ApolloApiHelpers::createGetAccounts);
     }
 
     /*

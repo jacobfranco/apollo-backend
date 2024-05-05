@@ -83,6 +83,10 @@ public class ApolloApiManager {
     private final PState statusTrends;
     private final PState accountIdToHashtagActivity;
 
+    // Search PStates
+    private final PState activeAccountIds;
+    private final PState newAccountIds;
+
     // Notifications PStates
     private final PState accountIdToNotificationsTimeline;
 
@@ -156,6 +160,10 @@ public class ApolloApiManager {
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
         accountIdToHashtagActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToHashtagActivity");
+
+        // Search PStates
+        activeAccountIds = cluster.clusterPState(SEARCH_MODULE_NAME, "$$activeAccountIds");
+        newAccountIds = cluster.clusterPState(SEARCH_MODULE_NAME, "$$newAccountIds");
 
         // Notifications PStates
         accountIdToNotificationsTimeline = cluster.clusterPState(NOTIFICATIONS_MODULE_NAME, "$$accountIdToNotificationsTimeline");
@@ -1142,6 +1150,42 @@ public class ApolloApiManager {
     public CompletableFuture<Boolean> postPollVote(long accountId, StatusPointer pointer, Set<Integer> choices) {
         return pollVoteDepot.appendAsync(new PollVote(accountId, pointer, choices, System.currentTimeMillis())).thenApply(res -> true);
     }
+
+    public CompletableFuture<List<AccountWithId>> getDirectory(boolean showAll, boolean sortByActive, Integer limitMaybe, Integer offsetMaybe) {
+        // Determine the offset and limit
+        long offset = offsetMaybe == null ? 0 : offsetMaybe;
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+    
+        // Determine which account ID set to use based on the parameters
+        CompletableFuture<List<Long>> future = (sortByActive ? activeAccountIds : newAccountIds)
+                .selectAsync(Path.all())
+                .thenApply(results -> results.stream()
+                        // sort by timestamp (descending) and then return the account ids
+                        .sorted((o1, o2) -> ((List<Long>) o2).get(1).compareTo(((List<Long>) o1).get(1)))
+                        .map(result -> ((List<Long>) result).get(0))
+                        .collect(Collectors.toList()));
+    
+        // Process the resulting IDs
+        return future.thenApply(results -> {
+            List<Long> accountIds = new ArrayList<>();
+            Map<Long, Integer> accountIdToIndex = new HashMap<>();
+            long count = 0;
+            for (Long accountId : results) {
+                if (count == offset + limit) break;
+                // remove existing account id if necessary
+                Integer existingIndex = accountIdToIndex.get(accountId);
+                if (existingIndex != null) accountIds.set(existingIndex, null);
+                else count += 1;
+                // add account id
+                accountIdToIndex.put(accountId, accountIds.size());
+                accountIds.add(accountId);
+            }
+            return accountIds.stream().filter(Objects::nonNull).skip(offset).collect(Collectors.toList());
+        }).thenCompose(this::getAccountsFromAccountIds);
+    }
+    
 
 }
 
