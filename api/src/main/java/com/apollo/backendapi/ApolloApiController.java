@@ -1170,7 +1170,7 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
                    });
     }
 
-         /*
+    /*
      * User Metrics Endpoints
      * ======================================
      * - GET /api/bookmarks
@@ -1198,6 +1198,55 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
                    .map(statusQueryResults -> {
                        ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
                        return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                   });
+    }
+
+    /*
+     * Marker Endpoints
+     * ======================================
+     * - GET /api/markers
+     * - POST /api/markers
+     * ======================================
+     */
+
+
+    @GetMapping("/api/markers")
+    public Mono<Map<String, GetMarker>> getMarkers(WebSession session, @RequestParam(value = "timeline[]", required = true) List<String> timelines) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(accountWithId -> {
+                       if (timelines.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                       Map<String, Marker> markers = new HashMap<>();
+                       if (accountWithId.account.markers != null) markers.putAll(accountWithId.account.markers);
+                       return ApolloApiHelpers.createGetMarkers(markers);
+                   });
+    }
+
+    @PostMapping("/api/markers")
+    public Mono<Map<String, GetMarker>> postMarkers(WebSession session, @RequestBody PostMarkers params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .flatMap(accountWithId -> {
+                       // update map of markers
+                       Map<String, Marker> markers = new HashMap<>();
+                       if (accountWithId.account.markers != null) markers.putAll(accountWithId.account.markers);
+                       if (params.home != null) {
+                           Marker marker = new Marker(params.home.last_read_id, 0, System.currentTimeMillis());
+                           if (markers.get("home") != null) marker.version = markers.get("home").version + 1;
+                           markers.put("home", marker);
+                       }
+                       if (params.notifications != null) {
+                           Marker marker = new Marker(params.notifications.last_read_id, 0, System.currentTimeMillis());
+                           if (markers.get("notifications") != null) marker.version = markers.get("notifications").version + 1;
+                           markers.put("notifications", marker);
+                       }
+                       // update account
+                       List<EditAccountField> edits = new ArrayList<>();
+                       edits.add(EditAccountField.markers(markers));
+                       return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits))
+                                  .map(res -> ApolloApiHelpers.createGetMarkers(markers));
                    });
     }
 

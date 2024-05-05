@@ -231,4 +231,10 @@ public class ApolloApiHelpers {
         return sanitize(input, ApolloApiConfig.MAX_FIELD_LENGTH);
     }
 
+    public static Map<String, GetMarker> createGetMarkers(Map<String, Marker> markers) {
+        Map<String, GetMarker> getMarkers = new HashMap<>();
+        for (Map.Entry<String, Marker> entry : markers.entrySet()) getMarkers.put(entry.getKey(), new GetMarker(entry.getValue()));
+        return getMarkers;
+    }
+
 }
