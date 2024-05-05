@@ -89,6 +89,7 @@ public class ApolloApiManager {
     
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
+    private final QueryTopologyClient<List<Long>> getFamiliarFollowers;
 
     // Hashtag Queries
     private final QueryTopologyClient<Map<String, ItemStats>> batchHashtagStats;
@@ -153,6 +154,7 @@ public class ApolloApiManager {
 
         // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
+        getFamiliarFollowers = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getFamiliarFollowers");
 
         // Hashtag Queries
         batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
@@ -996,10 +998,10 @@ public class ApolloApiManager {
         return accountEditDepot.appendAsync(new EditAccount(accountId, edits, System.currentTimeMillis())).thenApply(res -> true);
     }
 
-
-
-
-
+    public CompletableFuture<List<AccountWithId>> getFamiliarFollowers(long requestAccountId, long targetId) {
+        CompletableFuture<List<Long>> familiarFollowersFuture = getFamiliarFollowers.invokeAsync(requestAccountId, targetId);
+        return familiarFollowersFuture.thenCompose(this::getAccountsFromAccountIds);
+    }
 
 }
 

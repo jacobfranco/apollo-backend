@@ -482,6 +482,7 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
      * Account Relationship Action Endpoints
      * ======================================
      * - GET /api/accounts/relationships
+     * - GET /api/accounts/familiar_followers
      * ======================================
      */
 
@@ -502,6 +503,27 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
                         .map(result -> new GetRelationship(targetIdStr, result)));
         }
         return relationshipResults.size() > 0 ? Mono.zip(relationshipResults, results -> Arrays.stream(results).map(result -> (GetRelationship) result).collect(Collectors.toList())) : Mono.just(new ArrayList<>());
+    }
+
+    @GetMapping("/api/accounts/familiar_followers")
+    public Mono<List<GetFamiliarFollowers>> getFamiliarFollowers(WebSession session, @RequestParam(value = "id[]", required = false) List<String> idList, @RequestParam(value = "id", required = false) String id) {
+        List<String> ids = new ArrayList<>();
+        if (idList != null) ids.addAll(idList);
+        if (id != null) ids.add(id);
+        long requestAccountId = getMandatoryAccountId(session);
+        if (ids.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        List<Mono<List>> familiarFollowerIds = new ArrayList<>();
+        for (String targetId: ids) {
+          long parsed = ApolloHelpers.parseAccountId(targetId);
+          if(parsed != requestAccountId) familiarFollowerIds.add(Mono.fromFuture(manager.getFamiliarFollowers(requestAccountId, parsed)));
+        }
+        return Mono.zip(familiarFollowerIds, results -> {
+            List<GetFamiliarFollowers> familiarFollowers = new ArrayList<>();
+            for (int i = 0; i < results.length; i++) {
+                familiarFollowers.add(new GetFamiliarFollowers(ids.get(i), ApolloApiHelpers.createGetAccounts((List<AccountWithId>) results[i])));
+            }
+            return familiarFollowers;
+        });
     }
 
     /*
