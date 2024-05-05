@@ -31,6 +31,7 @@ public class ApolloApiManager {
     public static final String CORE_MODULE_NAME = Core.class.getName();
     public static final String RELATIONSHIPS_MODULE_NAME = Relationships.class.getName();
     public static final String HASHTAGS_MODULE_NAME = TrendsAndHashtags.class.getName();
+    public static final String SEARCH_MODULE_NAME = Search.class.getName();
 
     // Core Depots
     private final Depot accountDepot;
@@ -61,6 +62,8 @@ public class ApolloApiManager {
     private final PState accountIdToStatuses;
     private final PState bookmarkerToStatusPointers;
     private final PState likerToStatusPointers;
+    private final PState statusIdToBoosters;
+    private final PState statusIdToLikers;
 
     // Relationship PStates
     private final PState authCodeToAccountId;
@@ -82,12 +85,16 @@ public class ApolloApiManager {
     private final QueryTopologyClient<List<Conversation>> getConversationTimeline;
     private final QueryTopologyClient<StatusQueryResults> getAncestors;
     private final QueryTopologyClient<StatusQueryResults> getDescendants;
+    private final QueryTopologyClient<List<AccountWithId>> getAccountsFromNames;
     
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
 
     // Hashtag Queries
     private final QueryTopologyClient<Map<String, ItemStats>> batchHashtagStats;
+
+    // Search Queries
+    private final QueryTopologyClient<Map> profileTermsSearch;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -119,6 +126,8 @@ public class ApolloApiManager {
         accountIdToStatuses = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToStatuses");
         bookmarkerToStatusPointers = cluster.clusterPState(CORE_MODULE_NAME, "$$bookmarkerToStatusPointers");
         likerToStatusPointers = cluster.clusterPState(CORE_MODULE_NAME, "$$likerToStatusPointers");
+        statusIdToBoosters = cluster.clusterPState(CORE_MODULE_NAME, "$$statusIdToBoosters");
+        statusIdToLikers = cluster.clusterPState(CORE_MODULE_NAME, "$$statusIdToLikers");
 
         // Relationship PStates
         authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
@@ -140,12 +149,16 @@ public class ApolloApiManager {
         getConversationTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getConversationTimeline");
         getAncestors = cluster.clusterQuery(CORE_MODULE_NAME, "getAncestors");
         getDescendants = cluster.clusterQuery(CORE_MODULE_NAME, "getDescendants");
+        getAccountsFromNames = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromNames");
 
         // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
 
         // Hashtag Queries
         batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
+
+        // Search Queries
+        profileTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "profileTermsSearch");
 
       }
 
@@ -891,6 +904,91 @@ public class ApolloApiManager {
                                                         return getStatusesFromPointers.invokeAsync(likerId, statusPointers, filterOptions);
                                                     });
                 }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getStatusBoosters(Long requestAccountIdMaybe, long authorId, long statusId, Long offsetMaybe, Integer limitMaybe) {
+        long offset = offsetMaybe == null ? -1L : offsetMaybe;
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+        // make sure requester is allowed to see status
+        return this.getStatus(requestAccountIdMaybe, new StatusPointer(authorId, statusId))
+                   .thenCompose(resultMaybe -> {
+                       if (resultMaybe == null) return CompletableFuture.completedFuture(null);
+                       // get the boosters
+                       SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                       CompletableFuture<List<Long>> boosterIdsFuture = statusIdToBoosters.selectAsync(authorId, Path.key(statusId).sortedMapRangeFrom(offset, options).mapKeys());
+                       return boosterIdsFuture.thenCompose(this::getAccountsFromAccountIds)
+                                              .thenApply(accountWithIds -> {
+                                                  Long lastId = null;
+                                                  List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                                  if (accountWithIds.size() > 0) {
+                                                      lastId = accountWithIds.get(accountWithIds.size()-1).accountId;
+                                                      linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", ApolloHelpers.serializeAccountId(lastId)));
+                                                  }
+                                                  return new QueryResults<>(accountWithIds, accountWithIds.size() < limit, lastId, linkHeaderParams);
+                                              });
+                   });
+    }
+
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getStatusLikers(Long requestAccountIdMaybe, long authorId, long statusId, Long offsetMaybe, Integer limitMaybe) {
+        long offset = offsetMaybe == null ? -1L : offsetMaybe;
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+        // make sure requester is allowed to see status
+        return this.getStatus(requestAccountIdMaybe, new StatusPointer(authorId, statusId))
+                   .thenCompose(resultMaybe -> {
+                       if (resultMaybe == null) return CompletableFuture.completedFuture(null);
+                       // get the favoriters
+                       SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                       CompletableFuture<List<Long>> favoriterIdsFuture = statusIdToLikers.selectAsync(authorId, Path.key(statusId).sortedMapRangeFrom(offset, options).mapKeys());
+                       return favoriterIdsFuture.thenCompose(this::getAccountsFromAccountIds)
+                                                .thenApply(accountWithIds -> {
+                                                    Long lastId = null;
+                                                    List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                                    if (accountWithIds.size() > 0) {
+                                                        AccountWithId lastAccount = accountWithIds.get(accountWithIds.size()-1);
+                                                        lastId = lastAccount.accountId;
+                                                        linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", ApolloHelpers.serializeAccountId(lastAccount.accountId)));
+                                                    }
+                                                    return new QueryResults<>(accountWithIds, accountWithIds.size() < limit, lastId, linkHeaderParams);
+                                                });
+                   });
+    }
+
+    public CompletableFuture<QueryResults<AccountWithId, Map>> getProfileSearch(long requestAccountId, List<String> terms, Map startParamsMaybe, Integer limitMaybe, boolean followeesOnly) {
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        return queryWithPaging(
+                (offset, limit) -> {
+                    CompletableFuture<Map> matchListFuture = profileTermsSearch.invokeAsync(terms, offset, limit);
+                    return matchListFuture.thenCompose(result -> {
+                        Map nextParams = ApolloApiHelpers.createSearchParams(result);
+                        List<String> matchList = (List<String>) result.get("matchList");
+                        return getAccountsFromNames.invokeAsync(requestAccountId, matchList)
+                                                   .thenApply(accountWithIds -> {
+                                                       if (followeesOnly) accountWithIds = accountWithIds.stream().filter(o -> o.metadata.isFollowedByRequester).collect(Collectors.toList());
+                                                       return new QueryResults<>(accountWithIds, nextParams == null, nextParams, ApolloApiHelpers.createLinkHeaderParams(nextParams));
+                                                   });
+                    });
+                },
+                startParamsMaybe,
+                Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit),
+                MAX_PAGING_ITERATIONS)
+          .thenCompose(result -> {
+            if(terms.size() == 1 && result.results.isEmpty()) {
+              // override prefix search
+              List<String> terms2 = Arrays.asList(terms.get(0), terms.get(0));
+              return getProfileSearch(requestAccountId, terms2, startParamsMaybe, limitMaybe, followeesOnly);
+            } else {
+                // deduplicate results
+                LinkedHashMap<Long, AccountWithId> dedupedResults = new LinkedHashMap<>();
+                for (AccountWithId awid : result.results) dedupedResults.put(awid.accountId, awid);
+                result.results = new ArrayList<>(dedupedResults.values());
+                return CompletableFuture.completedFuture(result);
+            }
+          });
     }
 
 

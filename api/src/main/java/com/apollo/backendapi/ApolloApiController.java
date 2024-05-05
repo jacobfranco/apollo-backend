@@ -10,11 +10,14 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.*;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.web.reactive.function.client.*;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.util.*;
+import java.net.*;
+import java.util.concurrent.CompletableFuture;
 import java.security.NoSuchAlgorithmException;
 import java.util.stream.Collectors;
 import java.nio.charset.Charset;
@@ -31,6 +34,7 @@ public class ApolloApiController {
      * - loginWithAccount
      * - getMandatoryAccountId
      * - validateStatus
+     * - resolveURL
      * ======================================
      */
 
@@ -179,11 +183,12 @@ public class ApolloApiController {
     }
 
     /*
-     * Accounts + Auth Actions Endpoints
+     * Account Actions Endpoints
      * ======================================
      * - POST /api/accounts
      * - GET /api/accounts/verify_credentials
      * - GET /api/accounts/{id}
+     * - GET /api/accounts/search
      * ======================================
      */
 
@@ -276,6 +281,31 @@ public class ApolloApiController {
                 // Convert the retrieved account information into the GetAccount DTO format
                 .map(GetAccount::new);
     }
+
+    // TODO: Removed resolveURL stuff - make sure that didn't break anything
+    @GetMapping("/api/accounts/search")
+public Mono<List<GetAccount>> getAccountSearch(
+        ServerWebExchange exchange,
+        WebSession session,
+        @RequestParam(required = true) String q,
+        @RequestParam(required = false) Boolean following,
+        @RequestParam(required = false) Integer limit,
+        @RequestParam(required = false) Long offset,
+        @RequestParam(required = false) Long start_next_id,
+        @RequestParam(required = false) String start_term
+) throws MalformedURLException {
+    long requestAccountId = getMandatoryAccountId(session);
+    List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
+
+    Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
+    return Mono.fromFuture((offset == null || offset == 0L)
+                           ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
+                           : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null)))
+               .map(queryResults -> {
+                   ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                   return ApolloApiHelpers.createGetAccounts(queryResults.results);
+               });
+}
 
     /*
      * Status Actions Endpoints
@@ -763,6 +793,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      * - POST /api/statuses/{id}/unmute
      * - POST /api/statuses/{id}/pin
      * - POST /api/statuses/{id}/unpin
+     * - GET /api/statuses/{id}/reposted_by
+     * - GET /api/statuses/{id}/liked_by
      * ======================================
      */
 
@@ -866,6 +898,30 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         return Mono.fromFuture(manager.postRemovePinStatus(requestAccountId, statusPointer))
                    .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
                    .map(GetStatus::new);
+    }
+
+    @GetMapping("/api/statuses/{id}/reposted_by")
+    public Mono<List<GetAccount>> getStatusBoosters(ServerWebExchange exchange, WebSession session, @PathVariable("id") String id, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.getStatusBoosters(requestAccountId, statusPointer.authorId, statusPointer.statusId, ApolloHelpers.parseAccountId(max_id), limit))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                   });
+    }
+
+    @GetMapping("/api/statuses/{id}/liked_by")
+    public Mono<List<GetAccount>> getStatusLikers(ServerWebExchange exchange, WebSession session, @PathVariable("id") String id, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.getStatusLikers(requestAccountId, statusPointer.authorId, statusPointer.statusId, ApolloHelpers.parseAccountId(max_id), limit))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                   });
     }
 
          /*

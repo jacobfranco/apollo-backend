@@ -193,4 +193,32 @@ public class ApolloApiHelpers {
         }
     }
 
+    public static Map<String, String> createSearchParams(Long nextId, String term) {
+        if (nextId != null && term != null) {
+            return new HashMap(){{
+                put("nextId", nextId);
+                put("term", term);
+            }};
+        } else {
+            return null;
+        }
+    }
+
+    public static Map<String, String> createSearchParams(Map searchParams) {
+        Long nextId = (Long) searchParams.get("nextId");
+        String term = (String) searchParams.get("term");
+        return createSearchParams(nextId, term);
+    }
+
+    public static List<SimpleEntry<String, String>> createLinkHeaderParams(Map searchParams) {
+        if (searchParams != null) {
+            List<SimpleEntry<String, String>> params = new ArrayList<>();
+            params.add(new SimpleEntry<>("start_next_id", searchParams.get("nextId") + ""));
+            params.add(new SimpleEntry<>("start_term", searchParams.get("term") + ""));
+            return params;
+        } else {
+            return null;
+        }
+    }
+
 }
