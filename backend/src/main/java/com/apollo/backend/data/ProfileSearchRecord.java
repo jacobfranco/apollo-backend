@@ -415,13 +415,13 @@ public class ProfileSearchRecord implements org.apache.thrift.TBase<ProfileSearc
           case 1: // OTHER_PROFILE_TERMS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set222 = iprot.readSetBegin();
-                struct.otherProfileTerms = new java.util.HashSet<java.lang.String>(2*_set222.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem223;
-                for (int _i224 = 0; _i224 < _set222.size; ++_i224)
+                org.apache.thrift.protocol.TSet _set230 = iprot.readSetBegin();
+                struct.otherProfileTerms = new java.util.HashSet<java.lang.String>(2*_set230.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem231;
+                for (int _i232 = 0; _i232 < _set230.size; ++_i232)
                 {
-                  _elem223 = iprot.readString();
-                  struct.otherProfileTerms.add(_elem223);
+                  _elem231 = iprot.readString();
+                  struct.otherProfileTerms.add(_elem231);
                 }
                 iprot.readSetEnd();
               }
@@ -458,9 +458,9 @@ public class ProfileSearchRecord implements org.apache.thrift.TBase<ProfileSearc
         oprot.writeFieldBegin(OTHER_PROFILE_TERMS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.otherProfileTerms.size()));
-          for (java.lang.String _iter225 : struct.otherProfileTerms)
+          for (java.lang.String _iter233 : struct.otherProfileTerms)
           {
-            oprot.writeString(_iter225);
+            oprot.writeString(_iter233);
           }
           oprot.writeSetEnd();
         }
@@ -500,9 +500,9 @@ public class ProfileSearchRecord implements org.apache.thrift.TBase<ProfileSearc
       if (struct.isSetOtherProfileTerms()) {
         {
           oprot.writeI32(struct.otherProfileTerms.size());
-          for (java.lang.String _iter226 : struct.otherProfileTerms)
+          for (java.lang.String _iter234 : struct.otherProfileTerms)
           {
-            oprot.writeString(_iter226);
+            oprot.writeString(_iter234);
           }
         }
       }
@@ -517,13 +517,13 @@ public class ProfileSearchRecord implements org.apache.thrift.TBase<ProfileSearc
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TSet _set227 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.otherProfileTerms = new java.util.HashSet<java.lang.String>(2*_set227.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem228;
-          for (int _i229 = 0; _i229 < _set227.size; ++_i229)
+          org.apache.thrift.protocol.TSet _set235 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.otherProfileTerms = new java.util.HashSet<java.lang.String>(2*_set235.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem236;
+          for (int _i237 = 0; _i237 < _set235.size; ++_i237)
           {
-            _elem228 = iprot.readString();
-            struct.otherProfileTerms.add(_elem228);
+            _elem236 = iprot.readString();
+            struct.otherProfileTerms.add(_elem236);
           }
         }
         struct.setOtherProfileTermsIsSet(true);

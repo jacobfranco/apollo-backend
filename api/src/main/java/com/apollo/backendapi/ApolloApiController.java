@@ -306,39 +306,39 @@ public class ApolloApiController {
 
     // TODO: Removed resolveURL stuff - make sure that didn't break anything
     @GetMapping("/api/accounts/search")
-public Mono<List<GetAccount>> getAccountSearch(
-        ServerWebExchange exchange,
-        WebSession session,
-        @RequestParam(required = true) String q,
-        @RequestParam(required = false) Boolean following,
-        @RequestParam(required = false) Integer limit,
-        @RequestParam(required = false) Long offset,
-        @RequestParam(required = false) Long start_next_id,
-        @RequestParam(required = false) String start_term
-) throws MalformedURLException {
-    long requestAccountId = getMandatoryAccountId(session);
-    List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
+    public Mono<List<GetAccount>> getAccountSearch(
+            ServerWebExchange exchange,
+            WebSession session,
+            @RequestParam(required = true) String q,
+            @RequestParam(required = false) Boolean following,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Long offset,
+            @RequestParam(required = false) Long start_next_id,
+            @RequestParam(required = false) String start_term) throws MalformedURLException {
+        long requestAccountId = getMandatoryAccountId(session);
+        List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
 
-    Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
-    return Mono.fromFuture((offset == null || offset == 0L)
-                           ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
-                           : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null)))
-               .map(queryResults -> {
-                   ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                   return ApolloApiHelpers.createGetAccounts(queryResults.results);
-               });
-}
+        Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
+        return Mono.fromFuture((offset == null || offset == 0L)
+                ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
+                : CompletableFuture.completedFuture(
+                        new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null)))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
+    }
 
-@GetMapping("/api/accounts/lookup")
-public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String acct) {
-    return Mono.fromFuture(manager.getAccountId(acct))
-               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-               .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
-               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-               .map(GetAccount::new);
-}
+    @GetMapping("/api/accounts/lookup")
+    public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String acct) {
+        return Mono.fromFuture(manager.getAccountId(acct))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetAccount::new);
+    }
 
-@PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<GetAccount> patchAccountUpdateCredentials(
             WebSession session,
             @RequestPart(value = "display_name", required = false) String display_name,
@@ -367,25 +367,33 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
         List<KeyValuePair> fields = new ArrayList<>();
         {
             if (field0_name != null && field0_value != null)
-                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field0_name), ApolloApiHelpers.sanitizeField(field0_value)));
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field0_name),
+                        ApolloApiHelpers.sanitizeField(field0_value)));
             if (field1_name != null && field1_value != null)
-                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field1_name), ApolloApiHelpers.sanitizeField(field1_value)));
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field1_name),
+                        ApolloApiHelpers.sanitizeField(field1_value)));
             if (field2_name != null && field2_value != null)
-                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field2_name), ApolloApiHelpers.sanitizeField(field2_value)));
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field2_name),
+                        ApolloApiHelpers.sanitizeField(field2_value)));
             if (field3_name != null && field3_value != null)
-                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field3_name), ApolloApiHelpers.sanitizeField(field3_value)));
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field3_name),
+                        ApolloApiHelpers.sanitizeField(field3_value)));
         }
         Map<String, String> newPrefs = new HashMap<>();
         {
             ObjectMapper objectMapper = new ObjectMapper();
             if (privacy != null) {
                 Set<String> options = new HashSet<>(Arrays.asList("public", "unlisted", "private"));
-                if (!options.contains(privacy)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                if (!options.contains(privacy))
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
                 newPrefs.put("posting:default:visibility", objectMapper.writeValueAsString(privacy));
             }
-            if (sensitive != null) newPrefs.put("posting:default:sensitive", objectMapper.writeValueAsString(Boolean.parseBoolean(sensitive)));
+            if (sensitive != null)
+                newPrefs.put("posting:default:sensitive",
+                        objectMapper.writeValueAsString(Boolean.parseBoolean(sensitive)));
             if (language != null) {
-                if (language.length() > 3) throw new ResponseStatusException(HttpStatus.BAD_REQUEST); // ISO 6391
+                if (language.length() > 3)
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST); // ISO 6391
                 newPrefs.put("posting:default:language", objectMapper.writeValueAsString(language));
             }
         }
@@ -393,7 +401,8 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
         List<Mono<Boolean>> uploads = new ArrayList<>();
         List<AccountAttachment> accountAttachments = new ArrayList<>();
         for (Part part : Arrays.asList(avatar, header)) {
-            if (part == null) continue;
+            if (part == null)
+                continue;
             // an empty upload is interpreted by Spring as a FormFieldPart
             // instead of a FilePart. in that case, we just make it blank.
             else if (part instanceof FormFieldPart) {
@@ -405,7 +414,8 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
                 FilePart filePart = (FilePart) part;
                 // determine the file type
                 String ext = FilenameUtils.getExtension(filePart.filename()).toLowerCase();
-                if (!ApolloApiConfig.IMAGE_EXTS.contains(ext)) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unrecognized file type");
+                if (!ApolloApiConfig.IMAGE_EXTS.contains(ext))
+                    throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unrecognized file type");
                 // transfer to static file dir
                 File destDir = new File(ApolloApiConfig.STATIC_FILE_DIR, requestAccountId + "");
                 destDir.mkdirs();
@@ -414,97 +424,122 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
                 uploads.add(filePart.transferTo(destFile).then(Mono.just(true)));
                 AccountAttachment attachment = new AccountAttachment();
                 String path = String.format("%s/%s.%s", requestAccountId, uuid, ext);
-                attachment.attachmentWithId = new AttachmentWithId(uuid, new Attachment(AttachmentKind.Image, path, ""));
+                attachment.attachmentWithId = new AttachmentWithId(uuid,
+                        new Attachment(AttachmentKind.Image, path, ""));
                 attachment.file = destFile;
                 attachment.part = filePart;
                 accountAttachments.add(attachment);
             }
         }
         // ensure there's at least one mono so zip works correctly
-        if (uploads.size() == 0) uploads.add(Mono.just(true));
+        if (uploads.size() == 0)
+            uploads.add(Mono.just(true));
         return Mono.zip(uploads, results -> true)
-                   // upload to s3 if enabled
-                   .flatMap(result -> {
-                       if (ApolloApiConfig.S3_OPTIONS != null) {
-                           List<Mono<Boolean>> s3Uploads = new ArrayList<>();
-                           for (AccountAttachment accountAttachment : accountAttachments) {
-                               if (accountAttachment.file == null) continue;
-                               String path = accountAttachment.attachmentWithId.attachment.path;
-                               s3Uploads.add(
-                                       Mono.fromFuture(ApolloApiHelpers.uploadToS3(ApolloApiConfig.S3_OPTIONS.bucketName, path, accountAttachment.file))
-                                           .map(resp -> {
-                                               accountAttachment.file.delete();
-                                               return resp.sdkHttpResponse().isSuccessful();
-                                           }));
-                           }
-                           // ensure there's at least one mono so zip works correctly
-                           if (s3Uploads.size() > 0) return Mono.zip(s3Uploads, results -> Arrays.stream(results).allMatch(success -> (boolean) success));
-                       }
-                       return Mono.just(true);
-                   })
-                   // check upload success and get account
-                   .flatMap(success -> {
-                       if (!success) throw new RuntimeException("Failed to connect to S3");
-                       return Mono.fromFuture(manager.getAccountWithId(requestAccountId));
-                   })
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   // update the account
-                   .flatMap(accountWithId -> {
-                       List<EditAccountField> edits = new ArrayList<>();
-                       if (display_name != null) edits.add(EditAccountField.displayName(ApolloApiHelpers.sanitize(display_name, ApolloApiConfig.MAX_DISPLAY_NAME_LENGTH)));
-                       if (note != null) edits.add(EditAccountField.bio(ApolloApiHelpers.sanitize(note, ApolloApiConfig.MAX_BIO_LENGTH)));
-                       if (isLocked != null) edits.add(EditAccountField.locked(isLocked));
-                       if (isBot != null) edits.add(EditAccountField.bot(isBot));
-                       if (isDiscoverable != null) edits.add(EditAccountField.discoverable(isDiscoverable));
-                       if (fields.size() > 0) edits.add(EditAccountField.fields(fields));
-                       if (newPrefs.size() > 0) {
-                           Map<String, String> prefs = new HashMap<>();
-                           if (accountWithId.account.preferences != null) prefs.putAll(accountWithId.account.preferences);
-                           prefs.putAll(newPrefs);
-                           edits.add(EditAccountField.preferences(prefs));
-                       }
-                       for (AccountAttachment accountAttachment : accountAttachments) {
-                           if ("header".equals(accountAttachment.part.name())) edits.add(EditAccountField.header(accountAttachment.attachmentWithId));
-                           else if ("avatar".equals(accountAttachment.part.name())) edits.add(EditAccountField.avatar(accountAttachment.attachmentWithId));
-                       }
-                       return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits));
-                   })
-                   // query and return the updated account
-                   .flatMap(result -> Mono.fromFuture(manager.getAccountWithId(requestAccountId)))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   // return account
-                   .map(GetAccount::new);
+                // upload to s3 if enabled
+                .flatMap(result -> {
+                    if (ApolloApiConfig.S3_OPTIONS != null) {
+                        List<Mono<Boolean>> s3Uploads = new ArrayList<>();
+                        for (AccountAttachment accountAttachment : accountAttachments) {
+                            if (accountAttachment.file == null)
+                                continue;
+                            String path = accountAttachment.attachmentWithId.attachment.path;
+                            s3Uploads.add(
+                                    Mono.fromFuture(ApolloApiHelpers.uploadToS3(ApolloApiConfig.S3_OPTIONS.bucketName,
+                                            path, accountAttachment.file))
+                                            .map(resp -> {
+                                                accountAttachment.file.delete();
+                                                return resp.sdkHttpResponse().isSuccessful();
+                                            }));
+                        }
+                        // ensure there's at least one mono so zip works correctly
+                        if (s3Uploads.size() > 0)
+                            return Mono.zip(s3Uploads,
+                                    results -> Arrays.stream(results).allMatch(success -> (boolean) success));
+                    }
+                    return Mono.just(true);
+                })
+                // check upload success and get account
+                .flatMap(success -> {
+                    if (!success)
+                        throw new RuntimeException("Failed to connect to S3");
+                    return Mono.fromFuture(manager.getAccountWithId(requestAccountId));
+                })
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                // update the account
+                .flatMap(accountWithId -> {
+                    List<EditAccountField> edits = new ArrayList<>();
+                    if (display_name != null)
+                        edits.add(EditAccountField.displayName(
+                                ApolloApiHelpers.sanitize(display_name, ApolloApiConfig.MAX_DISPLAY_NAME_LENGTH)));
+                    if (note != null)
+                        edits.add(
+                                EditAccountField.bio(ApolloApiHelpers.sanitize(note, ApolloApiConfig.MAX_BIO_LENGTH)));
+                    if (isLocked != null)
+                        edits.add(EditAccountField.locked(isLocked));
+                    if (isBot != null)
+                        edits.add(EditAccountField.bot(isBot));
+                    if (isDiscoverable != null)
+                        edits.add(EditAccountField.discoverable(isDiscoverable));
+                    if (fields.size() > 0)
+                        edits.add(EditAccountField.fields(fields));
+                    if (newPrefs.size() > 0) {
+                        Map<String, String> prefs = new HashMap<>();
+                        if (accountWithId.account.preferences != null)
+                            prefs.putAll(accountWithId.account.preferences);
+                        prefs.putAll(newPrefs);
+                        edits.add(EditAccountField.preferences(prefs));
+                    }
+                    for (AccountAttachment accountAttachment : accountAttachments) {
+                        if ("header".equals(accountAttachment.part.name()))
+                            edits.add(EditAccountField.header(accountAttachment.attachmentWithId));
+                        else if ("avatar".equals(accountAttachment.part.name()))
+                            edits.add(EditAccountField.avatar(accountAttachment.attachmentWithId));
+                    }
+                    return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits));
+                })
+                // query and return the updated account
+                .flatMap(result -> Mono.fromFuture(manager.getAccountWithId(requestAccountId)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                // return account
+                .map(GetAccount::new);
     }
 
     @PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<GetAccount> patchAccountUpdateCredentials(WebSession session, @RequestBody(required = false) PatchUpdateCredentials params) throws JsonProcessingException {
-        return patchAccountUpdateCredentials(session, params.display_name, params.note, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    public Mono<GetAccount> patchAccountUpdateCredentials(WebSession session,
+            @RequestBody(required = false) PatchUpdateCredentials params) throws JsonProcessingException {
+        return patchAccountUpdateCredentials(session, params.display_name, params.note, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null);
     }
 
     @GetMapping("/api/accounts/{id}/statuses")
     public Mono<List<GetStatus>> getAccountStatuses(WebSession session, ServerWebExchange exchange,
-                                                    @PathVariable("id") String id,
-                                                    @RequestParam(required = false) String max_id,
-                                                    @RequestParam(required = false) Integer limit,
-                                                    @RequestParam(required = false) Boolean only_media,
-                                                    @RequestParam(required = false) Boolean exclude_replies,
-                                                    @RequestParam(required = false) Boolean exclude_reblogs,
-                                                    @RequestParam(required = false) Boolean pinned,
-                                                    @RequestParam(required = false) String tagged) {
+            @PathVariable("id") String id,
+            @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Boolean only_media,
+            @RequestParam(required = false) Boolean exclude_replies,
+            @RequestParam(required = false) Boolean exclude_reblogs,
+            @RequestParam(required = false) Boolean pinned,
+            @RequestParam(required = false) String tagged) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         long timelineAccountId = ApolloHelpers.parseAccountId(id);
         final CompletableFuture<StatusQueryResults> future;
-        if (pinned != null && pinned) future = manager.getPinnedStatuses(requestAccountId, timelineAccountId);
-        else if (only_media != null && only_media) future = manager.getAttachmentStatuses(requestAccountId, timelineAccountId, statusPointer, limit);
-        else if (tagged != null) future = manager.getTaggedStatuses(requestAccountId, timelineAccountId, tagged, statusPointer, limit);
-        else future = manager.getAccountTimeline(requestAccountId, timelineAccountId, statusPointer, limit, exclude_replies == null || !exclude_replies, exclude_reblogs == null || !exclude_reblogs);
+        if (pinned != null && pinned)
+            future = manager.getPinnedStatuses(requestAccountId, timelineAccountId);
+        else if (only_media != null && only_media)
+            future = manager.getAttachmentStatuses(requestAccountId, timelineAccountId, statusPointer, limit);
+        else if (tagged != null)
+            future = manager.getTaggedStatuses(requestAccountId, timelineAccountId, tagged, statusPointer, limit);
+        else
+            future = manager.getAccountTimeline(requestAccountId, timelineAccountId, statusPointer, limit,
+                    exclude_replies == null || !exclude_replies, exclude_reblogs == null || !exclude_reblogs);
         return Mono.fromFuture(future)
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(statusQueryResults -> {
-                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
-                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
     }
 
     /*
@@ -516,40 +551,57 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
      */
 
     @GetMapping("/api/accounts/relationships")
-    public Mono<List<GetRelationship>> getAccountRelationships(WebSession session, @RequestParam(value = "id[]", required = false) List<String> idList, @RequestParam(value = "id", required = false) String id) {
+    public Mono<List<GetRelationship>> getAccountRelationships(WebSession session,
+            @RequestParam(value = "id[]", required = false) List<String> idList,
+            @RequestParam(value = "id", required = false) String id) {
         List<String> ids = new ArrayList<>();
-        if (idList != null) ids.addAll(idList);
-        if (id != null) ids.add(id);
+        if (idList != null)
+            ids.addAll(idList);
+        if (id != null)
+            ids.add(id);
         long requestAccountId = getMandatoryAccountId(session);
-        if (ids.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (ids.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         List<Mono<GetRelationship>> relationshipResults = new ArrayList<>();
         for (String targetIdStr : ids) {
             final long targetId;
-            try { targetId = ApolloHelpers.parseAccountId(targetIdStr); }
-            catch (RuntimeException e) { continue; }
+            try {
+                targetId = ApolloHelpers.parseAccountId(targetIdStr);
+            } catch (RuntimeException e) {
+                continue;
+            }
             relationshipResults.add(
                     Mono.fromFuture(manager.getAccountRelationship(requestAccountId, targetId))
-                        .map(result -> new GetRelationship(targetIdStr, result)));
+                            .map(result -> new GetRelationship(targetIdStr, result)));
         }
-        return relationshipResults.size() > 0 ? Mono.zip(relationshipResults, results -> Arrays.stream(results).map(result -> (GetRelationship) result).collect(Collectors.toList())) : Mono.just(new ArrayList<>());
+        return relationshipResults.size() > 0 ? Mono.zip(relationshipResults,
+                results -> Arrays.stream(results).map(result -> (GetRelationship) result).collect(Collectors.toList()))
+                : Mono.just(new ArrayList<>());
     }
 
     @GetMapping("/api/accounts/familiar_followers")
-    public Mono<List<GetFamiliarFollowers>> getFamiliarFollowers(WebSession session, @RequestParam(value = "id[]", required = false) List<String> idList, @RequestParam(value = "id", required = false) String id) {
+    public Mono<List<GetFamiliarFollowers>> getFamiliarFollowers(WebSession session,
+            @RequestParam(value = "id[]", required = false) List<String> idList,
+            @RequestParam(value = "id", required = false) String id) {
         List<String> ids = new ArrayList<>();
-        if (idList != null) ids.addAll(idList);
-        if (id != null) ids.add(id);
+        if (idList != null)
+            ids.addAll(idList);
+        if (id != null)
+            ids.add(id);
         long requestAccountId = getMandatoryAccountId(session);
-        if (ids.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (ids.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         List<Mono<List>> familiarFollowerIds = new ArrayList<>();
-        for (String targetId: ids) {
-          long parsed = ApolloHelpers.parseAccountId(targetId);
-          if(parsed != requestAccountId) familiarFollowerIds.add(Mono.fromFuture(manager.getFamiliarFollowers(requestAccountId, parsed)));
+        for (String targetId : ids) {
+            long parsed = ApolloHelpers.parseAccountId(targetId);
+            if (parsed != requestAccountId)
+                familiarFollowerIds.add(Mono.fromFuture(manager.getFamiliarFollowers(requestAccountId, parsed)));
         }
         return Mono.zip(familiarFollowerIds, results -> {
             List<GetFamiliarFollowers> familiarFollowers = new ArrayList<>();
             for (int i = 0; i < results.length; i++) {
-                familiarFollowers.add(new GetFamiliarFollowers(ids.get(i), ApolloApiHelpers.createGetAccounts((List<AccountWithId>) results[i])));
+                familiarFollowers.add(new GetFamiliarFollowers(ids.get(i),
+                        ApolloApiHelpers.createGetAccounts((List<AccountWithId>) results[i])));
             }
             return familiarFollowers;
         });
@@ -567,7 +619,6 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
      * - GET /api/statuses/{id}/context/descendents
      * ======================================
      */
-    
 
     @PostMapping(value = "/api/statuses", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<Object> postStatus(WebSession session, @RequestBody(required = true) PostStatus params) {
@@ -624,14 +675,16 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
     }
 
     @PutMapping(value = "/api/statuses/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<GetStatus> putStatus(WebSession session, @PathVariable("id") String id, @RequestBody(required = true) PutStatus params) {
+    public Mono<GetStatus> putStatus(WebSession session, @PathVariable("id") String id,
+            @RequestBody(required = true) PutStatus params) {
         long requestAccountId = getMandatoryAccountId(session);
         validateStatus(params.status, params.spoiler_text, params.language, params.poll);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (statusPointer.authorId != requestAccountId)
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
         return Mono.fromFuture(manager.putStatus(statusPointer, params))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PutMapping(value = "/api/statuses/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -642,10 +695,13 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
             @RequestPart(value = "sensitive", required = false) String sensitive,
             @RequestPart(value = "spoiler_text", required = false) String spoiler_text,
             @RequestPart(value = "language", required = false) String language,
-            @RequestPart(value = "media_ids[]", required = false) List<Part> media_ids
-    ) {
-        List<Mono<DataBuffer>> mediaContent = media_ids.stream().map(part -> part.content().single()).collect(Collectors.toList());
-        return (mediaContent.size() > 0 ? Mono.zip(mediaContent, res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset())).collect(Collectors.toList())) : Mono.just(new ArrayList<>()))
+            @RequestPart(value = "media_ids[]", required = false) List<Part> media_ids) {
+        List<Mono<DataBuffer>> mediaContent = media_ids.stream().map(part -> part.content().single())
+                .collect(Collectors.toList());
+        return (mediaContent.size() > 0 ? Mono.zip(mediaContent,
+                res -> Arrays.stream(res).map(b -> ((DataBuffer) b).toString(Charset.defaultCharset()))
+                        .collect(Collectors.toList()))
+                : Mono.just(new ArrayList<>()))
                 .flatMap(mediaContentResults -> {
                     PutStatus putStatus = new PutStatus(status);
                     putStatus.spoiler_text = spoiler_text;
@@ -660,12 +716,14 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
     public Mono<GetStatus> deleteStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (statusPointer.authorId != requestAccountId)
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
         return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .flatMap(status -> Mono.zip(Mono.just(status), Mono.fromFuture(manager.deleteStatus(requestAccountId, statusPointer.statusId))))
-                   .map(Tuple2::getT1)
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(status -> Mono.zip(Mono.just(status),
+                        Mono.fromFuture(manager.deleteStatus(requestAccountId, statusPointer.statusId))))
+                .map(Tuple2::getT1)
+                .map(GetStatus::new);
     }
 
     @GetMapping("/api/statuses/{id}/source")
@@ -673,8 +731,8 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatusSource::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatusSource::new);
     }
 
     @GetMapping("/api/v1/statuses/{id}/context")
@@ -682,35 +740,34 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.zip(Mono.fromFuture(manager.getAncestors(requestAccountId, statusPointer)),
-                        Mono.fromFuture(manager.getDescendants(requestAccountId, statusPointer)))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(result -> new GetContext(
-                           ApolloApiHelpers.createGetStatuses(result.getT1()),
-                           ApolloApiHelpers.createGetStatuses(result.getT2())
-                   ));
+                Mono.fromFuture(manager.getDescendants(requestAccountId, statusPointer)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(result -> new GetContext(
+                        ApolloApiHelpers.createGetStatuses(result.getT1()),
+                        ApolloApiHelpers.createGetStatuses(result.getT2())));
     }
 
     @GetMapping("/api/statuses/{id}/context/ancestors")
-public Mono<List<GetStatus>> getAncestors(WebSession session, @PathVariable("id") String id) {
-    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+    public Mono<List<GetStatus>> getAncestors(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
 
-    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
 
-    return Mono.fromFuture(manager.getAncestors(requestAccountId, statusPointer))
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-            .map(ApolloApiHelpers::createGetStatuses);
-}
+        return Mono.fromFuture(manager.getAncestors(requestAccountId, statusPointer))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(ApolloApiHelpers::createGetStatuses);
+    }
 
-@GetMapping("/api/statuses/{id}/context/descendants")
-public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("id") String id) {
-    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+    @GetMapping("/api/statuses/{id}/context/descendants")
+    public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
 
-    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
 
-    return Mono.fromFuture(manager.getDescendants(requestAccountId, statusPointer))
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-            .map(ApolloApiHelpers::createGetStatuses);
-}
+        return Mono.fromFuture(manager.getDescendants(requestAccountId, statusPointer))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(ApolloApiHelpers::createGetStatuses);
+    }
 
     /*
      * Scheduled Status Actions Endpoints
@@ -808,24 +865,26 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
                 .map(result -> new GetRelationship(id, result));
     }
 
-        @GetMapping("/api/accounts/{id}/following")
-    public Mono<List<GetAccount>> getAccountFollowees(ServerWebExchange exchange, @PathVariable("id") String accountId, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+    @GetMapping("/api/accounts/{id}/following")
+    public Mono<List<GetAccount>> getAccountFollowees(ServerWebExchange exchange, @PathVariable("id") String accountId,
+            @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
         return Mono.fromFuture(manager.getAccountFollowees(ApolloHelpers.parseAccountId(accountId), max_id, limit))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
     }
 
     @GetMapping("/api/accounts/{id}/followers")
-    public Mono<List<GetAccount>> getAccountFollowers(ServerWebExchange exchange, @PathVariable("id") String accountId, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetAccount>> getAccountFollowers(ServerWebExchange exchange, @PathVariable("id") String accountId,
+            @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
         return Mono.fromFuture(manager.getAccountFollowers(ApolloHelpers.parseAccountId(accountId), max_id, limit))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
     }
 
     /*
@@ -860,13 +919,14 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
     }
 
     @GetMapping("/api/blocks")
-    public Mono<List<GetAccount>> getBlocks(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetAccount>> getBlocks(ServerWebExchange exchange, WebSession session,
+            @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getBlocks(requestAccountId, ApolloHelpers.parseAccountId(max_id), limit))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
-                   });
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
     }
 
     @PostMapping("/api/accounts/{id}/block")
@@ -902,8 +962,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         long followerId = ApolloHelpers.parseAccountId(id);
         return Mono.fromFuture(manager.postRemoveFollowAccount(followerId, requestAccountId))
-                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followerId)))
-                   .map(result -> new GetRelationship(id, result));
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, followerId)))
+                .map(result -> new GetRelationship(id, result));
     }
 
     /*
@@ -919,8 +979,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         long featureeId = ApolloHelpers.parseAccountId(id);
         return Mono.fromFuture(manager.postFeatureAccount(requestAccountId, featureeId))
-                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
-                   .map(result -> new GetRelationship(id, result));
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
+                .map(result -> new GetRelationship(id, result));
     }
 
     @PostMapping("/api/accounts/{id}/unpin")
@@ -928,8 +988,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         long featureeId = ApolloHelpers.parseAccountId(id);
         return Mono.fromFuture(manager.postRemoveFeatureAccount(requestAccountId, featureeId))
-                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
-                   .map(result -> new GetRelationship(id, result));
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
+                .map(result -> new GetRelationship(id, result));
     }
 
     /*
@@ -945,26 +1005,27 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
     public Mono<GetConversation> postConversation(WebSession session, @PathVariable("id") Long conversationId) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.postConversation(requestAccountId, conversationId, false))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetConversation::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetConversation::new);
     }
 
     @GetMapping("/api/conversations")
-    public Mono<List<GetConversation>> getConversations(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetConversation>> getConversations(ServerWebExchange exchange, WebSession session,
+            @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getConversationTimeline(requestAccountId, max_id, limit))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetConversations(queryResults.results);
-                   });
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetConversations(queryResults.results);
+                });
     }
 
     @DeleteMapping("/api/conversations/{id}")
     public Mono deleteConversation(WebSession session, @PathVariable("id") Long conversationId) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.deleteConversation(requestAccountId, conversationId))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(result -> new HashMap());
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(result -> new HashMap());
     }
 
     /*
@@ -975,16 +1036,18 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      * ======================================
      */
 
-
     @GetMapping("/api/trends")
-    public Mono<List<GetTag>> getTrendingTags(@RequestParam(required = false) Integer limit, @RequestParam(required = false) Integer offset) {
+    public Mono<List<GetTag>> getTrendingTags(@RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset) {
         return Mono.fromFuture(manager.getTrendingHashtags(limit, offset)).map(ApolloApiHelpers::createGetTags);
     }
 
     @GetMapping("/api/v1/trends/statuses")
-    public Mono<List<GetStatus>> getTrendingStatuses(WebSession session, @RequestParam(required = false) Integer limit, @RequestParam(required = false) Integer offset) {
+    public Mono<List<GetStatus>> getTrendingStatuses(WebSession session, @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
-        return Mono.fromFuture(manager.getTrendingStatuses(requestAccountId, limit, offset)).map(ApolloApiHelpers::createGetStatuses);
+        return Mono.fromFuture(manager.getTrendingStatuses(requestAccountId, limit, offset))
+                .map(ApolloApiHelpers::createGetStatuses);
     }
 
     /*
@@ -997,13 +1060,14 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      */
 
     @GetMapping("/api/follow_requests")
-    public Mono<List<GetAccount>> getFollowRequests(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetAccount>> getFollowRequests(ServerWebExchange exchange, WebSession session,
+            @RequestParam(required = false) Long max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getFollowRequests(requestAccountId, max_id, limit))
-                   .map(queryResults -> {
+                .map(queryResults -> {
                     ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
-                   });
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
     }
 
     @PostMapping("/api/follow_requests/{id}/authorize")
@@ -1011,10 +1075,10 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         long requesterId = ApolloHelpers.parseAccountId(id);
         return Mono.fromFuture(manager.acceptFollowRequest(requestAccountId, requesterId))
-                   .filter(isRequestExists -> isRequestExists)
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
-                   .map(result -> new GetRelationship(id, result));
+                .filter(isRequestExists -> isRequestExists)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
+                .map(result -> new GetRelationship(id, result));
     }
 
     @PostMapping("/api/follow_requests/{id}/reject")
@@ -1022,10 +1086,10 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         long requesterId = ApolloHelpers.parseAccountId(id);
         return Mono.fromFuture(manager.rejectFollowRequest(requestAccountId, requesterId))
-                   .filter(isRequestExists -> isRequestExists)
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
-                   .map(result -> new GetRelationship(id, result));
+                .filter(isRequestExists -> isRequestExists)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, requesterId)))
+                .map(result -> new GetRelationship(id, result));
     }
 
     /*
@@ -1046,41 +1110,40 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      * ======================================
      */
 
+    @PostMapping("/api/statuses/{id}/like")
+    public Mono<GetStatus> postFavoriteStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
 
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
 
-     @PostMapping("/api/statuses/{id}/like")
-     public Mono<GetStatus> postFavoriteStatus(WebSession session, @PathVariable("id") String id) {
-         long requestAccountId = getMandatoryAccountId(session);
-     
-         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-     
-         return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
-                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                 .flatMap(statusQueryResult -> Mono.fromFuture(manager.postLikeStatus(requestAccountId, statusPointer)))
-                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                 .map(GetStatus::new);
-     }
+        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(statusQueryResult -> Mono.fromFuture(manager.postLikeStatus(requestAccountId, statusPointer)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
+    }
 
-     @PostMapping("/api/statuses/{id}/unlike")
-     public Mono<GetStatus> postRemoveFavoriteStatus(WebSession session, @PathVariable("id") String id) {
-         long requestAccountId = getMandatoryAccountId(session);
-     
-         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-     
-         return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
-                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                 .flatMap(statusQueryResult -> Mono.fromFuture(manager.postRemoveLikeStatus(requestAccountId, statusPointer)))
-                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                 .map(GetStatus::new);
-     }
+    @PostMapping("/api/statuses/{id}/unlike")
+    public Mono<GetStatus> postRemoveFavoriteStatus(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+
+        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(statusQueryResult -> Mono
+                        .fromFuture(manager.postRemoveLikeStatus(requestAccountId, statusPointer)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
+    }
 
     @PostMapping("/api/statuses/{id}/repost")
     public Mono<GetStatus> postBoostStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.postBoostStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/unrepost")
@@ -1088,8 +1151,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.postRemoveBoostStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/bookmark")
@@ -1097,8 +1160,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.postBookmarkStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/unbookmark")
@@ -1106,8 +1169,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.postRemoveBookmarkStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/mute")
@@ -1115,8 +1178,8 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.postMuteStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/unmute")
@@ -1124,52 +1187,62 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
         return Mono.fromFuture(manager.postRemoveMuteStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/pin")
     public Mono<GetStatus> postPinStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        if (statusPointer.authorId != requestAccountId)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         return Mono.fromFuture(manager.postPinStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
+                .map(GetStatus::new);
     }
 
     @PostMapping("/api/statuses/{id}/unpin")
     public Mono<GetStatus> postRemovePinStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        if (statusPointer.authorId != requestAccountId)
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         return Mono.fromFuture(manager.postRemovePinStatus(requestAccountId, statusPointer))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
-                   .map(GetStatus::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY)))
+                .map(GetStatus::new);
     }
 
     @GetMapping("/api/statuses/{id}/reposted_by")
-    public Mono<List<GetAccount>> getStatusBoosters(ServerWebExchange exchange, WebSession session, @PathVariable("id") String id, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetAccount>> getStatusBoosters(ServerWebExchange exchange, WebSession session,
+            @PathVariable("id") String id, @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        return Mono.fromFuture(manager.getStatusBoosters(requestAccountId, statusPointer.authorId, statusPointer.statusId, ApolloHelpers.parseAccountId(max_id), limit))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
-                   });
+        return Mono
+                .fromFuture(manager.getStatusBoosters(requestAccountId, statusPointer.authorId, statusPointer.statusId,
+                        ApolloHelpers.parseAccountId(max_id), limit))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
     }
 
     @GetMapping("/api/statuses/{id}/liked_by")
-    public Mono<List<GetAccount>> getStatusLikers(ServerWebExchange exchange, WebSession session, @PathVariable("id") String id, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetAccount>> getStatusLikers(ServerWebExchange exchange, WebSession session,
+            @PathVariable("id") String id, @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        return Mono.fromFuture(manager.getStatusLikers(requestAccountId, statusPointer.authorId, statusPointer.statusId, ApolloHelpers.parseAccountId(max_id), limit))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetAccounts(queryResults.results);
-                   });
+        return Mono
+                .fromFuture(manager.getStatusLikers(requestAccountId, statusPointer.authorId, statusPointer.statusId,
+                        ApolloHelpers.parseAccountId(max_id), limit))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
     }
 
     /*
@@ -1181,38 +1254,40 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      * ======================================
      */
 
-
     @GetMapping("/api/bookmarks")
-    public Mono<List<GetStatus>> getBookmarks(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetStatus>> getBookmarks(ServerWebExchange exchange, WebSession session,
+            @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getBookmarks(requestAccountId, statusPointer, limit))
-                   .map(statusQueryResults -> {
-                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
-                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-                   });
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
     }
 
     @GetMapping("/api/likes")
-    public Mono<List<GetStatus>> getFavorites(ServerWebExchange exchange, WebSession session, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetStatus>> getFavorites(ServerWebExchange exchange, WebSession session,
+            @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getLikes(requestAccountId, statusPointer, limit))
-                   .map(statusQueryResults -> {
-                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
-                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-                   });
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
     }
 
     @PostMapping("/api/reports")
     public Mono<GetReport> postReport(WebSession session, @RequestBody(required = false) PostReport params) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(params.account_id)))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(accountWithId -> {
-                       LoggerFactory.getLogger(ApolloApiController.class).info("Report from account {}:\n{}", requestAccountId, params);
-                       return ApolloApiHelpers.createGetReport(params, accountWithId);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(accountWithId -> {
+                    LoggerFactory.getLogger(ApolloApiController.class).info("Report from account {}:\n{}",
+                            requestAccountId, params);
+                    return ApolloApiHelpers.createGetReport(params, accountWithId);
+                });
     }
 
     /*
@@ -1226,79 +1301,149 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
      * ======================================
      */
 
-     @GetMapping("/api/notifications")
+    @GetMapping("/api/notifications")
     public Mono<List<GetNotification>> getNotifications(
             ServerWebExchange exchange,
             WebSession session,
             @RequestParam(required = false) String max_id,
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false, value = "types[]") List<String> types,
-            @RequestParam(required = false, value = "exclude_types[]") List<String> exclude_types
-    ) {
+            @RequestParam(required = false, value = "exclude_types[]") List<String> exclude_types) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.getNotificationsTimeline(requestAccountId, ApolloHelpers.parseNotificationId(max_id), limit, types, exclude_types))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(queryResults -> {
-                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
-                       return ApolloApiHelpers.createGetNotifications(queryResults.results);
-                   });
+        return Mono
+                .fromFuture(manager.getNotificationsTimeline(requestAccountId,
+                        ApolloHelpers.parseNotificationId(max_id), limit, types, exclude_types))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetNotifications(queryResults.results);
+                });
     }
 
     @GetMapping("/api/notifications/{id}")
     public Mono<GetNotification> getNotification(WebSession session, @PathVariable("id") String notificationId) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.getNotification(requestAccountId, ApolloHelpers.parseNotificationId(notificationId)))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(GetNotification::new);
+        return Mono
+                .fromFuture(
+                        manager.getNotification(requestAccountId, ApolloHelpers.parseNotificationId(notificationId)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetNotification::new);
     }
 
-     @PostMapping("/api/notifications/clear")
-     public Mono dismissAllNotifications(WebSession session) {
-         long requestAccountId = getMandatoryAccountId(session);
-         return Mono.fromFuture(manager.dismissNotification(requestAccountId, null))
-                    .map(res -> new HashMap());
-     }
+    @PostMapping("/api/notifications/clear")
+    public Mono dismissAllNotifications(WebSession session) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.dismissNotification(requestAccountId, null))
+                .map(res -> new HashMap());
+    }
 
     @GetMapping("/api/markers")
-    public Mono<Map<String, GetMarker>> getMarkers(WebSession session, @RequestParam(value = "timeline[]", required = true) List<String> timelines) {
+    public Mono<Map<String, GetMarker>> getMarkers(WebSession session,
+            @RequestParam(value = "timeline[]", required = true) List<String> timelines) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(accountWithId -> {
-                       if (timelines.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-                       Map<String, Marker> markers = new HashMap<>();
-                       if (accountWithId.account.markers != null) markers.putAll(accountWithId.account.markers);
-                       return ApolloApiHelpers.createGetMarkers(markers);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(accountWithId -> {
+                    if (timelines.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT)
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                    Map<String, Marker> markers = new HashMap<>();
+                    if (accountWithId.account.markers != null)
+                        markers.putAll(accountWithId.account.markers);
+                    return ApolloApiHelpers.createGetMarkers(markers);
+                });
     }
 
     @PostMapping("/api/markers")
     public Mono<Map<String, GetMarker>> postMarkers(WebSession session, @RequestBody PostMarkers params) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .flatMap(accountWithId -> {
-                       // update map of markers
-                       Map<String, Marker> markers = new HashMap<>();
-                       if (accountWithId.account.markers != null) markers.putAll(accountWithId.account.markers);
-                       if (params.home != null) {
-                           Marker marker = new Marker(params.home.last_read_id, 0, System.currentTimeMillis());
-                           if (markers.get("home") != null) marker.version = markers.get("home").version + 1;
-                           markers.put("home", marker);
-                       }
-                       if (params.notifications != null) {
-                           Marker marker = new Marker(params.notifications.last_read_id, 0, System.currentTimeMillis());
-                           if (markers.get("notifications") != null) marker.version = markers.get("notifications").version + 1;
-                           markers.put("notifications", marker);
-                       }
-                       // update account
-                       List<EditAccountField> edits = new ArrayList<>();
-                       edits.add(EditAccountField.markers(markers));
-                       return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits))
-                                  .map(res -> ApolloApiHelpers.createGetMarkers(markers));
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithId -> {
+                    // update map of markers
+                    Map<String, Marker> markers = new HashMap<>();
+                    if (accountWithId.account.markers != null)
+                        markers.putAll(accountWithId.account.markers);
+                    if (params.home != null) {
+                        Marker marker = new Marker(params.home.last_read_id, 0, System.currentTimeMillis());
+                        if (markers.get("home") != null)
+                            marker.version = markers.get("home").version + 1;
+                        markers.put("home", marker);
+                    }
+                    if (params.notifications != null) {
+                        Marker marker = new Marker(params.notifications.last_read_id, 0, System.currentTimeMillis());
+                        if (markers.get("notifications") != null)
+                            marker.version = markers.get("notifications").version + 1;
+                        markers.put("notifications", marker);
+                    }
+                    // update account
+                    List<EditAccountField> edits = new ArrayList<>();
+                    edits.add(EditAccountField.markers(markers));
+                    return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits))
+                            .map(res -> ApolloApiHelpers.createGetMarkers(markers));
+                });
     }
 
+    /*
+     * Poll Endpoints
+     * ======================================
+     * - GET /api/polls/{id}
+     * - POST /api/polls/{id}/votes
+     * ======================================
+     */
 
+    @GetMapping("/api/polls/{id}")
+    public Mono<GetPoll> getPoll(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResult -> {
+                    StatusResult statusResult = statusQueryResult.result.status;
+                    final PollContent pollContent;
+                    if (statusResult.content.isSetNormal()) {
+                        NormalStatusContent content = statusResult.content.getNormal();
+                        if (!statusResult.isSetPollInfo() || !content.isSetPollContent())
+                            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                        pollContent = content.pollContent;
+                    } else if (statusResult.content.isSetReply()) {
+                        ReplyStatusContent content = statusResult.content.getReply();
+                        if (!statusResult.isSetPollInfo() || !content.isSetPollContent())
+                            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                        pollContent = content.pollContent;
+                    } else
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                    return new GetPoll(id, statusResult.pollInfo, pollContent);
+                });
+    }
+
+    @PostMapping("/api/polls/{id}/votes")
+    public Mono<GetPoll> postPollVote(WebSession session, @PathVariable("id") String id,
+            @RequestBody(required = true) PostPollVote params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        String requestAccountName = (String) session.getAttributes().get("accountName");
+        Set<Integer> choices = params.choices.stream().map(Integer::parseInt).collect(Collectors.toSet());
+        if (choices.size() == 0 || choices.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        return this.getPoll(session, id)
+                .flatMap(poll -> {
+                    if (!poll.multiple && choices.size() > 1)
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Can only vote for one thing in non-multi-choice poll");
+                    else if (poll.expired)
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't vote on an expired poll");
+
+                    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+                    return Mono.fromFuture(manager.getAccountWithIdPair(requestAccountId, statusPointer.authorId))
+                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                            .flatMap(accountWithIdPair -> {
+                                AccountWithId requester = accountWithIdPair.getKey();
+                                AccountWithId author = accountWithIdPair.getValue();
+                                return Mono.just(true);
+                            })
+                            .flatMap(result -> Mono
+                                    .fromFuture(manager.postPollVote(requestAccountId, statusPointer, choices)));
+                })
+                .flatMap(result -> this.getPoll(session, id));
+    }
 
 }

@@ -955,14 +955,14 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
           case 4: // KEYWORDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list206 = iprot.readListBegin();
-                struct.keywords = new java.util.ArrayList<EditFilterKeyword>(_list206.size);
-                @org.apache.thrift.annotation.Nullable EditFilterKeyword _elem207;
-                for (int _i208 = 0; _i208 < _list206.size; ++_i208)
+                org.apache.thrift.protocol.TList _list214 = iprot.readListBegin();
+                struct.keywords = new java.util.ArrayList<EditFilterKeyword>(_list214.size);
+                @org.apache.thrift.annotation.Nullable EditFilterKeyword _elem215;
+                for (int _i216 = 0; _i216 < _list214.size; ++_i216)
                 {
-                  _elem207 = new EditFilterKeyword();
-                  _elem207.read(iprot);
-                  struct.keywords.add(_elem207);
+                  _elem215 = new EditFilterKeyword();
+                  _elem215.read(iprot);
+                  struct.keywords.add(_elem215);
                 }
                 iprot.readListEnd();
               }
@@ -982,15 +982,15 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
           case 6: // CONTEXT
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set209 = iprot.readSetBegin();
+                org.apache.thrift.protocol.TSet _set217 = iprot.readSetBegin();
                 struct.context = java.util.EnumSet.noneOf(FilterContext.class);
-                @org.apache.thrift.annotation.Nullable FilterContext _elem210;
-                for (int _i211 = 0; _i211 < _set209.size; ++_i211)
+                @org.apache.thrift.annotation.Nullable FilterContext _elem218;
+                for (int _i219 = 0; _i219 < _set217.size; ++_i219)
                 {
-                  _elem210 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
-                  if (_elem210 != null)
+                  _elem218 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
+                  if (_elem218 != null)
                   {
-                    struct.context.add(_elem210);
+                    struct.context.add(_elem218);
                   }
                 }
                 iprot.readSetEnd();
@@ -1054,9 +1054,9 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
         oprot.writeFieldBegin(KEYWORDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.keywords.size()));
-          for (EditFilterKeyword _iter212 : struct.keywords)
+          for (EditFilterKeyword _iter220 : struct.keywords)
           {
-            _iter212.write(oprot);
+            _iter220.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1074,9 +1074,9 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
           oprot.writeFieldBegin(CONTEXT_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I32, struct.context.size()));
-            for (FilterContext _iter213 : struct.context)
+            for (FilterContext _iter221 : struct.context)
             {
-              oprot.writeI32(_iter213.getValue());
+              oprot.writeI32(_iter221.getValue());
             }
             oprot.writeSetEnd();
           }
@@ -1118,9 +1118,9 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
       oprot.writeI64(struct.timestamp);
       {
         oprot.writeI32(struct.keywords.size());
-        for (EditFilterKeyword _iter214 : struct.keywords)
+        for (EditFilterKeyword _iter222 : struct.keywords)
         {
-          _iter214.write(oprot);
+          _iter222.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -1143,9 +1143,9 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
       if (struct.isSetContext()) {
         {
           oprot.writeI32(struct.context.size());
-          for (FilterContext _iter215 : struct.context)
+          for (FilterContext _iter223 : struct.context)
           {
-            oprot.writeI32(_iter215.getValue());
+            oprot.writeI32(_iter223.getValue());
           }
         }
       }
@@ -1167,14 +1167,14 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list216 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.keywords = new java.util.ArrayList<EditFilterKeyword>(_list216.size);
-        @org.apache.thrift.annotation.Nullable EditFilterKeyword _elem217;
-        for (int _i218 = 0; _i218 < _list216.size; ++_i218)
+        org.apache.thrift.protocol.TList _list224 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.keywords = new java.util.ArrayList<EditFilterKeyword>(_list224.size);
+        @org.apache.thrift.annotation.Nullable EditFilterKeyword _elem225;
+        for (int _i226 = 0; _i226 < _list224.size; ++_i226)
         {
-          _elem217 = new EditFilterKeyword();
-          _elem217.read(iprot);
-          struct.keywords.add(_elem217);
+          _elem225 = new EditFilterKeyword();
+          _elem225.read(iprot);
+          struct.keywords.add(_elem225);
         }
       }
       struct.setKeywordsIsSet(true);
@@ -1185,15 +1185,15 @@ public class EditFilter implements org.apache.thrift.TBase<EditFilter, EditFilte
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TSet _set219 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
+          org.apache.thrift.protocol.TSet _set227 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
           struct.context = java.util.EnumSet.noneOf(FilterContext.class);
-          @org.apache.thrift.annotation.Nullable FilterContext _elem220;
-          for (int _i221 = 0; _i221 < _set219.size; ++_i221)
+          @org.apache.thrift.annotation.Nullable FilterContext _elem228;
+          for (int _i229 = 0; _i229 < _set227.size; ++_i229)
           {
-            _elem220 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
-            if (_elem220 != null)
+            _elem228 = com.apollo.backend.data.FilterContext.findByValue(iprot.readI32());
+            if (_elem228 != null)
             {
-              struct.context.add(_elem220);
+              struct.context.add(_elem228);
             }
           }
         }

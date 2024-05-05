@@ -444,6 +444,13 @@ struct PollContent {
   3: required bool multipleChoice;
 }
 
+struct PollVote {
+  1: required AccountId accountId;
+  2: required StatusPointer target;
+  3: required set<i32> choices;
+  4: required Timestamp timestamp;
+}
+
 struct MatchingFilter {
   1: required FilterId filterId;
   2: required Filter filter;

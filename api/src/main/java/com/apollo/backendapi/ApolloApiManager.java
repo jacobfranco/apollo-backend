@@ -44,6 +44,7 @@ public class ApolloApiManager {
     private final Depot bookmarkStatusDepot;
     private final Depot muteStatusDepot;
     private final Depot pinStatusDepot;
+    private final Depot pollVoteDepot;
     
 
      // Relationships Depots
@@ -118,6 +119,7 @@ public class ApolloApiManager {
         bookmarkStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*bookmarkStatusDepot");
         muteStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*muteStatusDepot");
         pinStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pinStatusDepot");
+        pollVoteDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pollVoteDepot");
         
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -1135,6 +1137,10 @@ public class ApolloApiManager {
         DismissNotification dismissNotification = new DismissNotification(accountId);
         if (notificationIdMaybe != null) dismissNotification.setNotificationId(notificationIdMaybe);
         return dismissDepot.appendAsync(dismissNotification).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postPollVote(long accountId, StatusPointer pointer, Set<Integer> choices) {
+        return pollVoteDepot.appendAsync(new PollVote(accountId, pointer, choices, System.currentTimeMillis())).thenApply(res -> true);
     }
 
 }
