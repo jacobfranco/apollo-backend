@@ -189,6 +189,7 @@ public class ApolloApiController {
      * - GET /api/accounts/verify_credentials
      * - GET /api/accounts/{id}
      * - GET /api/accounts/search
+     * - GET /api/accounts/lookup
      * ======================================
      */
 
@@ -305,6 +306,15 @@ public Mono<List<GetAccount>> getAccountSearch(
                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
                });
+}
+
+@GetMapping("/api/accounts/lookup")
+public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String acct) {
+    return Mono.fromFuture(manager.getAccountId(acct))
+               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+               .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
+               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+               .map(GetAccount::new);
 }
 
     /*
