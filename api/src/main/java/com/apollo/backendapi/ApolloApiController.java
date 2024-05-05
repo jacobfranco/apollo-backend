@@ -28,12 +28,13 @@ import java.util.stream.Collectors;
 import java.nio.charset.Charset;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 
 @RestController
 @CrossOrigin(exposedHeaders = { "Link" })
 public class ApolloApiController {
+
+    private static final int QUERY_PARAM_ARRAY_SIZE_LIMIT = 200;
 
     public static ApolloApiManager manager;
 
@@ -475,6 +476,32 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
     @PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<GetAccount> patchAccountUpdateCredentials(WebSession session, @RequestBody(required = false) PatchUpdateCredentials params) throws JsonProcessingException {
         return patchAccountUpdateCredentials(session, params.display_name, params.note, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    /*
+     * Account Relationship Action Endpoints
+     * ======================================
+     * - GET /api/accounts/relationships
+     * ======================================
+     */
+
+    @GetMapping("/api/accounts/relationships")
+    public Mono<List<GetRelationship>> getAccountRelationships(WebSession session, @RequestParam(value = "id[]", required = false) List<String> idList, @RequestParam(value = "id", required = false) String id) {
+        List<String> ids = new ArrayList<>();
+        if (idList != null) ids.addAll(idList);
+        if (id != null) ids.add(id);
+        long requestAccountId = getMandatoryAccountId(session);
+        if (ids.size() > QUERY_PARAM_ARRAY_SIZE_LIMIT) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        List<Mono<GetRelationship>> relationshipResults = new ArrayList<>();
+        for (String targetIdStr : ids) {
+            final long targetId;
+            try { targetId = ApolloHelpers.parseAccountId(targetIdStr); }
+            catch (RuntimeException e) { continue; }
+            relationshipResults.add(
+                    Mono.fromFuture(manager.getAccountRelationship(requestAccountId, targetId))
+                        .map(result -> new GetRelationship(targetIdStr, result)));
+        }
+        return relationshipResults.size() > 0 ? Mono.zip(relationshipResults, results -> Arrays.stream(results).map(result -> (GetRelationship) result).collect(Collectors.toList())) : Mono.just(new ArrayList<>());
     }
 
     /*
