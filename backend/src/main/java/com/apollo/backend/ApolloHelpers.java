@@ -374,5 +374,60 @@ public class ApolloHelpers {
       return new StatusPointer(authorId, statusId);
     } else throw new RuntimeException("Not a status pointer: " + id);
   }
+
+  public static String serializeNotificationId(long notificationId, long timestamp) {
+    return String.format("%019d", timestamp) + "-" + String.format("%019d", notificationId) + "-tn";
+  }
+
+  public static String getTypeFromNotificationContent(NotificationContent content) {
+    if (content.isSetMention()) return "mention";
+    else if (content.isSetBoost()) return "repost";
+    else if (content.isSetFollow()) return "follow";
+    else if (content.isSetFollowRequest()) return "follow_request";
+    else if (content.isSetLike()) return "like";
+    else if (content.isSetPollComplete()) return "poll";
+    else if (content.isSetBoostedUpdate()) return "update";
+    else if (content.isSetFolloweeStatus()) return "status";
+    else throw new RuntimeException("Unexpected notification content: " + content);
+  }
+
+  public static Long parseNotificationId(String id) {
+    if (id == null) return null;
+    String[] parts = id.split("-");
+    if ("tn".equals(parts[parts.length-1]) && parts.length == 3) return Long.parseLong(parts[1]);
+    else throw new RuntimeException("Not a notification id: " + id);
+  }
+
+  public static List<NotificationWithId> createNotificationWithIds(List<List> timelineIndexAndNotifications) {
+    return timelineIndexAndNotifications.stream().map((List indexAndNotification) -> {
+      Long index = (Long) indexAndNotification.get(0);
+      Notification notification = (Notification) indexAndNotification.get(1);
+      return new NotificationWithId(index, notification);
+    }).collect(Collectors.toList());
+  }
+
+  public static long getAccountIdFromNotificationContent(NotificationContent content) {
+    if (content.isSetMention()) return content.getMention().authorId;
+    else if (content.isSetBoost()) return content.getBoost().responderAccountId;
+    else if (content.isSetFollow()) return content.getFollow();
+    else if (content.isSetFollowRequest()) return content.getFollowRequest();
+    else if (content.isSetLike()) return content.getLike().responderAccountId;
+    else if (content.isSetPollComplete()) return content.getPollComplete().authorId;
+    else if (content.isSetBoostedUpdate()) return content.getBoostedUpdate().authorId;
+    else if (content.isSetFolloweeStatus()) return content.getFolloweeStatus().authorId;
+    else throw new RuntimeException("Unexpected notification content: " + content);
+  }
+
+  public static StatusPointer getStatusPointerFromNotificationContent(NotificationContent content) {
+    if (content.isSetMention()) return content.getMention();
+    else if (content.isSetBoost()) return content.getBoost().target;
+    else if (content.isSetFollow()) return null;
+    else if (content.isSetFollowRequest()) return null;
+    else if (content.isSetLike()) return content.getLike().target;
+    else if (content.isSetPollComplete()) return content.getPollComplete();
+    else if (content.isSetBoostedUpdate()) return content.getBoostedUpdate();
+    else if (content.isSetFolloweeStatus()) return content.getFolloweeStatus();
+    else throw new RuntimeException("Unexpected notification content: " + content);
+  }
   
 }

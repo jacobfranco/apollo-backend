@@ -32,6 +32,7 @@ public class ApolloApiManager {
     public static final String RELATIONSHIPS_MODULE_NAME = Relationships.class.getName();
     public static final String HASHTAGS_MODULE_NAME = TrendsAndHashtags.class.getName();
     public static final String SEARCH_MODULE_NAME = Search.class.getName();
+    public static final String NOTIFICATIONS_MODULE_NAME = Notifications.class.getName();
 
     // Core Depots
     private final Depot accountDepot;
@@ -50,8 +51,10 @@ public class ApolloApiManager {
     private final Depot followAndBlockAccountDepot;
     private final Depot muteAccountDepot;
     private final Depot featureAccountDepot;
-    
 
+    // Notifications Depots
+    private final Depot dismissDepot;
+    
     // Core PStates
     private final PState nameToUser;
     private final PState pinnerToStatusIds;
@@ -78,6 +81,9 @@ public class ApolloApiManager {
     private final PState hashtagTrends;
     private final PState statusTrends;
     private final PState accountIdToHashtagActivity;
+
+    // Notifications PStates
+    private final PState accountIdToNotificationsTimeline;
 
     // Core Queries
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
@@ -119,6 +125,9 @@ public class ApolloApiManager {
         muteAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*muteAccountDepot");
         featureAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*featureAccountDepot");
 
+        // Notifications Depots
+        dismissDepot = cluster.clusterDepot(NOTIFICATIONS_MODULE_NAME, "*dismissDepot");
+
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
         pinnerToStatusIds = cluster.clusterPState(CORE_MODULE_NAME, "$$pinnerToStatusIds");
@@ -145,6 +154,9 @@ public class ApolloApiManager {
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
         accountIdToHashtagActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToHashtagActivity");
+
+        // Notifications PStates
+        accountIdToNotificationsTimeline = cluster.clusterPState(NOTIFICATIONS_MODULE_NAME, "$$accountIdToNotificationsTimeline");
         
         // Core Queries
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
@@ -1032,6 +1044,97 @@ public class ApolloApiManager {
                               return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, pointers, filterOptions);
                           });
                 }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<QueryResults<GetNotification.Bundle, Long>> getNotificationsTimeline(long accountId, Long offsetMaybe, Integer limitMaybe, List<String> typesMaybe, List<String> excludeTypesMaybe) {
+        int defaultLimit = 15;
+        int maxLimit = 30;
+        Set<String> types = new HashSet<>();
+        if (typesMaybe != null) types.addAll(typesMaybe);
+        Set<String> excludeTypes = new HashSet<>();
+        if (excludeTypesMaybe != null) excludeTypes.addAll(excludeTypesMaybe);
+        return queryWithPaging(
+            (offset, limit) -> {
+                SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                CompletableFuture<List<List>> notificationsFuture = accountIdToNotificationsTimeline.selectAsync(Path.key(accountId).sortedMapRangeFrom(offset, options).all());
+                return notificationsFuture.thenCompose(timelineIndexAndNotifications -> {
+                    // create notifications and filter them
+                    List<NotificationWithId> notificationWithIds = ApolloHelpers.createNotificationWithIds(timelineIndexAndNotifications);
+                    List<NotificationWithId> filtered =
+                            notificationWithIds.stream()
+                                               .filter(nwid -> types.contains(ApolloHelpers.getTypeFromNotificationContent(nwid.notification.content)))
+                                               .filter(nwid -> !excludeTypes.contains(ApolloHelpers.getTypeFromNotificationContent(nwid.notification.content)))
+                                               .collect(Collectors.toList());
+                    // get any accounts/statuses associated with the notifications
+                    List<CompletableFuture<GetNotification.Bundle>> bundleFutures =
+                            filtered.stream()
+                                    .map(notificationWithId -> this.getNotification(accountId, notificationWithId))
+                                    .collect(Collectors.toList());
+                    return CompletableFuture.allOf(bundleFutures.toArray(new CompletableFuture<?>[0]))
+                                            .thenApply(_result -> {
+                                                // filter out the nulls. if a bundle null,
+                                                // the user that generated the notification is blocked/muted
+                                                // or the status it pointed to is gone.
+                                                List<GetNotification.Bundle> bundles = new ArrayList<>();
+                                                for (CompletableFuture<GetNotification.Bundle> bundleFuture : bundleFutures) {
+                                                    GetNotification.Bundle bundle = bundleFuture.join();
+                                                    if (bundle != null) bundles.add(bundle);
+                                                }
+                                                Long lastId = null;
+                                                List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                                if (notificationWithIds.size() > 0) {
+                                                    NotificationWithId lastNotification = notificationWithIds.get(notificationWithIds.size()-1);
+                                                    lastId = lastNotification.notificationId;
+                                                    linkHeaderParams = Arrays.asList(new SimpleEntry<>("max_id", ApolloHelpers.serializeNotificationId(lastNotification.notificationId, lastNotification.notification.timestamp)));
+                                                }
+                                                return new QueryResults<>(bundles, notificationWithIds.size() < limit, lastId, linkHeaderParams);
+                                            });
+                });
+            },
+            offsetMaybe == null ? -1L : offsetMaybe,
+            Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit),
+            MAX_PAGING_ITERATIONS
+        );
+    }
+
+    public CompletableFuture<GetNotification.Bundle> getNotification(long requestAccountId, NotificationWithId notificationWithId) {
+        // get account associated with the notification
+        return this.getAccountWithId(ApolloHelpers.getAccountIdFromNotificationContent(notificationWithId.notification.content))
+                   .thenCompose(accountWithId -> {
+                       if (accountWithId == null) return CompletableFuture.completedFuture(null);
+                       // determine if requester is currently muting this account's notifications
+                       CompletableFuture<MuteAccountOptions> optionsFuture = accountIdToSuppressions.selectOneAsync(Path.key(requestAccountId, "muted", accountWithId.accountId));
+                       return optionsFuture.thenCompose(muteAccountOptions -> {
+                           if (muteAccountOptions != null && muteAccountOptions.muteNotifications) return CompletableFuture.completedFuture(null);
+                           // get status associated with the notification
+                           StatusPointer statusPointer = ApolloHelpers.getStatusPointerFromNotificationContent(notificationWithId.notification.content);
+                           if (statusPointer == null) {
+                               return CompletableFuture.completedFuture(new GetNotification.Bundle(notificationWithId, accountWithId, null));
+                           } else {
+                               QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Notifications, true);
+                               return this.getStatus(requestAccountId, statusPointer, filterOptions)
+                                          .thenApply(statusQueryResult -> {
+                                              if (statusQueryResult == null) return null;
+                                              return new GetNotification.Bundle(notificationWithId, accountWithId, statusQueryResult);
+                                          });
+                           }
+                       });
+                   });
+    }
+
+    public CompletableFuture<GetNotification.Bundle> getNotification(long accountId, long notificationId) {
+        return accountIdToNotificationsTimeline.selectOneAsync(Path.key(accountId, notificationId))
+                                               .thenCompose(notification -> {
+                                                   if (notification == null) return null;
+                                                   NotificationWithId notificationWithId = new NotificationWithId(notificationId, (Notification) notification);
+                                                   return this.getNotification(accountId, notificationWithId);
+                                               });
+    }
+
+    public CompletableFuture<Boolean> dismissNotification(long accountId, Long notificationIdMaybe) {
+        DismissNotification dismissNotification = new DismissNotification(accountId);
+        if (notificationIdMaybe != null) dismissNotification.setNotificationId(notificationIdMaybe);
+        return dismissDepot.appendAsync(dismissNotification).thenApply(res -> true);
     }
 
 }

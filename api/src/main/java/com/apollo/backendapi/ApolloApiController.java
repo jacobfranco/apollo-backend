@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 
+import org.slf4j.LoggerFactory;
+
 @RestController
 @CrossOrigin(exposedHeaders = { "Link" })
 public class ApolloApiController {
@@ -1171,10 +1173,11 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
     }
 
     /*
-     * User Metrics Endpoints
+     * User Metrics and Data Endpoints
      * ======================================
      * - GET /api/bookmarks
      * - GET /api/likes
+     * - GET /api/reports
      * ======================================
      */
 
@@ -1201,14 +1204,60 @@ public Mono<List<GetStatus>> getDescendants(WebSession session, @PathVariable("i
                    });
     }
 
+    @PostMapping("/api/reports")
+    public Mono<GetReport> postReport(WebSession session, @RequestBody(required = false) PostReport params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(params.account_id)))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(accountWithId -> {
+                       LoggerFactory.getLogger(ApolloApiController.class).info("Report from account {}:\n{}", requestAccountId, params);
+                       return ApolloApiHelpers.createGetReport(params, accountWithId);
+                   });
+    }
+
     /*
-     * Marker Endpoints
+     * Notifications Endpoints
      * ======================================
+     * - POST /api/notifications
+     * - GET /api/notifications/{id}
+     * - POST /api/notifications/clear
      * - GET /api/markers
      * - POST /api/markers
      * ======================================
      */
 
+     @GetMapping("/api/notifications")
+    public Mono<List<GetNotification>> getNotifications(
+            ServerWebExchange exchange,
+            WebSession session,
+            @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false, value = "types[]") List<String> types,
+            @RequestParam(required = false, value = "exclude_types[]") List<String> exclude_types
+    ) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getNotificationsTimeline(requestAccountId, ApolloHelpers.parseNotificationId(max_id), limit, types, exclude_types))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(queryResults -> {
+                       ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                       return ApolloApiHelpers.createGetNotifications(queryResults.results);
+                   });
+    }
+
+    @GetMapping("/api/notifications/{id}")
+    public Mono<GetNotification> getNotification(WebSession session, @PathVariable("id") String notificationId) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getNotification(requestAccountId, ApolloHelpers.parseNotificationId(notificationId)))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(GetNotification::new);
+    }
+
+     @PostMapping("/api/notifications/clear")
+     public Mono dismissAllNotifications(WebSession session) {
+         long requestAccountId = getMandatoryAccountId(session);
+         return Mono.fromFuture(manager.dismissNotification(requestAccountId, null))
+                    .map(res -> new HashMap());
+     }
 
     @GetMapping("/api/markers")
     public Mono<Map<String, GetMarker>> getMarkers(WebSession session, @RequestParam(value = "timeline[]", required = true) List<String> timelines) {

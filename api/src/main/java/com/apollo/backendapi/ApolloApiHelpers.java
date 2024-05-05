@@ -8,8 +8,11 @@ import java.io.*;
 import java.net.*;
 import java.security.*;
 import java.util.*;
+import java.util.stream.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.AbstractMap.SimpleEntry;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.security.crypto.bcrypt.*;
@@ -235,6 +238,26 @@ public class ApolloApiHelpers {
         Map<String, GetMarker> getMarkers = new HashMap<>();
         for (Map.Entry<String, Marker> entry : markers.entrySet()) getMarkers.put(entry.getKey(), new GetMarker(entry.getValue()));
         return getMarkers;
+    }
+
+    public static GetReport createGetReport(PostReport params, AccountWithId targetAccount) {
+        GetReport report = new GetReport();
+        report.id = UUID.randomUUID().toString();
+        report.category = params.category;
+        report.comment = params.comment;
+        report.created_at = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
+        report.status_ids = params.status_ids;
+        if (params.rule_ids != null) report.rule_ids = params.rule_ids.stream().map(Object::toString).collect(Collectors.toList());
+        report.target_account = new GetAccount(targetAccount);
+        return report;
+    }
+
+    public static List<GetNotification> createGetNotifications(List<GetNotification.Bundle> bundles) {
+        List<GetNotification> getNotifications = new ArrayList<>();
+        for (GetNotification.Bundle bundle : bundles) {
+            if (bundle != null) getNotifications.add(new GetNotification(bundle));
+        }
+        return getNotifications;
     }
 
 }

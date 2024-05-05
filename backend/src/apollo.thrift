@@ -660,5 +660,15 @@ struct Notification {
   2: required Timestamp timestamp;
 }
 
+struct NotificationWithId {
+  1: required i64 notificationId;
+  2: required Notification notification;
+}
+
+struct DismissNotification {
+  1: required AccountId accountId;
+  2: optional i64 notificationId; // null for "dismiss all"
+}
+
 
 
