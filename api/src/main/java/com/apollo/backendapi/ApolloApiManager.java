@@ -64,6 +64,7 @@ public class ApolloApiManager {
     private final PState likerToStatusPointers;
     private final PState statusIdToBoosters;
     private final PState statusIdToLikers;
+    private final PState accountIdToAttachmentStatusIds;
 
     // Relationship PStates
     private final PState authCodeToAccountId;
@@ -76,6 +77,7 @@ public class ApolloApiManager {
     // Hashtag/Trends PStates
     private final PState hashtagTrends;
     private final PState statusTrends;
+    private final PState accountIdToHashtagActivity;
 
     // Core Queries
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
@@ -129,6 +131,7 @@ public class ApolloApiManager {
         likerToStatusPointers = cluster.clusterPState(CORE_MODULE_NAME, "$$likerToStatusPointers");
         statusIdToBoosters = cluster.clusterPState(CORE_MODULE_NAME, "$$statusIdToBoosters");
         statusIdToLikers = cluster.clusterPState(CORE_MODULE_NAME, "$$statusIdToLikers");
+        accountIdToAttachmentStatusIds = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToAttachmentStatusIds");
 
         // Relationship PStates
         authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
@@ -141,6 +144,7 @@ public class ApolloApiManager {
         // Hashtag/Trends PStates
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
+        accountIdToHashtagActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToHashtagActivity");
         
         // Core Queries
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
@@ -1001,6 +1005,33 @@ public class ApolloApiManager {
     public CompletableFuture<List<AccountWithId>> getFamiliarFollowers(long requestAccountId, long targetId) {
         CompletableFuture<List<Long>> familiarFollowersFuture = getFamiliarFollowers.invokeAsync(requestAccountId, targetId);
         return familiarFollowersFuture.thenCompose(this::getAccountsFromAccountIds);
+    }
+
+    public CompletableFuture<StatusQueryResults> getAttachmentStatuses(Long requestAccountIdMaybe, long authorId, StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging((offset, limit) -> {
+                  SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                  return accountIdToAttachmentStatusIds.selectAsync(Path.key(authorId).sortedSetRangeFrom(offset.statusId, options).all())
+                                                       .thenCompose(statusIds -> {
+                                                           List<StatusPointer> pointers = new ArrayList<>();
+                                                           for (Object statusId : statusIds) pointers.add(new StatusPointer(authorId, (Long) statusId));
+                                                           QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+                                                           return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, pointers, filterOptions);
+                                                       });
+                }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<StatusQueryResults> getTaggedStatuses(Long requestAccountIdMaybe, long authorId, String hashtag, StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging((offset, limit) -> {
+                  SortedRangeFromOptions rangeOptions = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                  return accountIdToHashtagActivity.selectAsync(Path.key(authorId, hashtag, "timeline").sortedSetRangeFrom(offset.statusId, rangeOptions).all())
+                          .thenCompose((List<Object> statusIds) -> {
+                              QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+                              List<StatusPointer> pointers = statusIds.stream()
+                                                                      .map((statusId) -> new StatusPointer(authorId, (Long) statusId))
+                                                                      .collect(Collectors.toList());
+                              return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, pointers, filterOptions);
+                          });
+                }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 
 }

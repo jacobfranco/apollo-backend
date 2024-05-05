@@ -208,6 +208,7 @@ public class ApolloApiController {
      * - GET /api/accounts/search
      * - GET /api/accounts/lookup
      * - PATCH /api/accounts/update_credentials
+     * - GET /api/accounts/{id}/statuses
      * ======================================
      */
 
@@ -476,6 +477,32 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
     @PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<GetAccount> patchAccountUpdateCredentials(WebSession session, @RequestBody(required = false) PatchUpdateCredentials params) throws JsonProcessingException {
         return patchAccountUpdateCredentials(session, params.display_name, params.note, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    @GetMapping("/api/accounts/{id}/statuses")
+    public Mono<List<GetStatus>> getAccountStatuses(WebSession session, ServerWebExchange exchange,
+                                                    @PathVariable("id") String id,
+                                                    @RequestParam(required = false) String max_id,
+                                                    @RequestParam(required = false) Integer limit,
+                                                    @RequestParam(required = false) Boolean only_media,
+                                                    @RequestParam(required = false) Boolean exclude_replies,
+                                                    @RequestParam(required = false) Boolean exclude_reblogs,
+                                                    @RequestParam(required = false) Boolean pinned,
+                                                    @RequestParam(required = false) String tagged) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        long timelineAccountId = ApolloHelpers.parseAccountId(id);
+        final CompletableFuture<StatusQueryResults> future;
+        if (pinned != null && pinned) future = manager.getPinnedStatuses(requestAccountId, timelineAccountId);
+        else if (only_media != null && only_media) future = manager.getAttachmentStatuses(requestAccountId, timelineAccountId, statusPointer, limit);
+        else if (tagged != null) future = manager.getTaggedStatuses(requestAccountId, timelineAccountId, tagged, statusPointer, limit);
+        else future = manager.getAccountTimeline(requestAccountId, timelineAccountId, statusPointer, limit, exclude_replies == null || !exclude_replies, exclude_reblogs == null || !exclude_reblogs);
+        return Mono.fromFuture(future)
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(statusQueryResults -> {
+                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                   });
     }
 
     /*
