@@ -52,6 +52,7 @@ public class ApolloApiManager {
     private final Depot followAndBlockAccountDepot;
     private final Depot muteAccountDepot;
     private final Depot featureAccountDepot;
+    private final Depot filterDepot;
 
     // Notifications Depots
     private final Depot dismissDepot;
@@ -77,6 +78,8 @@ public class ApolloApiManager {
     private final PState accountIdToFollowRequests;
     private final PState accountIdToFollowRequestsById;
     private final PState accountIdToSuppressions;
+    private final PState postUUIDToGeneratedId;
+    private final PState accountIdToFilterIdToFilter;
 
     // Hashtag/Trends PStates
     private final PState hashtagTrends;
@@ -130,6 +133,7 @@ public class ApolloApiManager {
         followAndBlockAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followAndBlockAccountDepot");
         muteAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*muteAccountDepot");
         featureAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*featureAccountDepot");
+        filterDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*filterDepot");
 
         // Notifications Depots
         dismissDepot = cluster.clusterDepot(NOTIFICATIONS_MODULE_NAME, "*dismissDepot");
@@ -155,6 +159,8 @@ public class ApolloApiManager {
         accountIdToFollowRequests = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFollowRequests");
         accountIdToFollowRequestsById = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFollowRequestsById");
         accountIdToSuppressions = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToSuppressions");
+        postUUIDToGeneratedId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$postUUIDToGeneratedId");
+        accountIdToFilterIdToFilter = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFilterIdToFilter");
 
         // Hashtag/Trends PStates
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
@@ -1184,6 +1190,39 @@ public class ApolloApiManager {
             }
             return accountIds.stream().filter(Objects::nonNull).skip(offset).collect(Collectors.toList());
         }).thenCompose(this::getAccountsFromAccountIds);
+    }
+
+    public CompletableFuture<FilterWithId> postFilter(Filter filter) {
+        String uuid = UUID.randomUUID().toString();
+        AddFilter addFilter = new AddFilter(filter, uuid);
+        return filterDepot.appendAsync(addFilter)
+                          .thenCompose(res -> postUUIDToGeneratedId.selectOneAsync(Path.key(uuid)))
+                          .thenCompose(filterId ->
+                              accountIdToFilterIdToFilter.selectOneAsync(Path.key(filter.accountId, filterId))
+                                  .thenApply(foundFilter -> new FilterWithId((long) filterId, (Filter) foundFilter)));
+    }
+
+    public CompletableFuture<List<FilterWithId>> getFilters(Long requestAccountId) {
+        return accountIdToFilterIdToFilter.selectAsync(Path.key(requestAccountId).all())
+                                          .thenApply(result -> ApolloHelpers.createFiltersWithIds((List) result));
+    }
+
+    public CompletableFuture<FilterWithId> getFilter(Long accountId, Long filterId) {
+        return accountIdToFilterIdToFilter.selectOneAsync(Path.key(accountId, filterId))
+                                          .thenApply(result -> {
+                                              if (result == null) return null;
+                                              return new FilterWithId(filterId, (Filter) result);
+                                          });
+    }
+
+    public CompletableFuture<FilterWithId> putFilter(EditFilter edit) {
+        return filterDepot.appendAsync(edit)
+                          .thenCompose(res -> accountIdToFilterIdToFilter.selectOneAsync(Path.key(edit.accountId, edit.filterId)))
+                          .thenApply(filter -> filter == null? null : new FilterWithId(edit.filterId, (Filter) filter));
+    }
+
+    public CompletableFuture<Void> deleteFilter(Long accountId, Long filterId) {
+        return filterDepot.appendAsync(new RemoveFilter(filterId, accountId, System.currentTimeMillis()));
     }
     
 

@@ -1462,4 +1462,76 @@ public class ApolloApiController {
                 .flatMap(result -> this.getPoll(session, id));
     }
 
+    /*
+     * Filter Endpoints
+     * ======================================
+     * - GET /api/filters
+     * - POST /api/filters
+     * - PUT/PATCH /api/filters/{id}
+     * - GET /api/filters/{id}
+     * ======================================
+     */
+
+     @GetMapping("/api/filters")
+    public Mono<List<GetFilter>> getFilters(WebSession session) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getFilters(requestAccountId))
+                   .map(filterList -> filterList.stream().map(GetFilter::new).collect(Collectors.toList()));
+    }
+
+    @PostMapping("/api/filters")
+    public Mono<GetFilter> postFilter(WebSession session, @RequestBody PostFilterParams params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        Filter filter = new Filter();
+        filter.setAccountId(requestAccountId);
+        filter.setTitle(params.title);
+        filter.setAction(params.parseAction());
+        filter.setContexts(params.parseContexts());
+        // you can't directly create a filter with statuses; they must be added later
+        filter.setStatuses(new HashSet<>());
+
+        if (params.expires_in != null && !params.expires_in.isNull()) {
+            long expiresIn;
+            if (params.expires_in.isTextual()) expiresIn = Long.parseLong(params.expires_in.asText());
+            else if (params.expires_in.isNumber()) expiresIn = params.expires_in.asLong();
+            else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            filter.setExpirationMillis(System.currentTimeMillis() + expiresIn * 1000);
+        }
+        filter.setKeywords(params.parseKeywordsAsCreates());
+
+        return Mono.fromFuture(manager.postFilter(filter)).map(GetFilter::new);
+    }
+
+    @RequestMapping(value="/api/filters/{id}", method={RequestMethod.PUT, RequestMethod.PATCH})
+    public Mono<GetFilter> putFilter(WebSession session, @PathVariable("id") Long filterId, @RequestBody PostFilterParams params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        EditFilter edit = (new EditFilter())
+                .setAccountId(requestAccountId)
+                .setFilterId(filterId)
+                .setTimestamp(System.currentTimeMillis());
+        if (params.title != null) edit.setTitle(params.title);
+        if (params.context != null) edit.setContext(params.parseContexts());
+        if (params.expires_in != null && !params.expires_in.isNull()) {
+            long expiresIn;
+            if (params.expires_in.isTextual()) expiresIn = Long.parseLong(params.expires_in.asText());
+            else if (params.expires_in.isNumber()) expiresIn = params.expires_in.asLong();
+            else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            edit.setExpirationMillis(System.currentTimeMillis() + expiresIn * 1000);
+        }
+        edit.setKeywords(params.parseKeywordsAsUpdates());
+        if (params.filter_action != null) edit.setAction(params.parseAction());
+        return Mono.fromFuture(manager.putFilter(edit))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetFilter::new);
+
+    }
+
+    @GetMapping("/api/filters/{id}")
+    public Mono<GetFilter> getFilter(WebSession session, @PathVariable("id") Long filterId) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getFilter(requestAccountId, filterId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetFilter::new);
+    }
+
 }
