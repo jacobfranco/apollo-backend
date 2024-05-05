@@ -221,4 +221,14 @@ public class ApolloApiHelpers {
         }
     }
 
+    public static String sanitize(String input, int maxLength) {
+        String sanitized = input.trim();
+        if (sanitized.length() > maxLength) return sanitized.substring(0, maxLength);
+        return sanitized;
+    }
+
+    public static String sanitizeField(String input) {
+        return sanitize(input, ApolloApiConfig.MAX_FIELD_LENGTH);
+    }
+
 }

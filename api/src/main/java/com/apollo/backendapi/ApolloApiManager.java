@@ -991,6 +991,11 @@ public class ApolloApiManager {
           });
     }
 
+    public CompletableFuture<Boolean> postEditAccount(long accountId, List<EditAccountField> edits) {
+        if (edits.size() == 0) return CompletableFuture.completedFuture(true);
+        return accountEditDepot.appendAsync(new EditAccount(accountId, edits, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
 
 
 

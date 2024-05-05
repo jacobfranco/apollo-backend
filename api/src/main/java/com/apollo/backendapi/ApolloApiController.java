@@ -11,16 +11,25 @@ import org.springframework.http.*;
 import org.springframework.http.codec.multipart.Part;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.web.reactive.function.client.*;
+import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.http.codec.multipart.FormFieldPart;
+
+import org.apache.commons.io.FilenameUtils;
 
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
+import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.util.concurrent.CompletableFuture;
 import java.security.NoSuchAlgorithmException;
 import java.util.stream.Collectors;
 import java.nio.charset.Charset;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.*;
 
 @RestController
 @CrossOrigin(exposedHeaders = { "Link" })
@@ -29,12 +38,13 @@ public class ApolloApiController {
     public static ApolloApiManager manager;
 
     /*
-     * Helper Functions
+     * Helper Functions and Classes
      * ======================================
      * - loginWithAccount
      * - getMandatoryAccountId
      * - validateStatus
      * - resolveURL
+     * - accountAttachment
      * ======================================
      */
 
@@ -75,6 +85,12 @@ public class ApolloApiController {
                     throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Poll choice too long");
             }
         }
+    }
+
+    private static class AccountAttachment {
+        public AttachmentWithId attachmentWithId;
+        public File file;
+        public Part part;
     }
 
     /*
@@ -190,6 +206,7 @@ public class ApolloApiController {
      * - GET /api/accounts/{id}
      * - GET /api/accounts/search
      * - GET /api/accounts/lookup
+     * - PATCH /api/accounts/update_credentials
      * ======================================
      */
 
@@ -316,6 +333,149 @@ public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String 
                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                .map(GetAccount::new);
 }
+
+@PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<GetAccount> patchAccountUpdateCredentials(
+            WebSession session,
+            @RequestPart(value = "display_name", required = false) String display_name,
+            @RequestPart(value = "note", required = false) String note,
+            @RequestPart(value = "avatar", required = false) Part avatar,
+            @RequestPart(value = "header", required = false) Part header,
+            @RequestPart(value = "locked", required = false) String locked,
+            @RequestPart(value = "bot", required = false) String bot,
+            @RequestPart(value = "discoverable", required = false) String discoverable,
+            @RequestPart(value = "fields_attributes[0][name]", required = false) String field0_name,
+            @RequestPart(value = "fields_attributes[0][value]", required = false) String field0_value,
+            @RequestPart(value = "fields_attributes[1][name]", required = false) String field1_name,
+            @RequestPart(value = "fields_attributes[1][value]", required = false) String field1_value,
+            @RequestPart(value = "fields_attributes[2][name]", required = false) String field2_name,
+            @RequestPart(value = "fields_attributes[2][value]", required = false) String field2_value,
+            @RequestPart(value = "fields_attributes[3][name]", required = false) String field3_name,
+            @RequestPart(value = "fields_attributes[3][value]", required = false) String field3_value,
+            @RequestPart(value = "source[privacy]", required = false) String privacy,
+            @RequestPart(value = "source[sensitive]", required = false) String sensitive,
+            @RequestPart(value = "source[language]", required = false) String language) throws JsonProcessingException {
+        long requestAccountId = getMandatoryAccountId(session);
+        // parse params
+        Boolean isLocked = locked != null ? Boolean.parseBoolean(locked) : null;
+        Boolean isBot = bot != null ? Boolean.parseBoolean(bot) : null;
+        Boolean isDiscoverable = discoverable != null ? Boolean.parseBoolean(discoverable) : null;
+        List<KeyValuePair> fields = new ArrayList<>();
+        {
+            if (field0_name != null && field0_value != null)
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field0_name), ApolloApiHelpers.sanitizeField(field0_value)));
+            if (field1_name != null && field1_value != null)
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field1_name), ApolloApiHelpers.sanitizeField(field1_value)));
+            if (field2_name != null && field2_value != null)
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field2_name), ApolloApiHelpers.sanitizeField(field2_value)));
+            if (field3_name != null && field3_value != null)
+                fields.add(new KeyValuePair(ApolloApiHelpers.sanitizeField(field3_name), ApolloApiHelpers.sanitizeField(field3_value)));
+        }
+        Map<String, String> newPrefs = new HashMap<>();
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            if (privacy != null) {
+                Set<String> options = new HashSet<>(Arrays.asList("public", "unlisted", "private"));
+                if (!options.contains(privacy)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                newPrefs.put("posting:default:visibility", objectMapper.writeValueAsString(privacy));
+            }
+            if (sensitive != null) newPrefs.put("posting:default:sensitive", objectMapper.writeValueAsString(Boolean.parseBoolean(sensitive)));
+            if (language != null) {
+                if (language.length() > 3) throw new ResponseStatusException(HttpStatus.BAD_REQUEST); // ISO 6391
+                newPrefs.put("posting:default:language", objectMapper.writeValueAsString(language));
+            }
+        }
+        // start the uploads
+        List<Mono<Boolean>> uploads = new ArrayList<>();
+        List<AccountAttachment> accountAttachments = new ArrayList<>();
+        for (Part part : Arrays.asList(avatar, header)) {
+            if (part == null) continue;
+            // an empty upload is interpreted by Spring as a FormFieldPart
+            // instead of a FilePart. in that case, we just make it blank.
+            else if (part instanceof FormFieldPart) {
+                AccountAttachment attachment = new AccountAttachment();
+                attachment.attachmentWithId = new AttachmentWithId("", new Attachment(AttachmentKind.Image, "", ""));
+                attachment.part = part;
+                accountAttachments.add(attachment);
+            } else {
+                FilePart filePart = (FilePart) part;
+                // determine the file type
+                String ext = FilenameUtils.getExtension(filePart.filename()).toLowerCase();
+                if (!ApolloApiConfig.IMAGE_EXTS.contains(ext)) throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unrecognized file type");
+                // transfer to static file dir
+                File destDir = new File(ApolloApiConfig.STATIC_FILE_DIR, requestAccountId + "");
+                destDir.mkdirs();
+                String uuid = UUID.randomUUID().toString();
+                File destFile = new File(destDir, String.format("%s.%s", uuid, ext));
+                uploads.add(filePart.transferTo(destFile).then(Mono.just(true)));
+                AccountAttachment attachment = new AccountAttachment();
+                String path = String.format("%s/%s.%s", requestAccountId, uuid, ext);
+                attachment.attachmentWithId = new AttachmentWithId(uuid, new Attachment(AttachmentKind.Image, path, ""));
+                attachment.file = destFile;
+                attachment.part = filePart;
+                accountAttachments.add(attachment);
+            }
+        }
+        // ensure there's at least one mono so zip works correctly
+        if (uploads.size() == 0) uploads.add(Mono.just(true));
+        return Mono.zip(uploads, results -> true)
+                   // upload to s3 if enabled
+                   .flatMap(result -> {
+                       if (ApolloApiConfig.S3_OPTIONS != null) {
+                           List<Mono<Boolean>> s3Uploads = new ArrayList<>();
+                           for (AccountAttachment accountAttachment : accountAttachments) {
+                               if (accountAttachment.file == null) continue;
+                               String path = accountAttachment.attachmentWithId.attachment.path;
+                               s3Uploads.add(
+                                       Mono.fromFuture(ApolloApiHelpers.uploadToS3(ApolloApiConfig.S3_OPTIONS.bucketName, path, accountAttachment.file))
+                                           .map(resp -> {
+                                               accountAttachment.file.delete();
+                                               return resp.sdkHttpResponse().isSuccessful();
+                                           }));
+                           }
+                           // ensure there's at least one mono so zip works correctly
+                           if (s3Uploads.size() > 0) return Mono.zip(s3Uploads, results -> Arrays.stream(results).allMatch(success -> (boolean) success));
+                       }
+                       return Mono.just(true);
+                   })
+                   // check upload success and get account
+                   .flatMap(success -> {
+                       if (!success) throw new RuntimeException("Failed to connect to S3");
+                       return Mono.fromFuture(manager.getAccountWithId(requestAccountId));
+                   })
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   // update the account
+                   .flatMap(accountWithId -> {
+                       List<EditAccountField> edits = new ArrayList<>();
+                       if (display_name != null) edits.add(EditAccountField.displayName(ApolloApiHelpers.sanitize(display_name, ApolloApiConfig.MAX_DISPLAY_NAME_LENGTH)));
+                       if (note != null) edits.add(EditAccountField.bio(ApolloApiHelpers.sanitize(note, ApolloApiConfig.MAX_BIO_LENGTH)));
+                       if (isLocked != null) edits.add(EditAccountField.locked(isLocked));
+                       if (isBot != null) edits.add(EditAccountField.bot(isBot));
+                       if (isDiscoverable != null) edits.add(EditAccountField.discoverable(isDiscoverable));
+                       if (fields.size() > 0) edits.add(EditAccountField.fields(fields));
+                       if (newPrefs.size() > 0) {
+                           Map<String, String> prefs = new HashMap<>();
+                           if (accountWithId.account.preferences != null) prefs.putAll(accountWithId.account.preferences);
+                           prefs.putAll(newPrefs);
+                           edits.add(EditAccountField.preferences(prefs));
+                       }
+                       for (AccountAttachment accountAttachment : accountAttachments) {
+                           if ("header".equals(accountAttachment.part.name())) edits.add(EditAccountField.header(accountAttachment.attachmentWithId));
+                           else if ("avatar".equals(accountAttachment.part.name())) edits.add(EditAccountField.avatar(accountAttachment.attachmentWithId));
+                       }
+                       return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits));
+                   })
+                   // query and return the updated account
+                   .flatMap(result -> Mono.fromFuture(manager.getAccountWithId(requestAccountId)))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   // return account
+                   .map(GetAccount::new);
+    }
+
+    @PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GetAccount> patchAccountUpdateCredentials(WebSession session, @RequestBody(required = false) PatchUpdateCredentials params) throws JsonProcessingException {
+        return patchAccountUpdateCredentials(session, params.display_name, params.note, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
 
     /*
      * Status Actions Endpoints
