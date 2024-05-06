@@ -1467,8 +1467,9 @@ public class ApolloApiController {
      * ======================================
      * - GET /api/filters
      * - POST /api/filters
-     * - PUT/PATCH /api/filters/{id}
      * - GET /api/filters/{id}
+     * - PUT/PATCH /api/filters/{id}
+     * - DELETE /api/filters/{id}
      * ======================================
      */
 
@@ -1502,6 +1503,14 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.postFilter(filter)).map(GetFilter::new);
     }
 
+    @GetMapping("/api/filters/{id}")
+    public Mono<GetFilter> getFilter(WebSession session, @PathVariable("id") Long filterId) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getFilter(requestAccountId, filterId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetFilter::new);
+    }
+
     @RequestMapping(value="/api/filters/{id}", method={RequestMethod.PUT, RequestMethod.PATCH})
     public Mono<GetFilter> putFilter(WebSession session, @PathVariable("id") Long filterId, @RequestBody PostFilterParams params) {
         long requestAccountId = getMandatoryAccountId(session);
@@ -1526,12 +1535,10 @@ public class ApolloApiController {
 
     }
 
-    @GetMapping("/api/filters/{id}")
-    public Mono<GetFilter> getFilter(WebSession session, @PathVariable("id") Long filterId) {
+    @DeleteMapping("/api/v2/filters/{id}")
+    public Mono<Void> deleteFilter(WebSession session, @PathVariable("id") Long filterId) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.getFilter(requestAccountId, filterId))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .map(GetFilter::new);
+        return Mono.fromFuture(manager.deleteFilter(requestAccountId, filterId));
     }
 
 }
