@@ -45,6 +45,7 @@ public class ApolloApiManager {
     private final Depot muteStatusDepot;
     private final Depot pinStatusDepot;
     private final Depot pollVoteDepot;
+    private final Depot statusAttachmentWithIdDepot;
     
 
      // Relationships Depots
@@ -127,6 +128,7 @@ public class ApolloApiManager {
         muteStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*muteStatusDepot");
         pinStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pinStatusDepot");
         pollVoteDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pollVoteDepot");
+        statusAttachmentWithIdDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*statusAttachmentWithIdDepot");
         
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -1223,6 +1225,15 @@ public class ApolloApiManager {
 
     public CompletableFuture<Void> deleteFilter(Long accountId, Long filterId) {
         return filterDepot.appendAsync(new RemoveFilter(filterId, accountId, System.currentTimeMillis()));
+    }
+
+    public CompletableFuture<AttachmentWithId> postAttachment(AttachmentWithId attachment) {
+        return statusAttachmentWithIdDepot.appendAsync(attachment).thenApply(res -> attachment);
+    }
+
+    public CompletableFuture<AttachmentWithId> getAttachment(String uuid) {
+        return uuidToAttachment.selectOneAsync(Path.key(uuid))
+                               .thenApply(attachment -> new AttachmentWithId(uuid, (Attachment) attachment));
     }
     
 

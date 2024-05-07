@@ -9,12 +9,17 @@ import java.net.*;
 import java.security.*;
 import java.util.*;
 import java.util.stream.*;
+
+import javax.imageio.ImageIO;
+
 import java.util.concurrent.CompletableFuture;
 import java.util.AbstractMap.SimpleEntry;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 import org.bouncycastle.util.encoders.Hex;
+import org.jcodec.api.*;
+import org.jcodec.common.io.NIOUtils;
 import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.security.crypto.password.*;
 import org.springframework.web.server.*;
@@ -258,6 +263,22 @@ public class ApolloApiHelpers {
             if (bundle != null) getNotifications.add(new GetNotification(bundle));
         }
         return getNotifications;
+    }
+
+    public static boolean isValidFile(String kind, File file) {
+        try {
+          if ("image".equals(kind)) ImageIO.read(file); // make sure it's a valid image file
+          else if ("video".equals(kind)) FrameGrab.createFrameGrab(NIOUtils.readableChannel(file)); // make sure it's a valid video file
+          return true;
+        } catch (IOException | JCodecException e) {
+          return false;
+        }
+    }
+
+    public static AttachmentKind createAttachmentKind(String kindStr) {
+        if ("image".equals(kindStr)) return AttachmentKind.Image;
+        else if ("video".equals(kindStr)) return AttachmentKind.Video;
+        else throw new RuntimeException("Invalid attachment type");
     }
 
 }

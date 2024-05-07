@@ -1296,14 +1296,14 @@ public class ApolloApiController {
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) String order,
-            @RequestParam(required = false) Boolean local
-    ) {
+            @RequestParam(required = false) Boolean local) {
         HashSet<String> orders = new HashSet<>(Arrays.asList(null, "active", "new"));
-        if (!orders.contains(order)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (!orders.contains(order))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         boolean showAll = local == null || !local;
         boolean sortByActive = order == null || order.equals("active");
         return Mono.fromFuture(manager.getDirectory(showAll, sortByActive, limit, offset))
-                   .map(ApolloApiHelpers::createGetAccounts);
+                .map(ApolloApiHelpers::createGetAccounts);
     }
 
     /*
@@ -1473,11 +1473,11 @@ public class ApolloApiController {
      * ======================================
      */
 
-     @GetMapping("/api/filters")
+    @GetMapping("/api/filters")
     public Mono<List<GetFilter>> getFilters(WebSession session) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getFilters(requestAccountId))
-                   .map(filterList -> filterList.stream().map(GetFilter::new).collect(Collectors.toList()));
+                .map(filterList -> filterList.stream().map(GetFilter::new).collect(Collectors.toList()));
     }
 
     @PostMapping("/api/filters")
@@ -1493,9 +1493,12 @@ public class ApolloApiController {
 
         if (params.expires_in != null && !params.expires_in.isNull()) {
             long expiresIn;
-            if (params.expires_in.isTextual()) expiresIn = Long.parseLong(params.expires_in.asText());
-            else if (params.expires_in.isNumber()) expiresIn = params.expires_in.asLong();
-            else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            if (params.expires_in.isTextual())
+                expiresIn = Long.parseLong(params.expires_in.asText());
+            else if (params.expires_in.isNumber())
+                expiresIn = params.expires_in.asLong();
+            else
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             filter.setExpirationMillis(System.currentTimeMillis() + expiresIn * 1000);
         }
         filter.setKeywords(params.parseKeywordsAsCreates());
@@ -1511,24 +1514,31 @@ public class ApolloApiController {
                 .map(GetFilter::new);
     }
 
-    @RequestMapping(value="/api/filters/{id}", method={RequestMethod.PUT, RequestMethod.PATCH})
-    public Mono<GetFilter> putFilter(WebSession session, @PathVariable("id") Long filterId, @RequestBody PostFilterParams params) {
+    @RequestMapping(value = "/api/filters/{id}", method = { RequestMethod.PUT, RequestMethod.PATCH })
+    public Mono<GetFilter> putFilter(WebSession session, @PathVariable("id") Long filterId,
+            @RequestBody PostFilterParams params) {
         long requestAccountId = getMandatoryAccountId(session);
         EditFilter edit = (new EditFilter())
                 .setAccountId(requestAccountId)
                 .setFilterId(filterId)
                 .setTimestamp(System.currentTimeMillis());
-        if (params.title != null) edit.setTitle(params.title);
-        if (params.context != null) edit.setContext(params.parseContexts());
+        if (params.title != null)
+            edit.setTitle(params.title);
+        if (params.context != null)
+            edit.setContext(params.parseContexts());
         if (params.expires_in != null && !params.expires_in.isNull()) {
             long expiresIn;
-            if (params.expires_in.isTextual()) expiresIn = Long.parseLong(params.expires_in.asText());
-            else if (params.expires_in.isNumber()) expiresIn = params.expires_in.asLong();
-            else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            if (params.expires_in.isTextual())
+                expiresIn = Long.parseLong(params.expires_in.asText());
+            else if (params.expires_in.isNumber())
+                expiresIn = params.expires_in.asLong();
+            else
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             edit.setExpirationMillis(System.currentTimeMillis() + expiresIn * 1000);
         }
         edit.setKeywords(params.parseKeywordsAsUpdates());
-        if (params.filter_action != null) edit.setAction(params.parseAction());
+        if (params.filter_action != null)
+            edit.setAction(params.parseAction());
         return Mono.fromFuture(manager.putFilter(edit))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(GetFilter::new);
@@ -1539,6 +1549,95 @@ public class ApolloApiController {
     public Mono<Void> deleteFilter(WebSession session, @PathVariable("id") Long filterId) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.deleteFilter(requestAccountId, filterId));
+    }
+
+    /*
+     * Media Endpoints
+     * ======================================
+     * - POST /api/media
+     * - PUT /api/media/{id}
+     * - GET /api/media/{id}
+     * ======================================
+     */
+
+    @PostMapping("/api/media")
+    public Mono<GetAttachment> postMedia(WebSession session, @RequestPart("file") FilePart file) throws IOException {
+        long requestAccountId = getMandatoryAccountId(session);
+        // determine the file type
+        String ext = FilenameUtils.getExtension(file.filename()).toLowerCase();
+        final String kind;
+        if (ApolloApiConfig.IMAGE_EXTS.contains(ext))
+            kind = "image";
+        else if (ApolloApiConfig.VIDEO_EXTS.contains(ext))
+            kind = "video";
+        else
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Unrecognized file type");
+        // transfer to static file dir
+        File destDir = new File(ApolloApiConfig.STATIC_FILE_DIR, requestAccountId + "");
+        destDir.mkdirs();
+        String uuid = UUID.randomUUID().toString();
+        File destFile = new File(destDir, String.format("%s.%s", uuid, ext));
+        return file.transferTo(destFile)
+                .then(Mono.just(true))
+                .flatMap(res -> {
+                    // validate
+                    if (!ApolloApiHelpers.isValidFile(kind, destFile)) {
+                        destFile.delete();
+                        throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Failed to validate file");
+                    }
+                    String path = String.format("%s/%s.%s", requestAccountId, uuid, ext);
+                    AttachmentWithId attachmentWithId = new AttachmentWithId(uuid,
+                            new Attachment(ApolloApiHelpers.createAttachmentKind(kind), path, ""));
+                    // upload to s3 if enabled
+                    if (ApolloApiConfig.S3_OPTIONS != null) {
+                        return Mono
+                                .fromFuture(ApolloApiHelpers.uploadToS3(ApolloApiConfig.S3_OPTIONS.bucketName, path,
+                                        destFile))
+                                .map(resp -> {
+                                    destFile.delete();
+                                    if (resp.sdkHttpResponse().isSuccessful())
+                                        return attachmentWithId;
+                                    else
+                                        throw new RuntimeException(
+                                                resp.sdkHttpResponse().statusText().orElse("Failed to connect to S3"));
+                                });
+                    } else
+                        return Mono.just(attachmentWithId);
+                })
+                .flatMap(attachmentWithId -> Mono.fromFuture(manager.postAttachment(attachmentWithId)))
+                .map(GetAttachment::new);
+    }
+
+    @PutMapping(value = "/api/media/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<GetAttachment> putMedia(WebSession session, @PathVariable("id") String attachmentId,
+            @RequestBody(required = true) PutAttachment params) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getAttachment(attachmentId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(attachmentWithId -> {
+                    if (params.description != null)
+                        attachmentWithId.attachment.description = params.description;
+                    return Mono.fromFuture(manager.postAttachment(attachmentWithId));
+                })
+                .map(GetAttachment::new);
+    }
+
+    @PutMapping(value = "/api/media/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<GetAttachment> putMedia(
+            WebSession session,
+            @PathVariable("id") String attachmentId,
+            @RequestPart(value = "description", required = false) String description) {
+        PutAttachment putAttachment = new PutAttachment();
+        putAttachment.description = description;
+        return this.putMedia(session, attachmentId, putAttachment);
+    }
+
+    // TODO: Idk if this works
+    @GetMapping("/api/media/{id}")
+    public Mono<GetAttachment> getMedia(@PathVariable("id") String attachmentId) {
+        return Mono.fromFuture(manager.getAttachment(attachmentId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetAttachment::new);
     }
 
 }
