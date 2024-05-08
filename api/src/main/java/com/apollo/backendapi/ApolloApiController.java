@@ -1640,4 +1640,26 @@ public class ApolloApiController {
                 .map(GetAttachment::new);
     }
 
+     /*
+     * Suggestions Endpoints
+     * ======================================
+     * - GET /api/suggestions
+     * - DELETE /api/suggestions/{id}
+     * ======================================
+     */
+
+
+    @GetMapping("/api/suggestions")
+    public Mono<List<GetSuggestion>> getSuggestions(WebSession session) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getWhoToFollowSuggestions(requestAccountId))
+                   .map(accountWithIds -> accountWithIds.stream().map(a -> new GetSuggestion("global", a)).collect(Collectors.toList()));
+    }
+
+    @DeleteMapping("/api/suggestions/{id}")
+    public Mono deleteSuggestion(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.removeFollowSuggestion(requestAccountId, ApolloHelpers.parseAccountId(id)))
+                   .map(res -> new HashMap());
+    }
 }

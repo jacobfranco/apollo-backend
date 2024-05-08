@@ -54,6 +54,7 @@ public class ApolloApiManager {
     private final Depot muteAccountDepot;
     private final Depot featureAccountDepot;
     private final Depot filterDepot;
+    private final Depot removeFollowSuggestionDepot;
 
     // Notifications Depots
     private final Depot dismissDepot;
@@ -107,6 +108,7 @@ public class ApolloApiManager {
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
     private final QueryTopologyClient<List<Long>> getFamiliarFollowers;
+    private final QueryTopologyClient<Set<Long>> getWhoToFollowSuggestions;
 
     // Hashtag Queries
     private final QueryTopologyClient<Map<String, ItemStats>> batchHashtagStats;
@@ -136,6 +138,7 @@ public class ApolloApiManager {
         muteAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*muteAccountDepot");
         featureAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*featureAccountDepot");
         filterDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*filterDepot");
+        removeFollowSuggestionDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*removeFollowSuggestionDepot");
 
         // Notifications Depots
         dismissDepot = cluster.clusterDepot(NOTIFICATIONS_MODULE_NAME, "*dismissDepot");
@@ -189,6 +192,7 @@ public class ApolloApiManager {
         // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
         getFamiliarFollowers = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getFamiliarFollowers");
+        getWhoToFollowSuggestions = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getWhoToFollowSuggestions");
 
         // Hashtag Queries
         batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
@@ -1234,6 +1238,17 @@ public class ApolloApiManager {
     public CompletableFuture<AttachmentWithId> getAttachment(String uuid) {
         return uuidToAttachment.selectOneAsync(Path.key(uuid))
                                .thenApply(attachment -> new AttachmentWithId(uuid, (Attachment) attachment));
+    }
+
+    public CompletableFuture<List<AccountWithId>> getWhoToFollowSuggestions(long accountId) {
+        return getWhoToFollowSuggestions.invokeAsync(accountId)
+                                        .thenApply(ArrayList::new)
+                                        .thenCompose(this::getAccountsFromAccountIds);
+    }
+
+    public CompletableFuture<Boolean> removeFollowSuggestion(long accountId, long targetId) {
+        return removeFollowSuggestionDepot.appendAsync(new RemoveFollowSuggestion(accountId, targetId))
+                                          .thenApply(res -> true);
     }
     
 

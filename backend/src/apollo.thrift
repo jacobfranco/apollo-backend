@@ -677,5 +677,10 @@ struct DismissNotification {
   2: optional i64 notificationId; // null for "dismiss all"
 }
 
+struct RemoveFollowSuggestion {
+  1: required AccountId accountId;
+  2: required AccountId targetId;
+}
+
 
 
