@@ -1662,4 +1662,37 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.removeFollowSuggestion(requestAccountId, ApolloHelpers.parseAccountId(id)))
                    .map(res -> new HashMap());
     }
+
+     /*
+     * Tags Endpoints
+     * ======================================
+     * - GET /api/tags/{id}
+     * - POST /api/tags/{id}/follow
+     * - POST /api/tags/{id}/follow
+     * ======================================
+     */
+
+    @GetMapping("/api/tags/{id}")
+    public Mono<GetTag> getTag(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        return Mono.fromFuture(manager.getHashtagStats(id))
+                   .flatMap(stats ->
+                       (requestAccountId == null ? Mono.just(false)
+                                                 : Mono.fromFuture(manager.isFollowingHashtag(requestAccountId, id)))
+                        .map(isFollowing -> ApolloApiHelpers.createGetTag(id, stats, isFollowing)));
+    }
+
+    @PostMapping("/api/tags/{id}/follow")
+    public Mono<GetTag> postFollowTag(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.postFollowHashtag(requestAccountId, id)).flatMap(res -> this.getTag(session, id));
+    }
+
+    @PostMapping("/api/tags/{id}/unfollow")
+    public Mono<GetTag> postUnfollowTag(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.postRemoveFollowHashtag(requestAccountId, id)).flatMap(res -> this.getTag(session, id));
+    }
+
+    
 }

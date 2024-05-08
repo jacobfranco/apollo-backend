@@ -18,6 +18,7 @@ import com.apollo.backend.modules.*;
 import com.apollo.backendapi.pojos.*;
 import com.rpl.rama.*;
 import com.rpl.rama.cluster.ClusterManagerBase;
+import com.rpl.rama.ops.Ops;
 
 public class ApolloApiManager {
 
@@ -55,6 +56,8 @@ public class ApolloApiManager {
     private final Depot featureAccountDepot;
     private final Depot filterDepot;
     private final Depot removeFollowSuggestionDepot;
+    private final Depot followHashtagDepot;
+
 
     // Notifications Depots
     private final Depot dismissDepot;
@@ -82,6 +85,7 @@ public class ApolloApiManager {
     private final PState accountIdToSuppressions;
     private final PState postUUIDToGeneratedId;
     private final PState accountIdToFilterIdToFilter;
+    private final PState hashtagToFollowers;
 
     // Hashtag/Trends PStates
     private final PState hashtagTrends;
@@ -139,6 +143,7 @@ public class ApolloApiManager {
         featureAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*featureAccountDepot");
         filterDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*filterDepot");
         removeFollowSuggestionDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*removeFollowSuggestionDepot");
+        followHashtagDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followHashtagDepot");
 
         // Notifications Depots
         dismissDepot = cluster.clusterDepot(NOTIFICATIONS_MODULE_NAME, "*dismissDepot");
@@ -166,6 +171,7 @@ public class ApolloApiManager {
         accountIdToSuppressions = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToSuppressions");
         postUUIDToGeneratedId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$postUUIDToGeneratedId");
         accountIdToFilterIdToFilter = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFilterIdToFilter");
+        hashtagToFollowers = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$hashtagToFollowers");
 
         // Hashtag/Trends PStates
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
@@ -1249,6 +1255,22 @@ public class ApolloApiManager {
     public CompletableFuture<Boolean> removeFollowSuggestion(long accountId, long targetId) {
         return removeFollowSuggestionDepot.appendAsync(new RemoveFollowSuggestion(accountId, targetId))
                                           .thenApply(res -> true);
+    }
+
+    public CompletableFuture<ItemStats> getHashtagStats(String hashtag) {
+        return batchHashtagStats.invokeAsync(Arrays.asList(hashtag)).thenApply(info -> info.get(hashtag));
+    }
+
+    public CompletableFuture<Boolean> postFollowHashtag(long accountId, String hashtag) {
+        return followHashtagDepot.appendAsync(new FollowHashtag(accountId, hashtag, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postRemoveFollowHashtag(long accountId, String hashtag) {
+        return followHashtagDepot.appendAsync(new RemoveFollowHashtag(accountId, hashtag, System.currentTimeMillis())).thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> isFollowingHashtag(long accountId, String hashtag) {
+        return hashtagToFollowers.selectOneAsync(Path.key(hashtag).view(Ops.CONTAINS, accountId));
     }
     
 
