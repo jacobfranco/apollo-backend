@@ -1694,5 +1694,68 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.postRemoveFollowHashtag(requestAccountId, id)).flatMap(res -> this.getTag(session, id));
     }
 
+     /*
+     * Timeline Endpoints
+     * ======================================
+     * - GET /api/timelines/home
+     * - POST /api/timelines/direct
+     * ======================================
+     */
+
+    @GetMapping("/api/timelines/home")
+    public Mono<List<GetStatus>> getHomeTimeline(WebSession session, ServerWebExchange exchange, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getHomeTimeline(requestAccountId, statusPointer, limit))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(statusQueryResults -> {
+                      ApolloApiHelpers .setStatusLinkHeader(exchange, statusQueryResults);
+                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                   });
+    }
+
+    @GetMapping("/api/timelines/direct")
+    public Mono<List<GetStatus>> getDirectTimeline(WebSession session, ServerWebExchange exchange, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getDirectTimeline(requestAccountId, statusPointer, limit))
+                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                   .map(statusQueryResults -> {
+                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                   });
+    }
+
+@GetMapping("/api/v1/timelines/public")
+public Mono<List<GetStatus>> getPublicTimeline(WebSession session, ServerWebExchange exchange,
+                                               @RequestParam(required = false) String max_id,
+                                               @RequestParam(required = false) Integer limit) {
+    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+
+    // As only the default Public option is used, we directly use LocalTimeline.Public
+    final LocalTimeline timeline = LocalTimeline.Public;
+
+    return Mono.fromFuture(manager.getLocalTimeline(timeline, requestAccountId, statusPointer, limit))
+               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+               .map(statusQueryResults -> {
+                   ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                   return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+               });
+}
+
+@GetMapping("/api/timelines/tag/{hashtag}")
+public Mono<List<GetStatus>> getHashtagTimeline(WebSession session, ServerWebExchange exchange, @PathVariable("hashtag") String hashtag, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+    return Mono.fromFuture(manager.getHashtagTimeline(hashtag, requestAccountId, statusPointer, limit))
+               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+               .map(statusQueryResults -> {
+                   ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                   return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+               });
+}
+
+
     
 }
