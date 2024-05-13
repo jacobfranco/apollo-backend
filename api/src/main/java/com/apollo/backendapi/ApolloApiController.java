@@ -1803,6 +1803,19 @@ public Mono<GetSearch> getSearch(
                });
 }
 
+ /*
+     * Instance/Admin Endpoints
+     * ======================================
+     * - GET /api/instance/rules
+     * ======================================
+     */
+
+     // TODO: This just returns empty list, so maybe need to do something, but it might be handled on frontend
+@GetMapping("/api/instance/rules")
+    public Mono<List<GetRule>> getInstanceRules() {
+        return Mono.just(new ArrayList<>());
+    }
+
 
     
 }
