@@ -1668,4 +1668,12 @@ public class ApolloApiManager {
         return accountIdToDirectMessagesById.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
     }
 
+    // TODO: Idk if this works
+    public CompletableFuture<List<String>> getFollowedHashtags(long accountId) {
+        return hashtagToFollowers.selectAsync(Path.key(accountId).all())
+                .thenApply(entries -> entries.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.toList()));
+    }
+
 }

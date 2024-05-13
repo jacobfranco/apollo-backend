@@ -1696,6 +1696,17 @@ public class ApolloApiController {
                 .flatMap(res -> this.getTag(session, id));
     }
 
+    // TODO: Idk if this works
+    @GetMapping("/api/followed_tags")
+public Mono<List<String>> getFollowedTags(WebSession session) {
+    Long requestAccountId = (Long) session.getAttributes().get("accountId");
+    if (requestAccountId == null) {
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+    
+    return Mono.fromFuture(manager.getFollowedHashtags(requestAccountId));
+}
+
     /*
      * Timeline Endpoints
      * ======================================
