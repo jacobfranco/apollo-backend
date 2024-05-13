@@ -1,5 +1,7 @@
 package com.apollo.backendapi;
 
+import com.google.common.collect.Lists;
+
 import clojure.lang.PersistentVector;
 
 import java.io.*;
@@ -19,6 +21,7 @@ import com.apollo.backendapi.pojos.*;
 import com.rpl.rama.*;
 import com.rpl.rama.cluster.ClusterManagerBase;
 import com.rpl.rama.ops.Ops;
+import com.rpl.rama.diffs.*;
 
 public class ApolloApiManager {
 
@@ -27,6 +30,7 @@ public class ApolloApiManager {
     private static final int DEFAULT_LIMIT = 20;
     private static final int ANCESTORS_LIMIT = 20;
     private static final int DESCENDANTS_LIMIT = 20;
+    private static final int STREAM_QUERY_LIMIT = 50;
 
     // Modules
     public static final String CORE_MODULE_NAME = Core.class.getName();
@@ -63,6 +67,9 @@ public class ApolloApiManager {
     private final PState statusIdToLikers;
     private final PState accountIdToAttachmentStatusIds;
     private final PState accountIdToDirectMessages;
+    private final PState statusIdToConvoId;
+    private final PState accountIdToDirectMessagesById;
+    
 
     // Core Queries
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
@@ -75,6 +82,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromNames;
     private final QueryTopologyClient<StatusQueryResults> getHomeTimeline;
     private final QueryTopologyClient<StatusQueryResults> getDirectTimeline;
+    private final QueryTopologyClient<Map<Integer, List<StatusPointer>>> getHomeTimelinesUntil;
 
     // Relationships Depots
     private final Depot authCodeDepot;
@@ -111,6 +119,7 @@ public class ApolloApiManager {
     private final PState hashtagTrends;
     private final PState statusTrends;
     private final PState accountIdToHashtagActivity;
+    private final PState hashtagToStatusPointers;
     private final PState hashtagToStatusPointersReverse;
 
     // Hashtag Queries
@@ -159,6 +168,8 @@ public class ApolloApiManager {
         statusIdToLikers = cluster.clusterPState(CORE_MODULE_NAME, "$$statusIdToLikers");
         accountIdToAttachmentStatusIds = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToAttachmentStatusIds");
         accountIdToDirectMessages = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToDirectMessages");
+        statusIdToConvoId = cluster.clusterPState(CORE_MODULE_NAME, "$$statusIdToConvoId");
+        accountIdToDirectMessagesById = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToDirectMessagesById");
 
         // Core Queries
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
@@ -171,6 +182,7 @@ public class ApolloApiManager {
         getAccountsFromNames = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromNames");
         getHomeTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getHomeTimeline");
         getDirectTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getDirectTimeline");
+        getHomeTimelinesUntil = cluster.clusterQuery(CORE_MODULE_NAME, "getHomeTimelinesUntil");
 
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -209,6 +221,7 @@ public class ApolloApiManager {
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
         accountIdToHashtagActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToHashtagActivity");
+        hashtagToStatusPointers = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagToStatusPointers");
         hashtagToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagToStatusPointersReverse");
 
         // Hashtag Queries
@@ -1590,6 +1603,69 @@ public class ApolloApiManager {
                                         return new QueryResults<>(results, nextParams == null, nextParams, ApolloApiHelpers.createLinkHeaderParams(nextParams));
                                     });
         });
+    }
+
+    public CompletableFuture<Conversation> getConversationFromStatusId(long accountId, StatusPointer pointer) {
+        return statusIdToConvoId.selectOneAsync(pointer.authorId, Path.key(pointer.statusId).nullToVal(pointer.statusId))
+                                .thenCompose(conversationId -> getConversation.invokeAsync(accountId, conversationId));
+    }
+
+     // reactive queries
+
+     public static class HomeTimelineProxyState implements ProxyState<SortedMap> {
+        public long accountId;
+        public StatusPointer mostRecentStatusPointer;
+        public ProxyState.Callback<SortedMap> callback;
+  
+        public HomeTimelineProxyState(long accountId, StatusPointer mostRecentStatusPointer, ProxyState.Callback<SortedMap> callback) {
+          this.accountId = accountId;
+          this.mostRecentStatusPointer = mostRecentStatusPointer;
+          this.callback = callback;
+        }
+  
+        @Override
+        public SortedMap get() { throw new RuntimeException("Not implemented"); }
+  
+        @Override
+        public void close() throws IOException { }
+      }
+  
+  
+      public void refreshHomeTimelineProxies(List<HomeTimelineProxyState> activeProxies) {
+        List<List<HomeTimelineProxyState>> partitions = Lists.partition(activeProxies, 100);
+        for(List<HomeTimelineProxyState> partition: partitions) {
+          List tuples = new ArrayList();
+          for(HomeTimelineProxyState p: partition) tuples.add(Arrays.asList(p.accountId, p.mostRecentStatusPointer));
+          Map<Integer, List<StatusPointer>> res = getHomeTimelinesUntil.invoke(tuples, 50);
+          for(int i=0; i<partition.size(); i++) {
+            HomeTimelineProxyState p = partition.get(i);
+            List<StatusPointer> pointers = res.get(i);
+            if(!pointers.isEmpty()) p.mostRecentStatusPointer = pointers.get(0);
+            // diff processor doesn't need old/new values since it handles KeyDiff
+            for(int j=pointers.size() - 1; j>=0; j--) p.callback.change(null, new KeyDiff((long)j, new NewValueDiff(pointers.get(j))), null);
+          }
+        }
+      }
+
+    public CompletableFuture<HomeTimelineProxyState> proxyHomeTimeline(long accountId, ProxyState.Callback<SortedMap> callback) {
+        return getHomeTimelinesUntil.invokeAsync(Arrays.asList(Arrays.asList(accountId, new StatusPointer(-1, -1))), 1)
+                                    .thenApply((Map<Integer, List<StatusPointer>> m) -> {
+                                       StatusPointer mostRecent = null;
+                                       if(!m.get(0).isEmpty()) mostRecent = m.get(0).get(0);
+                                       return new HomeTimelineProxyState(accountId, mostRecent, callback);
+                                    });
+    }
+
+    public CompletableFuture<ProxyState<SortedMap>> proxyNotificationsTimeline(long accountId, ProxyState.Callback<SortedMap> callback) {
+        return accountIdToNotificationsTimeline.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
+    }
+
+    public CompletableFuture<ProxyState<SortedMap>> proxyHashtagTimeline(String hashtag, ProxyState.Callback<SortedMap> callback) {
+        return hashtagToStatusPointers.proxyAsync(Path.key(hashtag).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
+    }
+
+    public CompletableFuture<ProxyState<SortedMap>> proxyDirectTimeline(long accountId, ProxyState.Callback<SortedMap> callback) {
+        return accountIdToDirectMessagesById.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
     }
 
 }

@@ -1246,12 +1246,13 @@ public class ApolloApiController {
     }
 
     /*
-     * User Metrics and Data Endpoints
+     * User Metrics, Data, and Actions Endpoints
      * ======================================
      * - GET /api/bookmarks
      * - GET /api/likes
      * - GET /api/reports
      * - GET /api/directory
+     * - POST /api/reports
      * ======================================
      */
 
@@ -1640,7 +1641,7 @@ public class ApolloApiController {
                 .map(GetAttachment::new);
     }
 
-     /*
+    /*
      * Suggestions Endpoints
      * ======================================
      * - GET /api/suggestions
@@ -1648,22 +1649,22 @@ public class ApolloApiController {
      * ======================================
      */
 
-
     @GetMapping("/api/suggestions")
     public Mono<List<GetSuggestion>> getSuggestions(WebSession session) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.getWhoToFollowSuggestions(requestAccountId))
-                   .map(accountWithIds -> accountWithIds.stream().map(a -> new GetSuggestion("global", a)).collect(Collectors.toList()));
+                .map(accountWithIds -> accountWithIds.stream().map(a -> new GetSuggestion("global", a))
+                        .collect(Collectors.toList()));
     }
 
     @DeleteMapping("/api/suggestions/{id}")
     public Mono deleteSuggestion(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.removeFollowSuggestion(requestAccountId, ApolloHelpers.parseAccountId(id)))
-                   .map(res -> new HashMap());
+                .map(res -> new HashMap());
     }
 
-     /*
+    /*
      * Tags Endpoints
      * ======================================
      * - GET /api/tags/{id}
@@ -1676,25 +1677,26 @@ public class ApolloApiController {
     public Mono<GetTag> getTag(WebSession session, @PathVariable("id") String id) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         return Mono.fromFuture(manager.getHashtagStats(id))
-                   .flatMap(stats ->
-                       (requestAccountId == null ? Mono.just(false)
-                                                 : Mono.fromFuture(manager.isFollowingHashtag(requestAccountId, id)))
+                .flatMap(stats -> (requestAccountId == null ? Mono.just(false)
+                        : Mono.fromFuture(manager.isFollowingHashtag(requestAccountId, id)))
                         .map(isFollowing -> ApolloApiHelpers.createGetTag(id, stats, isFollowing)));
     }
 
     @PostMapping("/api/tags/{id}/follow")
     public Mono<GetTag> postFollowTag(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.postFollowHashtag(requestAccountId, id)).flatMap(res -> this.getTag(session, id));
+        return Mono.fromFuture(manager.postFollowHashtag(requestAccountId, id))
+                .flatMap(res -> this.getTag(session, id));
     }
 
     @PostMapping("/api/tags/{id}/unfollow")
     public Mono<GetTag> postUnfollowTag(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.postRemoveFollowHashtag(requestAccountId, id)).flatMap(res -> this.getTag(session, id));
+        return Mono.fromFuture(manager.postRemoveFollowHashtag(requestAccountId, id))
+                .flatMap(res -> this.getTag(session, id));
     }
 
-     /*
+    /*
      * Timeline Endpoints
      * ======================================
      * - GET /api/timelines/home
@@ -1703,119 +1705,130 @@ public class ApolloApiController {
      */
 
     @GetMapping("/api/timelines/home")
-    public Mono<List<GetStatus>> getHomeTimeline(WebSession session, ServerWebExchange exchange, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetStatus>> getHomeTimeline(WebSession session, ServerWebExchange exchange,
+            @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getHomeTimeline(requestAccountId, statusPointer, limit))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(statusQueryResults -> {
-                      ApolloApiHelpers .setStatusLinkHeader(exchange, statusQueryResults);
-                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
     }
 
     @GetMapping("/api/timelines/direct")
-    public Mono<List<GetStatus>> getDirectTimeline(WebSession session, ServerWebExchange exchange, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+    public Mono<List<GetStatus>> getDirectTimeline(WebSession session, ServerWebExchange exchange,
+            @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getDirectTimeline(requestAccountId, statusPointer, limit))
-                   .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                   .map(statusQueryResults -> {
-                       ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
-                       return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-                   });
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
     }
 
-@GetMapping("/api/v1/timelines/public")
-public Mono<List<GetStatus>> getPublicTimeline(WebSession session, ServerWebExchange exchange,
-                                               @RequestParam(required = false) String max_id,
-                                               @RequestParam(required = false) Integer limit) {
-    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
-    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+    @GetMapping("/api/v1/timelines/public")
+    public Mono<List<GetStatus>> getPublicTimeline(WebSession session, ServerWebExchange exchange,
+            @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
 
-    // As only the default Public option is used, we directly use LocalTimeline.Public
-    final LocalTimeline timeline = LocalTimeline.Public;
+        // As only the default Public option is used, we directly use
+        // LocalTimeline.Public
+        final LocalTimeline timeline = LocalTimeline.Public;
 
-    return Mono.fromFuture(manager.getLocalTimeline(timeline, requestAccountId, statusPointer, limit))
-               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-               .map(statusQueryResults -> {
-                   ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
-                   return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-               });
-}
+        return Mono.fromFuture(manager.getLocalTimeline(timeline, requestAccountId, statusPointer, limit))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
+    }
 
-@GetMapping("/api/timelines/tag/{hashtag}")
-public Mono<List<GetStatus>> getHashtagTimeline(WebSession session, ServerWebExchange exchange, @PathVariable("hashtag") String hashtag, @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
-    Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
-    StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
-    return Mono.fromFuture(manager.getHashtagTimeline(hashtag, requestAccountId, statusPointer, limit))
-               .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-               .map(statusQueryResults -> {
-                   ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
-                   return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-               });
-}
+    @GetMapping("/api/timelines/tag/{hashtag}")
+    public Mono<List<GetStatus>> getHashtagTimeline(WebSession session, ServerWebExchange exchange,
+            @PathVariable("hashtag") String hashtag, @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getHashtagTimeline(hashtag, requestAccountId, statusPointer, limit))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
+    }
 
- /*
+    /*
      * Search Endpoints
      * ======================================
      * - GET /api/search
      * ======================================
      */
 
-@GetMapping("/api/search")
-public Mono<GetSearch> getSearch(
-        WebSession session,
-        ServerWebExchange exchange,
-        @RequestParam(required = true) String q,
-        @RequestParam(required = false) String type,
-        @RequestParam(required = false) Boolean resolve,
-        @RequestParam(required = false) Boolean following,
-        @RequestParam(required = false) String account_id,
-        @RequestParam(required = false) Integer limit,
-        @RequestParam(required = false) Long offset,
-        @RequestParam(required = false) Long start_next_id,
-        @RequestParam(required = false) String start_term
-) throws MalformedURLException {
-    long requestAccountId = getMandatoryAccountId(session);
-    List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
-    // TODO: Removed resolveURL bit - verify to see if it still works
-    Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
-    return Mono.zip(Mono.fromFuture((type == null || type.equals("accounts")) && (offset == null || offset == 0L)
-                                    ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
-                                    : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null))),
-                    Mono.fromFuture((type == null || type.equals("statuses")) && (offset == null || offset == 0L)
-                                    ? manager.getStatusSearch(requestAccountId, ApolloHelpers.parseAccountId(account_id), terms, startParams, limit)
-                                    : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<StatusQueryResult, Map>(new ArrayList<>(), true, null, null))),
-                    Mono.fromFuture((type == null || type.equals("hashtags")) && (offset == null || offset == 0L)
-                                    ? manager.getHashtagSearch(terms.get(0), startParams, limit)
-                                    : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map>(new ArrayList<>(), true, null, null))))
-               .map(results -> {
-                   ApolloApiManager.QueryResults<AccountWithId, Map> accounts = results.getT1();
-                   ApolloApiManager.QueryResults<StatusQueryResult, Map> statuses = results.getT2();
-                   ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map> hashtags = results.getT3();
-                   if ("accounts".equals(type)) ApolloApiHelpers.setLinkHeader(exchange, accounts);
-                   else if ("statuses".equals(type)) ApolloApiHelpers.setLinkHeader(exchange, statuses);
-                   else if ("hashtags".equals(type)) ApolloApiHelpers.setLinkHeader(exchange, hashtags);
-                   return new GetSearch(ApolloApiHelpers.createGetAccounts(accounts.results),
-                                        ApolloApiHelpers.createGetStatuses(statuses.results),
-                                        ApolloApiHelpers.createGetTags(hashtags.results));
-               });
-}
+    @GetMapping("/api/search")
+    public Mono<GetSearch> getSearch(
+            WebSession session,
+            ServerWebExchange exchange,
+            @RequestParam(required = true) String q,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Boolean resolve,
+            @RequestParam(required = false) Boolean following,
+            @RequestParam(required = false) String account_id,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Long offset,
+            @RequestParam(required = false) Long start_next_id,
+            @RequestParam(required = false) String start_term) throws MalformedURLException {
+        long requestAccountId = getMandatoryAccountId(session);
+        List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
+        // TODO: Removed resolveURL bit - verify to see if it still works
+        Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
+        return Mono.zip(Mono.fromFuture((type == null || type.equals("accounts")) && (offset == null || offset == 0L)
+                ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
+                : CompletableFuture.completedFuture(
+                        new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null))),
+                Mono.fromFuture((type == null || type.equals("statuses")) && (offset == null || offset == 0L)
+                        ? manager.getStatusSearch(requestAccountId, ApolloHelpers.parseAccountId(account_id), terms,
+                                startParams, limit)
+                        : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<StatusQueryResult, Map>(
+                                new ArrayList<>(), true, null, null))),
+                Mono.fromFuture((type == null || type.equals("hashtags")) && (offset == null || offset == 0L)
+                        ? manager.getHashtagSearch(terms.get(0), startParams, limit)
+                        : CompletableFuture
+                                .completedFuture(new ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map>(
+                                        new ArrayList<>(), true, null, null))))
+                .map(results -> {
+                    ApolloApiManager.QueryResults<AccountWithId, Map> accounts = results.getT1();
+                    ApolloApiManager.QueryResults<StatusQueryResult, Map> statuses = results.getT2();
+                    ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map> hashtags = results.getT3();
+                    if ("accounts".equals(type))
+                        ApolloApiHelpers.setLinkHeader(exchange, accounts);
+                    else if ("statuses".equals(type))
+                        ApolloApiHelpers.setLinkHeader(exchange, statuses);
+                    else if ("hashtags".equals(type))
+                        ApolloApiHelpers.setLinkHeader(exchange, hashtags);
+                    return new GetSearch(ApolloApiHelpers.createGetAccounts(accounts.results),
+                            ApolloApiHelpers.createGetStatuses(statuses.results),
+                            ApolloApiHelpers.createGetTags(hashtags.results));
+                });
+    }
 
- /*
+    /*
      * Instance/Admin Endpoints
      * ======================================
      * - GET /api/instance/rules
      * ======================================
      */
 
-     // TODO: This just returns empty list, so maybe need to do something, but it might be handled on frontend
-@GetMapping("/api/instance/rules")
+    // TODO: This just returns empty list, so maybe need to do something, but it
+    // might be handled on frontend
+    @GetMapping("/api/instance/rules")
     public Mono<List<GetRule>> getInstanceRules() {
         return Mono.just(new ArrayList<>());
     }
 
-
-    
 }
