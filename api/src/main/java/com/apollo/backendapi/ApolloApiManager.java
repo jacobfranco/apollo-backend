@@ -123,6 +123,9 @@ public class ApolloApiManager {
 
     // Search Queries
     private final QueryTopologyClient<Map> profileTermsSearch;
+    private final QueryTopologyClient<Map> statusTermsSearch;
+    private final QueryTopologyClient<Map> hashtagSearch;
+    
 
     // Global Timelines PStates
     private final PState globalTimelines;
@@ -218,6 +221,8 @@ public class ApolloApiManager {
 
         // Search Queries
         profileTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "profileTermsSearch");
+        statusTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "statusTermsSearch");
+        hashtagSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "hashtagSearch");
 
         // Global Timelines PStates:
         globalTimelines = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$globalTimelines");
@@ -1539,6 +1544,52 @@ public class ApolloApiManager {
                   hashtagToStatusPointersReverse.selectOneAsync(Path.key(hashtag, offset).nullToVal(-1L))
                                                 .thenCompose(timelineIndex -> getHashtagTimeline.invokeAsync(hashtag, requestAccountIdMaybe, timelineIndex, limit)),
                 offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<QueryResults<StatusQueryResult, Map>> getStatusSearch(long requestAccountId, Long authorIdMaybe, List<String> terms, Map startParamsMaybe, Integer limitMaybe) {
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        return queryWithPaging(
+            (offset, limit) -> {
+                CompletableFuture<Map> matchListFuture = statusTermsSearch.invokeAsync(authorIdMaybe != null ? authorIdMaybe : requestAccountId, terms, offset, limit);
+                return matchListFuture.thenCompose(result -> {
+                    Map nextParams = ApolloApiHelpers.createSearchParams(result);
+                    List<StatusPointer> matchList = ((List<List>) result.get("matchList")).stream().map(pair -> new StatusPointer((Long) pair.get(0), (Long) pair.get(1))).collect(Collectors.toList());
+                    return getStatusesFromPointers.invokeAsync(requestAccountId, matchList, new QueryFilterOptions(FilterContext.Public, false))
+                                                  .thenApply(statusQueryResults -> {
+                                                      List<StatusQueryResult> filtered = new ArrayList<>();
+                                                      for (StatusResultWithId sqr : statusQueryResults.results) {
+                                                          // if authorIdMaybe is set, we are searching for only a particular user's statuses.
+                                                          // in that case, only include results written by that user (i.e. filter out mentions)
+                                                          if (authorIdMaybe == null || sqr.status.author.accountId == authorIdMaybe) filtered.add(new StatusQueryResult(sqr, statusQueryResults.mentions));
+                                                      }
+                                                      return new QueryResults<>(filtered, nextParams == null, nextParams, ApolloApiHelpers.createLinkHeaderParams(nextParams));
+                                                  });
+                });
+            },
+            startParamsMaybe,
+            Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit),
+            MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<QueryResults<SimpleEntry<String, ItemStats>, Map>> getHashtagSearch(String term, Map startParamsMaybe, Integer limitMaybe) {
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+        CompletableFuture<Map> matchListFuture = hashtagSearch.invokeAsync(term, startParamsMaybe, limit);
+        return matchListFuture.thenCompose(result -> {
+            Map nextParams = ApolloApiHelpers.createSearchParams(result);
+            List<String> matchList = (List<String>) result.get("matchList");
+            return batchHashtagStats.invokeAsync(matchList.stream().distinct().collect(Collectors.toList()))
+                                    .thenApply(hashtagToStats -> {
+                                        if (hashtagToStats == null) hashtagToStats = new HashMap<>();
+                                        List<SimpleEntry<String, ItemStats>> results = new ArrayList<>();
+                                        for (Map.Entry<String, ItemStats> entry : hashtagToStats.entrySet()) {
+                                            results.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
+                                        }
+                                        return new QueryResults<>(results, nextParams == null, nextParams, ApolloApiHelpers.createLinkHeaderParams(nextParams));
+                                    });
+        });
     }
 
 }

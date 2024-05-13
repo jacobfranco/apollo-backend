@@ -21,6 +21,7 @@ import reactor.util.function.Tuple2;
 
 import java.io.*;
 import java.util.*;
+import java.util.AbstractMap.SimpleEntry;
 import java.net.*;
 import java.util.concurrent.CompletableFuture;
 import java.security.NoSuchAlgorithmException;
@@ -46,7 +47,6 @@ public class ApolloApiController {
      * - loginWithAccount
      * - getMandatoryAccountId
      * - validateStatus
-     * - resolveURL
      * - accountAttachment
      * ======================================
      */
@@ -1753,6 +1753,53 @@ public Mono<List<GetStatus>> getHashtagTimeline(WebSession session, ServerWebExc
                .map(statusQueryResults -> {
                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+               });
+}
+
+ /*
+     * Search Endpoints
+     * ======================================
+     * - GET /api/search
+     * ======================================
+     */
+
+@GetMapping("/api/search")
+public Mono<GetSearch> getSearch(
+        WebSession session,
+        ServerWebExchange exchange,
+        @RequestParam(required = true) String q,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) Boolean resolve,
+        @RequestParam(required = false) Boolean following,
+        @RequestParam(required = false) String account_id,
+        @RequestParam(required = false) Integer limit,
+        @RequestParam(required = false) Long offset,
+        @RequestParam(required = false) Long start_next_id,
+        @RequestParam(required = false) String start_term
+) throws MalformedURLException {
+    long requestAccountId = getMandatoryAccountId(session);
+    List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
+    // TODO: Removed resolveURL bit - verify to see if it still works
+    Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
+    return Mono.zip(Mono.fromFuture((type == null || type.equals("accounts")) && (offset == null || offset == 0L)
+                                    ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
+                                    : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null))),
+                    Mono.fromFuture((type == null || type.equals("statuses")) && (offset == null || offset == 0L)
+                                    ? manager.getStatusSearch(requestAccountId, ApolloHelpers.parseAccountId(account_id), terms, startParams, limit)
+                                    : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<StatusQueryResult, Map>(new ArrayList<>(), true, null, null))),
+                    Mono.fromFuture((type == null || type.equals("hashtags")) && (offset == null || offset == 0L)
+                                    ? manager.getHashtagSearch(terms.get(0), startParams, limit)
+                                    : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map>(new ArrayList<>(), true, null, null))))
+               .map(results -> {
+                   ApolloApiManager.QueryResults<AccountWithId, Map> accounts = results.getT1();
+                   ApolloApiManager.QueryResults<StatusQueryResult, Map> statuses = results.getT2();
+                   ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map> hashtags = results.getT3();
+                   if ("accounts".equals(type)) ApolloApiHelpers.setLinkHeader(exchange, accounts);
+                   else if ("statuses".equals(type)) ApolloApiHelpers.setLinkHeader(exchange, statuses);
+                   else if ("hashtags".equals(type)) ApolloApiHelpers.setLinkHeader(exchange, hashtags);
+                   return new GetSearch(ApolloApiHelpers.createGetAccounts(accounts.results),
+                                        ApolloApiHelpers.createGetStatuses(statuses.results),
+                                        ApolloApiHelpers.createGetTags(hashtags.results));
                });
 }
 
