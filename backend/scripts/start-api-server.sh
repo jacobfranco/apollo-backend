@@ -1,10 +1,14 @@
 #!/bin/bash
 # This script is used to start the Spring Boot application located in the /api directory.
-# It sets the JVM argument -Xss2m for the running application.
+# It sets the JVM arguments so that it can run. 
 #
 # This will prevent from triggering a mysterious StackOverflow Exception on startup.  
 # This originally happened on my really old machine, but it was still happening on 
 # a newer machine as well.  Your results may vary.   
+#
+# It also gets rid of directories starting with ipc in the /tmp directory (again, your results may vary)
+# This is so that the device doesn't run out of space.  There might be a be a better way to do this, but I'm 
+# novice Linux user and felt like this was the easiest way.  
 #
 # Instructions for Use:
 # 1. Ensure this script is executable:
@@ -23,6 +27,9 @@
 #    Alternatively, if there is a better way to solve this problem, be my guest.  
 #
 
+# Remove any directories starting with ipc in the /tmp directory
+rm -rf /tmp/ipc*
+
 # Run mvn clean install, can probably be removed later but its useful for now
 mvn clean install
 
@@ -34,4 +41,3 @@ cd "$DIR"/../../api
 
 # Start the Spring Boot application with the specified JVM arguments.
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xss2m -XX:ReservedCodeCacheSize=256m"
-
