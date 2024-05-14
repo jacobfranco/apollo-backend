@@ -137,7 +137,7 @@ public class ApolloApiManager {
     
 
     // Global Timelines PStates
-    private final PState globalTimelines;
+    private final PState localTimeline;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -238,7 +238,7 @@ public class ApolloApiManager {
         hashtagSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "hashtagSearch");
 
         // Global Timelines PStates:
-        globalTimelines = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$globalTimelines");
+        localTimeline = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$localTimeline");
 
     }
 
