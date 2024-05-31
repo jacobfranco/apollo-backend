@@ -1,10 +1,14 @@
 #!/bin/bash
+
 # This script is used to start the Spring Boot application located in the /api directory.
-# It sets the JVM arguments so that it can run. 
+#
+# It sets the JVM arguments so that it can run more efficiently 
 #
 # This will prevent from triggering a mysterious StackOverflow Exception on startup.  
 # This originally happened on my really old machine, but it was still happening on 
 # a newer machine as well.  Your results may vary.   
+#
+# Also running this locally takes up a lot of CPU, your results may also vary.  
 #
 # It also gets rid of directories starting with ipc in the /tmp directory (again, your results may vary)
 # This is so that the device doesn't run out of space.  There might be a be a better way to do this, but I'm 
@@ -39,5 +43,18 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Navigate to the api directory from the script's directory
 cd "$DIR"/../../api
 
-# Start the Spring Boot application with the specified JVM arguments.
-mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Xss2m -XX:ReservedCodeCacheSize=256m"
+# Start the Spring Boot application with optimized JVM arguments
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="\
+-Xss2m \
+-Xmx2048m \
+-XX:+UseG1GC \
+-XX:MaxGCPauseMillis=200 \
+-XX:+ParallelRefProcEnabled \
+-XX:InitiatingHeapOccupancyPercent=45 \
+-XX:G1ReservePercent=15 \
+-XX:ReservedCodeCacheSize=256m \
+-XX:ConcGCThreads=4 \
+-XX:ParallelGCThreads=4 \
+-XX:+HeapDumpOnOutOfMemoryError \
+-XX:HeapDumpPath=/tmp \
+-Djava.security.egd=file:/dev/./urandom"
