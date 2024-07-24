@@ -146,7 +146,7 @@ public class ApolloApiApplication {
         for (int i = 0; i < 50; i++) {
             ts += weekMillis / 50;
             statusDepot.append(new AddStatus(UUID.randomUUID().toString(), new Status(aliceId, StatusContent.normal(new NormalStatusContent(i + " Hello, world!", StatusVisibility.Public)), ts)));
-            statusDepot.append(new AddStatus(UUID.randomUUID().toString(), new Status(bobId, StatusContent.normal(new NormalStatusContent(i + " #vanlife https://github.com", StatusVisibility.Public)), ts)));
+            statusDepot.append(new AddStatus(UUID.randomUUID().toString(), new Status(bobId, StatusContent.normal(new NormalStatusContent(i + " #LeagueOfLegends https://github.com", StatusVisibility.Public)), ts)));
             statusDepot.append(new AddStatus(UUID.randomUUID().toString(), new Status(aliceId, StatusContent.normal(new NormalStatusContent(i + " @bob this is a direct message", StatusVisibility.Direct)), ts)));
             long aliceDirect = accountIdToStatuses.selectOne(Path.key(aliceId).first().first());
             statusDepot.append(new AddStatus(UUID.randomUUID().toString(), new Status(bobId, StatusContent.reply(new ReplyStatusContent(i + " @alice this is also a direct message", StatusVisibility.Direct, new StatusPointer(aliceId, aliceDirect))), ts)));
