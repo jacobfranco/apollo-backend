@@ -1842,4 +1842,33 @@ public Mono<List<String>> getFollowedTags(WebSession session) {
         return Mono.just(new ArrayList<>());
     }
 
+    /*
+     * ESports Endpoints
+     * ======================================
+     * - GET /api/instance/rules
+     * ======================================
+     */
+
+     // TODO: Convert these to Mono ? 
+
+     @GetMapping("/api/esports/matches")
+    public CompletableFuture<ResponseEntity<Map<Long, Map<String, Object>>>> getMatches() {
+        return manager.getMatches()
+            .thenApply(matches -> ResponseEntity.ok(matches));
+    }
+
+    @GetMapping("api/esports/matches/{id}")
+    public CompletableFuture<ResponseEntity<Map<String, Object>>> getMatchById(@PathVariable long id) {
+        return manager.getMatchById(id)
+            .thenApply(match -> match != null ? ResponseEntity.ok(match) : ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("api/esports/update-cache")
+    public CompletableFuture<ResponseEntity<String>> updateMatchCache() {
+        return manager.updateMatchCache()
+            .thenApply(success -> success ? 
+                ResponseEntity.ok("Cache updated successfully") : 
+                ResponseEntity.internalServerError().body("Failed to update cache"));
+    }
+
 }

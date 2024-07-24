@@ -102,6 +102,9 @@ public class ApolloApiApplication {
         Search searchModule = new Search();
         ipc.launchModule(searchModule, new LaunchConfig(2, 1));
 
+        ESports eSportsModule = new ESports();
+        ipc.launchModule(eSportsModule, new LaunchConfig(2, 1));
+
         // Set the controller manager to a new instance of ApolloApiManager with the IPC
         ApolloApiController.manager = new ApolloApiManager(ipc);
 

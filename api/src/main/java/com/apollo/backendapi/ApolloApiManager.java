@@ -14,6 +14,13 @@ import java.util.stream.Collectors;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
 
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.cdimascio.dotenv.Dotenv;
+
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
@@ -24,6 +31,12 @@ import com.rpl.rama.ops.Ops;
 import com.rpl.rama.diffs.*;
 
 public class ApolloApiManager {
+
+     // Load environment variables
+     private static final Dotenv dotenv = Dotenv.load();
+     private static final String API_BASE_URL = "https://atlas.abiosgaming.com/v3/";
+     private static final String API_SECRET = dotenv.get("API_SECRET");
+ 
 
     private static final int MAX_PAGING_ITERATIONS = 10;
     private static final int MAX_LIMIT = 40;
@@ -39,6 +52,7 @@ public class ApolloApiManager {
     public static final String SEARCH_MODULE_NAME = Search.class.getName();
     public static final String NOTIFICATIONS_MODULE_NAME = Notifications.class.getName();
     public static final String GLOBAL_TIMELINES_MODULE_NAME = GlobalTimelines.class.getName();
+    public static final String ESPORTS_MODULE_NAME = ESports.class.getName();
 
     // Core Depots
     private final Depot accountDepot;
@@ -134,10 +148,19 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Map> profileTermsSearch;
     private final QueryTopologyClient<Map> statusTermsSearch;
     private final QueryTopologyClient<Map> hashtagSearch;
-    
+
 
     // Global Timelines PStates
     private final PState localTimeline;
+
+    // ESports Depots
+    private final Depot matchesDepot;
+
+    // ESports PStates
+    private final PState matchIdToMatchData;
+
+    // ESports Queries 
+    private final QueryTopologyClient<Map<Long, Map<String, Object>>> getProcessedMatches;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -239,6 +262,15 @@ public class ApolloApiManager {
 
         // Global Timelines PStates:
         localTimeline = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$localTimeline");
+
+         // ESports Depots
+         matchesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchesDepot");
+
+         // ESports PStates
+         matchIdToMatchData = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$matchIdToMatchData");
+ 
+         // ESports Queries
+         getProcessedMatches = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getProcessedMatches");
 
     }
 
@@ -1674,6 +1706,91 @@ public class ApolloApiManager {
                 .thenApply(entries -> entries.stream()
                         .map(Object::toString)
                         .collect(Collectors.toList()));
+    }
+
+    /*
+     * TODO: ESports Module Methods
+     * 
+     * Currently just for testing out the connection
+     * We will need to figure out how to actually process the data in the form that we need
+     */
+
+    /**
+     * Fetches match data from the external API
+     * @param params Query parameters for the API request
+     * @return A CompletableFuture containing the raw JSON response
+     */
+    private CompletableFuture<String> fetchMatchData(String params) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                HttpGet request = new HttpGet(API_BASE_URL + "matches?" + params);
+                request.setHeader("Abios-Secret", API_SECRET);
+                
+                return EntityUtils.toString(httpClient.execute(request).getEntity());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Processes the raw JSON data and stores it in the Rama cluster
+     * @param jsonData Raw JSON data from the API
+     * @return A CompletableFuture containing the processed match data
+     */
+    private CompletableFuture<List<Map<String, Object>>> processMatchData(String jsonData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> processedData = mapper.readValue(jsonData, List.class);
+                return processedData;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Fetches and processes match data, then stores it in the Rama cluster
+     * @param params Query parameters for the API request
+     * @return A CompletableFuture indicating the success of the operation
+     */
+    public CompletableFuture<Boolean> fetchAndProcessMatches(String params) {
+        return fetchMatchData(params)
+            .thenCompose(this::processMatchData)
+            .thenCompose(processedData -> {
+                if (processedData != null) {
+                    return matchesDepot.appendAsync(processedData);
+                }
+                return CompletableFuture.completedFuture(false);
+            });
+    }
+
+    /**
+     * Retrieves processed match data from the Rama cluster
+     * @return A CompletableFuture containing a map of match IDs to match data
+     */
+    public CompletableFuture<Map<Long, Map<String, Object>>> getMatches() {
+        return getProcessedMatches.invokeAsync();
+    }
+
+    /**
+     * Retrieves a specific match by its ID
+     * @param matchId The ID of the match to retrieve
+     * @return A CompletableFuture containing the match data, or null if not found
+     */
+    public CompletableFuture<Map<String, Object>> getMatchById(long matchId) {
+        return matchIdToMatchData.selectOneAsync(Path.key(matchId));
+    }
+
+    /**
+     * Updates the local cache with the latest match data
+     * @return A CompletableFuture indicating the success of the operation
+     */
+    public CompletableFuture<Boolean> updateMatchCache() {
+        return fetchAndProcessMatches("take=50"); // Fetch the latest 50 matches
     }
 
 }
