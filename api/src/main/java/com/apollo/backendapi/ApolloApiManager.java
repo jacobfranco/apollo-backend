@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import clojure.lang.PersistentVector;
 
 import java.io.*;
+import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
@@ -32,10 +33,10 @@ import com.rpl.rama.diffs.*;
 
 public class ApolloApiManager {
 
-     // Load environment variables
+     // Load environment variables for Abios
      private static final Dotenv dotenv = Dotenv.load();
      private static final String API_BASE_URL = "https://atlas.abiosgaming.com/v3/";
-     private static final String API_SECRET = dotenv.get("API_SECRET");
+     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
  
 
     private static final int MAX_PAGING_ITERATIONS = 10;
@@ -153,14 +154,6 @@ public class ApolloApiManager {
     // Global Timelines PStates
     private final PState localTimeline;
 
-    // ESports Depots
-    private final Depot matchesDepot;
-
-    // ESports PStates
-    private final PState matchIdToMatchData;
-
-    // ESports Queries 
-    private final QueryTopologyClient<Map<Long, Map<String, Object>>> getProcessedMatches;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -262,15 +255,6 @@ public class ApolloApiManager {
 
         // Global Timelines PStates:
         localTimeline = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$localTimeline");
-
-         // ESports Depots
-         matchesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchesDepot");
-
-         // ESports PStates
-         matchIdToMatchData = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$matchIdToMatchData");
- 
-         // ESports Queries
-         getProcessedMatches = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getProcessedMatches");
 
     }
 
@@ -1715,82 +1699,28 @@ public class ApolloApiManager {
      * We will need to figure out how to actually process the data in the form that we need
      */
 
-    /**
-     * Fetches match data from the external API
-     * @param params Query parameters for the API request
-     * @return A CompletableFuture containing the raw JSON response
-     */
-    private CompletableFuture<String> fetchMatchData(String params) {
-        return CompletableFuture.supplyAsync(() -> {
-            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                HttpGet request = new HttpGet(API_BASE_URL + "matches?" + params);
-                request.setHeader("Abios-Secret", API_SECRET);
-                
-                return EntityUtils.toString(httpClient.execute(request).getEntity());
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        });
-    }
-
-    /**
-     * Processes the raw JSON data and stores it in the Rama cluster
-     * @param jsonData Raw JSON data from the API
-     * @return A CompletableFuture containing the processed match data
-     */
-    private CompletableFuture<List<Map<String, Object>>> processMatchData(String jsonData) {
+       public CompletableFuture<String> fetchMatches(String filter, String order, int skip, int take) {
+        String url = API_BASE_URL + "matches?filter=" + filter + "&order=" + order + "&skip=" + skip + "&take=" + take;
+        
         return CompletableFuture.supplyAsync(() -> {
             try {
-                ObjectMapper mapper = new ObjectMapper();
-                List<Map<String, Object>> processedData = mapper.readValue(jsonData, List.class);
-                return processedData;
+                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Abios-Secret", ABIOS_SECRET);
+
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    return response.toString();
+                }
             } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+                throw new RuntimeException("Error fetching matches", e);
             }
         });
     }
 
-    /**
-     * Fetches and processes match data, then stores it in the Rama cluster
-     * @param params Query parameters for the API request
-     * @return A CompletableFuture indicating the success of the operation
-     */
-    public CompletableFuture<Boolean> fetchAndProcessMatches(String params) {
-        return fetchMatchData(params)
-            .thenCompose(this::processMatchData)
-            .thenCompose(processedData -> {
-                if (processedData != null) {
-                    return matchesDepot.appendAsync(processedData);
-                }
-                return CompletableFuture.completedFuture(false);
-            });
-    }
-
-    /**
-     * Retrieves processed match data from the Rama cluster
-     * @return A CompletableFuture containing a map of match IDs to match data
-     */
-    public CompletableFuture<Map<Long, Map<String, Object>>> getMatches() {
-        return getProcessedMatches.invokeAsync();
-    }
-
-    /**
-     * Retrieves a specific match by its ID
-     * @param matchId The ID of the match to retrieve
-     * @return A CompletableFuture containing the match data, or null if not found
-     */
-    public CompletableFuture<Map<String, Object>> getMatchById(long matchId) {
-        return matchIdToMatchData.selectOneAsync(Path.key(matchId));
-    }
-
-    /**
-     * Updates the local cache with the latest match data
-     * @return A CompletableFuture indicating the success of the operation
-     */
-    public CompletableFuture<Boolean> updateMatchCache() {
-        return fetchAndProcessMatches("take=50"); // Fetch the latest 50 matches
-    }
 
 }

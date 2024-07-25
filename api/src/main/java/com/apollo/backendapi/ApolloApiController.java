@@ -1845,30 +1845,21 @@ public Mono<List<String>> getFollowedTags(WebSession session) {
     /*
      * ESports Endpoints
      * ======================================
-     * - GET /api/instance/rules
+     * -
      * ======================================
      */
 
-     // TODO: Convert these to Mono ? 
-
-     @GetMapping("/api/esports/matches")
-    public CompletableFuture<ResponseEntity<Map<Long, Map<String, Object>>>> getMatches() {
-        return manager.getMatches()
-            .thenApply(matches -> ResponseEntity.ok(matches));
-    }
-
-    @GetMapping("api/esports/matches/{id}")
-    public CompletableFuture<ResponseEntity<Map<String, Object>>> getMatchById(@PathVariable long id) {
-        return manager.getMatchById(id)
-            .thenApply(match -> match != null ? ResponseEntity.ok(match) : ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("api/esports/update-cache")
-    public CompletableFuture<ResponseEntity<String>> updateMatchCache() {
-        return manager.updateMatchCache()
-            .thenApply(success -> success ? 
-                ResponseEntity.ok("Cache updated successfully") : 
-                ResponseEntity.internalServerError().body("Failed to update cache"));
-    }
+     @GetMapping("/api/matches")
+     public Mono<ResponseEntity<String>> getMatches(
+             @RequestParam(required = false, defaultValue = "lifecycle=upcoming") String filter,
+             @RequestParam(required = false, defaultValue = "id") String order,
+             @RequestParam(required = false, defaultValue = "0") int skip,
+             @RequestParam(required = false, defaultValue = "1") int take) {
+         
+         return Mono.fromFuture(manager.fetchMatches(filter, order, skip, take))
+                 .map(response -> ResponseEntity.ok(response))
+                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                                            .body("Error fetching matches: " + e.getMessage())));
+     }
 
 }
