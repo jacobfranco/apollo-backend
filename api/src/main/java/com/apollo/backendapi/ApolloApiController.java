@@ -1698,14 +1698,14 @@ public class ApolloApiController {
 
     // TODO: Idk if this works
     @GetMapping("/api/followed_tags")
-public Mono<List<String>> getFollowedTags(WebSession session) {
-    Long requestAccountId = (Long) session.getAttributes().get("accountId");
-    if (requestAccountId == null) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    public Mono<List<String>> getFollowedTags(WebSession session) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId");
+        if (requestAccountId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        return Mono.fromFuture(manager.getFollowedHashtags(requestAccountId));
     }
-    
-    return Mono.fromFuture(manager.getFollowedHashtags(requestAccountId));
-}
 
     /*
      * Timeline Endpoints
@@ -1852,14 +1852,18 @@ public Mono<List<String>> getFollowedTags(WebSession session) {
      @GetMapping("/api/matches")
      public Mono<ResponseEntity<String>> getMatches(
              @RequestParam(required = false, defaultValue = "lifecycle=upcoming") String filter,
-             @RequestParam(required = false, defaultValue = "id") String order,
-             @RequestParam(required = false, defaultValue = "0") int skip,
-             @RequestParam(required = false, defaultValue = "1") int take) {
+             @RequestParam(required = false, defaultValue = "id-asc") String order,
+             @RequestParam(defaultValue = "0") int skip,
+             @RequestParam(defaultValue = "10") int take) {
          
          return Mono.fromFuture(manager.fetchMatches(filter, order, skip, take))
                  .map(response -> ResponseEntity.ok(response))
-                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                                            .body("Error fetching matches: " + e.getMessage())));
+                 .onErrorResume(e -> {
+                     e.printStackTrace();
+                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                                    .body("Error fetching matches: " + e.getMessage() + 
+                                                          "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
+                 });
      }
 
 }

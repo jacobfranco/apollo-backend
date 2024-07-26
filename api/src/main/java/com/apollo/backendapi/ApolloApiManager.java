@@ -6,6 +6,7 @@ import clojure.lang.PersistentVector;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
@@ -35,7 +36,7 @@ public class ApolloApiManager {
 
      // Load environment variables for Abios
      private static final Dotenv dotenv = Dotenv.load();
-     private static final String API_BASE_URL = "https://atlas.abiosgaming.com/v3/";
+     private static final String ABIOS_BASE_URL = "https://atlas.abiosgaming.com/v3/";
      private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
  
 
@@ -1699,14 +1700,38 @@ public class ApolloApiManager {
      * We will need to figure out how to actually process the data in the form that we need
      */
 
-       public CompletableFuture<String> fetchMatches(String filter, String order, int skip, int take) {
-        String url = API_BASE_URL + "matches?filter=" + filter + "&order=" + order + "&skip=" + skip + "&take=" + take;
+     public CompletableFuture<String> fetchMatches(String filter, String order, int skip, int take) {
+        StringBuilder urlBuilder = new StringBuilder(ABIOS_BASE_URL)
+            .append("matches?");
         
+        if (filter != null && !filter.isEmpty()) {
+            urlBuilder.append("filter=").append(URLEncoder.encode(filter)).append("&");
+        }
+        if (order != null && !order.isEmpty()) {
+            urlBuilder.append("order=").append(URLEncoder.encode(order)).append("&");
+        }
+        urlBuilder.append("skip=").append(skip).append("&");
+        urlBuilder.append("take=").append(take);
+
+        final String finalUrl = urlBuilder.toString();
+
         return CompletableFuture.supplyAsync(() -> {
             try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                HttpURLConnection connection = (HttpURLConnection) new URL(finalUrl).openConnection();
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("Abios-Secret", ABIOS_SECRET);
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode >= 400) {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        throw new RuntimeException("API error response: " + responseCode + " " + connection.getResponseMessage() + "\n" + response.toString());
+                    }
+                }
 
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                     StringBuilder response = new StringBuilder();
@@ -1717,7 +1742,7 @@ public class ApolloApiManager {
                     return response.toString();
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Error fetching matches", e);
+                throw new RuntimeException("Error fetching matches: " + e.getMessage(), e);
             }
         });
     }
