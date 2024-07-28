@@ -1850,7 +1850,9 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/matches")
+   /*  TODO: Maybe remove this
+
+    *  @GetMapping("/api/matches")
     public Mono<ResponseEntity<String>> getMatches(
             @RequestParam(required = false, defaultValue = "lifecycle=upcoming") String filter,
             @RequestParam(required = false, defaultValue = "id-asc") String order,
@@ -1866,7 +1868,9 @@ public class ApolloApiController {
                                     "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
                 });
     }
+    */
 
+    
     @GetMapping("/api/lol/upcoming-series")
     @Cacheable(value = "upcomingLoLSeries", key = "#skip + '-' + #take")
     public Mono<ResponseEntity<String>> getUpcomingLoLSeries(

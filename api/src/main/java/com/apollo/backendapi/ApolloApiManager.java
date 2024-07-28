@@ -1704,7 +1704,9 @@ public class ApolloApiManager {
      * We will need to figure out how to actually process the data in the form that we need
      */
 
-     public CompletableFuture<String> fetchMatches(String filter, String order, int skip, int take) {
+    /* TODO: Maybe remove this 
+    
+     *  public CompletableFuture<String> fetchMatches(String filter, String order, int skip, int take) {
         StringBuilder urlBuilder = new StringBuilder(ABIOS_BASE_URL)
             .append("matches?");
         
@@ -1750,6 +1752,7 @@ public class ApolloApiManager {
             }
         });
     }
+     */
 
     // fetch upcoming lol series
 
