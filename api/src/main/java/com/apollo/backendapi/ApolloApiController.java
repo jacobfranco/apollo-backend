@@ -9,6 +9,7 @@ import org.springframework.web.server.*;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.*;
 import org.springframework.http.codec.multipart.Part;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.web.reactive.function.client.*;
 import org.springframework.http.codec.multipart.FilePart;
@@ -1849,21 +1850,63 @@ public class ApolloApiController {
      * ======================================
      */
 
-     @GetMapping("/api/matches")
-     public Mono<ResponseEntity<String>> getMatches(
-             @RequestParam(required = false, defaultValue = "lifecycle=upcoming") String filter,
-             @RequestParam(required = false, defaultValue = "id-asc") String order,
-             @RequestParam(defaultValue = "0") int skip,
-             @RequestParam(defaultValue = "10") int take) {
-         
-         return Mono.fromFuture(manager.fetchMatches(filter, order, skip, take))
-                 .map(response -> ResponseEntity.ok(response))
-                 .onErrorResume(e -> {
-                     e.printStackTrace();
-                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                                    .body("Error fetching matches: " + e.getMessage() + 
-                                                          "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
-                 });
-     }
+    @GetMapping("/api/matches")
+    public Mono<ResponseEntity<String>> getMatches(
+            @RequestParam(required = false, defaultValue = "lifecycle=upcoming") String filter,
+            @RequestParam(required = false, defaultValue = "id-asc") String order,
+            @RequestParam(defaultValue = "0") int skip,
+            @RequestParam(defaultValue = "10") int take) {
+
+        return Mono.fromFuture(manager.fetchMatches(filter, order, skip, take))
+                .map(response -> ResponseEntity.ok(response))
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Error fetching matches: " + e.getMessage() +
+                                    "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
+                });
+    }
+
+    @GetMapping("/api/lol/upcoming-series")
+    @Cacheable(value = "upcomingLoLSeries", key = "#skip + '-' + #take")
+    public Mono<ResponseEntity<String>> getUpcomingLoLSeries(
+            @RequestParam(defaultValue = "0") int skip,
+            @RequestParam(defaultValue = "10") int take) {
+
+        return Mono.fromFuture(manager.fetchLoLUpcomingSeries(skip, take))
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Error fetching upcoming LoL series: " + e.getMessage() +
+                                    "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
+                });
+    }
+
+    @GetMapping("/api/lol/all-upcoming-series")
+    @Cacheable(value = "allUpcomingLoLSeries")
+    public Mono<ResponseEntity<String>> getAllUpcomingLoLSeries() {
+        return Mono.fromFuture(manager.fetchAllLoLUpcomingSeries())
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Error fetching all upcoming LoL series: " + e.getMessage() +
+                                    "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
+                });
+    }
+
+    @GetMapping("/api/lol/upcoming-series-count")
+@Cacheable(value = "upcomingLoLSeriesCount")
+public Mono<ResponseEntity<String>> getUpcomingLoLSeriesCount() {
+    return Mono.fromFuture(manager.countAllLoLUpcomingSeries())
+        .map(count -> ResponseEntity.ok(String.format("{\"totalSeriesCount\": %d}", count)))
+        .onErrorResume(e -> {
+            e.printStackTrace();
+            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error counting upcoming LoL series: " + e.getMessage() +
+                    "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
+        });
+}
 
 }
