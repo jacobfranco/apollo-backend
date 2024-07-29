@@ -1700,58 +1700,6 @@ public class ApolloApiManager {
     /*
      * TODO: ESports Module Methods
      * 
-     * Currently just for testing out the connection
-     * We will need to figure out how to actually process the data in the form that we need
-     */
-
-    /* TODO: Maybe remove this 
-    
-     *  public CompletableFuture<String> fetchMatches(String filter, String order, int skip, int take) {
-        StringBuilder urlBuilder = new StringBuilder(ABIOS_BASE_URL)
-            .append("matches?");
-        
-        if (filter != null && !filter.isEmpty()) {
-            urlBuilder.append("filter=").append(URLEncoder.encode(filter)).append("&");
-        }
-        if (order != null && !order.isEmpty()) {
-            urlBuilder.append("order=").append(URLEncoder.encode(order)).append("&");
-        }
-        urlBuilder.append("skip=").append(skip).append("&");
-        urlBuilder.append("take=").append(take);
-
-        final String finalUrl = urlBuilder.toString();
-
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(finalUrl).openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Abios-Secret", ABIOS_SECRET);
-
-                int responseCode = connection.getResponseCode();
-                if (responseCode >= 400) {
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
-                        StringBuilder response = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            response.append(line);
-                        }
-                        throw new RuntimeException("API error response: " + responseCode + " " + connection.getResponseMessage() + "\n" + response.toString());
-                    }
-                }
-
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    return response.toString();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Error fetching matches: " + e.getMessage(), e);
-            }
-        });
-    }
      */
 
     // fetch upcoming lol series
@@ -1797,6 +1745,9 @@ public class ApolloApiManager {
         });
     }
 
+    // Utilize other method to fetch all upcoming series
+    // TODO: Maybe adjust to be more flexible ? But I'm not sure a use case where it would need to be since it's goal is to simply fetch all upcoming
+
     public CompletableFuture<String> fetchAllLoLUpcomingSeries() {
     final int take = 50; // Adjust as necessary, or use your existing default value
     List<CompletableFuture<String>> futures = new ArrayList<>();
@@ -1826,26 +1777,6 @@ public class ApolloApiManager {
     });
 }
 
-public CompletableFuture<Integer> countAllLoLUpcomingSeries() {
-    final int take = 50; // Adjust as necessary, or use your existing default value
-    AtomicInteger skip = new AtomicInteger(0);
-    AtomicInteger totalSeriesCount = new AtomicInteger(0);
-
-    return CompletableFuture.supplyAsync(() -> {
-        while (true) {
-            String result = fetchLoLUpcomingSeries(skip.get(), take).join();
-            int currentBatchCount = new JSONArray(result).length();
-            totalSeriesCount.addAndGet(currentBatchCount);
-            
-            // Check if the number of items returned is less than the 'take' amount, indicating end of data
-            if (currentBatchCount < take) {
-                break;
-            }
-            skip.addAndGet(take);
-        }
-        return totalSeriesCount.get();
-    });
-}
 
 
 
