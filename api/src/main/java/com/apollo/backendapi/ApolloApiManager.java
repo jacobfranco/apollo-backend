@@ -11,6 +11,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -159,6 +162,12 @@ public class ApolloApiManager {
     // Global Timelines PStates
     private final PState localTimeline;
 
+    // ESports Depots
+    private final Depot seriesDepot;
+
+    // ESports PStates
+    private final PState seriesIdToSeries;
+
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -258,8 +267,15 @@ public class ApolloApiManager {
         statusTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "statusTermsSearch");
         hashtagSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "hashtagSearch");
 
-        // Global Timelines PStates:
+        // Global Timelines PStates
         localTimeline = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$localTimeline");
+
+        // ESports Depots
+        seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
+
+        // ESports PStates
+        seriesIdToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$seriesIdToSeries");
+
 
     }
 
@@ -1746,7 +1762,6 @@ public class ApolloApiManager {
     }
 
     // Utilize other method to fetch all upcoming series
-    // TODO: Maybe adjust to be more flexible ? But I'm not sure a use case where it would need to be since it's goal is to simply fetch all upcoming
 
     public CompletableFuture<String> fetchAllLoLUpcomingSeries() {
     final int take = 50; // Adjust as necessary, or use your existing default value
@@ -1777,10 +1792,99 @@ public class ApolloApiManager {
     });
 }
 
+public CompletableFuture<String> fetchLoLSeries(int skip, int take) {
+    StringBuilder urlBuilder = new StringBuilder(ABIOS_BASE_URL)
+        .append("series?");
+    urlBuilder.append("filter=").append(URLEncoder.encode("game.id=2")).append("&");
+    urlBuilder.append("order=").append(URLEncoder.encode("start-desc")).append("&"); // Get newest first
+    urlBuilder.append("skip=").append(skip).append("&");
+    urlBuilder.append("take=").append(take);
+    final String finalUrl = urlBuilder.toString();
 
+    return CompletableFuture.supplyAsync(() -> {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(finalUrl).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Abios-Secret", ABIOS_SECRET);
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode >= 400) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
+                    StringBuilder response = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    throw new RuntimeException("API error response: " + responseCode + " " + connection.getResponseMessage() + "\n" + response.toString());
+                }
+            }
 
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                return response.toString();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching LoL series: " + e.getMessage(), e);
+        }
+    });
+}
 
+public CompletableFuture<List<Series>> fetchAllLoLSeries() {
+    final int take = 50; 
+    List<CompletableFuture<String>> futures = new ArrayList<>();
+    AtomicInteger skip = new AtomicInteger(0);
 
+    return CompletableFuture.supplyAsync(() -> {
+        while (true) {
+            CompletableFuture<String> future = fetchLoLSeries(skip.get(), take);
+            String result = future.join();
+            futures.add(future);
+
+            JSONArray jsonArray = new JSONArray(result);
+            if (jsonArray.length() < take) {
+                break;
+            }
+            skip.addAndGet(take);
+        }
+        return futures;
+    }).thenApplyAsync(allFutures -> {
+        List<Series> allSeries = new ArrayList<>();
+        for (CompletableFuture<String> future : allFutures) {
+            String jsonResult = future.join();
+            JSONArray jsonArray = new JSONArray(jsonResult);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                Series series = parseJsonToSeries(jsonObject);
+                allSeries.add(series);
+            }
+        }
+        return allSeries;
+    });
+}
+
+public void fetchAndProcessAllLoLSeries(Depot seriesDepot) {
+    final int take = 50;
+    AtomicInteger skip = new AtomicInteger(0);
+
+    while (true) {
+        String result = fetchLoLSeries(skip.get(), take).join();
+        JSONArray jsonArray = new JSONArray(result);
+        
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            seriesDepot.append(jsonObject.toString());
+        }
+
+        if (jsonArray.length() < take) {
+            break;
+        }
+        skip.addAndGet(take);
+    }
+}
 
 
 }

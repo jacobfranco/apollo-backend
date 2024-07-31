@@ -682,5 +682,100 @@ struct RemoveFollowSuggestion {
   2: required AccountId targetId;
 }
 
+// ESports stuff 
+
+struct Series {
+    1: i32 id
+    2: string title
+    3: string start
+    4: string end
+    5: string lifecycle
+    6: i32 tier
+    7: i32 best_of
+    8: list<i32> chain_ids
+    9: bool streamed
+    10: BracketPosition bracket_position
+    11: i32 tournament_id
+    12: i32 substage_id
+    13: i32 game_id
+    14: Format format
+    15: optional string postponed_from
+    16: optional string deleted_at
+    17: list<Participant> participants
+    18: list<i32> match_ids
+    19: list<Caster> casters
+    20: list<Broadcaster> broadcasters
+    21: bool has_incident_report
+    22: GameVersion game_version
+    23: Coverage coverage
+    24: i32 resource_version
+}
+
+struct BracketPosition {
+    1: string part
+    2: i32 col
+    3: i32 offset
+}
+
+struct Format {
+    1: i32 best_of
+}
+
+struct ParticipantStats {
+    1: i32 kills
+    2: i32 placement
+}
+
+struct Participant {
+    1: i32 seed
+    2: i32 score
+    3: bool forfeit
+    4: i32 roster_id
+    5: bool winner
+    6: ParticipantStats stats
+}
+
+struct Caster {
+    1: bool primary
+    2: i32 caster_id
+}
+
+struct Broadcast {
+    1: string external_id
+    2: i32 language_id
+}
+
+struct Broadcaster {
+    1: i32 id
+    2: string name
+    3: string external_id
+    4: i32 platform_id
+    5: i32 broadcast_default_language_id
+    6: list<Broadcast> broadcasts
+    7: bool official
+}
+
+struct GameVersion {
+    1: string uuid
+    2: string date
+    3: string description
+}
+
+struct CoverageData {
+    1: string expectation
+    2: string fact
+}
+
+struct Coverage {
+    1: CoverageData live_api
+    2: CoverageData live_cv
+    3: CoverageData realtime_api
+    4: CoverageData realtime_server
+    5: CoverageData postgame_api
+    6: CoverageData postgame_server
+}
+
+
+
 
 

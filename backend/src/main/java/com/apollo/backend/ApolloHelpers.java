@@ -52,6 +52,10 @@ public class ApolloHelpers {
     public ExtractItem() { super("item"); }
   }
 
+  public static class ExtractSeriesId extends ExtractField {
+    public ExtractSeriesId() { super("id"); }
+  }
+
   public static class ExtractTargetAuthorId implements RamaFunction1<Object, Long> {
     @Override
     public Long invoke(Object o) {
