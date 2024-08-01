@@ -1850,7 +1850,8 @@ public class ApolloApiController {
      * ======================================
      */
 
-     // TODO: These will need to query the modules instead -- also do not need to be cacheable 
+    // TODO: These will need to query the modules instead -- also do not need to be
+    // cacheable
 
     @GetMapping("/api/lol/upcoming-series")
     @Cacheable(value = "upcomingLoLSeries", key = "#skip + '-' + #take")
@@ -1879,6 +1880,27 @@ public class ApolloApiController {
                             .body("Error fetching all upcoming LoL series: " + e.getMessage() +
                                     "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
                 });
+    }
+
+    // New endpoints
+    @GetMapping("/series")
+    public List<Series> getAllSeries() {
+        return manager.getAllSeries();
+    }
+
+    @GetMapping("/series/{seriesId}")
+    public Series getSeriesById(@PathVariable int seriesId) {
+        return manager.getSeriesById(seriesId);
+    }
+
+    @GetMapping("/series/game/{gameId}")
+    public List<Series> getSeriesByGame(@PathVariable int gameId) {
+        return manager.getSeriesByGame(gameId);
+    }
+
+    @GetMapping("/series/upcoming")
+    public List<Series> getUpcomingSeries() {
+        return manager.getUpcomingSeries();
     }
 
 }

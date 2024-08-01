@@ -1833,58 +1833,33 @@ public CompletableFuture<String> fetchLoLSeries(int skip, int take) {
     });
 }
 
-public CompletableFuture<List<Series>> fetchAllLoLSeries() {
-    final int take = 50; 
-    List<CompletableFuture<String>> futures = new ArrayList<>();
-    AtomicInteger skip = new AtomicInteger(0);
+// New methods
 
-    return CompletableFuture.supplyAsync(() -> {
-        while (true) {
-            CompletableFuture<String> future = fetchLoLSeries(skip.get(), take);
-            String result = future.join();
-            futures.add(future);
 
-            JSONArray jsonArray = new JSONArray(result);
-            if (jsonArray.length() < take) {
-                break;
-            }
-            skip.addAndGet(take);
-        }
-        return futures;
-    }).thenApplyAsync(allFutures -> {
-        List<Series> allSeries = new ArrayList<>();
-        for (CompletableFuture<String> future : allFutures) {
-            String jsonResult = future.join();
-            JSONArray jsonArray = new JSONArray(jsonResult);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                Series series = parseJsonToSeries(jsonObject);
-                allSeries.add(series);
-            }
-        }
-        return allSeries;
-    });
+public List<Series> getAllSeries() {
+    return seriesIdToSeries.selectAll().values().stream()
+        .map(obj -> (Series) obj)
+        .collect(Collectors.toList());
 }
 
-public void fetchAndProcessAllLoLSeries(Depot seriesDepot) {
-    final int take = 50;
-    AtomicInteger skip = new AtomicInteger(0);
-
-    while (true) {
-        String result = fetchLoLSeries(skip.get(), take).join();
-        JSONArray jsonArray = new JSONArray(result);
-        
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            seriesDepot.append(jsonObject.toString());
-        }
-
-        if (jsonArray.length() < take) {
-            break;
-        }
-        skip.addAndGet(take);
-    }
+public Series getSeriesById(int seriesId) {
+    return (Series) seriesIdToSeries.selectOne(Path.key(seriesId));
 }
 
+public List<Series> getSeriesByGame(int gameId) {
+    return seriesIdToSeries.select(
+        Ops.FILTER.create(Ops.VAL, (Series s) -> s.getGame_id() == gameId)
+    ).values().stream()
+        .map(obj -> (Series) obj)
+        .collect(Collectors.toList());
+}
+
+public List<Series> getUpcomingSeries() {
+    return seriesIdToSeries.select(
+        Ops.FILTER.create(Ops.VAL, (Series s) -> "upcoming".equals(s.getLifecycle()))
+    ).values().stream()
+        .map(obj -> (Series) obj)
+        .collect(Collectors.toList());
+}
 
 }
