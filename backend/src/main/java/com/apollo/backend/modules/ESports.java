@@ -5,8 +5,9 @@ import com.rpl.rama.module.*;
 import com.rpl.rama.ops.*;
 import com.apollo.backend.data.*;
 import org.asynchttpclient.*;
+import com.rpl.rama.integration.*;
 
-import com.apollo.backendapi.AbiosApiClient;
+import com.apollo.backend.AbiosApiClient;
 
 import java.util.List;
 import java.util.Map;
