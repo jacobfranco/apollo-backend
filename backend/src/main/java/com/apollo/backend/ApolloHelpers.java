@@ -2,8 +2,12 @@ package com.apollo.backend;
 
 import com.apollo.backend.data.*;
 import com.apollo.backend.ops.*;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rpl.rama.*;
+import com.rpl.rama.Helpers;
 import com.rpl.rama.ops.*;
 
 import java.lang.reflect.Field;
@@ -433,5 +437,18 @@ public class ApolloHelpers {
     else if (content.isSetFolloweeStatus()) return content.getFolloweeStatus();
     else throw new RuntimeException("Unexpected notification content: " + content);
   }
+
+  // ESports Helpers
+public static List<Series> parseJsonToSeriesList(String jsonData) {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    try {
+        return mapper.readValue(jsonData, new TypeReference<List<Series>>(){});
+    } catch (JsonProcessingException e) {
+        // Handle exception
+        e.printStackTrace();
+        return new ArrayList<>();
+    }
+}
   
 }

@@ -1,31 +1,40 @@
 package com.apollo.backend;
 
-import org.asynchttpclient.*;
-import org.asynchttpclient.netty.NettyResponse;
-import java.util.concurrent.CompletableFuture;
-import java.util.Map;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import java.io.IOException;
 
 public class AbiosApiClient {
-    private final AsyncHttpClient client;
-    private final String apiKey;
+    private static final String BASE_URL = "https://atlas.abiosgaming.com/v3/";
+    private final String apiSecret;
+    private final HttpClient httpClient;
 
-    public AbiosApiClient(AsyncHttpClient client, String apiKey) {
-        this.client = client;
-        this.apiKey = apiKey;
+    public AbiosApiClient(String apiSecret) {
+        this.apiSecret = apiSecret;
+        this.httpClient = HttpClient.newHttpClient();
     }
 
-    public CompletableFuture<String> getSeries(Map<String, String> params) {
-        String url = "https://atlas.abiosgaming.com/v3/series";
-        RequestBuilder request = client.prepareGet(url)
-            .addQueryParam("filter", params.get("filter"))
-            .addQueryParam("order", params.get("order"))
-            .addQueryParam("skip", params.get("skip"))
-            .addQueryParam("take", params.get("take"))
-            .addHeader("Abios-Secret", apiKey);
-        return request.execute()
-            .toCompletableFuture()
-            .thenApply(NettyResponse::getResponseBody);
+    public String getSeries(String filter, String order, int skip, int take) throws IOException, InterruptedException {
+        return makeRequest("series", filter, order, skip, take);
     }
 
-    // Add other API methods here as needed
+    public String getPlayers(String filter, String order, int skip, int take) throws IOException, InterruptedException {
+        return makeRequest("players", filter, order, skip, take);
+    }
+
+    private String makeRequest(String endpoint, String filter, String order, int skip, int take) throws IOException, InterruptedException {
+        String queryParams = String.format("?filter=%s&order=%s&skip=%d&take=%d", 
+            filter, order, skip, take);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + endpoint + queryParams))
+            .header("Abios-Secret", apiSecret)
+            .GET()
+            .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
 }

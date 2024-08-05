@@ -81,6 +81,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
             (Class<? extends TBase<?, ?>>) RemoveStatusFromFilter.class,
             (Class<? extends TBase<?, ?>>) RemoveStatusWithId.class,
             (Class<? extends TBase<?, ?>>) ReplyStatusContent.class,
+            (Class<? extends TBase<?, ?>>) Series.class,
             (Class<? extends TBase<?, ?>>) Status.class,
             (Class<? extends TBase<?, ?>>) StatusContent.class,
             (Class<? extends TBase<?, ?>>) StatusMetadata.class,

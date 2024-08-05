@@ -1850,57 +1850,5 @@ public class ApolloApiController {
      * ======================================
      */
 
-    // TODO: These will need to query the modules instead -- also do not need to be
-    // cacheable
-
-    @GetMapping("/api/lol/upcoming-series")
-    @Cacheable(value = "upcomingLoLSeries", key = "#skip + '-' + #take")
-    public Mono<ResponseEntity<String>> getUpcomingLoLSeries(
-            @RequestParam(defaultValue = "0") int skip,
-            @RequestParam(defaultValue = "10") int take) {
-
-        return Mono.fromFuture(manager.fetchLoLUpcomingSeries(skip, take))
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    e.printStackTrace();
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("Error fetching upcoming LoL series: " + e.getMessage() +
-                                    "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
-                });
-    }
-
-    @GetMapping("/api/lol/all-upcoming-series")
-    @Cacheable(value = "allUpcomingLoLSeries")
-    public Mono<ResponseEntity<String>> getAllUpcomingLoLSeries() {
-        return Mono.fromFuture(manager.fetchAllLoLUpcomingSeries())
-                .map(ResponseEntity::ok)
-                .onErrorResume(e -> {
-                    e.printStackTrace();
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body("Error fetching all upcoming LoL series: " + e.getMessage() +
-                                    "\nCause: " + (e.getCause() != null ? e.getCause().getMessage() : "Unknown")));
-                });
-    }
-
-    // New endpoints
-    @GetMapping("/series")
-    public List<Series> getAllSeries() {
-        return manager.getAllSeries();
-    }
-
-    @GetMapping("/series/{seriesId}")
-    public Series getSeriesById(@PathVariable int seriesId) {
-        return manager.getSeriesById(seriesId);
-    }
-
-    @GetMapping("/series/game/{gameId}")
-    public List<Series> getSeriesByGame(@PathVariable int gameId) {
-        return manager.getSeriesByGame(gameId);
-    }
-
-    @GetMapping("/series/upcoming")
-    public List<Series> getUpcomingSeries() {
-        return manager.getUpcomingSeries();
-    }
-
+   
 }

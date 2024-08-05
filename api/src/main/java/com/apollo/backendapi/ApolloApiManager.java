@@ -43,8 +43,9 @@ public class ApolloApiManager {
 
      // Load environment variables for Abios
      private static final Dotenv dotenv = Dotenv.load();
-     private static final String ABIOS_BASE_URL = "https://atlas.abiosgaming.com/v3/";
      private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
+
+    private final AbiosApiClient apiClient;
  
 
     private static final int MAX_PAGING_ITERATIONS = 10;
@@ -170,6 +171,8 @@ public class ApolloApiManager {
 
 
     public ApolloApiManager(ClusterManagerBase cluster) {
+
+        this.apiClient = new AbiosApiClient(ABIOS_SECRET);
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
@@ -1718,148 +1721,33 @@ public class ApolloApiManager {
      * 
      */
 
-    // fetch upcoming lol series
-
-    public CompletableFuture<String> fetchLoLUpcomingSeries(int skip, int take) {
-        StringBuilder urlBuilder = new StringBuilder(ABIOS_BASE_URL)
-            .append("series?");
-        
-        urlBuilder.append("filter=").append(URLEncoder.encode("lifecycle=upcoming,game.id=2")).append("&");
-        urlBuilder.append("order=").append(URLEncoder.encode("start-asc")).append("&");
-        urlBuilder.append("skip=").append(skip).append("&");
-        urlBuilder.append("take=").append(take);
-        
-        final String finalUrl = urlBuilder.toString();
-        
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                HttpURLConnection connection = (HttpURLConnection) new URL(finalUrl).openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Abios-Secret", ABIOS_SECRET);
-                int responseCode = connection.getResponseCode();
-                if (responseCode >= 400) {
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
-                        StringBuilder response = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            response.append(line);
-                        }
-                        throw new RuntimeException("API error response: " + responseCode + " " + connection.getResponseMessage() + "\n" + response.toString());
-                    }
-                }
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    return response.toString();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Error fetching LoL upcoming series: " + e.getMessage(), e);
-            }
-        });
-    }
-
-    // Utilize other method to fetch all upcoming series
-
-    public CompletableFuture<String> fetchAllLoLUpcomingSeries() {
-    final int take = 50; // Adjust as necessary, or use your existing default value
-    List<CompletableFuture<String>> futures = new ArrayList<>();
-    AtomicInteger skip = new AtomicInteger(0);
-
-    return CompletableFuture.supplyAsync(() -> {
-        while (true) {
-            CompletableFuture<String> future = fetchLoLUpcomingSeries(skip.get(), take);
-            String result = future.join();
-            futures.add(future);
-            // Check if the number of items returned is less than the 'take' amount, indicating end of data
-            if (new JSONArray(result).length() < take) {
-                break;
-            }
-            skip.addAndGet(take);
-        }
-        return futures;
-    }).thenApplyAsync(allFutures -> {
-        StringBuilder combinedResult = new StringBuilder("[");
-        for (CompletableFuture<String> future : allFutures) {
-            combinedResult.append(future.join()).append(",");
-        }
-        // Remove the trailing comma and close the JSON array
-        combinedResult.setLength(combinedResult.length() - 1);
-        combinedResult.append("]");
-        return combinedResult.toString();
-    });
-}
-
-public CompletableFuture<String> fetchLoLSeries(int skip, int take) {
-    StringBuilder urlBuilder = new StringBuilder(ABIOS_BASE_URL)
-        .append("series?");
-    urlBuilder.append("filter=").append(URLEncoder.encode("game.id=2")).append("&");
-    urlBuilder.append("order=").append(URLEncoder.encode("start-desc")).append("&"); // Get newest first
-    urlBuilder.append("skip=").append(skip).append("&");
-    urlBuilder.append("take=").append(take);
-    final String finalUrl = urlBuilder.toString();
-
-    return CompletableFuture.supplyAsync(() -> {
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(finalUrl).openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Abios-Secret", ABIOS_SECRET);
-            
-            int responseCode = connection.getResponseCode();
-            if (responseCode >= 400) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    throw new RuntimeException("API error response: " + responseCode + " " + connection.getResponseMessage() + "\n" + response.toString());
-                }
-            }
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                return response.toString();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Error fetching LoL series: " + e.getMessage(), e);
-        }
-    });
-}
-
 // New methods
 
-
-public List<Series> getAllSeries() {
-    return seriesIdToSeries.selectAll().values().stream()
-        .map(obj -> (Series) obj)
-        .collect(Collectors.toList());
+public CompletableFuture<Void> fetchAndStoreSeries(String filter, String order, int skip, int take) {
+    return CompletableFuture.runAsync(() -> {
+        try {
+            String seriesData = apiClient.getSeries(filter, order, skip, take);
+            List<Series> seriesList = ApolloHelpers.parseJsonToSeriesList(seriesData);
+            
+            List<CompletableFuture<Boolean>> futures = new ArrayList<>();
+            for (Series series : seriesList) {
+                futures.add(seriesDepot.appendAsync(series));
+            }
+            
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            
+            // Handle pagination if needed
+            if (seriesList.size() == take) {
+                fetchAndStoreSeries(filter, order, skip + take, take);
+            }
+        } catch (IOException | InterruptedException e) {
+            // Handle exceptions
+            e.printStackTrace();
+        }
+    });
 }
 
-public Series getSeriesById(int seriesId) {
-    return (Series) seriesIdToSeries.selectOne(Path.key(seriesId));
-}
 
-public List<Series> getSeriesByGame(int gameId) {
-    return seriesIdToSeries.select(
-        Ops.FILTER.create(Ops.VAL, (Series s) -> s.getGame_id() == gameId)
-    ).values().stream()
-        .map(obj -> (Series) obj)
-        .collect(Collectors.toList());
-}
 
-public List<Series> getUpcomingSeries() {
-    return seriesIdToSeries.select(
-        Ops.FILTER.create(Ops.VAL, (Series s) -> "upcoming".equals(s.getLifecycle()))
-    ).values().stream()
-        .map(obj -> (Series) obj)
-        .collect(Collectors.toList());
-}
 
 }
