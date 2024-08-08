@@ -1,6 +1,7 @@
 package com.apollo.backend.serialization;
 
 import com.apollo.backend.data.*;
+
 import org.apache.thrift.TBase;
 import java.util.*;
 
@@ -81,7 +82,30 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
             (Class<? extends TBase<?, ?>>) RemoveStatusFromFilter.class,
             (Class<? extends TBase<?, ?>>) RemoveStatusWithId.class,
             (Class<? extends TBase<?, ?>>) ReplyStatusContent.class,
-            (Class<? extends TBase<?, ?>>) Series.class,
+            (Class<? extends TBase<?, ?>>) ChainItem.class,
+            (Class<? extends TBase<?, ?>>) Tournament.class,
+            (Class<? extends TBase<?, ?>>) Substage.class,
+            (Class<? extends TBase<?, ?>>) Game.class,
+            (Class<? extends TBase<?, ?>>) BracketPosition.class,
+            (Class<? extends TBase<?, ?>>) Format.class,
+            (Class<? extends TBase<?, ?>>) Roster.class,
+            (Class<? extends TBase<?, ?>>) ParticipantStats.class,
+            (Class<? extends TBase<?, ?>>) Participant.class,
+            (Class<? extends TBase<?, ?>>) Match.class,
+            (Class<? extends TBase<?, ?>>) CasterInfo.class,
+            (Class<? extends TBase<?, ?>>) Caster.class,
+            (Class<? extends TBase<?, ?>>) Language.class,
+            (Class<? extends TBase<?, ?>>) Platform.class,
+            (Class<? extends TBase<?, ?>>) BroadcastDefaults.class,
+            (Class<? extends TBase<?, ?>>) BroadcasterInfo.class,
+            (Class<? extends TBase<?, ?>>) Broadcast.class,
+            (Class<? extends TBase<?, ?>>) Broadcaster.class,
+            (Class<? extends TBase<?, ?>>) Release.class,
+            (Class<? extends TBase<?, ?>>) GameVersion.class,
+            (Class<? extends TBase<?, ?>>) CoverageStatus.class,
+            (Class<? extends TBase<?, ?>>) CoverageType.class,
+            (Class<? extends TBase<?, ?>>) CoverageData.class,
+            (Class<? extends TBase<?, ?>>) Coverage.class,
             (Class<? extends TBase<?, ?>>) Status.class,
             (Class<? extends TBase<?, ?>>) StatusContent.class,
             (Class<? extends TBase<?, ?>>) StatusMetadata.class,

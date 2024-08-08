@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rpl.rama.*;
 import com.rpl.rama.Helpers;
 import com.rpl.rama.ops.*;
+import com.strobel.decompiler.languages.Language;
+
+import rpl.shaded.scala.compat.Platform;
 
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -438,17 +441,7 @@ public class ApolloHelpers {
     else throw new RuntimeException("Unexpected notification content: " + content);
   }
 
-  // ESports Helpers
-public static List<Series> parseJsonToSeriesList(String jsonData) {
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    try {
-        return mapper.readValue(jsonData, new TypeReference<List<Series>>(){});
-    } catch (JsonProcessingException e) {
-        // Handle exception
-        e.printStackTrace();
-        return new ArrayList<>();
-    }
 }
-  
-}
+
+
+

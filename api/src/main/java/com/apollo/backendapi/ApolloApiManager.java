@@ -27,7 +27,10 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 import com.apollo.backend.*;
@@ -40,6 +43,8 @@ import com.rpl.rama.ops.Ops;
 import com.rpl.rama.diffs.*;
 
 public class ApolloApiManager {
+
+    private ObjectMapper objectMapper;
 
      // Load environment variables for Abios
      private static final Dotenv dotenv = Dotenv.load();
@@ -173,6 +178,9 @@ public class ApolloApiManager {
     public ApolloApiManager(ClusterManagerBase cluster) {
 
         this.apiClient = new AbiosApiClient(ABIOS_SECRET);
+
+        this.objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
@@ -1727,27 +1735,143 @@ public CompletableFuture<Void> fetchAndStoreSeries(String filter, String order, 
     return CompletableFuture.runAsync(() -> {
         try {
             String seriesData = apiClient.getSeries(filter, order, skip, take);
-            List<Series> seriesList = ApolloHelpers.parseJsonToSeriesList(seriesData);
-            
+            List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
             List<CompletableFuture<Boolean>> futures = new ArrayList<>();
-            for (Series series : seriesList) {
-                futures.add(seriesDepot.appendAsync(series));
+            
+            for (PostSeries postSeries : postSeriesList) {
+                Series thriftSeries = convertToThriftSeries(postSeries);
+                futures.add(seriesDepot.appendAsync(thriftSeries));
             }
             
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
             
             // Handle pagination if needed
-            if (seriesList.size() == take) {
+            if (postSeriesList.size() == take) {
                 fetchAndStoreSeries(filter, order, skip + take, take);
             }
-        } catch (IOException | InterruptedException e) {
-            // Handle exceptions
+        } catch (Exception e) {
+            // Log the error and potentially retry or handle it appropriately
             e.printStackTrace();
         }
     });
 }
 
-
-
-
+private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Exception {
+    return objectMapper.readValue(jsonData, new TypeReference<List<PostSeries>>(){});
 }
+
+    private Series convertToThriftSeries(PostSeries postSeries) {
+        return new Series(
+            postSeries.id,
+            postSeries.title,
+            postSeries.start.toEpochMilli(),
+            postSeries.end.toEpochMilli(),
+            postSeries.lifecycle,
+            postSeries.tier,
+            postSeries.bestOf,
+            postSeries.chain.stream().map(this::convertChainItem).collect(Collectors.toList()),
+            postSeries.streamed,
+            convertBracketPosition(postSeries.bracketPosition),
+            convertTournament(postSeries.tournament),
+            convertSubstage(postSeries.substage),
+            convertGame(postSeries.game),
+            new Format(postSeries.format.bestOf),
+            postSeries.participants.stream().map(this::convertParticipant).collect(Collectors.toList()),
+            postSeries.matches.stream().map(this::convertMatch).collect(Collectors.toList()),
+            postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()),
+            postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()),
+            postSeries.hasIncidentReport,
+            convertGameVersion(postSeries.gameVersion),
+            convertCoverage(postSeries.coverage),
+            postSeries.resourceVersion
+        );
+    }
+
+    private ChainItem convertChainItem(PostSeries.ChainItem item) {
+        return new ChainItem(item.id);
+    }
+
+    private Tournament convertTournament(PostSeries.Tournament t) {
+        return new Tournament(t.id);
+    }
+
+    private Substage convertSubstage(PostSeries.Substage s) {
+        return new Substage(s.id);
+    }
+
+    private Game convertGame(PostSeries.Game g) {
+        return new Game(g.id);
+    }
+
+    private BracketPosition convertBracketPosition(PostSeries.BracketPosition bp) {
+        return new BracketPosition(bp.part, bp.col, bp.offset);
+    }
+
+    private Participant convertParticipant(PostSeries.Participant p) {
+        return new Participant(
+            p.seed,
+            p.score,
+            p.forfeit,
+            new Roster(p.roster.id),
+            p.winner,
+            new ParticipantStats(p.stats.kills, p.stats.placement)
+        );
+    }
+
+    private Match convertMatch(PostSeries.Match m) {
+        return new Match(m.id);
+    }
+
+    private Caster convertCaster(PostSeries.Caster c) {
+        return new Caster(c.primary, new CasterInfo(c.caster.id));
+    }
+
+    private Broadcaster convertBroadcaster(PostSeries.Broadcaster b) {
+        return new Broadcaster(
+            convertBroadcasterInfo(b.broadcaster),
+            b.broadcasts.stream().map(this::convertBroadcast).collect(Collectors.toList()),
+            b.official
+        );
+    }
+
+    private BroadcasterInfo convertBroadcasterInfo(PostSeries.BroadcasterInfo bi) {
+        return new BroadcasterInfo(
+            bi.id,
+            bi.name,
+            bi.externalId,
+            new Platform(bi.platform.id),
+            new BroadcastDefaults(new Language(bi.broadcastDefaults.language.id))
+        );
+    }
+
+    private Broadcast convertBroadcast(PostSeries.Broadcast b) {
+        return new Broadcast(b.externalId, new Language(b.language.id));
+    }
+
+    private GameVersion convertGameVersion(PostSeries.GameVersion gv) {
+        PostSeries.Release r = gv.release;
+        return new GameVersion(new Release(r.uuid, r.date, r.description));
+    }
+
+    private Coverage convertCoverage(PostSeries.Coverage c) {
+        PostSeries.CoverageData cd = c.data;
+        return new Coverage(new CoverageData(
+            convertCoverageType(cd.live),
+            convertCoverageType(cd.realtime),
+            convertCoverageType(cd.postgame)
+        ));
+    }
+
+    private CoverageType convertCoverageType(PostSeries.CoverageType ct) {
+        return new CoverageType(
+            convertCoverageStatus(ct.api),
+            ct.cv != null ? convertCoverageStatus(ct.cv) : null,
+            ct.server != null ? convertCoverageStatus(ct.server) : null
+        );
+    }
+
+    private CoverageStatus convertCoverageStatus(PostSeries.CoverageStatus cs) {
+        return new CoverageStatus(cs.expectation, cs.fact);
+    }
+}
+
