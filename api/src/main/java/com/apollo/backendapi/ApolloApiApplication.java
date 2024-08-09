@@ -22,6 +22,8 @@ import java.io.*;
 import java.security.*;
 import java.util.*;
 
+import javax.annotation.PostConstruct;
+
 // Define the main class and entry point for a Spring Boot application
 @SpringBootApplication
 public class ApolloApiApplication {
@@ -108,6 +110,8 @@ public class ApolloApiApplication {
         // Set the controller manager to a new instance of ApolloApiManager with the IPC
         ApolloApiController.manager = new ApolloApiManager(ipc);
 
+        ApolloApiController.manager.fetchAndStoreSeries("", "", 0, 0);
+
         // Time manipulation for data entries
         int weekMillis = 1000 * 60 * 60 * 24 * 7;
         long ts = System.currentTimeMillis() - weekMillis;
@@ -176,4 +180,28 @@ public class ApolloApiApplication {
         return ipc;
     }
 
+    @PostConstruct
+    public void fetchESportsData() {
+        System.out.println("Application context loaded. Fetching eSports data...");
+        
+        if (ApolloApiController.manager != null) {
+            fetchSeries();
+            // Add more data fetching calls here as needed
+            // fetchTeams();
+            // fetchMatches();
+        } else {
+            System.err.println("ApolloApiController.manager is null. Unable to fetch eSports data.");
+        }
+    }
+
+    private void fetchSeries() {
+        ApolloApiController.manager.fetchAndStoreSeries("", "", 0, 0)
+            .thenRun(() -> System.out.println("Series fetching completed"))
+            .exceptionally(ex -> {
+                System.err.println("Error fetching series: " + ex.getMessage());
+                return null;
+            });
+    }
+
+    
 }

@@ -172,8 +172,15 @@ public class ApolloApiManager {
     private final Depot seriesDepot;
 
     // ESports PStates
-    private final PState seriesIdToSeries;
+    private final PState idToSeries;
+    private final PState tournamentToSeriesIds;
+    private final PState gameToSeriesIds;
+    private final PState startTimeToUpcomingSeriesIds;
+    private final PState idToOngoingSeriesId;
+    private final PState endTimeToCompletedSeriesIds;
 
+    // ESports Queries
+    // TODO: Fill in needed queries
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -285,7 +292,16 @@ public class ApolloApiManager {
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
 
         // ESports PStates
-        seriesIdToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$seriesIdToSeries");
+        idToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$idToSeries");
+        tournamentToSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$tournamentToSeriesIds");
+        gameToSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$gameToSeriesIds");
+        startTimeToUpcomingSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$startTimeToUpcomingSeriesIds");
+        idToOngoingSeriesId = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$idToOngoingSeriesId");
+        endTimeToCompletedSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$endTimeToCompletedSeriesIds");
+
+        // ESports Queries
+        // TODO: Implement
+
 
 
     }
@@ -1739,6 +1755,7 @@ public CompletableFuture<Void> fetchAndStoreSeries(String filter, String order, 
             List<CompletableFuture<Boolean>> futures = new ArrayList<>();
             
             for (PostSeries postSeries : postSeriesList) {
+                System.out.println(postSeries);
                 Series thriftSeries = convertToThriftSeries(postSeries);
                 futures.add(seriesDepot.appendAsync(thriftSeries));
             }
