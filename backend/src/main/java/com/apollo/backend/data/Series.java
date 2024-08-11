@@ -14,28 +14,28 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
   private static final org.apache.thrift.protocol.TField TITLE_FIELD_DESC = new org.apache.thrift.protocol.TField("title", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField START_FIELD_DESC = new org.apache.thrift.protocol.TField("start", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField END_FIELD_DESC = new org.apache.thrift.protocol.TField("end", org.apache.thrift.protocol.TType.I64, (short)4);
-  private static final org.apache.thrift.protocol.TField POSTPONED_FROM_FIELD_DESC = new org.apache.thrift.protocol.TField("postponed_from", org.apache.thrift.protocol.TType.I64, (short)5);
-  private static final org.apache.thrift.protocol.TField DELETED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("deleted_at", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField POSTPONED_FROM_FIELD_DESC = new org.apache.thrift.protocol.TField("postponedFrom", org.apache.thrift.protocol.TType.I64, (short)5);
+  private static final org.apache.thrift.protocol.TField DELETED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("deletedAt", org.apache.thrift.protocol.TType.I64, (short)6);
   private static final org.apache.thrift.protocol.TField LIFECYCLE_FIELD_DESC = new org.apache.thrift.protocol.TField("lifecycle", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField TIER_FIELD_DESC = new org.apache.thrift.protocol.TField("tier", org.apache.thrift.protocol.TType.I32, (short)8);
-  private static final org.apache.thrift.protocol.TField BEST_OF_FIELD_DESC = new org.apache.thrift.protocol.TField("best_of", org.apache.thrift.protocol.TType.I32, (short)9);
-  private static final org.apache.thrift.protocol.TField CHAIN_FIELD_DESC = new org.apache.thrift.protocol.TField("chain", org.apache.thrift.protocol.TType.LIST, (short)10);
+  private static final org.apache.thrift.protocol.TField BEST_OF_FIELD_DESC = new org.apache.thrift.protocol.TField("bestOf", org.apache.thrift.protocol.TType.I32, (short)9);
+  private static final org.apache.thrift.protocol.TField CHAIN_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("chainIds", org.apache.thrift.protocol.TType.LIST, (short)10);
   private static final org.apache.thrift.protocol.TField STREAMED_FIELD_DESC = new org.apache.thrift.protocol.TField("streamed", org.apache.thrift.protocol.TType.BOOL, (short)11);
-  private static final org.apache.thrift.protocol.TField BRACKET_POSITION_FIELD_DESC = new org.apache.thrift.protocol.TField("bracket_position", org.apache.thrift.protocol.TType.STRUCT, (short)12);
+  private static final org.apache.thrift.protocol.TField BRACKET_POSITION_FIELD_DESC = new org.apache.thrift.protocol.TField("bracketPosition", org.apache.thrift.protocol.TType.STRUCT, (short)12);
   private static final org.apache.thrift.protocol.TField PARTICIPANTS_FIELD_DESC = new org.apache.thrift.protocol.TField("participants", org.apache.thrift.protocol.TType.LIST, (short)13);
-  private static final org.apache.thrift.protocol.TField TOURNAMENT_FIELD_DESC = new org.apache.thrift.protocol.TField("tournament", org.apache.thrift.protocol.TType.STRUCT, (short)14);
-  private static final org.apache.thrift.protocol.TField SUBSTAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("substage", org.apache.thrift.protocol.TType.STRUCT, (short)15);
-  private static final org.apache.thrift.protocol.TField GAME_FIELD_DESC = new org.apache.thrift.protocol.TField("game", org.apache.thrift.protocol.TType.STRUCT, (short)16);
-  private static final org.apache.thrift.protocol.TField MATCHES_FIELD_DESC = new org.apache.thrift.protocol.TField("matches", org.apache.thrift.protocol.TType.LIST, (short)17);
+  private static final org.apache.thrift.protocol.TField TOURNAMENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tournamentId", org.apache.thrift.protocol.TType.I32, (short)14);
+  private static final org.apache.thrift.protocol.TField SUBSTAGE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("substageId", org.apache.thrift.protocol.TType.I32, (short)15);
+  private static final org.apache.thrift.protocol.TField GAME_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("gameId", org.apache.thrift.protocol.TType.I32, (short)16);
+  private static final org.apache.thrift.protocol.TField MATCH_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("matchIds", org.apache.thrift.protocol.TType.LIST, (short)17);
   private static final org.apache.thrift.protocol.TField CASTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("casters", org.apache.thrift.protocol.TType.LIST, (short)18);
   private static final org.apache.thrift.protocol.TField BROADCASTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasters", org.apache.thrift.protocol.TType.LIST, (short)19);
-  private static final org.apache.thrift.protocol.TField HAS_INCIDENT_REPORT_FIELD_DESC = new org.apache.thrift.protocol.TField("has_incident_report", org.apache.thrift.protocol.TType.BOOL, (short)20);
+  private static final org.apache.thrift.protocol.TField HAS_INCIDENT_REPORT_FIELD_DESC = new org.apache.thrift.protocol.TField("hasIncidentReport", org.apache.thrift.protocol.TType.BOOL, (short)20);
   private static final org.apache.thrift.protocol.TField COVERAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("coverage", org.apache.thrift.protocol.TType.STRUCT, (short)21);
-  private static final org.apache.thrift.protocol.TField FORMAT_FIELD_DESC = new org.apache.thrift.protocol.TField("format", org.apache.thrift.protocol.TType.STRUCT, (short)22);
-  private static final org.apache.thrift.protocol.TField GAME_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("game_version", org.apache.thrift.protocol.TType.STRUCT, (short)23);
-  private static final org.apache.thrift.protocol.TField RESOURCE_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("resource_version", org.apache.thrift.protocol.TType.I64, (short)24);
-  private static final org.apache.thrift.protocol.TField CREATED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("created_at", org.apache.thrift.protocol.TType.I64, (short)25);
-  private static final org.apache.thrift.protocol.TField UPDATED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("updated_at", org.apache.thrift.protocol.TType.I64, (short)26);
+  private static final org.apache.thrift.protocol.TField FORMAT_BEST_OF_FIELD_DESC = new org.apache.thrift.protocol.TField("formatBestOf", org.apache.thrift.protocol.TType.I32, (short)22);
+  private static final org.apache.thrift.protocol.TField GAME_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("gameVersion", org.apache.thrift.protocol.TType.STRUCT, (short)23);
+  private static final org.apache.thrift.protocol.TField RESOURCE_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("resourceVersion", org.apache.thrift.protocol.TType.I64, (short)24);
+  private static final org.apache.thrift.protocol.TField CREATED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("createdAt", org.apache.thrift.protocol.TType.I64, (short)25);
+  private static final org.apache.thrift.protocol.TField UPDATED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("updatedAt", org.apache.thrift.protocol.TType.I64, (short)26);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SeriesStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SeriesTupleSchemeFactory();
@@ -44,28 +44,28 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
   public @org.apache.thrift.annotation.Nullable java.lang.String title; // required
   public long start; // required
   public long end; // required
-  public long postponed_from; // optional
-  public long deleted_at; // optional
+  public long postponedFrom; // optional
+  public long deletedAt; // optional
   public @org.apache.thrift.annotation.Nullable java.lang.String lifecycle; // required
   public int tier; // required
-  public int best_of; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<ChainItem> chain; // required
+  public int bestOf; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> chainIds; // required
   public boolean streamed; // required
-  public @org.apache.thrift.annotation.Nullable BracketPosition bracket_position; // optional
+  public @org.apache.thrift.annotation.Nullable BracketPosition bracketPosition; // optional
   public @org.apache.thrift.annotation.Nullable java.util.List<Participant> participants; // required
-  public @org.apache.thrift.annotation.Nullable Tournament tournament; // required
-  public @org.apache.thrift.annotation.Nullable Substage substage; // required
-  public @org.apache.thrift.annotation.Nullable Game game; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<Match> matches; // required
+  public int tournamentId; // required
+  public int substageId; // required
+  public int gameId; // required
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> matchIds; // required
   public @org.apache.thrift.annotation.Nullable java.util.List<Caster> casters; // required
   public @org.apache.thrift.annotation.Nullable java.util.List<Broadcaster> broadcasters; // required
-  public boolean has_incident_report; // required
+  public boolean hasIncidentReport; // required
   public @org.apache.thrift.annotation.Nullable Coverage coverage; // required
-  public @org.apache.thrift.annotation.Nullable Format format; // required
-  public @org.apache.thrift.annotation.Nullable GameVersion game_version; // required
-  public long resource_version; // required
-  public long created_at; // required
-  public long updated_at; // required
+  public int formatBestOf; // required
+  public @org.apache.thrift.annotation.Nullable GameVersion gameVersion; // optional
+  public long resourceVersion; // required
+  public long createdAt; // required
+  public long updatedAt; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -73,28 +73,28 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     TITLE((short)2, "title"),
     START((short)3, "start"),
     END((short)4, "end"),
-    POSTPONED_FROM((short)5, "postponed_from"),
-    DELETED_AT((short)6, "deleted_at"),
+    POSTPONED_FROM((short)5, "postponedFrom"),
+    DELETED_AT((short)6, "deletedAt"),
     LIFECYCLE((short)7, "lifecycle"),
     TIER((short)8, "tier"),
-    BEST_OF((short)9, "best_of"),
-    CHAIN((short)10, "chain"),
+    BEST_OF((short)9, "bestOf"),
+    CHAIN_IDS((short)10, "chainIds"),
     STREAMED((short)11, "streamed"),
-    BRACKET_POSITION((short)12, "bracket_position"),
+    BRACKET_POSITION((short)12, "bracketPosition"),
     PARTICIPANTS((short)13, "participants"),
-    TOURNAMENT((short)14, "tournament"),
-    SUBSTAGE((short)15, "substage"),
-    GAME((short)16, "game"),
-    MATCHES((short)17, "matches"),
+    TOURNAMENT_ID((short)14, "tournamentId"),
+    SUBSTAGE_ID((short)15, "substageId"),
+    GAME_ID((short)16, "gameId"),
+    MATCH_IDS((short)17, "matchIds"),
     CASTERS((short)18, "casters"),
     BROADCASTERS((short)19, "broadcasters"),
-    HAS_INCIDENT_REPORT((short)20, "has_incident_report"),
+    HAS_INCIDENT_REPORT((short)20, "hasIncidentReport"),
     COVERAGE((short)21, "coverage"),
-    FORMAT((short)22, "format"),
-    GAME_VERSION((short)23, "game_version"),
-    RESOURCE_VERSION((short)24, "resource_version"),
-    CREATED_AT((short)25, "created_at"),
-    UPDATED_AT((short)26, "updated_at");
+    FORMAT_BEST_OF((short)22, "formatBestOf"),
+    GAME_VERSION((short)23, "gameVersion"),
+    RESOURCE_VERSION((short)24, "resourceVersion"),
+    CREATED_AT((short)25, "createdAt"),
+    UPDATED_AT((short)26, "updatedAt");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -128,22 +128,22 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
           return TIER;
         case 9: // BEST_OF
           return BEST_OF;
-        case 10: // CHAIN
-          return CHAIN;
+        case 10: // CHAIN_IDS
+          return CHAIN_IDS;
         case 11: // STREAMED
           return STREAMED;
         case 12: // BRACKET_POSITION
           return BRACKET_POSITION;
         case 13: // PARTICIPANTS
           return PARTICIPANTS;
-        case 14: // TOURNAMENT
-          return TOURNAMENT;
-        case 15: // SUBSTAGE
-          return SUBSTAGE;
-        case 16: // GAME
-          return GAME;
-        case 17: // MATCHES
-          return MATCHES;
+        case 14: // TOURNAMENT_ID
+          return TOURNAMENT_ID;
+        case 15: // SUBSTAGE_ID
+          return SUBSTAGE_ID;
+        case 16: // GAME_ID
+          return GAME_ID;
+        case 17: // MATCH_IDS
+          return MATCH_IDS;
         case 18: // CASTERS
           return CASTERS;
         case 19: // BROADCASTERS
@@ -152,8 +152,8 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
           return HAS_INCIDENT_REPORT;
         case 21: // COVERAGE
           return COVERAGE;
-        case 22: // FORMAT
-          return FORMAT;
+        case 22: // FORMAT_BEST_OF
+          return FORMAT_BEST_OF;
         case 23: // GAME_VERSION
           return GAME_VERSION;
         case 24: // RESOURCE_VERSION
@@ -208,17 +208,21 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
   private static final int __ID_ISSET_ID = 0;
   private static final int __START_ISSET_ID = 1;
   private static final int __END_ISSET_ID = 2;
-  private static final int __POSTPONED_FROM_ISSET_ID = 3;
-  private static final int __DELETED_AT_ISSET_ID = 4;
+  private static final int __POSTPONEDFROM_ISSET_ID = 3;
+  private static final int __DELETEDAT_ISSET_ID = 4;
   private static final int __TIER_ISSET_ID = 5;
-  private static final int __BEST_OF_ISSET_ID = 6;
+  private static final int __BESTOF_ISSET_ID = 6;
   private static final int __STREAMED_ISSET_ID = 7;
-  private static final int __HAS_INCIDENT_REPORT_ISSET_ID = 8;
-  private static final int __RESOURCE_VERSION_ISSET_ID = 9;
-  private static final int __CREATED_AT_ISSET_ID = 10;
-  private static final int __UPDATED_AT_ISSET_ID = 11;
+  private static final int __TOURNAMENTID_ISSET_ID = 8;
+  private static final int __SUBSTAGEID_ISSET_ID = 9;
+  private static final int __GAMEID_ISSET_ID = 10;
+  private static final int __HASINCIDENTREPORT_ISSET_ID = 11;
+  private static final int __FORMATBESTOF_ISSET_ID = 12;
+  private static final int __RESOURCEVERSION_ISSET_ID = 13;
+  private static final int __CREATEDAT_ISSET_ID = 14;
+  private static final int __UPDATEDAT_ISSET_ID = 15;
   private short __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.POSTPONED_FROM,_Fields.DELETED_AT,_Fields.BRACKET_POSITION};
+  private static final _Fields optionals[] = {_Fields.POSTPONED_FROM,_Fields.DELETED_AT,_Fields.BRACKET_POSITION,_Fields.GAME_VERSION};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -230,54 +234,54 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.END, new org.apache.thrift.meta_data.FieldMetaData("end", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.POSTPONED_FROM, new org.apache.thrift.meta_data.FieldMetaData("postponed_from", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.POSTPONED_FROM, new org.apache.thrift.meta_data.FieldMetaData("postponedFrom", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.DELETED_AT, new org.apache.thrift.meta_data.FieldMetaData("deleted_at", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.DELETED_AT, new org.apache.thrift.meta_data.FieldMetaData("deletedAt", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.LIFECYCLE, new org.apache.thrift.meta_data.FieldMetaData("lifecycle", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TIER, new org.apache.thrift.meta_data.FieldMetaData("tier", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.BEST_OF, new org.apache.thrift.meta_data.FieldMetaData("best_of", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.BEST_OF, new org.apache.thrift.meta_data.FieldMetaData("bestOf", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.CHAIN, new org.apache.thrift.meta_data.FieldMetaData("chain", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CHAIN_IDS, new org.apache.thrift.meta_data.FieldMetaData("chainIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ChainItem.class))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
     tmpMap.put(_Fields.STREAMED, new org.apache.thrift.meta_data.FieldMetaData("streamed", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.BRACKET_POSITION, new org.apache.thrift.meta_data.FieldMetaData("bracket_position", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.BRACKET_POSITION, new org.apache.thrift.meta_data.FieldMetaData("bracketPosition", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BracketPosition.class)));
     tmpMap.put(_Fields.PARTICIPANTS, new org.apache.thrift.meta_data.FieldMetaData("participants", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Participant.class))));
-    tmpMap.put(_Fields.TOURNAMENT, new org.apache.thrift.meta_data.FieldMetaData("tournament", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Tournament.class)));
-    tmpMap.put(_Fields.SUBSTAGE, new org.apache.thrift.meta_data.FieldMetaData("substage", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Substage.class)));
-    tmpMap.put(_Fields.GAME, new org.apache.thrift.meta_data.FieldMetaData("game", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Game.class)));
-    tmpMap.put(_Fields.MATCHES, new org.apache.thrift.meta_data.FieldMetaData("matches", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TOURNAMENT_ID, new org.apache.thrift.meta_data.FieldMetaData("tournamentId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.SUBSTAGE_ID, new org.apache.thrift.meta_data.FieldMetaData("substageId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.GAME_ID, new org.apache.thrift.meta_data.FieldMetaData("gameId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.MATCH_IDS, new org.apache.thrift.meta_data.FieldMetaData("matchIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Match.class))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
     tmpMap.put(_Fields.CASTERS, new org.apache.thrift.meta_data.FieldMetaData("casters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Caster.class))));
     tmpMap.put(_Fields.BROADCASTERS, new org.apache.thrift.meta_data.FieldMetaData("broadcasters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Broadcaster.class))));
-    tmpMap.put(_Fields.HAS_INCIDENT_REPORT, new org.apache.thrift.meta_data.FieldMetaData("has_incident_report", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.HAS_INCIDENT_REPORT, new org.apache.thrift.meta_data.FieldMetaData("hasIncidentReport", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.COVERAGE, new org.apache.thrift.meta_data.FieldMetaData("coverage", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Coverage.class)));
-    tmpMap.put(_Fields.FORMAT, new org.apache.thrift.meta_data.FieldMetaData("format", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Format.class)));
-    tmpMap.put(_Fields.GAME_VERSION, new org.apache.thrift.meta_data.FieldMetaData("game_version", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.FORMAT_BEST_OF, new org.apache.thrift.meta_data.FieldMetaData("formatBestOf", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.GAME_VERSION, new org.apache.thrift.meta_data.FieldMetaData("gameVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GameVersion.class)));
-    tmpMap.put(_Fields.RESOURCE_VERSION, new org.apache.thrift.meta_data.FieldMetaData("resource_version", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RESOURCE_VERSION, new org.apache.thrift.meta_data.FieldMetaData("resourceVersion", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.CREATED_AT, new org.apache.thrift.meta_data.FieldMetaData("created_at", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CREATED_AT, new org.apache.thrift.meta_data.FieldMetaData("createdAt", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.UPDATED_AT, new org.apache.thrift.meta_data.FieldMetaData("updated_at", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.UPDATED_AT, new org.apache.thrift.meta_data.FieldMetaData("updatedAt", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Series.class, metaDataMap);
@@ -293,23 +297,22 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     long end,
     java.lang.String lifecycle,
     int tier,
-    int best_of,
-    java.util.List<ChainItem> chain,
+    int bestOf,
+    java.util.List<java.lang.Integer> chainIds,
     boolean streamed,
     java.util.List<Participant> participants,
-    Tournament tournament,
-    Substage substage,
-    Game game,
-    java.util.List<Match> matches,
+    int tournamentId,
+    int substageId,
+    int gameId,
+    java.util.List<java.lang.Integer> matchIds,
     java.util.List<Caster> casters,
     java.util.List<Broadcaster> broadcasters,
-    boolean has_incident_report,
+    boolean hasIncidentReport,
     Coverage coverage,
-    Format format,
-    GameVersion game_version,
-    long resource_version,
-    long created_at,
-    long updated_at)
+    int formatBestOf,
+    long resourceVersion,
+    long createdAt,
+    long updatedAt)
   {
     this();
     this.id = id;
@@ -322,29 +325,32 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     this.lifecycle = lifecycle;
     this.tier = tier;
     setTierIsSet(true);
-    this.best_of = best_of;
-    setBest_ofIsSet(true);
-    this.chain = chain;
+    this.bestOf = bestOf;
+    setBestOfIsSet(true);
+    this.chainIds = chainIds;
     this.streamed = streamed;
     setStreamedIsSet(true);
     this.participants = participants;
-    this.tournament = tournament;
-    this.substage = substage;
-    this.game = game;
-    this.matches = matches;
+    this.tournamentId = tournamentId;
+    setTournamentIdIsSet(true);
+    this.substageId = substageId;
+    setSubstageIdIsSet(true);
+    this.gameId = gameId;
+    setGameIdIsSet(true);
+    this.matchIds = matchIds;
     this.casters = casters;
     this.broadcasters = broadcasters;
-    this.has_incident_report = has_incident_report;
-    setHas_incident_reportIsSet(true);
+    this.hasIncidentReport = hasIncidentReport;
+    setHasIncidentReportIsSet(true);
     this.coverage = coverage;
-    this.format = format;
-    this.game_version = game_version;
-    this.resource_version = resource_version;
-    setResource_versionIsSet(true);
-    this.created_at = created_at;
-    setCreated_atIsSet(true);
-    this.updated_at = updated_at;
-    setUpdated_atIsSet(true);
+    this.formatBestOf = formatBestOf;
+    setFormatBestOfIsSet(true);
+    this.resourceVersion = resourceVersion;
+    setResourceVersionIsSet(true);
+    this.createdAt = createdAt;
+    setCreatedAtIsSet(true);
+    this.updatedAt = updatedAt;
+    setUpdatedAtIsSet(true);
   }
 
   /**
@@ -358,23 +364,20 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
     this.start = other.start;
     this.end = other.end;
-    this.postponed_from = other.postponed_from;
-    this.deleted_at = other.deleted_at;
+    this.postponedFrom = other.postponedFrom;
+    this.deletedAt = other.deletedAt;
     if (other.isSetLifecycle()) {
       this.lifecycle = other.lifecycle;
     }
     this.tier = other.tier;
-    this.best_of = other.best_of;
-    if (other.isSetChain()) {
-      java.util.List<ChainItem> __this__chain = new java.util.ArrayList<ChainItem>(other.chain.size());
-      for (ChainItem other_element : other.chain) {
-        __this__chain.add(new ChainItem(other_element));
-      }
-      this.chain = __this__chain;
+    this.bestOf = other.bestOf;
+    if (other.isSetChainIds()) {
+      java.util.List<java.lang.Integer> __this__chainIds = new java.util.ArrayList<java.lang.Integer>(other.chainIds);
+      this.chainIds = __this__chainIds;
     }
     this.streamed = other.streamed;
-    if (other.isSetBracket_position()) {
-      this.bracket_position = new BracketPosition(other.bracket_position);
+    if (other.isSetBracketPosition()) {
+      this.bracketPosition = new BracketPosition(other.bracketPosition);
     }
     if (other.isSetParticipants()) {
       java.util.List<Participant> __this__participants = new java.util.ArrayList<Participant>(other.participants.size());
@@ -383,21 +386,12 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       }
       this.participants = __this__participants;
     }
-    if (other.isSetTournament()) {
-      this.tournament = new Tournament(other.tournament);
-    }
-    if (other.isSetSubstage()) {
-      this.substage = new Substage(other.substage);
-    }
-    if (other.isSetGame()) {
-      this.game = new Game(other.game);
-    }
-    if (other.isSetMatches()) {
-      java.util.List<Match> __this__matches = new java.util.ArrayList<Match>(other.matches.size());
-      for (Match other_element : other.matches) {
-        __this__matches.add(new Match(other_element));
-      }
-      this.matches = __this__matches;
+    this.tournamentId = other.tournamentId;
+    this.substageId = other.substageId;
+    this.gameId = other.gameId;
+    if (other.isSetMatchIds()) {
+      java.util.List<java.lang.Integer> __this__matchIds = new java.util.ArrayList<java.lang.Integer>(other.matchIds);
+      this.matchIds = __this__matchIds;
     }
     if (other.isSetCasters()) {
       java.util.List<Caster> __this__casters = new java.util.ArrayList<Caster>(other.casters.size());
@@ -413,19 +407,17 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       }
       this.broadcasters = __this__broadcasters;
     }
-    this.has_incident_report = other.has_incident_report;
+    this.hasIncidentReport = other.hasIncidentReport;
     if (other.isSetCoverage()) {
       this.coverage = new Coverage(other.coverage);
     }
-    if (other.isSetFormat()) {
-      this.format = new Format(other.format);
+    this.formatBestOf = other.formatBestOf;
+    if (other.isSetGameVersion()) {
+      this.gameVersion = new GameVersion(other.gameVersion);
     }
-    if (other.isSetGame_version()) {
-      this.game_version = new GameVersion(other.game_version);
-    }
-    this.resource_version = other.resource_version;
-    this.created_at = other.created_at;
-    this.updated_at = other.updated_at;
+    this.resourceVersion = other.resourceVersion;
+    this.createdAt = other.createdAt;
+    this.updatedAt = other.updatedAt;
   }
 
   @Override
@@ -442,37 +434,41 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     this.start = 0;
     setEndIsSet(false);
     this.end = 0;
-    setPostponed_fromIsSet(false);
-    this.postponed_from = 0;
-    setDeleted_atIsSet(false);
-    this.deleted_at = 0;
+    setPostponedFromIsSet(false);
+    this.postponedFrom = 0;
+    setDeletedAtIsSet(false);
+    this.deletedAt = 0;
     this.lifecycle = null;
     setTierIsSet(false);
     this.tier = 0;
-    setBest_ofIsSet(false);
-    this.best_of = 0;
-    this.chain = null;
+    setBestOfIsSet(false);
+    this.bestOf = 0;
+    this.chainIds = null;
     setStreamedIsSet(false);
     this.streamed = false;
-    this.bracket_position = null;
+    this.bracketPosition = null;
     this.participants = null;
-    this.tournament = null;
-    this.substage = null;
-    this.game = null;
-    this.matches = null;
+    setTournamentIdIsSet(false);
+    this.tournamentId = 0;
+    setSubstageIdIsSet(false);
+    this.substageId = 0;
+    setGameIdIsSet(false);
+    this.gameId = 0;
+    this.matchIds = null;
     this.casters = null;
     this.broadcasters = null;
-    setHas_incident_reportIsSet(false);
-    this.has_incident_report = false;
+    setHasIncidentReportIsSet(false);
+    this.hasIncidentReport = false;
     this.coverage = null;
-    this.format = null;
-    this.game_version = null;
-    setResource_versionIsSet(false);
-    this.resource_version = 0;
-    setCreated_atIsSet(false);
-    this.created_at = 0;
-    setUpdated_atIsSet(false);
-    this.updated_at = 0;
+    setFormatBestOfIsSet(false);
+    this.formatBestOf = 0;
+    this.gameVersion = null;
+    setResourceVersionIsSet(false);
+    this.resourceVersion = 0;
+    setCreatedAtIsSet(false);
+    this.createdAt = 0;
+    setUpdatedAtIsSet(false);
+    this.updatedAt = 0;
   }
 
   public int getId() {
@@ -569,50 +565,50 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __END_ISSET_ID, value);
   }
 
-  public long getPostponed_from() {
-    return this.postponed_from;
+  public long getPostponedFrom() {
+    return this.postponedFrom;
   }
 
-  public Series setPostponed_from(long postponed_from) {
-    this.postponed_from = postponed_from;
-    setPostponed_fromIsSet(true);
+  public Series setPostponedFrom(long postponedFrom) {
+    this.postponedFrom = postponedFrom;
+    setPostponedFromIsSet(true);
     return this;
   }
 
-  public void unsetPostponed_from() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __POSTPONED_FROM_ISSET_ID);
+  public void unsetPostponedFrom() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __POSTPONEDFROM_ISSET_ID);
   }
 
-  /** Returns true if field postponed_from is set (has been assigned a value) and false otherwise */
-  public boolean isSetPostponed_from() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __POSTPONED_FROM_ISSET_ID);
+  /** Returns true if field postponedFrom is set (has been assigned a value) and false otherwise */
+  public boolean isSetPostponedFrom() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __POSTPONEDFROM_ISSET_ID);
   }
 
-  public void setPostponed_fromIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __POSTPONED_FROM_ISSET_ID, value);
+  public void setPostponedFromIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __POSTPONEDFROM_ISSET_ID, value);
   }
 
-  public long getDeleted_at() {
-    return this.deleted_at;
+  public long getDeletedAt() {
+    return this.deletedAt;
   }
 
-  public Series setDeleted_at(long deleted_at) {
-    this.deleted_at = deleted_at;
-    setDeleted_atIsSet(true);
+  public Series setDeletedAt(long deletedAt) {
+    this.deletedAt = deletedAt;
+    setDeletedAtIsSet(true);
     return this;
   }
 
-  public void unsetDeleted_at() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __DELETED_AT_ISSET_ID);
+  public void unsetDeletedAt() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __DELETEDAT_ISSET_ID);
   }
 
-  /** Returns true if field deleted_at is set (has been assigned a value) and false otherwise */
-  public boolean isSetDeleted_at() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __DELETED_AT_ISSET_ID);
+  /** Returns true if field deletedAt is set (has been assigned a value) and false otherwise */
+  public boolean isSetDeletedAt() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __DELETEDAT_ISSET_ID);
   }
 
-  public void setDeleted_atIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DELETED_AT_ISSET_ID, value);
+  public void setDeletedAtIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DELETEDAT_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -663,67 +659,67 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TIER_ISSET_ID, value);
   }
 
-  public int getBest_of() {
-    return this.best_of;
+  public int getBestOf() {
+    return this.bestOf;
   }
 
-  public Series setBest_of(int best_of) {
-    this.best_of = best_of;
-    setBest_ofIsSet(true);
+  public Series setBestOf(int bestOf) {
+    this.bestOf = bestOf;
+    setBestOfIsSet(true);
     return this;
   }
 
-  public void unsetBest_of() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __BEST_OF_ISSET_ID);
+  public void unsetBestOf() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __BESTOF_ISSET_ID);
   }
 
-  /** Returns true if field best_of is set (has been assigned a value) and false otherwise */
-  public boolean isSetBest_of() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __BEST_OF_ISSET_ID);
+  /** Returns true if field bestOf is set (has been assigned a value) and false otherwise */
+  public boolean isSetBestOf() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __BESTOF_ISSET_ID);
   }
 
-  public void setBest_ofIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __BEST_OF_ISSET_ID, value);
+  public void setBestOfIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __BESTOF_ISSET_ID, value);
   }
 
-  public int getChainSize() {
-    return (this.chain == null) ? 0 : this.chain.size();
+  public int getChainIdsSize() {
+    return (this.chainIds == null) ? 0 : this.chainIds.size();
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<ChainItem> getChainIterator() {
-    return (this.chain == null) ? null : this.chain.iterator();
+  public java.util.Iterator<java.lang.Integer> getChainIdsIterator() {
+    return (this.chainIds == null) ? null : this.chainIds.iterator();
   }
 
-  public void addToChain(ChainItem elem) {
-    if (this.chain == null) {
-      this.chain = new java.util.ArrayList<ChainItem>();
+  public void addToChainIds(int elem) {
+    if (this.chainIds == null) {
+      this.chainIds = new java.util.ArrayList<java.lang.Integer>();
     }
-    this.chain.add(elem);
+    this.chainIds.add(elem);
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<ChainItem> getChain() {
-    return this.chain;
+  public java.util.List<java.lang.Integer> getChainIds() {
+    return this.chainIds;
   }
 
-  public Series setChain(@org.apache.thrift.annotation.Nullable java.util.List<ChainItem> chain) {
-    this.chain = chain;
+  public Series setChainIds(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> chainIds) {
+    this.chainIds = chainIds;
     return this;
   }
 
-  public void unsetChain() {
-    this.chain = null;
+  public void unsetChainIds() {
+    this.chainIds = null;
   }
 
-  /** Returns true if field chain is set (has been assigned a value) and false otherwise */
-  public boolean isSetChain() {
-    return this.chain != null;
+  /** Returns true if field chainIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetChainIds() {
+    return this.chainIds != null;
   }
 
-  public void setChainIsSet(boolean value) {
+  public void setChainIdsIsSet(boolean value) {
     if (!value) {
-      this.chain = null;
+      this.chainIds = null;
     }
   }
 
@@ -751,27 +747,27 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
   }
 
   @org.apache.thrift.annotation.Nullable
-  public BracketPosition getBracket_position() {
-    return this.bracket_position;
+  public BracketPosition getBracketPosition() {
+    return this.bracketPosition;
   }
 
-  public Series setBracket_position(@org.apache.thrift.annotation.Nullable BracketPosition bracket_position) {
-    this.bracket_position = bracket_position;
+  public Series setBracketPosition(@org.apache.thrift.annotation.Nullable BracketPosition bracketPosition) {
+    this.bracketPosition = bracketPosition;
     return this;
   }
 
-  public void unsetBracket_position() {
-    this.bracket_position = null;
+  public void unsetBracketPosition() {
+    this.bracketPosition = null;
   }
 
-  /** Returns true if field bracket_position is set (has been assigned a value) and false otherwise */
-  public boolean isSetBracket_position() {
-    return this.bracket_position != null;
+  /** Returns true if field bracketPosition is set (has been assigned a value) and false otherwise */
+  public boolean isSetBracketPosition() {
+    return this.bracketPosition != null;
   }
 
-  public void setBracket_positionIsSet(boolean value) {
+  public void setBracketPositionIsSet(boolean value) {
     if (!value) {
-      this.bracket_position = null;
+      this.bracketPosition = null;
     }
   }
 
@@ -816,119 +812,113 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public Tournament getTournament() {
-    return this.tournament;
+  public int getTournamentId() {
+    return this.tournamentId;
   }
 
-  public Series setTournament(@org.apache.thrift.annotation.Nullable Tournament tournament) {
-    this.tournament = tournament;
+  public Series setTournamentId(int tournamentId) {
+    this.tournamentId = tournamentId;
+    setTournamentIdIsSet(true);
     return this;
   }
 
-  public void unsetTournament() {
-    this.tournament = null;
+  public void unsetTournamentId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOURNAMENTID_ISSET_ID);
   }
 
-  /** Returns true if field tournament is set (has been assigned a value) and false otherwise */
-  public boolean isSetTournament() {
-    return this.tournament != null;
+  /** Returns true if field tournamentId is set (has been assigned a value) and false otherwise */
+  public boolean isSetTournamentId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOURNAMENTID_ISSET_ID);
   }
 
-  public void setTournamentIsSet(boolean value) {
-    if (!value) {
-      this.tournament = null;
-    }
+  public void setTournamentIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOURNAMENTID_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public Substage getSubstage() {
-    return this.substage;
+  public int getSubstageId() {
+    return this.substageId;
   }
 
-  public Series setSubstage(@org.apache.thrift.annotation.Nullable Substage substage) {
-    this.substage = substage;
+  public Series setSubstageId(int substageId) {
+    this.substageId = substageId;
+    setSubstageIdIsSet(true);
     return this;
   }
 
-  public void unsetSubstage() {
-    this.substage = null;
+  public void unsetSubstageId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SUBSTAGEID_ISSET_ID);
   }
 
-  /** Returns true if field substage is set (has been assigned a value) and false otherwise */
-  public boolean isSetSubstage() {
-    return this.substage != null;
+  /** Returns true if field substageId is set (has been assigned a value) and false otherwise */
+  public boolean isSetSubstageId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SUBSTAGEID_ISSET_ID);
   }
 
-  public void setSubstageIsSet(boolean value) {
-    if (!value) {
-      this.substage = null;
-    }
+  public void setSubstageIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SUBSTAGEID_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public Game getGame() {
-    return this.game;
+  public int getGameId() {
+    return this.gameId;
   }
 
-  public Series setGame(@org.apache.thrift.annotation.Nullable Game game) {
-    this.game = game;
+  public Series setGameId(int gameId) {
+    this.gameId = gameId;
+    setGameIdIsSet(true);
     return this;
   }
 
-  public void unsetGame() {
-    this.game = null;
+  public void unsetGameId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __GAMEID_ISSET_ID);
   }
 
-  /** Returns true if field game is set (has been assigned a value) and false otherwise */
-  public boolean isSetGame() {
-    return this.game != null;
+  /** Returns true if field gameId is set (has been assigned a value) and false otherwise */
+  public boolean isSetGameId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __GAMEID_ISSET_ID);
   }
 
-  public void setGameIsSet(boolean value) {
-    if (!value) {
-      this.game = null;
-    }
+  public void setGameIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __GAMEID_ISSET_ID, value);
   }
 
-  public int getMatchesSize() {
-    return (this.matches == null) ? 0 : this.matches.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<Match> getMatchesIterator() {
-    return (this.matches == null) ? null : this.matches.iterator();
-  }
-
-  public void addToMatches(Match elem) {
-    if (this.matches == null) {
-      this.matches = new java.util.ArrayList<Match>();
-    }
-    this.matches.add(elem);
+  public int getMatchIdsSize() {
+    return (this.matchIds == null) ? 0 : this.matchIds.size();
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.List<Match> getMatches() {
-    return this.matches;
+  public java.util.Iterator<java.lang.Integer> getMatchIdsIterator() {
+    return (this.matchIds == null) ? null : this.matchIds.iterator();
   }
 
-  public Series setMatches(@org.apache.thrift.annotation.Nullable java.util.List<Match> matches) {
-    this.matches = matches;
+  public void addToMatchIds(int elem) {
+    if (this.matchIds == null) {
+      this.matchIds = new java.util.ArrayList<java.lang.Integer>();
+    }
+    this.matchIds.add(elem);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.List<java.lang.Integer> getMatchIds() {
+    return this.matchIds;
+  }
+
+  public Series setMatchIds(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> matchIds) {
+    this.matchIds = matchIds;
     return this;
   }
 
-  public void unsetMatches() {
-    this.matches = null;
+  public void unsetMatchIds() {
+    this.matchIds = null;
   }
 
-  /** Returns true if field matches is set (has been assigned a value) and false otherwise */
-  public boolean isSetMatches() {
-    return this.matches != null;
+  /** Returns true if field matchIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetMatchIds() {
+    return this.matchIds != null;
   }
 
-  public void setMatchesIsSet(boolean value) {
+  public void setMatchIdsIsSet(boolean value) {
     if (!value) {
-      this.matches = null;
+      this.matchIds = null;
     }
   }
 
@@ -1014,27 +1004,27 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
   }
 
-  public boolean isHas_incident_report() {
-    return this.has_incident_report;
+  public boolean isHasIncidentReport() {
+    return this.hasIncidentReport;
   }
 
-  public Series setHas_incident_report(boolean has_incident_report) {
-    this.has_incident_report = has_incident_report;
-    setHas_incident_reportIsSet(true);
+  public Series setHasIncidentReport(boolean hasIncidentReport) {
+    this.hasIncidentReport = hasIncidentReport;
+    setHasIncidentReportIsSet(true);
     return this;
   }
 
-  public void unsetHas_incident_report() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __HAS_INCIDENT_REPORT_ISSET_ID);
+  public void unsetHasIncidentReport() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __HASINCIDENTREPORT_ISSET_ID);
   }
 
-  /** Returns true if field has_incident_report is set (has been assigned a value) and false otherwise */
-  public boolean isSetHas_incident_report() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __HAS_INCIDENT_REPORT_ISSET_ID);
+  /** Returns true if field hasIncidentReport is set (has been assigned a value) and false otherwise */
+  public boolean isSetHasIncidentReport() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __HASINCIDENTREPORT_ISSET_ID);
   }
 
-  public void setHas_incident_reportIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __HAS_INCIDENT_REPORT_ISSET_ID, value);
+  public void setHasIncidentReportIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __HASINCIDENTREPORT_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -1062,123 +1052,121 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public Format getFormat() {
-    return this.format;
+  public int getFormatBestOf() {
+    return this.formatBestOf;
   }
 
-  public Series setFormat(@org.apache.thrift.annotation.Nullable Format format) {
-    this.format = format;
+  public Series setFormatBestOf(int formatBestOf) {
+    this.formatBestOf = formatBestOf;
+    setFormatBestOfIsSet(true);
     return this;
   }
 
-  public void unsetFormat() {
-    this.format = null;
+  public void unsetFormatBestOf() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __FORMATBESTOF_ISSET_ID);
   }
 
-  /** Returns true if field format is set (has been assigned a value) and false otherwise */
-  public boolean isSetFormat() {
-    return this.format != null;
+  /** Returns true if field formatBestOf is set (has been assigned a value) and false otherwise */
+  public boolean isSetFormatBestOf() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __FORMATBESTOF_ISSET_ID);
   }
 
-  public void setFormatIsSet(boolean value) {
-    if (!value) {
-      this.format = null;
-    }
+  public void setFormatBestOfIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FORMATBESTOF_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
-  public GameVersion getGame_version() {
-    return this.game_version;
+  public GameVersion getGameVersion() {
+    return this.gameVersion;
   }
 
-  public Series setGame_version(@org.apache.thrift.annotation.Nullable GameVersion game_version) {
-    this.game_version = game_version;
+  public Series setGameVersion(@org.apache.thrift.annotation.Nullable GameVersion gameVersion) {
+    this.gameVersion = gameVersion;
     return this;
   }
 
-  public void unsetGame_version() {
-    this.game_version = null;
+  public void unsetGameVersion() {
+    this.gameVersion = null;
   }
 
-  /** Returns true if field game_version is set (has been assigned a value) and false otherwise */
-  public boolean isSetGame_version() {
-    return this.game_version != null;
+  /** Returns true if field gameVersion is set (has been assigned a value) and false otherwise */
+  public boolean isSetGameVersion() {
+    return this.gameVersion != null;
   }
 
-  public void setGame_versionIsSet(boolean value) {
+  public void setGameVersionIsSet(boolean value) {
     if (!value) {
-      this.game_version = null;
+      this.gameVersion = null;
     }
   }
 
-  public long getResource_version() {
-    return this.resource_version;
+  public long getResourceVersion() {
+    return this.resourceVersion;
   }
 
-  public Series setResource_version(long resource_version) {
-    this.resource_version = resource_version;
-    setResource_versionIsSet(true);
+  public Series setResourceVersion(long resourceVersion) {
+    this.resourceVersion = resourceVersion;
+    setResourceVersionIsSet(true);
     return this;
   }
 
-  public void unsetResource_version() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __RESOURCE_VERSION_ISSET_ID);
+  public void unsetResourceVersion() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __RESOURCEVERSION_ISSET_ID);
   }
 
-  /** Returns true if field resource_version is set (has been assigned a value) and false otherwise */
-  public boolean isSetResource_version() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __RESOURCE_VERSION_ISSET_ID);
+  /** Returns true if field resourceVersion is set (has been assigned a value) and false otherwise */
+  public boolean isSetResourceVersion() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __RESOURCEVERSION_ISSET_ID);
   }
 
-  public void setResource_versionIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __RESOURCE_VERSION_ISSET_ID, value);
+  public void setResourceVersionIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __RESOURCEVERSION_ISSET_ID, value);
   }
 
-  public long getCreated_at() {
-    return this.created_at;
+  public long getCreatedAt() {
+    return this.createdAt;
   }
 
-  public Series setCreated_at(long created_at) {
-    this.created_at = created_at;
-    setCreated_atIsSet(true);
+  public Series setCreatedAt(long createdAt) {
+    this.createdAt = createdAt;
+    setCreatedAtIsSet(true);
     return this;
   }
 
-  public void unsetCreated_at() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CREATED_AT_ISSET_ID);
+  public void unsetCreatedAt() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CREATEDAT_ISSET_ID);
   }
 
-  /** Returns true if field created_at is set (has been assigned a value) and false otherwise */
-  public boolean isSetCreated_at() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CREATED_AT_ISSET_ID);
+  /** Returns true if field createdAt is set (has been assigned a value) and false otherwise */
+  public boolean isSetCreatedAt() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CREATEDAT_ISSET_ID);
   }
 
-  public void setCreated_atIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CREATED_AT_ISSET_ID, value);
+  public void setCreatedAtIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CREATEDAT_ISSET_ID, value);
   }
 
-  public long getUpdated_at() {
-    return this.updated_at;
+  public long getUpdatedAt() {
+    return this.updatedAt;
   }
 
-  public Series setUpdated_at(long updated_at) {
-    this.updated_at = updated_at;
-    setUpdated_atIsSet(true);
+  public Series setUpdatedAt(long updatedAt) {
+    this.updatedAt = updatedAt;
+    setUpdatedAtIsSet(true);
     return this;
   }
 
-  public void unsetUpdated_at() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __UPDATED_AT_ISSET_ID);
+  public void unsetUpdatedAt() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __UPDATEDAT_ISSET_ID);
   }
 
-  /** Returns true if field updated_at is set (has been assigned a value) and false otherwise */
-  public boolean isSetUpdated_at() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __UPDATED_AT_ISSET_ID);
+  /** Returns true if field updatedAt is set (has been assigned a value) and false otherwise */
+  public boolean isSetUpdatedAt() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __UPDATEDAT_ISSET_ID);
   }
 
-  public void setUpdated_atIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __UPDATED_AT_ISSET_ID, value);
+  public void setUpdatedAtIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __UPDATEDAT_ISSET_ID, value);
   }
 
   @Override
@@ -1218,17 +1206,17 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
 
     case POSTPONED_FROM:
       if (value == null) {
-        unsetPostponed_from();
+        unsetPostponedFrom();
       } else {
-        setPostponed_from((java.lang.Long)value);
+        setPostponedFrom((java.lang.Long)value);
       }
       break;
 
     case DELETED_AT:
       if (value == null) {
-        unsetDeleted_at();
+        unsetDeletedAt();
       } else {
-        setDeleted_at((java.lang.Long)value);
+        setDeletedAt((java.lang.Long)value);
       }
       break;
 
@@ -1250,17 +1238,17 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
 
     case BEST_OF:
       if (value == null) {
-        unsetBest_of();
+        unsetBestOf();
       } else {
-        setBest_of((java.lang.Integer)value);
+        setBestOf((java.lang.Integer)value);
       }
       break;
 
-    case CHAIN:
+    case CHAIN_IDS:
       if (value == null) {
-        unsetChain();
+        unsetChainIds();
       } else {
-        setChain((java.util.List<ChainItem>)value);
+        setChainIds((java.util.List<java.lang.Integer>)value);
       }
       break;
 
@@ -1274,9 +1262,9 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
 
     case BRACKET_POSITION:
       if (value == null) {
-        unsetBracket_position();
+        unsetBracketPosition();
       } else {
-        setBracket_position((BracketPosition)value);
+        setBracketPosition((BracketPosition)value);
       }
       break;
 
@@ -1288,35 +1276,35 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       }
       break;
 
-    case TOURNAMENT:
+    case TOURNAMENT_ID:
       if (value == null) {
-        unsetTournament();
+        unsetTournamentId();
       } else {
-        setTournament((Tournament)value);
+        setTournamentId((java.lang.Integer)value);
       }
       break;
 
-    case SUBSTAGE:
+    case SUBSTAGE_ID:
       if (value == null) {
-        unsetSubstage();
+        unsetSubstageId();
       } else {
-        setSubstage((Substage)value);
+        setSubstageId((java.lang.Integer)value);
       }
       break;
 
-    case GAME:
+    case GAME_ID:
       if (value == null) {
-        unsetGame();
+        unsetGameId();
       } else {
-        setGame((Game)value);
+        setGameId((java.lang.Integer)value);
       }
       break;
 
-    case MATCHES:
+    case MATCH_IDS:
       if (value == null) {
-        unsetMatches();
+        unsetMatchIds();
       } else {
-        setMatches((java.util.List<Match>)value);
+        setMatchIds((java.util.List<java.lang.Integer>)value);
       }
       break;
 
@@ -1338,9 +1326,9 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
 
     case HAS_INCIDENT_REPORT:
       if (value == null) {
-        unsetHas_incident_report();
+        unsetHasIncidentReport();
       } else {
-        setHas_incident_report((java.lang.Boolean)value);
+        setHasIncidentReport((java.lang.Boolean)value);
       }
       break;
 
@@ -1352,43 +1340,43 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       }
       break;
 
-    case FORMAT:
+    case FORMAT_BEST_OF:
       if (value == null) {
-        unsetFormat();
+        unsetFormatBestOf();
       } else {
-        setFormat((Format)value);
+        setFormatBestOf((java.lang.Integer)value);
       }
       break;
 
     case GAME_VERSION:
       if (value == null) {
-        unsetGame_version();
+        unsetGameVersion();
       } else {
-        setGame_version((GameVersion)value);
+        setGameVersion((GameVersion)value);
       }
       break;
 
     case RESOURCE_VERSION:
       if (value == null) {
-        unsetResource_version();
+        unsetResourceVersion();
       } else {
-        setResource_version((java.lang.Long)value);
+        setResourceVersion((java.lang.Long)value);
       }
       break;
 
     case CREATED_AT:
       if (value == null) {
-        unsetCreated_at();
+        unsetCreatedAt();
       } else {
-        setCreated_at((java.lang.Long)value);
+        setCreatedAt((java.lang.Long)value);
       }
       break;
 
     case UPDATED_AT:
       if (value == null) {
-        unsetUpdated_at();
+        unsetUpdatedAt();
       } else {
-        setUpdated_at((java.lang.Long)value);
+        setUpdatedAt((java.lang.Long)value);
       }
       break;
 
@@ -1412,10 +1400,10 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       return getEnd();
 
     case POSTPONED_FROM:
-      return getPostponed_from();
+      return getPostponedFrom();
 
     case DELETED_AT:
-      return getDeleted_at();
+      return getDeletedAt();
 
     case LIFECYCLE:
       return getLifecycle();
@@ -1424,31 +1412,31 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       return getTier();
 
     case BEST_OF:
-      return getBest_of();
+      return getBestOf();
 
-    case CHAIN:
-      return getChain();
+    case CHAIN_IDS:
+      return getChainIds();
 
     case STREAMED:
       return isStreamed();
 
     case BRACKET_POSITION:
-      return getBracket_position();
+      return getBracketPosition();
 
     case PARTICIPANTS:
       return getParticipants();
 
-    case TOURNAMENT:
-      return getTournament();
+    case TOURNAMENT_ID:
+      return getTournamentId();
 
-    case SUBSTAGE:
-      return getSubstage();
+    case SUBSTAGE_ID:
+      return getSubstageId();
 
-    case GAME:
-      return getGame();
+    case GAME_ID:
+      return getGameId();
 
-    case MATCHES:
-      return getMatches();
+    case MATCH_IDS:
+      return getMatchIds();
 
     case CASTERS:
       return getCasters();
@@ -1457,25 +1445,25 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       return getBroadcasters();
 
     case HAS_INCIDENT_REPORT:
-      return isHas_incident_report();
+      return isHasIncidentReport();
 
     case COVERAGE:
       return getCoverage();
 
-    case FORMAT:
-      return getFormat();
+    case FORMAT_BEST_OF:
+      return getFormatBestOf();
 
     case GAME_VERSION:
-      return getGame_version();
+      return getGameVersion();
 
     case RESOURCE_VERSION:
-      return getResource_version();
+      return getResourceVersion();
 
     case CREATED_AT:
-      return getCreated_at();
+      return getCreatedAt();
 
     case UPDATED_AT:
-      return getUpdated_at();
+      return getUpdatedAt();
 
     }
     throw new java.lang.IllegalStateException();
@@ -1498,49 +1486,49 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     case END:
       return isSetEnd();
     case POSTPONED_FROM:
-      return isSetPostponed_from();
+      return isSetPostponedFrom();
     case DELETED_AT:
-      return isSetDeleted_at();
+      return isSetDeletedAt();
     case LIFECYCLE:
       return isSetLifecycle();
     case TIER:
       return isSetTier();
     case BEST_OF:
-      return isSetBest_of();
-    case CHAIN:
-      return isSetChain();
+      return isSetBestOf();
+    case CHAIN_IDS:
+      return isSetChainIds();
     case STREAMED:
       return isSetStreamed();
     case BRACKET_POSITION:
-      return isSetBracket_position();
+      return isSetBracketPosition();
     case PARTICIPANTS:
       return isSetParticipants();
-    case TOURNAMENT:
-      return isSetTournament();
-    case SUBSTAGE:
-      return isSetSubstage();
-    case GAME:
-      return isSetGame();
-    case MATCHES:
-      return isSetMatches();
+    case TOURNAMENT_ID:
+      return isSetTournamentId();
+    case SUBSTAGE_ID:
+      return isSetSubstageId();
+    case GAME_ID:
+      return isSetGameId();
+    case MATCH_IDS:
+      return isSetMatchIds();
     case CASTERS:
       return isSetCasters();
     case BROADCASTERS:
       return isSetBroadcasters();
     case HAS_INCIDENT_REPORT:
-      return isSetHas_incident_report();
+      return isSetHasIncidentReport();
     case COVERAGE:
       return isSetCoverage();
-    case FORMAT:
-      return isSetFormat();
+    case FORMAT_BEST_OF:
+      return isSetFormatBestOf();
     case GAME_VERSION:
-      return isSetGame_version();
+      return isSetGameVersion();
     case RESOURCE_VERSION:
-      return isSetResource_version();
+      return isSetResourceVersion();
     case CREATED_AT:
-      return isSetCreated_at();
+      return isSetCreatedAt();
     case UPDATED_AT:
-      return isSetUpdated_at();
+      return isSetUpdatedAt();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1594,21 +1582,21 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return false;
     }
 
-    boolean this_present_postponed_from = true && this.isSetPostponed_from();
-    boolean that_present_postponed_from = true && that.isSetPostponed_from();
-    if (this_present_postponed_from || that_present_postponed_from) {
-      if (!(this_present_postponed_from && that_present_postponed_from))
+    boolean this_present_postponedFrom = true && this.isSetPostponedFrom();
+    boolean that_present_postponedFrom = true && that.isSetPostponedFrom();
+    if (this_present_postponedFrom || that_present_postponedFrom) {
+      if (!(this_present_postponedFrom && that_present_postponedFrom))
         return false;
-      if (this.postponed_from != that.postponed_from)
+      if (this.postponedFrom != that.postponedFrom)
         return false;
     }
 
-    boolean this_present_deleted_at = true && this.isSetDeleted_at();
-    boolean that_present_deleted_at = true && that.isSetDeleted_at();
-    if (this_present_deleted_at || that_present_deleted_at) {
-      if (!(this_present_deleted_at && that_present_deleted_at))
+    boolean this_present_deletedAt = true && this.isSetDeletedAt();
+    boolean that_present_deletedAt = true && that.isSetDeletedAt();
+    if (this_present_deletedAt || that_present_deletedAt) {
+      if (!(this_present_deletedAt && that_present_deletedAt))
         return false;
-      if (this.deleted_at != that.deleted_at)
+      if (this.deletedAt != that.deletedAt)
         return false;
     }
 
@@ -1630,21 +1618,21 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return false;
     }
 
-    boolean this_present_best_of = true;
-    boolean that_present_best_of = true;
-    if (this_present_best_of || that_present_best_of) {
-      if (!(this_present_best_of && that_present_best_of))
+    boolean this_present_bestOf = true;
+    boolean that_present_bestOf = true;
+    if (this_present_bestOf || that_present_bestOf) {
+      if (!(this_present_bestOf && that_present_bestOf))
         return false;
-      if (this.best_of != that.best_of)
+      if (this.bestOf != that.bestOf)
         return false;
     }
 
-    boolean this_present_chain = true && this.isSetChain();
-    boolean that_present_chain = true && that.isSetChain();
-    if (this_present_chain || that_present_chain) {
-      if (!(this_present_chain && that_present_chain))
+    boolean this_present_chainIds = true && this.isSetChainIds();
+    boolean that_present_chainIds = true && that.isSetChainIds();
+    if (this_present_chainIds || that_present_chainIds) {
+      if (!(this_present_chainIds && that_present_chainIds))
         return false;
-      if (!this.chain.equals(that.chain))
+      if (!this.chainIds.equals(that.chainIds))
         return false;
     }
 
@@ -1657,12 +1645,12 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return false;
     }
 
-    boolean this_present_bracket_position = true && this.isSetBracket_position();
-    boolean that_present_bracket_position = true && that.isSetBracket_position();
-    if (this_present_bracket_position || that_present_bracket_position) {
-      if (!(this_present_bracket_position && that_present_bracket_position))
+    boolean this_present_bracketPosition = true && this.isSetBracketPosition();
+    boolean that_present_bracketPosition = true && that.isSetBracketPosition();
+    if (this_present_bracketPosition || that_present_bracketPosition) {
+      if (!(this_present_bracketPosition && that_present_bracketPosition))
         return false;
-      if (!this.bracket_position.equals(that.bracket_position))
+      if (!this.bracketPosition.equals(that.bracketPosition))
         return false;
     }
 
@@ -1675,39 +1663,39 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return false;
     }
 
-    boolean this_present_tournament = true && this.isSetTournament();
-    boolean that_present_tournament = true && that.isSetTournament();
-    if (this_present_tournament || that_present_tournament) {
-      if (!(this_present_tournament && that_present_tournament))
+    boolean this_present_tournamentId = true;
+    boolean that_present_tournamentId = true;
+    if (this_present_tournamentId || that_present_tournamentId) {
+      if (!(this_present_tournamentId && that_present_tournamentId))
         return false;
-      if (!this.tournament.equals(that.tournament))
-        return false;
-    }
-
-    boolean this_present_substage = true && this.isSetSubstage();
-    boolean that_present_substage = true && that.isSetSubstage();
-    if (this_present_substage || that_present_substage) {
-      if (!(this_present_substage && that_present_substage))
-        return false;
-      if (!this.substage.equals(that.substage))
+      if (this.tournamentId != that.tournamentId)
         return false;
     }
 
-    boolean this_present_game = true && this.isSetGame();
-    boolean that_present_game = true && that.isSetGame();
-    if (this_present_game || that_present_game) {
-      if (!(this_present_game && that_present_game))
+    boolean this_present_substageId = true;
+    boolean that_present_substageId = true;
+    if (this_present_substageId || that_present_substageId) {
+      if (!(this_present_substageId && that_present_substageId))
         return false;
-      if (!this.game.equals(that.game))
+      if (this.substageId != that.substageId)
         return false;
     }
 
-    boolean this_present_matches = true && this.isSetMatches();
-    boolean that_present_matches = true && that.isSetMatches();
-    if (this_present_matches || that_present_matches) {
-      if (!(this_present_matches && that_present_matches))
+    boolean this_present_gameId = true;
+    boolean that_present_gameId = true;
+    if (this_present_gameId || that_present_gameId) {
+      if (!(this_present_gameId && that_present_gameId))
         return false;
-      if (!this.matches.equals(that.matches))
+      if (this.gameId != that.gameId)
+        return false;
+    }
+
+    boolean this_present_matchIds = true && this.isSetMatchIds();
+    boolean that_present_matchIds = true && that.isSetMatchIds();
+    if (this_present_matchIds || that_present_matchIds) {
+      if (!(this_present_matchIds && that_present_matchIds))
+        return false;
+      if (!this.matchIds.equals(that.matchIds))
         return false;
     }
 
@@ -1729,12 +1717,12 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return false;
     }
 
-    boolean this_present_has_incident_report = true;
-    boolean that_present_has_incident_report = true;
-    if (this_present_has_incident_report || that_present_has_incident_report) {
-      if (!(this_present_has_incident_report && that_present_has_incident_report))
+    boolean this_present_hasIncidentReport = true;
+    boolean that_present_hasIncidentReport = true;
+    if (this_present_hasIncidentReport || that_present_hasIncidentReport) {
+      if (!(this_present_hasIncidentReport && that_present_hasIncidentReport))
         return false;
-      if (this.has_incident_report != that.has_incident_report)
+      if (this.hasIncidentReport != that.hasIncidentReport)
         return false;
     }
 
@@ -1747,48 +1735,48 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return false;
     }
 
-    boolean this_present_format = true && this.isSetFormat();
-    boolean that_present_format = true && that.isSetFormat();
-    if (this_present_format || that_present_format) {
-      if (!(this_present_format && that_present_format))
+    boolean this_present_formatBestOf = true;
+    boolean that_present_formatBestOf = true;
+    if (this_present_formatBestOf || that_present_formatBestOf) {
+      if (!(this_present_formatBestOf && that_present_formatBestOf))
         return false;
-      if (!this.format.equals(that.format))
-        return false;
-    }
-
-    boolean this_present_game_version = true && this.isSetGame_version();
-    boolean that_present_game_version = true && that.isSetGame_version();
-    if (this_present_game_version || that_present_game_version) {
-      if (!(this_present_game_version && that_present_game_version))
-        return false;
-      if (!this.game_version.equals(that.game_version))
+      if (this.formatBestOf != that.formatBestOf)
         return false;
     }
 
-    boolean this_present_resource_version = true;
-    boolean that_present_resource_version = true;
-    if (this_present_resource_version || that_present_resource_version) {
-      if (!(this_present_resource_version && that_present_resource_version))
+    boolean this_present_gameVersion = true && this.isSetGameVersion();
+    boolean that_present_gameVersion = true && that.isSetGameVersion();
+    if (this_present_gameVersion || that_present_gameVersion) {
+      if (!(this_present_gameVersion && that_present_gameVersion))
         return false;
-      if (this.resource_version != that.resource_version)
-        return false;
-    }
-
-    boolean this_present_created_at = true;
-    boolean that_present_created_at = true;
-    if (this_present_created_at || that_present_created_at) {
-      if (!(this_present_created_at && that_present_created_at))
-        return false;
-      if (this.created_at != that.created_at)
+      if (!this.gameVersion.equals(that.gameVersion))
         return false;
     }
 
-    boolean this_present_updated_at = true;
-    boolean that_present_updated_at = true;
-    if (this_present_updated_at || that_present_updated_at) {
-      if (!(this_present_updated_at && that_present_updated_at))
+    boolean this_present_resourceVersion = true;
+    boolean that_present_resourceVersion = true;
+    if (this_present_resourceVersion || that_present_resourceVersion) {
+      if (!(this_present_resourceVersion && that_present_resourceVersion))
         return false;
-      if (this.updated_at != that.updated_at)
+      if (this.resourceVersion != that.resourceVersion)
+        return false;
+    }
+
+    boolean this_present_createdAt = true;
+    boolean that_present_createdAt = true;
+    if (this_present_createdAt || that_present_createdAt) {
+      if (!(this_present_createdAt && that_present_createdAt))
+        return false;
+      if (this.createdAt != that.createdAt)
+        return false;
+    }
+
+    boolean this_present_updatedAt = true;
+    boolean that_present_updatedAt = true;
+    if (this_present_updatedAt || that_present_updatedAt) {
+      if (!(this_present_updatedAt && that_present_updatedAt))
+        return false;
+      if (this.updatedAt != that.updatedAt)
         return false;
     }
 
@@ -1809,13 +1797,13 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(end);
 
-    hashCode = hashCode * 8191 + ((isSetPostponed_from()) ? 131071 : 524287);
-    if (isSetPostponed_from())
-      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(postponed_from);
+    hashCode = hashCode * 8191 + ((isSetPostponedFrom()) ? 131071 : 524287);
+    if (isSetPostponedFrom())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(postponedFrom);
 
-    hashCode = hashCode * 8191 + ((isSetDeleted_at()) ? 131071 : 524287);
-    if (isSetDeleted_at())
-      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(deleted_at);
+    hashCode = hashCode * 8191 + ((isSetDeletedAt()) ? 131071 : 524287);
+    if (isSetDeletedAt())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(deletedAt);
 
     hashCode = hashCode * 8191 + ((isSetLifecycle()) ? 131071 : 524287);
     if (isSetLifecycle())
@@ -1823,37 +1811,31 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
 
     hashCode = hashCode * 8191 + tier;
 
-    hashCode = hashCode * 8191 + best_of;
+    hashCode = hashCode * 8191 + bestOf;
 
-    hashCode = hashCode * 8191 + ((isSetChain()) ? 131071 : 524287);
-    if (isSetChain())
-      hashCode = hashCode * 8191 + chain.hashCode();
+    hashCode = hashCode * 8191 + ((isSetChainIds()) ? 131071 : 524287);
+    if (isSetChainIds())
+      hashCode = hashCode * 8191 + chainIds.hashCode();
 
     hashCode = hashCode * 8191 + ((streamed) ? 131071 : 524287);
 
-    hashCode = hashCode * 8191 + ((isSetBracket_position()) ? 131071 : 524287);
-    if (isSetBracket_position())
-      hashCode = hashCode * 8191 + bracket_position.hashCode();
+    hashCode = hashCode * 8191 + ((isSetBracketPosition()) ? 131071 : 524287);
+    if (isSetBracketPosition())
+      hashCode = hashCode * 8191 + bracketPosition.hashCode();
 
     hashCode = hashCode * 8191 + ((isSetParticipants()) ? 131071 : 524287);
     if (isSetParticipants())
       hashCode = hashCode * 8191 + participants.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetTournament()) ? 131071 : 524287);
-    if (isSetTournament())
-      hashCode = hashCode * 8191 + tournament.hashCode();
+    hashCode = hashCode * 8191 + tournamentId;
 
-    hashCode = hashCode * 8191 + ((isSetSubstage()) ? 131071 : 524287);
-    if (isSetSubstage())
-      hashCode = hashCode * 8191 + substage.hashCode();
+    hashCode = hashCode * 8191 + substageId;
 
-    hashCode = hashCode * 8191 + ((isSetGame()) ? 131071 : 524287);
-    if (isSetGame())
-      hashCode = hashCode * 8191 + game.hashCode();
+    hashCode = hashCode * 8191 + gameId;
 
-    hashCode = hashCode * 8191 + ((isSetMatches()) ? 131071 : 524287);
-    if (isSetMatches())
-      hashCode = hashCode * 8191 + matches.hashCode();
+    hashCode = hashCode * 8191 + ((isSetMatchIds()) ? 131071 : 524287);
+    if (isSetMatchIds())
+      hashCode = hashCode * 8191 + matchIds.hashCode();
 
     hashCode = hashCode * 8191 + ((isSetCasters()) ? 131071 : 524287);
     if (isSetCasters())
@@ -1863,25 +1845,23 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     if (isSetBroadcasters())
       hashCode = hashCode * 8191 + broadcasters.hashCode();
 
-    hashCode = hashCode * 8191 + ((has_incident_report) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + ((hasIncidentReport) ? 131071 : 524287);
 
     hashCode = hashCode * 8191 + ((isSetCoverage()) ? 131071 : 524287);
     if (isSetCoverage())
       hashCode = hashCode * 8191 + coverage.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetFormat()) ? 131071 : 524287);
-    if (isSetFormat())
-      hashCode = hashCode * 8191 + format.hashCode();
+    hashCode = hashCode * 8191 + formatBestOf;
 
-    hashCode = hashCode * 8191 + ((isSetGame_version()) ? 131071 : 524287);
-    if (isSetGame_version())
-      hashCode = hashCode * 8191 + game_version.hashCode();
+    hashCode = hashCode * 8191 + ((isSetGameVersion()) ? 131071 : 524287);
+    if (isSetGameVersion())
+      hashCode = hashCode * 8191 + gameVersion.hashCode();
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(resource_version);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(resourceVersion);
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(created_at);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(createdAt);
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(updated_at);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(updatedAt);
 
     return hashCode;
   }
@@ -1934,22 +1914,22 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetPostponed_from(), other.isSetPostponed_from());
+    lastComparison = java.lang.Boolean.compare(isSetPostponedFrom(), other.isSetPostponedFrom());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPostponed_from()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.postponed_from, other.postponed_from);
+    if (isSetPostponedFrom()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.postponedFrom, other.postponedFrom);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetDeleted_at(), other.isSetDeleted_at());
+    lastComparison = java.lang.Boolean.compare(isSetDeletedAt(), other.isSetDeletedAt());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetDeleted_at()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.deleted_at, other.deleted_at);
+    if (isSetDeletedAt()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.deletedAt, other.deletedAt);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1974,22 +1954,22 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetBest_of(), other.isSetBest_of());
+    lastComparison = java.lang.Boolean.compare(isSetBestOf(), other.isSetBestOf());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetBest_of()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.best_of, other.best_of);
+    if (isSetBestOf()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bestOf, other.bestOf);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetChain(), other.isSetChain());
+    lastComparison = java.lang.Boolean.compare(isSetChainIds(), other.isSetChainIds());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetChain()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.chain, other.chain);
+    if (isSetChainIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.chainIds, other.chainIds);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2004,12 +1984,12 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetBracket_position(), other.isSetBracket_position());
+    lastComparison = java.lang.Boolean.compare(isSetBracketPosition(), other.isSetBracketPosition());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetBracket_position()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bracket_position, other.bracket_position);
+    if (isSetBracketPosition()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bracketPosition, other.bracketPosition);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2024,42 +2004,42 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetTournament(), other.isSetTournament());
+    lastComparison = java.lang.Boolean.compare(isSetTournamentId(), other.isSetTournamentId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTournament()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tournament, other.tournament);
+    if (isSetTournamentId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tournamentId, other.tournamentId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetSubstage(), other.isSetSubstage());
+    lastComparison = java.lang.Boolean.compare(isSetSubstageId(), other.isSetSubstageId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSubstage()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.substage, other.substage);
+    if (isSetSubstageId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.substageId, other.substageId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetGame(), other.isSetGame());
+    lastComparison = java.lang.Boolean.compare(isSetGameId(), other.isSetGameId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetGame()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.game, other.game);
+    if (isSetGameId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.gameId, other.gameId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetMatches(), other.isSetMatches());
+    lastComparison = java.lang.Boolean.compare(isSetMatchIds(), other.isSetMatchIds());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMatches()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.matches, other.matches);
+    if (isSetMatchIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.matchIds, other.matchIds);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2084,12 +2064,12 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetHas_incident_report(), other.isSetHas_incident_report());
+    lastComparison = java.lang.Boolean.compare(isSetHasIncidentReport(), other.isSetHasIncidentReport());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetHas_incident_report()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.has_incident_report, other.has_incident_report);
+    if (isSetHasIncidentReport()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.hasIncidentReport, other.hasIncidentReport);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2104,52 +2084,52 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetFormat(), other.isSetFormat());
+    lastComparison = java.lang.Boolean.compare(isSetFormatBestOf(), other.isSetFormatBestOf());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFormat()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.format, other.format);
+    if (isSetFormatBestOf()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.formatBestOf, other.formatBestOf);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetGame_version(), other.isSetGame_version());
+    lastComparison = java.lang.Boolean.compare(isSetGameVersion(), other.isSetGameVersion());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetGame_version()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.game_version, other.game_version);
+    if (isSetGameVersion()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.gameVersion, other.gameVersion);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetResource_version(), other.isSetResource_version());
+    lastComparison = java.lang.Boolean.compare(isSetResourceVersion(), other.isSetResourceVersion());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetResource_version()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.resource_version, other.resource_version);
+    if (isSetResourceVersion()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.resourceVersion, other.resourceVersion);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetCreated_at(), other.isSetCreated_at());
+    lastComparison = java.lang.Boolean.compare(isSetCreatedAt(), other.isSetCreatedAt());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCreated_at()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.created_at, other.created_at);
+    if (isSetCreatedAt()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.createdAt, other.createdAt);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetUpdated_at(), other.isSetUpdated_at());
+    lastComparison = java.lang.Boolean.compare(isSetUpdatedAt(), other.isSetUpdatedAt());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetUpdated_at()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.updated_at, other.updated_at);
+    if (isSetUpdatedAt()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.updatedAt, other.updatedAt);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2197,16 +2177,16 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     sb.append("end:");
     sb.append(this.end);
     first = false;
-    if (isSetPostponed_from()) {
+    if (isSetPostponedFrom()) {
       if (!first) sb.append(", ");
-      sb.append("postponed_from:");
-      sb.append(this.postponed_from);
+      sb.append("postponedFrom:");
+      sb.append(this.postponedFrom);
       first = false;
     }
-    if (isSetDeleted_at()) {
+    if (isSetDeletedAt()) {
       if (!first) sb.append(", ");
-      sb.append("deleted_at:");
-      sb.append(this.deleted_at);
+      sb.append("deletedAt:");
+      sb.append(this.deletedAt);
       first = false;
     }
     if (!first) sb.append(", ");
@@ -2222,28 +2202,28 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     sb.append(this.tier);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("best_of:");
-    sb.append(this.best_of);
+    sb.append("bestOf:");
+    sb.append(this.bestOf);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("chain:");
-    if (this.chain == null) {
+    sb.append("chainIds:");
+    if (this.chainIds == null) {
       sb.append("null");
     } else {
-      sb.append(this.chain);
+      sb.append(this.chainIds);
     }
     first = false;
     if (!first) sb.append(", ");
     sb.append("streamed:");
     sb.append(this.streamed);
     first = false;
-    if (isSetBracket_position()) {
+    if (isSetBracketPosition()) {
       if (!first) sb.append(", ");
-      sb.append("bracket_position:");
-      if (this.bracket_position == null) {
+      sb.append("bracketPosition:");
+      if (this.bracketPosition == null) {
         sb.append("null");
       } else {
-        sb.append(this.bracket_position);
+        sb.append(this.bracketPosition);
       }
       first = false;
     }
@@ -2256,35 +2236,23 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("tournament:");
-    if (this.tournament == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.tournament);
-    }
+    sb.append("tournamentId:");
+    sb.append(this.tournamentId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("substage:");
-    if (this.substage == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.substage);
-    }
+    sb.append("substageId:");
+    sb.append(this.substageId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("game:");
-    if (this.game == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.game);
-    }
+    sb.append("gameId:");
+    sb.append(this.gameId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("matches:");
-    if (this.matches == null) {
+    sb.append("matchIds:");
+    if (this.matchIds == null) {
       sb.append("null");
     } else {
-      sb.append(this.matches);
+      sb.append(this.matchIds);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -2304,8 +2272,8 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("has_incident_report:");
-    sb.append(this.has_incident_report);
+    sb.append("hasIncidentReport:");
+    sb.append(this.hasIncidentReport);
     first = false;
     if (!first) sb.append(", ");
     sb.append("coverage:");
@@ -2316,32 +2284,30 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("format:");
-    if (this.format == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.format);
+    sb.append("formatBestOf:");
+    sb.append(this.formatBestOf);
+    first = false;
+    if (isSetGameVersion()) {
+      if (!first) sb.append(", ");
+      sb.append("gameVersion:");
+      if (this.gameVersion == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.gameVersion);
+      }
+      first = false;
     }
+    if (!first) sb.append(", ");
+    sb.append("resourceVersion:");
+    sb.append(this.resourceVersion);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("game_version:");
-    if (this.game_version == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.game_version);
-    }
+    sb.append("createdAt:");
+    sb.append(this.createdAt);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("resource_version:");
-    sb.append(this.resource_version);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("created_at:");
-    sb.append(this.created_at);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("updated_at:");
-    sb.append(this.updated_at);
+    sb.append("updatedAt:");
+    sb.append(this.updatedAt);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -2350,26 +2316,14 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
-    if (bracket_position != null) {
-      bracket_position.validate();
-    }
-    if (tournament != null) {
-      tournament.validate();
-    }
-    if (substage != null) {
-      substage.validate();
-    }
-    if (game != null) {
-      game.validate();
+    if (bracketPosition != null) {
+      bracketPosition.validate();
     }
     if (coverage != null) {
       coverage.validate();
     }
-    if (format != null) {
-      format.validate();
-    }
-    if (game_version != null) {
-      game_version.validate();
+    if (gameVersion != null) {
+      gameVersion.validate();
     }
   }
 
@@ -2445,16 +2399,16 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
             break;
           case 5: // POSTPONED_FROM
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.postponed_from = iprot.readI64();
-              struct.setPostponed_fromIsSet(true);
+              struct.postponedFrom = iprot.readI64();
+              struct.setPostponedFromIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 6: // DELETED_AT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.deleted_at = iprot.readI64();
-              struct.setDeleted_atIsSet(true);
+              struct.deletedAt = iprot.readI64();
+              struct.setDeletedAtIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2477,27 +2431,26 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
             break;
           case 9: // BEST_OF
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.best_of = iprot.readI32();
-              struct.setBest_ofIsSet(true);
+              struct.bestOf = iprot.readI32();
+              struct.setBestOfIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 10: // CHAIN
+          case 10: // CHAIN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list272 = iprot.readListBegin();
-                struct.chain = new java.util.ArrayList<ChainItem>(_list272.size);
-                @org.apache.thrift.annotation.Nullable ChainItem _elem273;
+                struct.chainIds = new java.util.ArrayList<java.lang.Integer>(_list272.size);
+                int _elem273;
                 for (int _i274 = 0; _i274 < _list272.size; ++_i274)
                 {
-                  _elem273 = new ChainItem();
-                  _elem273.read(iprot);
-                  struct.chain.add(_elem273);
+                  _elem273 = iprot.readI32();
+                  struct.chainIds.add(_elem273);
                 }
                 iprot.readListEnd();
               }
-              struct.setChainIsSet(true);
+              struct.setChainIdsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2512,9 +2465,9 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
             break;
           case 12: // BRACKET_POSITION
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.bracket_position = new BracketPosition();
-              struct.bracket_position.read(iprot);
-              struct.setBracket_positionIsSet(true);
+              struct.bracketPosition = new BracketPosition();
+              struct.bracketPosition.read(iprot);
+              struct.setBracketPositionIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2538,48 +2491,44 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 14: // TOURNAMENT
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.tournament = new Tournament();
-              struct.tournament.read(iprot);
-              struct.setTournamentIsSet(true);
+          case 14: // TOURNAMENT_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.tournamentId = iprot.readI32();
+              struct.setTournamentIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // SUBSTAGE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.substage = new Substage();
-              struct.substage.read(iprot);
-              struct.setSubstageIsSet(true);
+          case 15: // SUBSTAGE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.substageId = iprot.readI32();
+              struct.setSubstageIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 16: // GAME
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.game = new Game();
-              struct.game.read(iprot);
-              struct.setGameIsSet(true);
+          case 16: // GAME_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.gameId = iprot.readI32();
+              struct.setGameIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 17: // MATCHES
+          case 17: // MATCH_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list278 = iprot.readListBegin();
-                struct.matches = new java.util.ArrayList<Match>(_list278.size);
-                @org.apache.thrift.annotation.Nullable Match _elem279;
+                struct.matchIds = new java.util.ArrayList<java.lang.Integer>(_list278.size);
+                int _elem279;
                 for (int _i280 = 0; _i280 < _list278.size; ++_i280)
                 {
-                  _elem279 = new Match();
-                  _elem279.read(iprot);
-                  struct.matches.add(_elem279);
+                  _elem279 = iprot.readI32();
+                  struct.matchIds.add(_elem279);
                 }
                 iprot.readListEnd();
               }
-              struct.setMatchesIsSet(true);
+              struct.setMatchIdsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2624,8 +2573,8 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
             break;
           case 20: // HAS_INCIDENT_REPORT
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.has_incident_report = iprot.readBool();
-              struct.setHas_incident_reportIsSet(true);
+              struct.hasIncidentReport = iprot.readBool();
+              struct.setHasIncidentReportIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2639,44 +2588,43 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 22: // FORMAT
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.format = new Format();
-              struct.format.read(iprot);
-              struct.setFormatIsSet(true);
+          case 22: // FORMAT_BEST_OF
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.formatBestOf = iprot.readI32();
+              struct.setFormatBestOfIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 23: // GAME_VERSION
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.game_version = new GameVersion();
-              struct.game_version.read(iprot);
-              struct.setGame_versionIsSet(true);
+              struct.gameVersion = new GameVersion();
+              struct.gameVersion.read(iprot);
+              struct.setGameVersionIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 24: // RESOURCE_VERSION
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.resource_version = iprot.readI64();
-              struct.setResource_versionIsSet(true);
+              struct.resourceVersion = iprot.readI64();
+              struct.setResourceVersionIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 25: // CREATED_AT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.created_at = iprot.readI64();
-              struct.setCreated_atIsSet(true);
+              struct.createdAt = iprot.readI64();
+              struct.setCreatedAtIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
           case 26: // UPDATED_AT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.updated_at = iprot.readI64();
-              struct.setUpdated_atIsSet(true);
+              struct.updatedAt = iprot.readI64();
+              struct.setUpdatedAtIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2711,14 +2659,14 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       oprot.writeFieldBegin(END_FIELD_DESC);
       oprot.writeI64(struct.end);
       oprot.writeFieldEnd();
-      if (struct.isSetPostponed_from()) {
+      if (struct.isSetPostponedFrom()) {
         oprot.writeFieldBegin(POSTPONED_FROM_FIELD_DESC);
-        oprot.writeI64(struct.postponed_from);
+        oprot.writeI64(struct.postponedFrom);
         oprot.writeFieldEnd();
       }
-      if (struct.isSetDeleted_at()) {
+      if (struct.isSetDeletedAt()) {
         oprot.writeFieldBegin(DELETED_AT_FIELD_DESC);
-        oprot.writeI64(struct.deleted_at);
+        oprot.writeI64(struct.deletedAt);
         oprot.writeFieldEnd();
       }
       if (struct.lifecycle != null) {
@@ -2730,15 +2678,15 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       oprot.writeI32(struct.tier);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(BEST_OF_FIELD_DESC);
-      oprot.writeI32(struct.best_of);
+      oprot.writeI32(struct.bestOf);
       oprot.writeFieldEnd();
-      if (struct.chain != null) {
-        oprot.writeFieldBegin(CHAIN_FIELD_DESC);
+      if (struct.chainIds != null) {
+        oprot.writeFieldBegin(CHAIN_IDS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.chain.size()));
-          for (ChainItem _iter287 : struct.chain)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.chainIds.size()));
+          for (int _iter287 : struct.chainIds)
           {
-            _iter287.write(oprot);
+            oprot.writeI32(_iter287);
           }
           oprot.writeListEnd();
         }
@@ -2747,10 +2695,10 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       oprot.writeFieldBegin(STREAMED_FIELD_DESC);
       oprot.writeBool(struct.streamed);
       oprot.writeFieldEnd();
-      if (struct.bracket_position != null) {
-        if (struct.isSetBracket_position()) {
+      if (struct.bracketPosition != null) {
+        if (struct.isSetBracketPosition()) {
           oprot.writeFieldBegin(BRACKET_POSITION_FIELD_DESC);
-          struct.bracket_position.write(oprot);
+          struct.bracketPosition.write(oprot);
           oprot.writeFieldEnd();
         }
       }
@@ -2766,28 +2714,22 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         }
         oprot.writeFieldEnd();
       }
-      if (struct.tournament != null) {
-        oprot.writeFieldBegin(TOURNAMENT_FIELD_DESC);
-        struct.tournament.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      if (struct.substage != null) {
-        oprot.writeFieldBegin(SUBSTAGE_FIELD_DESC);
-        struct.substage.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      if (struct.game != null) {
-        oprot.writeFieldBegin(GAME_FIELD_DESC);
-        struct.game.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      if (struct.matches != null) {
-        oprot.writeFieldBegin(MATCHES_FIELD_DESC);
+      oprot.writeFieldBegin(TOURNAMENT_ID_FIELD_DESC);
+      oprot.writeI32(struct.tournamentId);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(SUBSTAGE_ID_FIELD_DESC);
+      oprot.writeI32(struct.substageId);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(GAME_ID_FIELD_DESC);
+      oprot.writeI32(struct.gameId);
+      oprot.writeFieldEnd();
+      if (struct.matchIds != null) {
+        oprot.writeFieldBegin(MATCH_IDS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.matches.size()));
-          for (Match _iter289 : struct.matches)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.matchIds.size()));
+          for (int _iter289 : struct.matchIds)
           {
-            _iter289.write(oprot);
+            oprot.writeI32(_iter289);
           }
           oprot.writeListEnd();
         }
@@ -2818,31 +2760,31 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         oprot.writeFieldEnd();
       }
       oprot.writeFieldBegin(HAS_INCIDENT_REPORT_FIELD_DESC);
-      oprot.writeBool(struct.has_incident_report);
+      oprot.writeBool(struct.hasIncidentReport);
       oprot.writeFieldEnd();
       if (struct.coverage != null) {
         oprot.writeFieldBegin(COVERAGE_FIELD_DESC);
         struct.coverage.write(oprot);
         oprot.writeFieldEnd();
       }
-      if (struct.format != null) {
-        oprot.writeFieldBegin(FORMAT_FIELD_DESC);
-        struct.format.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      if (struct.game_version != null) {
-        oprot.writeFieldBegin(GAME_VERSION_FIELD_DESC);
-        struct.game_version.write(oprot);
-        oprot.writeFieldEnd();
+      oprot.writeFieldBegin(FORMAT_BEST_OF_FIELD_DESC);
+      oprot.writeI32(struct.formatBestOf);
+      oprot.writeFieldEnd();
+      if (struct.gameVersion != null) {
+        if (struct.isSetGameVersion()) {
+          oprot.writeFieldBegin(GAME_VERSION_FIELD_DESC);
+          struct.gameVersion.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldBegin(RESOURCE_VERSION_FIELD_DESC);
-      oprot.writeI64(struct.resource_version);
+      oprot.writeI64(struct.resourceVersion);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(CREATED_AT_FIELD_DESC);
-      oprot.writeI64(struct.created_at);
+      oprot.writeI64(struct.createdAt);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(UPDATED_AT_FIELD_DESC);
-      oprot.writeI64(struct.updated_at);
+      oprot.writeI64(struct.updatedAt);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -2875,10 +2817,10 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       if (struct.isSetEnd()) {
         optionals.set(3);
       }
-      if (struct.isSetPostponed_from()) {
+      if (struct.isSetPostponedFrom()) {
         optionals.set(4);
       }
-      if (struct.isSetDeleted_at()) {
+      if (struct.isSetDeletedAt()) {
         optionals.set(5);
       }
       if (struct.isSetLifecycle()) {
@@ -2887,31 +2829,31 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       if (struct.isSetTier()) {
         optionals.set(7);
       }
-      if (struct.isSetBest_of()) {
+      if (struct.isSetBestOf()) {
         optionals.set(8);
       }
-      if (struct.isSetChain()) {
+      if (struct.isSetChainIds()) {
         optionals.set(9);
       }
       if (struct.isSetStreamed()) {
         optionals.set(10);
       }
-      if (struct.isSetBracket_position()) {
+      if (struct.isSetBracketPosition()) {
         optionals.set(11);
       }
       if (struct.isSetParticipants()) {
         optionals.set(12);
       }
-      if (struct.isSetTournament()) {
+      if (struct.isSetTournamentId()) {
         optionals.set(13);
       }
-      if (struct.isSetSubstage()) {
+      if (struct.isSetSubstageId()) {
         optionals.set(14);
       }
-      if (struct.isSetGame()) {
+      if (struct.isSetGameId()) {
         optionals.set(15);
       }
-      if (struct.isSetMatches()) {
+      if (struct.isSetMatchIds()) {
         optionals.set(16);
       }
       if (struct.isSetCasters()) {
@@ -2920,25 +2862,25 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       if (struct.isSetBroadcasters()) {
         optionals.set(18);
       }
-      if (struct.isSetHas_incident_report()) {
+      if (struct.isSetHasIncidentReport()) {
         optionals.set(19);
       }
       if (struct.isSetCoverage()) {
         optionals.set(20);
       }
-      if (struct.isSetFormat()) {
+      if (struct.isSetFormatBestOf()) {
         optionals.set(21);
       }
-      if (struct.isSetGame_version()) {
+      if (struct.isSetGameVersion()) {
         optionals.set(22);
       }
-      if (struct.isSetResource_version()) {
+      if (struct.isSetResourceVersion()) {
         optionals.set(23);
       }
-      if (struct.isSetCreated_at()) {
+      if (struct.isSetCreatedAt()) {
         optionals.set(24);
       }
-      if (struct.isSetUpdated_at()) {
+      if (struct.isSetUpdatedAt()) {
         optionals.set(25);
       }
       oprot.writeBitSet(optionals, 26);
@@ -2954,11 +2896,11 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       if (struct.isSetEnd()) {
         oprot.writeI64(struct.end);
       }
-      if (struct.isSetPostponed_from()) {
-        oprot.writeI64(struct.postponed_from);
+      if (struct.isSetPostponedFrom()) {
+        oprot.writeI64(struct.postponedFrom);
       }
-      if (struct.isSetDeleted_at()) {
-        oprot.writeI64(struct.deleted_at);
+      if (struct.isSetDeletedAt()) {
+        oprot.writeI64(struct.deletedAt);
       }
       if (struct.isSetLifecycle()) {
         oprot.writeString(struct.lifecycle);
@@ -2966,23 +2908,23 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
       if (struct.isSetTier()) {
         oprot.writeI32(struct.tier);
       }
-      if (struct.isSetBest_of()) {
-        oprot.writeI32(struct.best_of);
+      if (struct.isSetBestOf()) {
+        oprot.writeI32(struct.bestOf);
       }
-      if (struct.isSetChain()) {
+      if (struct.isSetChainIds()) {
         {
-          oprot.writeI32(struct.chain.size());
-          for (ChainItem _iter292 : struct.chain)
+          oprot.writeI32(struct.chainIds.size());
+          for (int _iter292 : struct.chainIds)
           {
-            _iter292.write(oprot);
+            oprot.writeI32(_iter292);
           }
         }
       }
       if (struct.isSetStreamed()) {
         oprot.writeBool(struct.streamed);
       }
-      if (struct.isSetBracket_position()) {
-        struct.bracket_position.write(oprot);
+      if (struct.isSetBracketPosition()) {
+        struct.bracketPosition.write(oprot);
       }
       if (struct.isSetParticipants()) {
         {
@@ -2993,21 +2935,21 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
           }
         }
       }
-      if (struct.isSetTournament()) {
-        struct.tournament.write(oprot);
+      if (struct.isSetTournamentId()) {
+        oprot.writeI32(struct.tournamentId);
       }
-      if (struct.isSetSubstage()) {
-        struct.substage.write(oprot);
+      if (struct.isSetSubstageId()) {
+        oprot.writeI32(struct.substageId);
       }
-      if (struct.isSetGame()) {
-        struct.game.write(oprot);
+      if (struct.isSetGameId()) {
+        oprot.writeI32(struct.gameId);
       }
-      if (struct.isSetMatches()) {
+      if (struct.isSetMatchIds()) {
         {
-          oprot.writeI32(struct.matches.size());
-          for (Match _iter294 : struct.matches)
+          oprot.writeI32(struct.matchIds.size());
+          for (int _iter294 : struct.matchIds)
           {
-            _iter294.write(oprot);
+            oprot.writeI32(_iter294);
           }
         }
       }
@@ -3029,26 +2971,26 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
           }
         }
       }
-      if (struct.isSetHas_incident_report()) {
-        oprot.writeBool(struct.has_incident_report);
+      if (struct.isSetHasIncidentReport()) {
+        oprot.writeBool(struct.hasIncidentReport);
       }
       if (struct.isSetCoverage()) {
         struct.coverage.write(oprot);
       }
-      if (struct.isSetFormat()) {
-        struct.format.write(oprot);
+      if (struct.isSetFormatBestOf()) {
+        oprot.writeI32(struct.formatBestOf);
       }
-      if (struct.isSetGame_version()) {
-        struct.game_version.write(oprot);
+      if (struct.isSetGameVersion()) {
+        struct.gameVersion.write(oprot);
       }
-      if (struct.isSetResource_version()) {
-        oprot.writeI64(struct.resource_version);
+      if (struct.isSetResourceVersion()) {
+        oprot.writeI64(struct.resourceVersion);
       }
-      if (struct.isSetCreated_at()) {
-        oprot.writeI64(struct.created_at);
+      if (struct.isSetCreatedAt()) {
+        oprot.writeI64(struct.createdAt);
       }
-      if (struct.isSetUpdated_at()) {
-        oprot.writeI64(struct.updated_at);
+      if (struct.isSetUpdatedAt()) {
+        oprot.writeI64(struct.updatedAt);
       }
     }
 
@@ -3073,12 +3015,12 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         struct.setEndIsSet(true);
       }
       if (incoming.get(4)) {
-        struct.postponed_from = iprot.readI64();
-        struct.setPostponed_fromIsSet(true);
+        struct.postponedFrom = iprot.readI64();
+        struct.setPostponedFromIsSet(true);
       }
       if (incoming.get(5)) {
-        struct.deleted_at = iprot.readI64();
-        struct.setDeleted_atIsSet(true);
+        struct.deletedAt = iprot.readI64();
+        struct.setDeletedAtIsSet(true);
       }
       if (incoming.get(6)) {
         struct.lifecycle = iprot.readString();
@@ -3089,31 +3031,30 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         struct.setTierIsSet(true);
       }
       if (incoming.get(8)) {
-        struct.best_of = iprot.readI32();
-        struct.setBest_ofIsSet(true);
+        struct.bestOf = iprot.readI32();
+        struct.setBestOfIsSet(true);
       }
       if (incoming.get(9)) {
         {
-          org.apache.thrift.protocol.TList _list297 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.chain = new java.util.ArrayList<ChainItem>(_list297.size);
-          @org.apache.thrift.annotation.Nullable ChainItem _elem298;
+          org.apache.thrift.protocol.TList _list297 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.chainIds = new java.util.ArrayList<java.lang.Integer>(_list297.size);
+          int _elem298;
           for (int _i299 = 0; _i299 < _list297.size; ++_i299)
           {
-            _elem298 = new ChainItem();
-            _elem298.read(iprot);
-            struct.chain.add(_elem298);
+            _elem298 = iprot.readI32();
+            struct.chainIds.add(_elem298);
           }
         }
-        struct.setChainIsSet(true);
+        struct.setChainIdsIsSet(true);
       }
       if (incoming.get(10)) {
         struct.streamed = iprot.readBool();
         struct.setStreamedIsSet(true);
       }
       if (incoming.get(11)) {
-        struct.bracket_position = new BracketPosition();
-        struct.bracket_position.read(iprot);
-        struct.setBracket_positionIsSet(true);
+        struct.bracketPosition = new BracketPosition();
+        struct.bracketPosition.read(iprot);
+        struct.setBracketPositionIsSet(true);
       }
       if (incoming.get(12)) {
         {
@@ -3130,33 +3071,29 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         struct.setParticipantsIsSet(true);
       }
       if (incoming.get(13)) {
-        struct.tournament = new Tournament();
-        struct.tournament.read(iprot);
-        struct.setTournamentIsSet(true);
+        struct.tournamentId = iprot.readI32();
+        struct.setTournamentIdIsSet(true);
       }
       if (incoming.get(14)) {
-        struct.substage = new Substage();
-        struct.substage.read(iprot);
-        struct.setSubstageIsSet(true);
+        struct.substageId = iprot.readI32();
+        struct.setSubstageIdIsSet(true);
       }
       if (incoming.get(15)) {
-        struct.game = new Game();
-        struct.game.read(iprot);
-        struct.setGameIsSet(true);
+        struct.gameId = iprot.readI32();
+        struct.setGameIdIsSet(true);
       }
       if (incoming.get(16)) {
         {
-          org.apache.thrift.protocol.TList _list303 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.matches = new java.util.ArrayList<Match>(_list303.size);
-          @org.apache.thrift.annotation.Nullable Match _elem304;
+          org.apache.thrift.protocol.TList _list303 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.matchIds = new java.util.ArrayList<java.lang.Integer>(_list303.size);
+          int _elem304;
           for (int _i305 = 0; _i305 < _list303.size; ++_i305)
           {
-            _elem304 = new Match();
-            _elem304.read(iprot);
-            struct.matches.add(_elem304);
+            _elem304 = iprot.readI32();
+            struct.matchIds.add(_elem304);
           }
         }
-        struct.setMatchesIsSet(true);
+        struct.setMatchIdsIsSet(true);
       }
       if (incoming.get(17)) {
         {
@@ -3187,8 +3124,8 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         struct.setBroadcastersIsSet(true);
       }
       if (incoming.get(19)) {
-        struct.has_incident_report = iprot.readBool();
-        struct.setHas_incident_reportIsSet(true);
+        struct.hasIncidentReport = iprot.readBool();
+        struct.setHasIncidentReportIsSet(true);
       }
       if (incoming.get(20)) {
         struct.coverage = new Coverage();
@@ -3196,26 +3133,25 @@ public class Series implements org.apache.thrift.TBase<Series, Series._Fields>, 
         struct.setCoverageIsSet(true);
       }
       if (incoming.get(21)) {
-        struct.format = new Format();
-        struct.format.read(iprot);
-        struct.setFormatIsSet(true);
+        struct.formatBestOf = iprot.readI32();
+        struct.setFormatBestOfIsSet(true);
       }
       if (incoming.get(22)) {
-        struct.game_version = new GameVersion();
-        struct.game_version.read(iprot);
-        struct.setGame_versionIsSet(true);
+        struct.gameVersion = new GameVersion();
+        struct.gameVersion.read(iprot);
+        struct.setGameVersionIsSet(true);
       }
       if (incoming.get(23)) {
-        struct.resource_version = iprot.readI64();
-        struct.setResource_versionIsSet(true);
+        struct.resourceVersion = iprot.readI64();
+        struct.setResourceVersionIsSet(true);
       }
       if (incoming.get(24)) {
-        struct.created_at = iprot.readI64();
-        struct.setCreated_atIsSet(true);
+        struct.createdAt = iprot.readI64();
+        struct.setCreatedAtIsSet(true);
       }
       if (incoming.get(25)) {
-        struct.updated_at = iprot.readI64();
-        struct.setUpdated_atIsSet(true);
+        struct.updatedAt = iprot.readI64();
+        struct.setUpdatedAtIsSet(true);
       }
     }
   }

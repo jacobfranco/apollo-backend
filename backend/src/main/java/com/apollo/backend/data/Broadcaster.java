@@ -10,22 +10,34 @@ package com.apollo.backend.data;
 public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadcaster._Fields>, java.io.Serializable, Cloneable, Comparable<Broadcaster> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Broadcaster");
 
-  private static final org.apache.thrift.protocol.TField BROADCASTER_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcaster", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.thrift.protocol.TField BROADCASTS_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasts", org.apache.thrift.protocol.TType.LIST, (short)2);
-  private static final org.apache.thrift.protocol.TField OFFICIAL_FIELD_DESC = new org.apache.thrift.protocol.TField("official", org.apache.thrift.protocol.TType.BOOL, (short)3);
+  private static final org.apache.thrift.protocol.TField BROADCASTER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasterId", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField BROADCASTER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasterName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField BROADCASTER_EXTERNAL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasterExternalId", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField BROADCASTER_PLATFORM_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasterPlatformId", org.apache.thrift.protocol.TType.I32, (short)4);
+  private static final org.apache.thrift.protocol.TField BROADCASTER_DEFAULT_LANGUAGE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasterDefaultLanguageId", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField BROADCASTS_FIELD_DESC = new org.apache.thrift.protocol.TField("broadcasts", org.apache.thrift.protocol.TType.LIST, (short)6);
+  private static final org.apache.thrift.protocol.TField OFFICIAL_FIELD_DESC = new org.apache.thrift.protocol.TField("official", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new BroadcasterStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new BroadcasterTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable BroadcasterInfo broadcaster; // required
+  public int broadcasterId; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String broadcasterName; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String broadcasterExternalId; // required
+  public int broadcasterPlatformId; // required
+  public int broadcasterDefaultLanguageId; // required
   public @org.apache.thrift.annotation.Nullable java.util.List<Broadcast> broadcasts; // required
   public boolean official; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    BROADCASTER((short)1, "broadcaster"),
-    BROADCASTS((short)2, "broadcasts"),
-    OFFICIAL((short)3, "official");
+    BROADCASTER_ID((short)1, "broadcasterId"),
+    BROADCASTER_NAME((short)2, "broadcasterName"),
+    BROADCASTER_EXTERNAL_ID((short)3, "broadcasterExternalId"),
+    BROADCASTER_PLATFORM_ID((short)4, "broadcasterPlatformId"),
+    BROADCASTER_DEFAULT_LANGUAGE_ID((short)5, "broadcasterDefaultLanguageId"),
+    BROADCASTS((short)6, "broadcasts"),
+    OFFICIAL((short)7, "official");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -41,11 +53,19 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // BROADCASTER
-          return BROADCASTER;
-        case 2: // BROADCASTS
+        case 1: // BROADCASTER_ID
+          return BROADCASTER_ID;
+        case 2: // BROADCASTER_NAME
+          return BROADCASTER_NAME;
+        case 3: // BROADCASTER_EXTERNAL_ID
+          return BROADCASTER_EXTERNAL_ID;
+        case 4: // BROADCASTER_PLATFORM_ID
+          return BROADCASTER_PLATFORM_ID;
+        case 5: // BROADCASTER_DEFAULT_LANGUAGE_ID
+          return BROADCASTER_DEFAULT_LANGUAGE_ID;
+        case 6: // BROADCASTS
           return BROADCASTS;
-        case 3: // OFFICIAL
+        case 7: // OFFICIAL
           return OFFICIAL;
         default:
           return null;
@@ -90,13 +110,24 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
   }
 
   // isset id assignments
-  private static final int __OFFICIAL_ISSET_ID = 0;
+  private static final int __BROADCASTERID_ISSET_ID = 0;
+  private static final int __BROADCASTERPLATFORMID_ISSET_ID = 1;
+  private static final int __BROADCASTERDEFAULTLANGUAGEID_ISSET_ID = 2;
+  private static final int __OFFICIAL_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.BROADCASTER, new org.apache.thrift.meta_data.FieldMetaData("broadcaster", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BroadcasterInfo.class)));
+    tmpMap.put(_Fields.BROADCASTER_ID, new org.apache.thrift.meta_data.FieldMetaData("broadcasterId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.BROADCASTER_NAME, new org.apache.thrift.meta_data.FieldMetaData("broadcasterName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.BROADCASTER_EXTERNAL_ID, new org.apache.thrift.meta_data.FieldMetaData("broadcasterExternalId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.BROADCASTER_PLATFORM_ID, new org.apache.thrift.meta_data.FieldMetaData("broadcasterPlatformId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.BROADCASTER_DEFAULT_LANGUAGE_ID, new org.apache.thrift.meta_data.FieldMetaData("broadcasterDefaultLanguageId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.BROADCASTS, new org.apache.thrift.meta_data.FieldMetaData("broadcasts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Broadcast.class))));
@@ -110,12 +141,23 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
   }
 
   public Broadcaster(
-    BroadcasterInfo broadcaster,
+    int broadcasterId,
+    java.lang.String broadcasterName,
+    java.lang.String broadcasterExternalId,
+    int broadcasterPlatformId,
+    int broadcasterDefaultLanguageId,
     java.util.List<Broadcast> broadcasts,
     boolean official)
   {
     this();
-    this.broadcaster = broadcaster;
+    this.broadcasterId = broadcasterId;
+    setBroadcasterIdIsSet(true);
+    this.broadcasterName = broadcasterName;
+    this.broadcasterExternalId = broadcasterExternalId;
+    this.broadcasterPlatformId = broadcasterPlatformId;
+    setBroadcasterPlatformIdIsSet(true);
+    this.broadcasterDefaultLanguageId = broadcasterDefaultLanguageId;
+    setBroadcasterDefaultLanguageIdIsSet(true);
     this.broadcasts = broadcasts;
     this.official = official;
     setOfficialIsSet(true);
@@ -126,9 +168,15 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
    */
   public Broadcaster(Broadcaster other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetBroadcaster()) {
-      this.broadcaster = new BroadcasterInfo(other.broadcaster);
+    this.broadcasterId = other.broadcasterId;
+    if (other.isSetBroadcasterName()) {
+      this.broadcasterName = other.broadcasterName;
     }
+    if (other.isSetBroadcasterExternalId()) {
+      this.broadcasterExternalId = other.broadcasterExternalId;
+    }
+    this.broadcasterPlatformId = other.broadcasterPlatformId;
+    this.broadcasterDefaultLanguageId = other.broadcasterDefaultLanguageId;
     if (other.isSetBroadcasts()) {
       java.util.List<Broadcast> __this__broadcasts = new java.util.ArrayList<Broadcast>(other.broadcasts.size());
       for (Broadcast other_element : other.broadcasts) {
@@ -146,35 +194,136 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
 
   @Override
   public void clear() {
-    this.broadcaster = null;
+    setBroadcasterIdIsSet(false);
+    this.broadcasterId = 0;
+    this.broadcasterName = null;
+    this.broadcasterExternalId = null;
+    setBroadcasterPlatformIdIsSet(false);
+    this.broadcasterPlatformId = 0;
+    setBroadcasterDefaultLanguageIdIsSet(false);
+    this.broadcasterDefaultLanguageId = 0;
     this.broadcasts = null;
     setOfficialIsSet(false);
     this.official = false;
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public BroadcasterInfo getBroadcaster() {
-    return this.broadcaster;
+  public int getBroadcasterId() {
+    return this.broadcasterId;
   }
 
-  public Broadcaster setBroadcaster(@org.apache.thrift.annotation.Nullable BroadcasterInfo broadcaster) {
-    this.broadcaster = broadcaster;
+  public Broadcaster setBroadcasterId(int broadcasterId) {
+    this.broadcasterId = broadcasterId;
+    setBroadcasterIdIsSet(true);
     return this;
   }
 
-  public void unsetBroadcaster() {
-    this.broadcaster = null;
+  public void unsetBroadcasterId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __BROADCASTERID_ISSET_ID);
   }
 
-  /** Returns true if field broadcaster is set (has been assigned a value) and false otherwise */
-  public boolean isSetBroadcaster() {
-    return this.broadcaster != null;
+  /** Returns true if field broadcasterId is set (has been assigned a value) and false otherwise */
+  public boolean isSetBroadcasterId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __BROADCASTERID_ISSET_ID);
   }
 
-  public void setBroadcasterIsSet(boolean value) {
+  public void setBroadcasterIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __BROADCASTERID_ISSET_ID, value);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getBroadcasterName() {
+    return this.broadcasterName;
+  }
+
+  public Broadcaster setBroadcasterName(@org.apache.thrift.annotation.Nullable java.lang.String broadcasterName) {
+    this.broadcasterName = broadcasterName;
+    return this;
+  }
+
+  public void unsetBroadcasterName() {
+    this.broadcasterName = null;
+  }
+
+  /** Returns true if field broadcasterName is set (has been assigned a value) and false otherwise */
+  public boolean isSetBroadcasterName() {
+    return this.broadcasterName != null;
+  }
+
+  public void setBroadcasterNameIsSet(boolean value) {
     if (!value) {
-      this.broadcaster = null;
+      this.broadcasterName = null;
     }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getBroadcasterExternalId() {
+    return this.broadcasterExternalId;
+  }
+
+  public Broadcaster setBroadcasterExternalId(@org.apache.thrift.annotation.Nullable java.lang.String broadcasterExternalId) {
+    this.broadcasterExternalId = broadcasterExternalId;
+    return this;
+  }
+
+  public void unsetBroadcasterExternalId() {
+    this.broadcasterExternalId = null;
+  }
+
+  /** Returns true if field broadcasterExternalId is set (has been assigned a value) and false otherwise */
+  public boolean isSetBroadcasterExternalId() {
+    return this.broadcasterExternalId != null;
+  }
+
+  public void setBroadcasterExternalIdIsSet(boolean value) {
+    if (!value) {
+      this.broadcasterExternalId = null;
+    }
+  }
+
+  public int getBroadcasterPlatformId() {
+    return this.broadcasterPlatformId;
+  }
+
+  public Broadcaster setBroadcasterPlatformId(int broadcasterPlatformId) {
+    this.broadcasterPlatformId = broadcasterPlatformId;
+    setBroadcasterPlatformIdIsSet(true);
+    return this;
+  }
+
+  public void unsetBroadcasterPlatformId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __BROADCASTERPLATFORMID_ISSET_ID);
+  }
+
+  /** Returns true if field broadcasterPlatformId is set (has been assigned a value) and false otherwise */
+  public boolean isSetBroadcasterPlatformId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __BROADCASTERPLATFORMID_ISSET_ID);
+  }
+
+  public void setBroadcasterPlatformIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __BROADCASTERPLATFORMID_ISSET_ID, value);
+  }
+
+  public int getBroadcasterDefaultLanguageId() {
+    return this.broadcasterDefaultLanguageId;
+  }
+
+  public Broadcaster setBroadcasterDefaultLanguageId(int broadcasterDefaultLanguageId) {
+    this.broadcasterDefaultLanguageId = broadcasterDefaultLanguageId;
+    setBroadcasterDefaultLanguageIdIsSet(true);
+    return this;
+  }
+
+  public void unsetBroadcasterDefaultLanguageId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __BROADCASTERDEFAULTLANGUAGEID_ISSET_ID);
+  }
+
+  /** Returns true if field broadcasterDefaultLanguageId is set (has been assigned a value) and false otherwise */
+  public boolean isSetBroadcasterDefaultLanguageId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __BROADCASTERDEFAULTLANGUAGEID_ISSET_ID);
+  }
+
+  public void setBroadcasterDefaultLanguageIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __BROADCASTERDEFAULTLANGUAGEID_ISSET_ID, value);
   }
 
   public int getBroadcastsSize() {
@@ -244,11 +393,43 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case BROADCASTER:
+    case BROADCASTER_ID:
       if (value == null) {
-        unsetBroadcaster();
+        unsetBroadcasterId();
       } else {
-        setBroadcaster((BroadcasterInfo)value);
+        setBroadcasterId((java.lang.Integer)value);
+      }
+      break;
+
+    case BROADCASTER_NAME:
+      if (value == null) {
+        unsetBroadcasterName();
+      } else {
+        setBroadcasterName((java.lang.String)value);
+      }
+      break;
+
+    case BROADCASTER_EXTERNAL_ID:
+      if (value == null) {
+        unsetBroadcasterExternalId();
+      } else {
+        setBroadcasterExternalId((java.lang.String)value);
+      }
+      break;
+
+    case BROADCASTER_PLATFORM_ID:
+      if (value == null) {
+        unsetBroadcasterPlatformId();
+      } else {
+        setBroadcasterPlatformId((java.lang.Integer)value);
+      }
+      break;
+
+    case BROADCASTER_DEFAULT_LANGUAGE_ID:
+      if (value == null) {
+        unsetBroadcasterDefaultLanguageId();
+      } else {
+        setBroadcasterDefaultLanguageId((java.lang.Integer)value);
       }
       break;
 
@@ -275,8 +456,20 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
   @Override
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case BROADCASTER:
-      return getBroadcaster();
+    case BROADCASTER_ID:
+      return getBroadcasterId();
+
+    case BROADCASTER_NAME:
+      return getBroadcasterName();
+
+    case BROADCASTER_EXTERNAL_ID:
+      return getBroadcasterExternalId();
+
+    case BROADCASTER_PLATFORM_ID:
+      return getBroadcasterPlatformId();
+
+    case BROADCASTER_DEFAULT_LANGUAGE_ID:
+      return getBroadcasterDefaultLanguageId();
 
     case BROADCASTS:
       return getBroadcasts();
@@ -296,8 +489,16 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
     }
 
     switch (field) {
-    case BROADCASTER:
-      return isSetBroadcaster();
+    case BROADCASTER_ID:
+      return isSetBroadcasterId();
+    case BROADCASTER_NAME:
+      return isSetBroadcasterName();
+    case BROADCASTER_EXTERNAL_ID:
+      return isSetBroadcasterExternalId();
+    case BROADCASTER_PLATFORM_ID:
+      return isSetBroadcasterPlatformId();
+    case BROADCASTER_DEFAULT_LANGUAGE_ID:
+      return isSetBroadcasterDefaultLanguageId();
     case BROADCASTS:
       return isSetBroadcasts();
     case OFFICIAL:
@@ -319,12 +520,48 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
     if (this == that)
       return true;
 
-    boolean this_present_broadcaster = true && this.isSetBroadcaster();
-    boolean that_present_broadcaster = true && that.isSetBroadcaster();
-    if (this_present_broadcaster || that_present_broadcaster) {
-      if (!(this_present_broadcaster && that_present_broadcaster))
+    boolean this_present_broadcasterId = true;
+    boolean that_present_broadcasterId = true;
+    if (this_present_broadcasterId || that_present_broadcasterId) {
+      if (!(this_present_broadcasterId && that_present_broadcasterId))
         return false;
-      if (!this.broadcaster.equals(that.broadcaster))
+      if (this.broadcasterId != that.broadcasterId)
+        return false;
+    }
+
+    boolean this_present_broadcasterName = true && this.isSetBroadcasterName();
+    boolean that_present_broadcasterName = true && that.isSetBroadcasterName();
+    if (this_present_broadcasterName || that_present_broadcasterName) {
+      if (!(this_present_broadcasterName && that_present_broadcasterName))
+        return false;
+      if (!this.broadcasterName.equals(that.broadcasterName))
+        return false;
+    }
+
+    boolean this_present_broadcasterExternalId = true && this.isSetBroadcasterExternalId();
+    boolean that_present_broadcasterExternalId = true && that.isSetBroadcasterExternalId();
+    if (this_present_broadcasterExternalId || that_present_broadcasterExternalId) {
+      if (!(this_present_broadcasterExternalId && that_present_broadcasterExternalId))
+        return false;
+      if (!this.broadcasterExternalId.equals(that.broadcasterExternalId))
+        return false;
+    }
+
+    boolean this_present_broadcasterPlatformId = true;
+    boolean that_present_broadcasterPlatformId = true;
+    if (this_present_broadcasterPlatformId || that_present_broadcasterPlatformId) {
+      if (!(this_present_broadcasterPlatformId && that_present_broadcasterPlatformId))
+        return false;
+      if (this.broadcasterPlatformId != that.broadcasterPlatformId)
+        return false;
+    }
+
+    boolean this_present_broadcasterDefaultLanguageId = true;
+    boolean that_present_broadcasterDefaultLanguageId = true;
+    if (this_present_broadcasterDefaultLanguageId || that_present_broadcasterDefaultLanguageId) {
+      if (!(this_present_broadcasterDefaultLanguageId && that_present_broadcasterDefaultLanguageId))
+        return false;
+      if (this.broadcasterDefaultLanguageId != that.broadcasterDefaultLanguageId)
         return false;
     }
 
@@ -353,9 +590,19 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetBroadcaster()) ? 131071 : 524287);
-    if (isSetBroadcaster())
-      hashCode = hashCode * 8191 + broadcaster.hashCode();
+    hashCode = hashCode * 8191 + broadcasterId;
+
+    hashCode = hashCode * 8191 + ((isSetBroadcasterName()) ? 131071 : 524287);
+    if (isSetBroadcasterName())
+      hashCode = hashCode * 8191 + broadcasterName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetBroadcasterExternalId()) ? 131071 : 524287);
+    if (isSetBroadcasterExternalId())
+      hashCode = hashCode * 8191 + broadcasterExternalId.hashCode();
+
+    hashCode = hashCode * 8191 + broadcasterPlatformId;
+
+    hashCode = hashCode * 8191 + broadcasterDefaultLanguageId;
 
     hashCode = hashCode * 8191 + ((isSetBroadcasts()) ? 131071 : 524287);
     if (isSetBroadcasts())
@@ -374,12 +621,52 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetBroadcaster(), other.isSetBroadcaster());
+    lastComparison = java.lang.Boolean.compare(isSetBroadcasterId(), other.isSetBroadcasterId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetBroadcaster()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.broadcaster, other.broadcaster);
+    if (isSetBroadcasterId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.broadcasterId, other.broadcasterId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetBroadcasterName(), other.isSetBroadcasterName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBroadcasterName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.broadcasterName, other.broadcasterName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetBroadcasterExternalId(), other.isSetBroadcasterExternalId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBroadcasterExternalId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.broadcasterExternalId, other.broadcasterExternalId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetBroadcasterPlatformId(), other.isSetBroadcasterPlatformId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBroadcasterPlatformId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.broadcasterPlatformId, other.broadcasterPlatformId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetBroadcasterDefaultLanguageId(), other.isSetBroadcasterDefaultLanguageId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBroadcasterDefaultLanguageId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.broadcasterDefaultLanguageId, other.broadcasterDefaultLanguageId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -428,12 +715,32 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
     java.lang.StringBuilder sb = new java.lang.StringBuilder("Broadcaster(");
     boolean first = true;
 
-    sb.append("broadcaster:");
-    if (this.broadcaster == null) {
+    sb.append("broadcasterId:");
+    sb.append(this.broadcasterId);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("broadcasterName:");
+    if (this.broadcasterName == null) {
       sb.append("null");
     } else {
-      sb.append(this.broadcaster);
+      sb.append(this.broadcasterName);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("broadcasterExternalId:");
+    if (this.broadcasterExternalId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.broadcasterExternalId);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("broadcasterPlatformId:");
+    sb.append(this.broadcasterPlatformId);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("broadcasterDefaultLanguageId:");
+    sb.append(this.broadcasterDefaultLanguageId);
     first = false;
     if (!first) sb.append(", ");
     sb.append("broadcasts:");
@@ -454,9 +761,6 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
-    if (broadcaster != null) {
-      broadcaster.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -497,16 +801,47 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
           break;
         }
         switch (schemeField.id) {
-          case 1: // BROADCASTER
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.broadcaster = new BroadcasterInfo();
-              struct.broadcaster.read(iprot);
-              struct.setBroadcasterIsSet(true);
+          case 1: // BROADCASTER_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.broadcasterId = iprot.readI32();
+              struct.setBroadcasterIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // BROADCASTS
+          case 2: // BROADCASTER_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.broadcasterName = iprot.readString();
+              struct.setBroadcasterNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // BROADCASTER_EXTERNAL_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.broadcasterExternalId = iprot.readString();
+              struct.setBroadcasterExternalIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // BROADCASTER_PLATFORM_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.broadcasterPlatformId = iprot.readI32();
+              struct.setBroadcasterPlatformIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // BROADCASTER_DEFAULT_LANGUAGE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.broadcasterDefaultLanguageId = iprot.readI32();
+              struct.setBroadcasterDefaultLanguageIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // BROADCASTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
@@ -525,7 +860,7 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // OFFICIAL
+          case 7: // OFFICIAL
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.official = iprot.readBool();
               struct.setOfficialIsSet(true);
@@ -549,11 +884,25 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.broadcaster != null) {
-        oprot.writeFieldBegin(BROADCASTER_FIELD_DESC);
-        struct.broadcaster.write(oprot);
+      oprot.writeFieldBegin(BROADCASTER_ID_FIELD_DESC);
+      oprot.writeI32(struct.broadcasterId);
+      oprot.writeFieldEnd();
+      if (struct.broadcasterName != null) {
+        oprot.writeFieldBegin(BROADCASTER_NAME_FIELD_DESC);
+        oprot.writeString(struct.broadcasterName);
         oprot.writeFieldEnd();
       }
+      if (struct.broadcasterExternalId != null) {
+        oprot.writeFieldBegin(BROADCASTER_EXTERNAL_ID_FIELD_DESC);
+        oprot.writeString(struct.broadcasterExternalId);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(BROADCASTER_PLATFORM_ID_FIELD_DESC);
+      oprot.writeI32(struct.broadcasterPlatformId);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(BROADCASTER_DEFAULT_LANGUAGE_ID_FIELD_DESC);
+      oprot.writeI32(struct.broadcasterDefaultLanguageId);
+      oprot.writeFieldEnd();
       if (struct.broadcasts != null) {
         oprot.writeFieldBegin(BROADCASTS_FIELD_DESC);
         {
@@ -588,18 +937,42 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
     public void write(org.apache.thrift.protocol.TProtocol prot, Broadcaster struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetBroadcaster()) {
+      if (struct.isSetBroadcasterId()) {
         optionals.set(0);
       }
-      if (struct.isSetBroadcasts()) {
+      if (struct.isSetBroadcasterName()) {
         optionals.set(1);
       }
-      if (struct.isSetOfficial()) {
+      if (struct.isSetBroadcasterExternalId()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
-      if (struct.isSetBroadcaster()) {
-        struct.broadcaster.write(oprot);
+      if (struct.isSetBroadcasterPlatformId()) {
+        optionals.set(3);
+      }
+      if (struct.isSetBroadcasterDefaultLanguageId()) {
+        optionals.set(4);
+      }
+      if (struct.isSetBroadcasts()) {
+        optionals.set(5);
+      }
+      if (struct.isSetOfficial()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetBroadcasterId()) {
+        oprot.writeI32(struct.broadcasterId);
+      }
+      if (struct.isSetBroadcasterName()) {
+        oprot.writeString(struct.broadcasterName);
+      }
+      if (struct.isSetBroadcasterExternalId()) {
+        oprot.writeString(struct.broadcasterExternalId);
+      }
+      if (struct.isSetBroadcasterPlatformId()) {
+        oprot.writeI32(struct.broadcasterPlatformId);
+      }
+      if (struct.isSetBroadcasterDefaultLanguageId()) {
+        oprot.writeI32(struct.broadcasterDefaultLanguageId);
       }
       if (struct.isSetBroadcasts()) {
         {
@@ -618,13 +991,28 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Broadcaster struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
-        struct.broadcaster = new BroadcasterInfo();
-        struct.broadcaster.read(iprot);
-        struct.setBroadcasterIsSet(true);
+        struct.broadcasterId = iprot.readI32();
+        struct.setBroadcasterIdIsSet(true);
       }
       if (incoming.get(1)) {
+        struct.broadcasterName = iprot.readString();
+        struct.setBroadcasterNameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.broadcasterExternalId = iprot.readString();
+        struct.setBroadcasterExternalIdIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.broadcasterPlatformId = iprot.readI32();
+        struct.setBroadcasterPlatformIdIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.broadcasterDefaultLanguageId = iprot.readI32();
+        struct.setBroadcasterDefaultLanguageIdIsSet(true);
+      }
+      if (incoming.get(5)) {
         {
           org.apache.thrift.protocol.TList _list269 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
           struct.broadcasts = new java.util.ArrayList<Broadcast>(_list269.size);
@@ -638,7 +1026,7 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
         }
         struct.setBroadcastsIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(6)) {
         struct.official = iprot.readBool();
         struct.setOfficialIsSet(true);
       }

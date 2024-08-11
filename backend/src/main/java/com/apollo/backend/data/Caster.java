@@ -11,18 +11,18 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Caster");
 
   private static final org.apache.thrift.protocol.TField PRIMARY_FIELD_DESC = new org.apache.thrift.protocol.TField("primary", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField CASTER_FIELD_DESC = new org.apache.thrift.protocol.TField("caster", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.thrift.protocol.TField CASTER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("casterId", org.apache.thrift.protocol.TType.I32, (short)2);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CasterStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CasterTupleSchemeFactory();
 
   public boolean primary; // required
-  public @org.apache.thrift.annotation.Nullable CasterInfo caster; // required
+  public int casterId; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     PRIMARY((short)1, "primary"),
-    CASTER((short)2, "caster");
+    CASTER_ID((short)2, "casterId");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -40,8 +40,8 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
       switch(fieldId) {
         case 1: // PRIMARY
           return PRIMARY;
-        case 2: // CASTER
-          return CASTER;
+        case 2: // CASTER_ID
+          return CASTER_ID;
         default:
           return null;
       }
@@ -86,14 +86,15 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
 
   // isset id assignments
   private static final int __PRIMARY_ISSET_ID = 0;
+  private static final int __CASTERID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.PRIMARY, new org.apache.thrift.meta_data.FieldMetaData("primary", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.CASTER, new org.apache.thrift.meta_data.FieldMetaData("caster", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CasterInfo.class)));
+    tmpMap.put(_Fields.CASTER_ID, new org.apache.thrift.meta_data.FieldMetaData("casterId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Caster.class, metaDataMap);
   }
@@ -103,12 +104,13 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
 
   public Caster(
     boolean primary,
-    CasterInfo caster)
+    int casterId)
   {
     this();
     this.primary = primary;
     setPrimaryIsSet(true);
-    this.caster = caster;
+    this.casterId = casterId;
+    setCasterIdIsSet(true);
   }
 
   /**
@@ -117,9 +119,7 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   public Caster(Caster other) {
     __isset_bitfield = other.__isset_bitfield;
     this.primary = other.primary;
-    if (other.isSetCaster()) {
-      this.caster = new CasterInfo(other.caster);
-    }
+    this.casterId = other.casterId;
   }
 
   @Override
@@ -131,7 +131,8 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   public void clear() {
     setPrimaryIsSet(false);
     this.primary = false;
-    this.caster = null;
+    setCasterIdIsSet(false);
+    this.casterId = 0;
   }
 
   public boolean isPrimary() {
@@ -157,29 +158,27 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __PRIMARY_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public CasterInfo getCaster() {
-    return this.caster;
+  public int getCasterId() {
+    return this.casterId;
   }
 
-  public Caster setCaster(@org.apache.thrift.annotation.Nullable CasterInfo caster) {
-    this.caster = caster;
+  public Caster setCasterId(int casterId) {
+    this.casterId = casterId;
+    setCasterIdIsSet(true);
     return this;
   }
 
-  public void unsetCaster() {
-    this.caster = null;
+  public void unsetCasterId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CASTERID_ISSET_ID);
   }
 
-  /** Returns true if field caster is set (has been assigned a value) and false otherwise */
-  public boolean isSetCaster() {
-    return this.caster != null;
+  /** Returns true if field casterId is set (has been assigned a value) and false otherwise */
+  public boolean isSetCasterId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CASTERID_ISSET_ID);
   }
 
-  public void setCasterIsSet(boolean value) {
-    if (!value) {
-      this.caster = null;
-    }
+  public void setCasterIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CASTERID_ISSET_ID, value);
   }
 
   @Override
@@ -193,11 +192,11 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
       }
       break;
 
-    case CASTER:
+    case CASTER_ID:
       if (value == null) {
-        unsetCaster();
+        unsetCasterId();
       } else {
-        setCaster((CasterInfo)value);
+        setCasterId((java.lang.Integer)value);
       }
       break;
 
@@ -211,8 +210,8 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     case PRIMARY:
       return isPrimary();
 
-    case CASTER:
-      return getCaster();
+    case CASTER_ID:
+      return getCasterId();
 
     }
     throw new java.lang.IllegalStateException();
@@ -228,8 +227,8 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     switch (field) {
     case PRIMARY:
       return isSetPrimary();
-    case CASTER:
-      return isSetCaster();
+    case CASTER_ID:
+      return isSetCasterId();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -256,12 +255,12 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
         return false;
     }
 
-    boolean this_present_caster = true && this.isSetCaster();
-    boolean that_present_caster = true && that.isSetCaster();
-    if (this_present_caster || that_present_caster) {
-      if (!(this_present_caster && that_present_caster))
+    boolean this_present_casterId = true;
+    boolean that_present_casterId = true;
+    if (this_present_casterId || that_present_casterId) {
+      if (!(this_present_casterId && that_present_casterId))
         return false;
-      if (!this.caster.equals(that.caster))
+      if (this.casterId != that.casterId)
         return false;
     }
 
@@ -274,9 +273,7 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
 
     hashCode = hashCode * 8191 + ((primary) ? 131071 : 524287);
 
-    hashCode = hashCode * 8191 + ((isSetCaster()) ? 131071 : 524287);
-    if (isSetCaster())
-      hashCode = hashCode * 8191 + caster.hashCode();
+    hashCode = hashCode * 8191 + casterId;
 
     return hashCode;
   }
@@ -299,12 +296,12 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetCaster(), other.isSetCaster());
+    lastComparison = java.lang.Boolean.compare(isSetCasterId(), other.isSetCasterId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCaster()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.caster, other.caster);
+    if (isSetCasterId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.casterId, other.casterId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -337,12 +334,8 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     sb.append(this.primary);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("caster:");
-    if (this.caster == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.caster);
-    }
+    sb.append("casterId:");
+    sb.append(this.casterId);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -351,9 +344,6 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
-    if (caster != null) {
-      caster.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -402,11 +392,10 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // CASTER
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.caster = new CasterInfo();
-              struct.caster.read(iprot);
-              struct.setCasterIsSet(true);
+          case 2: // CASTER_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.casterId = iprot.readI32();
+              struct.setCasterIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -430,11 +419,9 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
       oprot.writeFieldBegin(PRIMARY_FIELD_DESC);
       oprot.writeBool(struct.primary);
       oprot.writeFieldEnd();
-      if (struct.caster != null) {
-        oprot.writeFieldBegin(CASTER_FIELD_DESC);
-        struct.caster.write(oprot);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(CASTER_ID_FIELD_DESC);
+      oprot.writeI32(struct.casterId);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -457,15 +444,15 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
       if (struct.isSetPrimary()) {
         optionals.set(0);
       }
-      if (struct.isSetCaster()) {
+      if (struct.isSetCasterId()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetPrimary()) {
         oprot.writeBool(struct.primary);
       }
-      if (struct.isSetCaster()) {
-        struct.caster.write(oprot);
+      if (struct.isSetCasterId()) {
+        oprot.writeI32(struct.casterId);
       }
     }
 
@@ -478,9 +465,8 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
         struct.setPrimaryIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.caster = new CasterInfo();
-        struct.caster.read(iprot);
-        struct.setCasterIsSet(true);
+        struct.casterId = iprot.readI32();
+        struct.setCasterIdIsSet(true);
       }
     }
   }

@@ -13,7 +13,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
   private static final org.apache.thrift.protocol.TField SEED_FIELD_DESC = new org.apache.thrift.protocol.TField("seed", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("score", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField FORFEIT_FIELD_DESC = new org.apache.thrift.protocol.TField("forfeit", org.apache.thrift.protocol.TType.BOOL, (short)3);
-  private static final org.apache.thrift.protocol.TField ROSTER_FIELD_DESC = new org.apache.thrift.protocol.TField("roster", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField ROSTER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("rosterId", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField WINNER_FIELD_DESC = new org.apache.thrift.protocol.TField("winner", org.apache.thrift.protocol.TType.BOOL, (short)5);
   private static final org.apache.thrift.protocol.TField STATS_FIELD_DESC = new org.apache.thrift.protocol.TField("stats", org.apache.thrift.protocol.TType.STRUCT, (short)6);
 
@@ -23,7 +23,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
   public int seed; // required
   public int score; // required
   public boolean forfeit; // required
-  public @org.apache.thrift.annotation.Nullable Roster roster; // required
+  public int rosterId; // required
   public boolean winner; // required
   public @org.apache.thrift.annotation.Nullable ParticipantStats stats; // optional
 
@@ -32,7 +32,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     SEED((short)1, "seed"),
     SCORE((short)2, "score"),
     FORFEIT((short)3, "forfeit"),
-    ROSTER((short)4, "roster"),
+    ROSTER_ID((short)4, "rosterId"),
     WINNER((short)5, "winner"),
     STATS((short)6, "stats");
 
@@ -56,8 +56,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
           return SCORE;
         case 3: // FORFEIT
           return FORFEIT;
-        case 4: // ROSTER
-          return ROSTER;
+        case 4: // ROSTER_ID
+          return ROSTER_ID;
         case 5: // WINNER
           return WINNER;
         case 6: // STATS
@@ -108,7 +108,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
   private static final int __SEED_ISSET_ID = 0;
   private static final int __SCORE_ISSET_ID = 1;
   private static final int __FORFEIT_ISSET_ID = 2;
-  private static final int __WINNER_ISSET_ID = 3;
+  private static final int __ROSTERID_ISSET_ID = 3;
+  private static final int __WINNER_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
   private static final _Fields optionals[] = {_Fields.STATS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
@@ -120,8 +121,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.FORFEIT, new org.apache.thrift.meta_data.FieldMetaData("forfeit", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ROSTER, new org.apache.thrift.meta_data.FieldMetaData("roster", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Roster.class)));
+    tmpMap.put(_Fields.ROSTER_ID, new org.apache.thrift.meta_data.FieldMetaData("rosterId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.WINNER, new org.apache.thrift.meta_data.FieldMetaData("winner", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.STATS, new org.apache.thrift.meta_data.FieldMetaData("stats", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -137,7 +138,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     int seed,
     int score,
     boolean forfeit,
-    Roster roster,
+    int rosterId,
     boolean winner)
   {
     this();
@@ -147,7 +148,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     setScoreIsSet(true);
     this.forfeit = forfeit;
     setForfeitIsSet(true);
-    this.roster = roster;
+    this.rosterId = rosterId;
+    setRosterIdIsSet(true);
     this.winner = winner;
     setWinnerIsSet(true);
   }
@@ -160,9 +162,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     this.seed = other.seed;
     this.score = other.score;
     this.forfeit = other.forfeit;
-    if (other.isSetRoster()) {
-      this.roster = new Roster(other.roster);
-    }
+    this.rosterId = other.rosterId;
     this.winner = other.winner;
     if (other.isSetStats()) {
       this.stats = new ParticipantStats(other.stats);
@@ -182,7 +182,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     this.score = 0;
     setForfeitIsSet(false);
     this.forfeit = false;
-    this.roster = null;
+    setRosterIdIsSet(false);
+    this.rosterId = 0;
     setWinnerIsSet(false);
     this.winner = false;
     this.stats = null;
@@ -257,29 +258,27 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __FORFEIT_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public Roster getRoster() {
-    return this.roster;
+  public int getRosterId() {
+    return this.rosterId;
   }
 
-  public Participant setRoster(@org.apache.thrift.annotation.Nullable Roster roster) {
-    this.roster = roster;
+  public Participant setRosterId(int rosterId) {
+    this.rosterId = rosterId;
+    setRosterIdIsSet(true);
     return this;
   }
 
-  public void unsetRoster() {
-    this.roster = null;
+  public void unsetRosterId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ROSTERID_ISSET_ID);
   }
 
-  /** Returns true if field roster is set (has been assigned a value) and false otherwise */
-  public boolean isSetRoster() {
-    return this.roster != null;
+  /** Returns true if field rosterId is set (has been assigned a value) and false otherwise */
+  public boolean isSetRosterId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ROSTERID_ISSET_ID);
   }
 
-  public void setRosterIsSet(boolean value) {
-    if (!value) {
-      this.roster = null;
-    }
+  public void setRosterIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ROSTERID_ISSET_ID, value);
   }
 
   public boolean isWinner() {
@@ -357,11 +356,11 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
       }
       break;
 
-    case ROSTER:
+    case ROSTER_ID:
       if (value == null) {
-        unsetRoster();
+        unsetRosterId();
       } else {
-        setRoster((Roster)value);
+        setRosterId((java.lang.Integer)value);
       }
       break;
 
@@ -397,8 +396,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     case FORFEIT:
       return isForfeit();
 
-    case ROSTER:
-      return getRoster();
+    case ROSTER_ID:
+      return getRosterId();
 
     case WINNER:
       return isWinner();
@@ -424,8 +423,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
       return isSetScore();
     case FORFEIT:
       return isSetForfeit();
-    case ROSTER:
-      return isSetRoster();
+    case ROSTER_ID:
+      return isSetRosterId();
     case WINNER:
       return isSetWinner();
     case STATS:
@@ -474,12 +473,12 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
         return false;
     }
 
-    boolean this_present_roster = true && this.isSetRoster();
-    boolean that_present_roster = true && that.isSetRoster();
-    if (this_present_roster || that_present_roster) {
-      if (!(this_present_roster && that_present_roster))
+    boolean this_present_rosterId = true;
+    boolean that_present_rosterId = true;
+    if (this_present_rosterId || that_present_rosterId) {
+      if (!(this_present_rosterId && that_present_rosterId))
         return false;
-      if (!this.roster.equals(that.roster))
+      if (this.rosterId != that.rosterId)
         return false;
     }
 
@@ -514,9 +513,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
 
     hashCode = hashCode * 8191 + ((forfeit) ? 131071 : 524287);
 
-    hashCode = hashCode * 8191 + ((isSetRoster()) ? 131071 : 524287);
-    if (isSetRoster())
-      hashCode = hashCode * 8191 + roster.hashCode();
+    hashCode = hashCode * 8191 + rosterId;
 
     hashCode = hashCode * 8191 + ((winner) ? 131071 : 524287);
 
@@ -565,12 +562,12 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetRoster(), other.isSetRoster());
+    lastComparison = java.lang.Boolean.compare(isSetRosterId(), other.isSetRosterId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRoster()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.roster, other.roster);
+    if (isSetRosterId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rosterId, other.rosterId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -631,12 +628,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
     sb.append(this.forfeit);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("roster:");
-    if (this.roster == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.roster);
-    }
+    sb.append("rosterId:");
+    sb.append(this.rosterId);
     first = false;
     if (!first) sb.append(", ");
     sb.append("winner:");
@@ -659,9 +652,6 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
-    if (roster != null) {
-      roster.validate();
-    }
     if (stats != null) {
       stats.validate();
     }
@@ -729,11 +719,10 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // ROSTER
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.roster = new Roster();
-              struct.roster.read(iprot);
-              struct.setRosterIsSet(true);
+          case 4: // ROSTER_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.rosterId = iprot.readI32();
+              struct.setRosterIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -780,11 +769,9 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
       oprot.writeFieldBegin(FORFEIT_FIELD_DESC);
       oprot.writeBool(struct.forfeit);
       oprot.writeFieldEnd();
-      if (struct.roster != null) {
-        oprot.writeFieldBegin(ROSTER_FIELD_DESC);
-        struct.roster.write(oprot);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(ROSTER_ID_FIELD_DESC);
+      oprot.writeI32(struct.rosterId);
+      oprot.writeFieldEnd();
       oprot.writeFieldBegin(WINNER_FIELD_DESC);
       oprot.writeBool(struct.winner);
       oprot.writeFieldEnd();
@@ -823,7 +810,7 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
       if (struct.isSetForfeit()) {
         optionals.set(2);
       }
-      if (struct.isSetRoster()) {
+      if (struct.isSetRosterId()) {
         optionals.set(3);
       }
       if (struct.isSetWinner()) {
@@ -842,8 +829,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
       if (struct.isSetForfeit()) {
         oprot.writeBool(struct.forfeit);
       }
-      if (struct.isSetRoster()) {
-        struct.roster.write(oprot);
+      if (struct.isSetRosterId()) {
+        oprot.writeI32(struct.rosterId);
       }
       if (struct.isSetWinner()) {
         oprot.writeBool(struct.winner);
@@ -870,9 +857,8 @@ public class Participant implements org.apache.thrift.TBase<Participant, Partici
         struct.setForfeitIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.roster = new Roster();
-        struct.roster.read(iprot);
-        struct.setRosterIsSet(true);
+        struct.rosterId = iprot.readI32();
+        struct.setRosterIdIsSet(true);
       }
       if (incoming.get(4)) {
         struct.winner = iprot.readBool();

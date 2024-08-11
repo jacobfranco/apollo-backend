@@ -171,12 +171,7 @@ public class ApolloApiManager {
     private final Depot seriesDepot;
 
     // ESports PStates
-    private final PState idToSeries;
-    private final PState tournamentToSeriesIds;
-    private final PState gameToSeriesIds;
-    private final PState startTimeToUpcomingSeriesIds;
-    private final PState idToOngoingSeriesId;
-    private final PState endTimeToCompletedSeriesIds;
+    private final PState seriesIdToSeries;
 
     // ESports Queries
     // TODO: Fill in needed queries
@@ -292,12 +287,7 @@ public class ApolloApiManager {
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
 
         // ESports PStates
-        idToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$idToSeries");
-        tournamentToSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$tournamentToSeriesIds");
-        gameToSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$gameToSeriesIds");
-        startTimeToUpcomingSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$startTimeToUpcomingSeriesIds");
-        idToOngoingSeriesId = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$idToOngoingSeriesId");
-        endTimeToCompletedSeriesIds = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$endTimeToCompletedSeriesIds");
+        seriesIdToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$seriesIdToSeries");
 
         // ESports Queries
         // TODO: Implement
@@ -1784,7 +1774,6 @@ public class ApolloApiManager {
                 List<CompletableFuture<Boolean>> futures = new ArrayList<>();
 
                 for (PostSeries postSeries : postSeriesList) {
-                    System.out.println(postSeries);
                     Series thriftSeries = convertToThriftSeries(postSeries);
                     futures.add(seriesDepot.appendAsync(thriftSeries));
                 }
@@ -1794,6 +1783,8 @@ public class ApolloApiManager {
                 // Handle pagination if needed
                 if (postSeriesList.size() == take) {
                     fetchAndStoreSeries(filter, order, skip + take, take);
+                } else {
+                    System.out.println("Fetching and storing complete. All series have been processed.");
                 }
             } catch (ApiException e) {
                 System.out.println("API returned an error: " + e.getMessage());
@@ -1826,69 +1817,49 @@ public class ApolloApiManager {
         }
     }
 
-    public class ApiException extends Exception {
-        public ApiException(String message) {
-            super(message);
-        }
-    }
-
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
         series.setTitle(postSeries.title);
         series.setStart(postSeries.start != null ? postSeries.start.toEpochMilli() : 0);
         series.setEnd(postSeries.end != null ? postSeries.end.toEpochMilli() : 0);
-        series.setPostponed_from(postSeries.postponedFrom != null ? postSeries.postponedFrom.toEpochMilli() : 0);
-        series.setDeleted_at(postSeries.deletedAt != null ? postSeries.deletedAt.toEpochMilli() : 0);
+        series.setPostponedFrom(postSeries.postponedFrom != null ? postSeries.postponedFrom.toEpochMilli() : 0);
+        series.setDeletedAt(postSeries.deletedAt != null ? postSeries.deletedAt.toEpochMilli() : 0);
         series.setLifecycle(postSeries.lifecycle);
         series.setTier(postSeries.tier);
-        series.setBest_of(postSeries.bestOf);
-        series.setChain(postSeries.chain.stream().map(this::convertChainItem).collect(Collectors.toList()));
+        series.setBestOf(postSeries.bestOf);
+        series.setChainIds(postSeries.chainIds);
         series.setStreamed(postSeries.streamed);
-        series.setBracket_position(convertBracketPosition(postSeries.bracketPosition));
-        series.setParticipants(postSeries.participants.stream().map(this::convertParticipant).collect(Collectors.toList()));
-        series.setTournament(convertTournament(postSeries.tournament));
-        series.setSubstage(convertSubstage(postSeries.substage));
-        series.setGame(convertGame(postSeries.game));
-        series.setMatches(postSeries.matches.stream().map(this::convertMatch).collect(Collectors.toList()));
+        series.setBracketPosition(convertBracketPosition(postSeries.bracketPosition));
+        series.setParticipants(
+                postSeries.participants.stream().map(this::convertParticipant).collect(Collectors.toList()));
+        series.setTournamentId(postSeries.tournamentId);
+        series.setSubstageId(postSeries.substageId);
+        series.setGameId(postSeries.gameId);
+        series.setMatchIds(postSeries.matchIds);
         series.setCasters(postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()));
-        series.setBroadcasters(postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()));
-        series.setHas_incident_report(postSeries.hasIncidentReport);
+        series.setBroadcasters(
+                postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()));
+        series.setHasIncidentReport(postSeries.hasIncidentReport);
         series.setCoverage(convertCoverage(postSeries.coverage));
-        series.setFormat(new Format(postSeries.format.bestOf));
-        series.setGame_version(convertGameVersion(postSeries.gameVersion));
-        series.setResource_version(postSeries.resourceVersion);
-        series.setCreated_at(postSeries.createdAt != null ? postSeries.createdAt.toEpochMilli() : 0);
-        series.setUpdated_at(postSeries.updatedAt != null ? postSeries.updatedAt.toEpochMilli() : 0);
+        series.setFormatBestOf(postSeries.format.bestOf);
+        series.setGameVersion(convertGameVersion(postSeries.gameVersion));
+        series.setResourceVersion(postSeries.resourceVersion);
+        series.setCreatedAt(postSeries.createdAt != null ? postSeries.createdAt.toEpochMilli() : 0);
+        series.setUpdatedAt(postSeries.updatedAt != null ? postSeries.updatedAt.toEpochMilli() : 0);
         return series;
     }
-    
-    private ChainItem convertChainItem(PostSeries.ChainItem item) {
-        return new ChainItem(item.id);
-    }
-    
-    private Tournament convertTournament(PostSeries.Tournament t) {
-        return new Tournament(t.id);
-    }
-    
-    private Substage convertSubstage(PostSeries.Substage s) {
-        return new Substage(s.id);
-    }
-    
-    private Game convertGame(PostSeries.Game g) {
-        return new Game(g.id);
-    }
-    
+
     private BracketPosition convertBracketPosition(PostSeries.BracketPosition bp) {
         return bp != null ? new BracketPosition(bp.part, bp.col, bp.offset) : null;
     }
-    
+
     private Participant convertParticipant(PostSeries.Participant p) {
         Participant participant = new Participant();
         participant.setSeed(p.seed);
         participant.setScore(p.score);
         participant.setForfeit(p.forfeit);
-        participant.setRoster(new Roster(p.roster.id));
+        participant.setRosterId(p.rosterId);
         participant.setWinner(p.winner);
         participant.setStats(convertParticipantStats(p.stats));
         return participant;
@@ -1903,37 +1874,27 @@ public class ApolloApiManager {
         participantStats.setPlacement(stats.placement);
         return participantStats;
     }
-    
-    private Match convertMatch(PostSeries.Match m) {
-        return new Match(m.id);
-    }
-    
+
     private Caster convertCaster(PostSeries.Caster c) {
-        return new Caster(c.primary, new CasterInfo(c.caster.id));
+        return new Caster(c.primary, c.casterId);
     }
-    
+
     private Broadcaster convertBroadcaster(PostSeries.Broadcaster b) {
-        return new Broadcaster(
-            convertBroadcasterInfo(b.broadcaster),
-            b.broadcasts.stream().map(this::convertBroadcast).collect(Collectors.toList()),
-            b.official
-        );
+        Broadcaster broadcaster = new Broadcaster();
+        broadcaster.setBroadcasterId(b.broadcasterId);
+        broadcaster.setBroadcasterName(b.broadcasterName);
+        broadcaster.setBroadcasterExternalId(b.broadcasterExternalId);
+        broadcaster.setBroadcasterPlatformId(b.broadcasterPlatformId);
+        broadcaster.setBroadcasterDefaultLanguageId(b.broadcasterDefaultLanguageId);
+        broadcaster.setBroadcasts(b.broadcasts.stream().map(this::convertBroadcast).collect(Collectors.toList()));
+        broadcaster.setOfficial(b.official);
+        return broadcaster;
     }
-    
-    private BroadcasterInfo convertBroadcasterInfo(PostSeries.BroadcasterInfo bi) {
-        return new BroadcasterInfo(
-            bi.id,
-            bi.name,
-            bi.externalId,
-            new Platform(bi.platform.id),
-            new BroadcastDefaults(new Language(bi.broadcastDefaults.language.id))
-        );
-    }
-    
+
     private Broadcast convertBroadcast(PostSeries.Broadcast b) {
-        return new Broadcast(b.externalId, new Language(b.language.id));
+        return new Broadcast(b.externalId, b.languageId);
     }
-    
+
     private GameVersion convertGameVersion(PostSeries.GameVersion gv) {
         if (gv == null || gv.release == null) {
             return null;
@@ -1953,19 +1914,18 @@ public class ApolloApiManager {
         release.setDescription(r.description);
         return release;
     }
-    
+
     private Coverage convertCoverage(PostSeries.Coverage c) {
         if (c == null || c.data == null) {
             return null;
         }
         PostSeries.CoverageData cd = c.data;
         return new Coverage(new CoverageData(
-            convertCoverageType(cd.live),
-            convertCoverageType(cd.realtime),
-            convertCoverageType(cd.postgame)
-        ));
+                convertCoverageType(cd.live),
+                convertCoverageType(cd.realtime),
+                convertCoverageType(cd.postgame)));
     }
-    
+
     private CoverageType convertCoverageType(PostSeries.CoverageType ct) {
         if (ct == null) {
             return null;
@@ -1980,11 +1940,17 @@ public class ApolloApiManager {
         }
         return coverageType;
     }
-    
+
     private CoverageStatus convertCoverageStatus(PostSeries.CoverageStatus cs) {
         if (cs == null) {
             return null;
         }
         return new CoverageStatus(cs.expectation, cs.fact);
+    }
+
+    public class ApiException extends Exception {
+        public ApiException(String message) {
+            super(message);
+        }
     }
 }

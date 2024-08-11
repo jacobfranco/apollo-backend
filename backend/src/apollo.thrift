@@ -684,34 +684,10 @@ struct RemoveFollowSuggestion {
 
 // ESports stuff 
 
-struct ChainItem {
-    1: i32 id
-}
-
-struct Tournament {
-    1: i32 id
-}
-
-struct Substage {
-    1: i32 id
-}
-
-struct Game {
-    1: i32 id
-}
-
 struct BracketPosition {
     1: string part
     2: i32 col
     3: i32 offset
-}
-
-struct Format {
-    1: i32 best_of
-}
-
-struct Roster {
-    1: i32 id
 }
 
 struct ParticipantStats {
@@ -723,53 +699,29 @@ struct Participant {
     1: i32 seed
     2: i32 score
     3: bool forfeit
-    4: Roster roster
+    4: i32 rosterId
     5: bool winner
     6: optional ParticipantStats stats
 }
 
-struct Match {
-    1: i32 id
-}
-
-struct CasterInfo {
-    1: i32 id
-}
-
 struct Caster {
     1: bool primary
-    2: CasterInfo caster
-}
-
-struct Language {
-    1: i32 id
-}
-
-struct Platform {
-    1: i32 id
-}
-
-struct BroadcastDefaults {
-    1: Language language
-}
-
-struct BroadcasterInfo {
-    1: i32 id
-    2: string name
-    3: string external_id
-    4: Platform platform
-    5: BroadcastDefaults broadcast_defaults
+    2: i32 casterId
 }
 
 struct Broadcast {
-    1: string external_id
-    2: Language language
+    1: string externalId
+    2: i32 languageId
 }
 
 struct Broadcaster {
-    1: BroadcasterInfo broadcaster
-    2: list<Broadcast> broadcasts
-    3: bool official
+    1: i32 broadcasterId
+    2: string broadcasterName
+    3: string broadcasterExternalId
+    4: i32 broadcasterPlatformId
+    5: i32 broadcasterDefaultLanguageId
+    6: list<Broadcast> broadcasts
+    7: bool official
 }
 
 struct Release {
@@ -808,28 +760,28 @@ struct Series {
     2: string title
     3: i64 start
     4: i64 end
-    5: optional i64 postponed_from
-    6: optional i64 deleted_at
+    5: optional i64 postponedFrom
+    6: optional i64 deletedAt
     7: string lifecycle
     8: i32 tier
-    9: i32 best_of
-    10: list<ChainItem> chain
+    9: i32 bestOf
+    10: list<i32> chainIds
     11: bool streamed
-    12: optional BracketPosition bracket_position
+    12: optional BracketPosition bracketPosition
     13: list<Participant> participants
-    14: Tournament tournament
-    15: Substage substage
-    16: Game game
-    17: list<Match> matches
+    14: i32 tournamentId
+    15: i32 substageId
+    16: i32 gameId
+    17: list<i32> matchIds
     18: list<Caster> casters
     19: list<Broadcaster> broadcasters
-    20: bool has_incident_report
+    20: bool hasIncidentReport
     21: Coverage coverage
-    22: Format format
-    23: GameVersion game_version
-    24: i64 resource_version
-    25: i64 created_at
-    26: i64 updated_at
+    22: i32 formatBestOf
+    23: optional GameVersion gameVersion
+    24: i64 resourceVersion
+    25: i64 createdAt
+    26: i64 updatedAt
 }
 
 

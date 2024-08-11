@@ -186,16 +186,14 @@ public class ApolloApiApplication {
         System.out.println("Application context loaded. Fetching eSports data...");
         
         if (ApolloApiController.manager != null) {
-            fetchSeries();
+            fetchAllLolSeries();
             // Add more data fetching calls here as needed
-            // fetchTeams();
-            // fetchMatches();
         } else {
             System.err.println("ApolloApiController.manager is null. Unable to fetch eSports data.");
         }
     }
 
-    private void fetchSeries() {
+    private void fetchAllLolSeries() {
         ApolloApiController.manager.fetchAndStoreSeries("game.id=2", "start-asc", 0, 50)
             .thenRun(() -> System.out.println("Series fetching completed"))
             .exceptionally(ex -> {

@@ -1850,5 +1850,17 @@ public class ApolloApiController {
      * ======================================
      */
 
+     // Map a GET request to retrieve a specific account by its ID
+    @GetMapping("/api/lolseries/{id}")
+    public Mono<GetSeries> getLolSeries(@PathVariable("id") String seriesId) {
+        // Convert the account ID from String to its proper format and retrieve account
+        // information asynchronously
+        return Mono.fromFuture(manager.getSeriesWithId(ApolloHelpers.parseSeriesId(seriesId)))
+                // If no account is found, return an HTTP 404 error
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                // Convert the retrieved account information into the GetAccount DTO format
+                .map(GetSeries::new);
+    }
+
    
 }

@@ -10,19 +10,19 @@ package com.apollo.backend.data;
 public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._Fields>, java.io.Serializable, Cloneable, Comparable<Broadcast> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Broadcast");
 
-  private static final org.apache.thrift.protocol.TField EXTERNAL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("external_id", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField LANGUAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("language", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.thrift.protocol.TField EXTERNAL_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("externalId", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField LANGUAGE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("languageId", org.apache.thrift.protocol.TType.I32, (short)2);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new BroadcastStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new BroadcastTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable java.lang.String external_id; // required
-  public @org.apache.thrift.annotation.Nullable Language language; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String externalId; // required
+  public int languageId; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    EXTERNAL_ID((short)1, "external_id"),
-    LANGUAGE((short)2, "language");
+    EXTERNAL_ID((short)1, "externalId"),
+    LANGUAGE_ID((short)2, "languageId");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -40,8 +40,8 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
       switch(fieldId) {
         case 1: // EXTERNAL_ID
           return EXTERNAL_ID;
-        case 2: // LANGUAGE
-          return LANGUAGE;
+        case 2: // LANGUAGE_ID
+          return LANGUAGE_ID;
         default:
           return null;
       }
@@ -85,13 +85,15 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
   }
 
   // isset id assignments
+  private static final int __LANGUAGEID_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.EXTERNAL_ID, new org.apache.thrift.meta_data.FieldMetaData("external_id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.EXTERNAL_ID, new org.apache.thrift.meta_data.FieldMetaData("externalId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.LANGUAGE, new org.apache.thrift.meta_data.FieldMetaData("language", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Language.class)));
+    tmpMap.put(_Fields.LANGUAGE_ID, new org.apache.thrift.meta_data.FieldMetaData("languageId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Broadcast.class, metaDataMap);
   }
@@ -100,24 +102,24 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
   }
 
   public Broadcast(
-    java.lang.String external_id,
-    Language language)
+    java.lang.String externalId,
+    int languageId)
   {
     this();
-    this.external_id = external_id;
-    this.language = language;
+    this.externalId = externalId;
+    this.languageId = languageId;
+    setLanguageIdIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public Broadcast(Broadcast other) {
-    if (other.isSetExternal_id()) {
-      this.external_id = other.external_id;
+    __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetExternalId()) {
+      this.externalId = other.externalId;
     }
-    if (other.isSetLanguage()) {
-      this.language = new Language(other.language);
-    }
+    this.languageId = other.languageId;
   }
 
   @Override
@@ -127,58 +129,57 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
 
   @Override
   public void clear() {
-    this.external_id = null;
-    this.language = null;
+    this.externalId = null;
+    setLanguageIdIsSet(false);
+    this.languageId = 0;
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.lang.String getExternal_id() {
-    return this.external_id;
+  public java.lang.String getExternalId() {
+    return this.externalId;
   }
 
-  public Broadcast setExternal_id(@org.apache.thrift.annotation.Nullable java.lang.String external_id) {
-    this.external_id = external_id;
+  public Broadcast setExternalId(@org.apache.thrift.annotation.Nullable java.lang.String externalId) {
+    this.externalId = externalId;
     return this;
   }
 
-  public void unsetExternal_id() {
-    this.external_id = null;
+  public void unsetExternalId() {
+    this.externalId = null;
   }
 
-  /** Returns true if field external_id is set (has been assigned a value) and false otherwise */
-  public boolean isSetExternal_id() {
-    return this.external_id != null;
+  /** Returns true if field externalId is set (has been assigned a value) and false otherwise */
+  public boolean isSetExternalId() {
+    return this.externalId != null;
   }
 
-  public void setExternal_idIsSet(boolean value) {
+  public void setExternalIdIsSet(boolean value) {
     if (!value) {
-      this.external_id = null;
+      this.externalId = null;
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public Language getLanguage() {
-    return this.language;
+  public int getLanguageId() {
+    return this.languageId;
   }
 
-  public Broadcast setLanguage(@org.apache.thrift.annotation.Nullable Language language) {
-    this.language = language;
+  public Broadcast setLanguageId(int languageId) {
+    this.languageId = languageId;
+    setLanguageIdIsSet(true);
     return this;
   }
 
-  public void unsetLanguage() {
-    this.language = null;
+  public void unsetLanguageId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LANGUAGEID_ISSET_ID);
   }
 
-  /** Returns true if field language is set (has been assigned a value) and false otherwise */
-  public boolean isSetLanguage() {
-    return this.language != null;
+  /** Returns true if field languageId is set (has been assigned a value) and false otherwise */
+  public boolean isSetLanguageId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LANGUAGEID_ISSET_ID);
   }
 
-  public void setLanguageIsSet(boolean value) {
-    if (!value) {
-      this.language = null;
-    }
+  public void setLanguageIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LANGUAGEID_ISSET_ID, value);
   }
 
   @Override
@@ -186,17 +187,17 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
     switch (field) {
     case EXTERNAL_ID:
       if (value == null) {
-        unsetExternal_id();
+        unsetExternalId();
       } else {
-        setExternal_id((java.lang.String)value);
+        setExternalId((java.lang.String)value);
       }
       break;
 
-    case LANGUAGE:
+    case LANGUAGE_ID:
       if (value == null) {
-        unsetLanguage();
+        unsetLanguageId();
       } else {
-        setLanguage((Language)value);
+        setLanguageId((java.lang.Integer)value);
       }
       break;
 
@@ -208,10 +209,10 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
     case EXTERNAL_ID:
-      return getExternal_id();
+      return getExternalId();
 
-    case LANGUAGE:
-      return getLanguage();
+    case LANGUAGE_ID:
+      return getLanguageId();
 
     }
     throw new java.lang.IllegalStateException();
@@ -226,9 +227,9 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
 
     switch (field) {
     case EXTERNAL_ID:
-      return isSetExternal_id();
-    case LANGUAGE:
-      return isSetLanguage();
+      return isSetExternalId();
+    case LANGUAGE_ID:
+      return isSetLanguageId();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -246,21 +247,21 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
     if (this == that)
       return true;
 
-    boolean this_present_external_id = true && this.isSetExternal_id();
-    boolean that_present_external_id = true && that.isSetExternal_id();
-    if (this_present_external_id || that_present_external_id) {
-      if (!(this_present_external_id && that_present_external_id))
+    boolean this_present_externalId = true && this.isSetExternalId();
+    boolean that_present_externalId = true && that.isSetExternalId();
+    if (this_present_externalId || that_present_externalId) {
+      if (!(this_present_externalId && that_present_externalId))
         return false;
-      if (!this.external_id.equals(that.external_id))
+      if (!this.externalId.equals(that.externalId))
         return false;
     }
 
-    boolean this_present_language = true && this.isSetLanguage();
-    boolean that_present_language = true && that.isSetLanguage();
-    if (this_present_language || that_present_language) {
-      if (!(this_present_language && that_present_language))
+    boolean this_present_languageId = true;
+    boolean that_present_languageId = true;
+    if (this_present_languageId || that_present_languageId) {
+      if (!(this_present_languageId && that_present_languageId))
         return false;
-      if (!this.language.equals(that.language))
+      if (this.languageId != that.languageId)
         return false;
     }
 
@@ -271,13 +272,11 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((isSetExternal_id()) ? 131071 : 524287);
-    if (isSetExternal_id())
-      hashCode = hashCode * 8191 + external_id.hashCode();
+    hashCode = hashCode * 8191 + ((isSetExternalId()) ? 131071 : 524287);
+    if (isSetExternalId())
+      hashCode = hashCode * 8191 + externalId.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetLanguage()) ? 131071 : 524287);
-    if (isSetLanguage())
-      hashCode = hashCode * 8191 + language.hashCode();
+    hashCode = hashCode * 8191 + languageId;
 
     return hashCode;
   }
@@ -290,22 +289,22 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetExternal_id(), other.isSetExternal_id());
+    lastComparison = java.lang.Boolean.compare(isSetExternalId(), other.isSetExternalId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetExternal_id()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.external_id, other.external_id);
+    if (isSetExternalId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.externalId, other.externalId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetLanguage(), other.isSetLanguage());
+    lastComparison = java.lang.Boolean.compare(isSetLanguageId(), other.isSetLanguageId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLanguage()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.language, other.language);
+    if (isSetLanguageId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.languageId, other.languageId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -334,20 +333,16 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
     java.lang.StringBuilder sb = new java.lang.StringBuilder("Broadcast(");
     boolean first = true;
 
-    sb.append("external_id:");
-    if (this.external_id == null) {
+    sb.append("externalId:");
+    if (this.externalId == null) {
       sb.append("null");
     } else {
-      sb.append(this.external_id);
+      sb.append(this.externalId);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("language:");
-    if (this.language == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.language);
-    }
+    sb.append("languageId:");
+    sb.append(this.languageId);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -356,9 +351,6 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
-    if (language != null) {
-      language.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -371,6 +363,8 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -399,17 +393,16 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
         switch (schemeField.id) {
           case 1: // EXTERNAL_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.external_id = iprot.readString();
-              struct.setExternal_idIsSet(true);
+              struct.externalId = iprot.readString();
+              struct.setExternalIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // LANGUAGE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.language = new Language();
-              struct.language.read(iprot);
-              struct.setLanguageIsSet(true);
+          case 2: // LANGUAGE_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.languageId = iprot.readI32();
+              struct.setLanguageIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -430,16 +423,14 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.external_id != null) {
+      if (struct.externalId != null) {
         oprot.writeFieldBegin(EXTERNAL_ID_FIELD_DESC);
-        oprot.writeString(struct.external_id);
+        oprot.writeString(struct.externalId);
         oprot.writeFieldEnd();
       }
-      if (struct.language != null) {
-        oprot.writeFieldBegin(LANGUAGE_FIELD_DESC);
-        struct.language.write(oprot);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(LANGUAGE_ID_FIELD_DESC);
+      oprot.writeI32(struct.languageId);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -459,18 +450,18 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
     public void write(org.apache.thrift.protocol.TProtocol prot, Broadcast struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetExternal_id()) {
+      if (struct.isSetExternalId()) {
         optionals.set(0);
       }
-      if (struct.isSetLanguage()) {
+      if (struct.isSetLanguageId()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
-      if (struct.isSetExternal_id()) {
-        oprot.writeString(struct.external_id);
+      if (struct.isSetExternalId()) {
+        oprot.writeString(struct.externalId);
       }
-      if (struct.isSetLanguage()) {
-        struct.language.write(oprot);
+      if (struct.isSetLanguageId()) {
+        oprot.writeI32(struct.languageId);
       }
     }
 
@@ -479,13 +470,12 @@ public class Broadcast implements org.apache.thrift.TBase<Broadcast, Broadcast._
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.external_id = iprot.readString();
-        struct.setExternal_idIsSet(true);
+        struct.externalId = iprot.readString();
+        struct.setExternalIdIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.language = new Language();
-        struct.language.read(iprot);
-        struct.setLanguageIsSet(true);
+        struct.languageId = iprot.readI32();
+        struct.setLanguageIdIsSet(true);
       }
     }
   }
