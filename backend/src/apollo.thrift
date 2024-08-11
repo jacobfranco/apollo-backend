@@ -715,8 +715,8 @@ struct Roster {
 }
 
 struct ParticipantStats {
-    1: i32 kills
-    2: i32 placement
+    1: optional i32 kills
+    2: optional i32 placement
 }
 
 struct Participant {
@@ -725,7 +725,7 @@ struct Participant {
     3: bool forfeit
     4: Roster roster
     5: bool winner
-    6: ParticipantStats stats
+    6: optional ParticipantStats stats
 }
 
 struct Match {
@@ -773,13 +773,13 @@ struct Broadcaster {
 }
 
 struct Release {
-    1: string uuid
-    2: string date
-    3: string description
+    1: optional string uuid
+    2: optional string date
+    3: optional string description
 }
 
 struct GameVersion {
-    1: Release release
+    1: optional Release release
 }
 
 struct CoverageStatus {
@@ -788,7 +788,7 @@ struct CoverageStatus {
 }
 
 struct CoverageType {
-    1: CoverageStatus api
+    1: optional CoverageStatus api
     2: optional CoverageStatus cv
     3: optional CoverageStatus server
 }
@@ -808,26 +808,28 @@ struct Series {
     2: string title
     3: i64 start
     4: i64 end
-    5: string lifecycle
-    6: i32 tier
-    7: i32 best_of
-    8: list<ChainItem> chain
-    9: bool streamed
-    10: BracketPosition bracket_position
-    11: Tournament tournament
-    12: Substage substage
-    13: Game game
-    14: Format format
-    15: optional i64 postponed_from
-    16: optional i64 deleted_at
-    17: list<Participant> participants
-    18: list<Match> matches
-    19: list<Caster> casters
-    20: list<Broadcaster> broadcasters
-    21: bool has_incident_report
-    22: GameVersion game_version
-    23: Coverage coverage
+    5: optional i64 postponed_from
+    6: optional i64 deleted_at
+    7: string lifecycle
+    8: i32 tier
+    9: i32 best_of
+    10: list<ChainItem> chain
+    11: bool streamed
+    12: optional BracketPosition bracket_position
+    13: list<Participant> participants
+    14: Tournament tournament
+    15: Substage substage
+    16: Game game
+    17: list<Match> matches
+    18: list<Caster> casters
+    19: list<Broadcaster> broadcasters
+    20: bool has_incident_report
+    21: Coverage coverage
+    22: Format format
+    23: GameVersion game_version
     24: i64 resource_version
+    25: i64 created_at
+    26: i64 updated_at
 }
 
 

@@ -35,6 +35,7 @@ public class AbiosApiClient {
             .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Making api request to: " + BASE_URL + endpoint + queryParams);
         return response.body();
     }
 }

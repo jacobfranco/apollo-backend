@@ -28,10 +28,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import rpl.shaded.org.apache.kafka.common.errors.ApiException;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
@@ -46,12 +48,11 @@ public class ApolloApiManager {
 
     private ObjectMapper objectMapper;
 
-     // Load environment variables for Abios
-     private static final Dotenv dotenv = Dotenv.load();
-     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
+    // Load environment variables for Abios
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
 
     private final AbiosApiClient apiClient;
- 
 
     private static final int MAX_PAGING_ITERATIONS = 10;
     private static final int MAX_LIMIT = 40;
@@ -98,7 +99,6 @@ public class ApolloApiManager {
     private final PState accountIdToDirectMessages;
     private final PState statusIdToConvoId;
     private final PState accountIdToDirectMessagesById;
-    
 
     // Core Queries
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
@@ -164,7 +164,6 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Map> statusTermsSearch;
     private final QueryTopologyClient<Map> hashtagSearch;
 
-
     // Global Timelines PStates
     private final PState localTimeline;
 
@@ -187,7 +186,7 @@ public class ApolloApiManager {
         this.apiClient = new AbiosApiClient(ABIOS_SECRET);
 
         this.objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+                .registerModule(new JavaTimeModule());
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
@@ -270,7 +269,8 @@ public class ApolloApiManager {
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
         accountIdToHashtagActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToHashtagActivity");
         hashtagToStatusPointers = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagToStatusPointers");
-        hashtagToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagToStatusPointersReverse");
+        hashtagToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME,
+                "$$hashtagToStatusPointersReverse");
 
         // Hashtag Queries
         batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
@@ -301,8 +301,6 @@ public class ApolloApiManager {
 
         // ESports Queries
         // TODO: Implement
-
-
 
     }
 
@@ -1616,40 +1614,54 @@ public class ApolloApiManager {
         }
     }
 
-    public CompletableFuture<StatusQueryResults> getHashtagTimeline(String hashtag, Long requestAccountIdMaybe, StatusPointer offsetMaybe, Integer limitMaybe) {
-        return queryStatusesWithPaging((offset, limit) ->
-                  hashtagToStatusPointersReverse.selectOneAsync(Path.key(hashtag, offset).nullToVal(-1L))
-                                                .thenCompose(timelineIndex -> getHashtagTimeline.invokeAsync(hashtag, requestAccountIdMaybe, timelineIndex, limit)),
+    public CompletableFuture<StatusQueryResults> getHashtagTimeline(String hashtag, Long requestAccountIdMaybe,
+            StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging(
+                (offset, limit) -> hashtagToStatusPointersReverse
+                        .selectOneAsync(Path.key(hashtag, offset).nullToVal(-1L))
+                        .thenCompose(timelineIndex -> getHashtagTimeline.invokeAsync(hashtag, requestAccountIdMaybe,
+                                timelineIndex, limit)),
                 offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 
-    public CompletableFuture<QueryResults<StatusQueryResult, Map>> getStatusSearch(long requestAccountId, Long authorIdMaybe, List<String> terms, Map startParamsMaybe, Integer limitMaybe) {
+    public CompletableFuture<QueryResults<StatusQueryResult, Map>> getStatusSearch(long requestAccountId,
+            Long authorIdMaybe, List<String> terms, Map startParamsMaybe, Integer limitMaybe) {
         int defaultLimit = 40;
         int maxLimit = 80;
         return queryWithPaging(
-            (offset, limit) -> {
-                CompletableFuture<Map> matchListFuture = statusTermsSearch.invokeAsync(authorIdMaybe != null ? authorIdMaybe : requestAccountId, terms, offset, limit);
-                return matchListFuture.thenCompose(result -> {
-                    Map nextParams = ApolloApiHelpers.createSearchParams(result);
-                    List<StatusPointer> matchList = ((List<List>) result.get("matchList")).stream().map(pair -> new StatusPointer((Long) pair.get(0), (Long) pair.get(1))).collect(Collectors.toList());
-                    return getStatusesFromPointers.invokeAsync(requestAccountId, matchList, new QueryFilterOptions(FilterContext.Public, false))
-                                                  .thenApply(statusQueryResults -> {
-                                                      List<StatusQueryResult> filtered = new ArrayList<>();
-                                                      for (StatusResultWithId sqr : statusQueryResults.results) {
-                                                          // if authorIdMaybe is set, we are searching for only a particular user's statuses.
-                                                          // in that case, only include results written by that user (i.e. filter out mentions)
-                                                          if (authorIdMaybe == null || sqr.status.author.accountId == authorIdMaybe) filtered.add(new StatusQueryResult(sqr, statusQueryResults.mentions));
-                                                      }
-                                                      return new QueryResults<>(filtered, nextParams == null, nextParams, ApolloApiHelpers.createLinkHeaderParams(nextParams));
-                                                  });
-                });
-            },
-            startParamsMaybe,
-            Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit),
-            MAX_PAGING_ITERATIONS);
+                (offset, limit) -> {
+                    CompletableFuture<Map> matchListFuture = statusTermsSearch.invokeAsync(
+                            authorIdMaybe != null ? authorIdMaybe : requestAccountId, terms, offset, limit);
+                    return matchListFuture.thenCompose(result -> {
+                        Map nextParams = ApolloApiHelpers.createSearchParams(result);
+                        List<StatusPointer> matchList = ((List<List>) result.get("matchList")).stream()
+                                .map(pair -> new StatusPointer((Long) pair.get(0), (Long) pair.get(1)))
+                                .collect(Collectors.toList());
+                        return getStatusesFromPointers
+                                .invokeAsync(requestAccountId, matchList,
+                                        new QueryFilterOptions(FilterContext.Public, false))
+                                .thenApply(statusQueryResults -> {
+                                    List<StatusQueryResult> filtered = new ArrayList<>();
+                                    for (StatusResultWithId sqr : statusQueryResults.results) {
+                                        // if authorIdMaybe is set, we are searching for only a particular user's
+                                        // statuses.
+                                        // in that case, only include results written by that user (i.e. filter out
+                                        // mentions)
+                                        if (authorIdMaybe == null || sqr.status.author.accountId == authorIdMaybe)
+                                            filtered.add(new StatusQueryResult(sqr, statusQueryResults.mentions));
+                                    }
+                                    return new QueryResults<>(filtered, nextParams == null, nextParams,
+                                            ApolloApiHelpers.createLinkHeaderParams(nextParams));
+                                });
+                    });
+                },
+                startParamsMaybe,
+                Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit),
+                MAX_PAGING_ITERATIONS);
     }
 
-    public CompletableFuture<QueryResults<SimpleEntry<String, ItemStats>, Map>> getHashtagSearch(String term, Map startParamsMaybe, Integer limitMaybe) {
+    public CompletableFuture<QueryResults<SimpleEntry<String, ItemStats>, Map>> getHashtagSearch(String term,
+            Map startParamsMaybe, Integer limitMaybe) {
         int defaultLimit = 40;
         int maxLimit = 80;
         int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
@@ -1658,78 +1670,95 @@ public class ApolloApiManager {
             Map nextParams = ApolloApiHelpers.createSearchParams(result);
             List<String> matchList = (List<String>) result.get("matchList");
             return batchHashtagStats.invokeAsync(matchList.stream().distinct().collect(Collectors.toList()))
-                                    .thenApply(hashtagToStats -> {
-                                        if (hashtagToStats == null) hashtagToStats = new HashMap<>();
-                                        List<SimpleEntry<String, ItemStats>> results = new ArrayList<>();
-                                        for (Map.Entry<String, ItemStats> entry : hashtagToStats.entrySet()) {
-                                            results.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
-                                        }
-                                        return new QueryResults<>(results, nextParams == null, nextParams, ApolloApiHelpers.createLinkHeaderParams(nextParams));
-                                    });
+                    .thenApply(hashtagToStats -> {
+                        if (hashtagToStats == null)
+                            hashtagToStats = new HashMap<>();
+                        List<SimpleEntry<String, ItemStats>> results = new ArrayList<>();
+                        for (Map.Entry<String, ItemStats> entry : hashtagToStats.entrySet()) {
+                            results.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
+                        }
+                        return new QueryResults<>(results, nextParams == null, nextParams,
+                                ApolloApiHelpers.createLinkHeaderParams(nextParams));
+                    });
         });
     }
 
     public CompletableFuture<Conversation> getConversationFromStatusId(long accountId, StatusPointer pointer) {
-        return statusIdToConvoId.selectOneAsync(pointer.authorId, Path.key(pointer.statusId).nullToVal(pointer.statusId))
-                                .thenCompose(conversationId -> getConversation.invokeAsync(accountId, conversationId));
+        return statusIdToConvoId
+                .selectOneAsync(pointer.authorId, Path.key(pointer.statusId).nullToVal(pointer.statusId))
+                .thenCompose(conversationId -> getConversation.invokeAsync(accountId, conversationId));
     }
 
-     // reactive queries
+    // reactive queries
 
-     public static class HomeTimelineProxyState implements ProxyState<SortedMap> {
+    public static class HomeTimelineProxyState implements ProxyState<SortedMap> {
         public long accountId;
         public StatusPointer mostRecentStatusPointer;
         public ProxyState.Callback<SortedMap> callback;
-  
-        public HomeTimelineProxyState(long accountId, StatusPointer mostRecentStatusPointer, ProxyState.Callback<SortedMap> callback) {
-          this.accountId = accountId;
-          this.mostRecentStatusPointer = mostRecentStatusPointer;
-          this.callback = callback;
+
+        public HomeTimelineProxyState(long accountId, StatusPointer mostRecentStatusPointer,
+                ProxyState.Callback<SortedMap> callback) {
+            this.accountId = accountId;
+            this.mostRecentStatusPointer = mostRecentStatusPointer;
+            this.callback = callback;
         }
-  
+
         @Override
-        public SortedMap get() { throw new RuntimeException("Not implemented"); }
-  
+        public SortedMap get() {
+            throw new RuntimeException("Not implemented");
+        }
+
         @Override
-        public void close() throws IOException { }
-      }
-  
-  
-      public void refreshHomeTimelineProxies(List<HomeTimelineProxyState> activeProxies) {
+        public void close() throws IOException {
+        }
+    }
+
+    public void refreshHomeTimelineProxies(List<HomeTimelineProxyState> activeProxies) {
         List<List<HomeTimelineProxyState>> partitions = Lists.partition(activeProxies, 100);
-        for(List<HomeTimelineProxyState> partition: partitions) {
-          List tuples = new ArrayList();
-          for(HomeTimelineProxyState p: partition) tuples.add(Arrays.asList(p.accountId, p.mostRecentStatusPointer));
-          Map<Integer, List<StatusPointer>> res = getHomeTimelinesUntil.invoke(tuples, 50);
-          for(int i=0; i<partition.size(); i++) {
-            HomeTimelineProxyState p = partition.get(i);
-            List<StatusPointer> pointers = res.get(i);
-            if(!pointers.isEmpty()) p.mostRecentStatusPointer = pointers.get(0);
-            // diff processor doesn't need old/new values since it handles KeyDiff
-            for(int j=pointers.size() - 1; j>=0; j--) p.callback.change(null, new KeyDiff((long)j, new NewValueDiff(pointers.get(j))), null);
-          }
+        for (List<HomeTimelineProxyState> partition : partitions) {
+            List tuples = new ArrayList();
+            for (HomeTimelineProxyState p : partition)
+                tuples.add(Arrays.asList(p.accountId, p.mostRecentStatusPointer));
+            Map<Integer, List<StatusPointer>> res = getHomeTimelinesUntil.invoke(tuples, 50);
+            for (int i = 0; i < partition.size(); i++) {
+                HomeTimelineProxyState p = partition.get(i);
+                List<StatusPointer> pointers = res.get(i);
+                if (!pointers.isEmpty())
+                    p.mostRecentStatusPointer = pointers.get(0);
+                // diff processor doesn't need old/new values since it handles KeyDiff
+                for (int j = pointers.size() - 1; j >= 0; j--)
+                    p.callback.change(null, new KeyDiff((long) j, new NewValueDiff(pointers.get(j))), null);
+            }
         }
-      }
+    }
 
-    public CompletableFuture<HomeTimelineProxyState> proxyHomeTimeline(long accountId, ProxyState.Callback<SortedMap> callback) {
+    public CompletableFuture<HomeTimelineProxyState> proxyHomeTimeline(long accountId,
+            ProxyState.Callback<SortedMap> callback) {
         return getHomeTimelinesUntil.invokeAsync(Arrays.asList(Arrays.asList(accountId, new StatusPointer(-1, -1))), 1)
-                                    .thenApply((Map<Integer, List<StatusPointer>> m) -> {
-                                       StatusPointer mostRecent = null;
-                                       if(!m.get(0).isEmpty()) mostRecent = m.get(0).get(0);
-                                       return new HomeTimelineProxyState(accountId, mostRecent, callback);
-                                    });
+                .thenApply((Map<Integer, List<StatusPointer>> m) -> {
+                    StatusPointer mostRecent = null;
+                    if (!m.get(0).isEmpty())
+                        mostRecent = m.get(0).get(0);
+                    return new HomeTimelineProxyState(accountId, mostRecent, callback);
+                });
     }
 
-    public CompletableFuture<ProxyState<SortedMap>> proxyNotificationsTimeline(long accountId, ProxyState.Callback<SortedMap> callback) {
-        return accountIdToNotificationsTimeline.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
+    public CompletableFuture<ProxyState<SortedMap>> proxyNotificationsTimeline(long accountId,
+            ProxyState.Callback<SortedMap> callback) {
+        return accountIdToNotificationsTimeline
+                .proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
     }
 
-    public CompletableFuture<ProxyState<SortedMap>> proxyHashtagTimeline(String hashtag, ProxyState.Callback<SortedMap> callback) {
-        return hashtagToStatusPointers.proxyAsync(Path.key(hashtag).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
+    public CompletableFuture<ProxyState<SortedMap>> proxyHashtagTimeline(String hashtag,
+            ProxyState.Callback<SortedMap> callback) {
+        return hashtagToStatusPointers.proxyAsync(Path.key(hashtag).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT),
+                callback);
     }
 
-    public CompletableFuture<ProxyState<SortedMap>> proxyDirectTimeline(long accountId, ProxyState.Callback<SortedMap> callback) {
-        return accountIdToDirectMessagesById.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT), callback);
+    public CompletableFuture<ProxyState<SortedMap>> proxyDirectTimeline(long accountId,
+            ProxyState.Callback<SortedMap> callback) {
+        return accountIdToDirectMessagesById.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT),
+                callback);
     }
 
     // TODO: Idk if this works
@@ -1745,104 +1774,144 @@ public class ApolloApiManager {
      * 
      */
 
-// New methods
+    // New methods
 
-public CompletableFuture<Void> fetchAndStoreSeries(String filter, String order, int skip, int take) {
-    return CompletableFuture.runAsync(() -> {
-        try {
-            String seriesData = apiClient.getSeries(filter, order, skip, take);
-            List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
-            List<CompletableFuture<Boolean>> futures = new ArrayList<>();
-            
-            for (PostSeries postSeries : postSeriesList) {
-                System.out.println(postSeries);
-                Series thriftSeries = convertToThriftSeries(postSeries);
-                futures.add(seriesDepot.appendAsync(thriftSeries));
+    public CompletableFuture<Void> fetchAndStoreSeries(String filter, String order, int skip, int take) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                String seriesData = apiClient.getSeries(filter, order, skip, take);
+                List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
+                List<CompletableFuture<Boolean>> futures = new ArrayList<>();
+
+                for (PostSeries postSeries : postSeriesList) {
+                    System.out.println(postSeries);
+                    Series thriftSeries = convertToThriftSeries(postSeries);
+                    futures.add(seriesDepot.appendAsync(thriftSeries));
+                }
+
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+                // Handle pagination if needed
+                if (postSeriesList.size() == take) {
+                    fetchAndStoreSeries(filter, order, skip + take, take);
+                }
+            } catch (ApiException e) {
+                System.out.println("API returned an error: " + e.getMessage());
+                // Handle the API error appropriately
+            } catch (Exception e) {
+                // Log the error and potentially retry or handle it appropriately
+                e.printStackTrace();
             }
-            
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-            
-            // Handle pagination if needed
-            if (postSeriesList.size() == take) {
-                fetchAndStoreSeries(filter, order, skip + take, take);
-            }
-        } catch (Exception e) {
-            // Log the error and potentially retry or handle it appropriately
-            e.printStackTrace();
-        }
-    });
-}
-
-private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Exception {
-    return objectMapper.readValue(jsonData, new TypeReference<List<PostSeries>>(){});
-}
-
-    private Series convertToThriftSeries(PostSeries postSeries) {
-        return new Series(
-            postSeries.id,
-            postSeries.title,
-            postSeries.start.toEpochMilli(),
-            postSeries.end.toEpochMilli(),
-            postSeries.lifecycle,
-            postSeries.tier,
-            postSeries.bestOf,
-            postSeries.chain.stream().map(this::convertChainItem).collect(Collectors.toList()),
-            postSeries.streamed,
-            convertBracketPosition(postSeries.bracketPosition),
-            convertTournament(postSeries.tournament),
-            convertSubstage(postSeries.substage),
-            convertGame(postSeries.game),
-            new Format(postSeries.format.bestOf),
-            postSeries.participants.stream().map(this::convertParticipant).collect(Collectors.toList()),
-            postSeries.matches.stream().map(this::convertMatch).collect(Collectors.toList()),
-            postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()),
-            postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()),
-            postSeries.hasIncidentReport,
-            convertGameVersion(postSeries.gameVersion),
-            convertCoverage(postSeries.coverage),
-            postSeries.resourceVersion
-        );
+        });
     }
 
+    private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        // Check if the response is an error
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        if (rootNode.isArray()) {
+            return objectMapper.readValue(jsonData, new TypeReference<List<PostSeries>>() {
+            });
+        } else if (rootNode.isObject()) {
+            PostSeries singleSeries = objectMapper.treeToValue(rootNode, PostSeries.class);
+            return Collections.singletonList(singleSeries);
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure");
+        }
+    }
+
+    public class ApiException extends Exception {
+        public ApiException(String message) {
+            super(message);
+        }
+    }
+
+    private Series convertToThriftSeries(PostSeries postSeries) {
+        Series series = new Series();
+        series.setId(postSeries.id);
+        series.setTitle(postSeries.title);
+        series.setStart(postSeries.start != null ? postSeries.start.toEpochMilli() : 0);
+        series.setEnd(postSeries.end != null ? postSeries.end.toEpochMilli() : 0);
+        series.setPostponed_from(postSeries.postponedFrom != null ? postSeries.postponedFrom.toEpochMilli() : 0);
+        series.setDeleted_at(postSeries.deletedAt != null ? postSeries.deletedAt.toEpochMilli() : 0);
+        series.setLifecycle(postSeries.lifecycle);
+        series.setTier(postSeries.tier);
+        series.setBest_of(postSeries.bestOf);
+        series.setChain(postSeries.chain.stream().map(this::convertChainItem).collect(Collectors.toList()));
+        series.setStreamed(postSeries.streamed);
+        series.setBracket_position(convertBracketPosition(postSeries.bracketPosition));
+        series.setParticipants(postSeries.participants.stream().map(this::convertParticipant).collect(Collectors.toList()));
+        series.setTournament(convertTournament(postSeries.tournament));
+        series.setSubstage(convertSubstage(postSeries.substage));
+        series.setGame(convertGame(postSeries.game));
+        series.setMatches(postSeries.matches.stream().map(this::convertMatch).collect(Collectors.toList()));
+        series.setCasters(postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()));
+        series.setBroadcasters(postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()));
+        series.setHas_incident_report(postSeries.hasIncidentReport);
+        series.setCoverage(convertCoverage(postSeries.coverage));
+        series.setFormat(new Format(postSeries.format.bestOf));
+        series.setGame_version(convertGameVersion(postSeries.gameVersion));
+        series.setResource_version(postSeries.resourceVersion);
+        series.setCreated_at(postSeries.createdAt != null ? postSeries.createdAt.toEpochMilli() : 0);
+        series.setUpdated_at(postSeries.updatedAt != null ? postSeries.updatedAt.toEpochMilli() : 0);
+        return series;
+    }
+    
     private ChainItem convertChainItem(PostSeries.ChainItem item) {
         return new ChainItem(item.id);
     }
-
+    
     private Tournament convertTournament(PostSeries.Tournament t) {
         return new Tournament(t.id);
     }
-
+    
     private Substage convertSubstage(PostSeries.Substage s) {
         return new Substage(s.id);
     }
-
+    
     private Game convertGame(PostSeries.Game g) {
         return new Game(g.id);
     }
-
+    
     private BracketPosition convertBracketPosition(PostSeries.BracketPosition bp) {
-        return new BracketPosition(bp.part, bp.col, bp.offset);
+        return bp != null ? new BracketPosition(bp.part, bp.col, bp.offset) : null;
     }
-
+    
     private Participant convertParticipant(PostSeries.Participant p) {
-        return new Participant(
-            p.seed,
-            p.score,
-            p.forfeit,
-            new Roster(p.roster.id),
-            p.winner,
-            new ParticipantStats(p.stats.kills, p.stats.placement)
-        );
+        Participant participant = new Participant();
+        participant.setSeed(p.seed);
+        participant.setScore(p.score);
+        participant.setForfeit(p.forfeit);
+        participant.setRoster(new Roster(p.roster.id));
+        participant.setWinner(p.winner);
+        participant.setStats(convertParticipantStats(p.stats));
+        return participant;
     }
 
+    private ParticipantStats convertParticipantStats(PostSeries.ParticipantStats stats) {
+        if (stats == null) {
+            return null;
+        }
+        ParticipantStats participantStats = new ParticipantStats();
+        participantStats.setKills(stats.kills);
+        participantStats.setPlacement(stats.placement);
+        return participantStats;
+    }
+    
     private Match convertMatch(PostSeries.Match m) {
         return new Match(m.id);
     }
-
+    
     private Caster convertCaster(PostSeries.Caster c) {
         return new Caster(c.primary, new CasterInfo(c.caster.id));
     }
-
+    
     private Broadcaster convertBroadcaster(PostSeries.Broadcaster b) {
         return new Broadcaster(
             convertBroadcasterInfo(b.broadcaster),
@@ -1850,7 +1919,7 @@ private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Excep
             b.official
         );
     }
-
+    
     private BroadcasterInfo convertBroadcasterInfo(PostSeries.BroadcasterInfo bi) {
         return new BroadcasterInfo(
             bi.id,
@@ -1860,17 +1929,35 @@ private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Excep
             new BroadcastDefaults(new Language(bi.broadcastDefaults.language.id))
         );
     }
-
+    
     private Broadcast convertBroadcast(PostSeries.Broadcast b) {
         return new Broadcast(b.externalId, new Language(b.language.id));
     }
-
+    
     private GameVersion convertGameVersion(PostSeries.GameVersion gv) {
-        PostSeries.Release r = gv.release;
-        return new GameVersion(new Release(r.uuid, r.date, r.description));
+        if (gv == null || gv.release == null) {
+            return null;
+        }
+        GameVersion gameVersion = new GameVersion();
+        gameVersion.setRelease(convertRelease(gv.release));
+        return gameVersion;
     }
 
+    private Release convertRelease(PostSeries.Release r) {
+        if (r == null) {
+            return null;
+        }
+        Release release = new Release();
+        release.setUuid(r.uuid);
+        release.setDate(r.date);
+        release.setDescription(r.description);
+        return release;
+    }
+    
     private Coverage convertCoverage(PostSeries.Coverage c) {
+        if (c == null || c.data == null) {
+            return null;
+        }
         PostSeries.CoverageData cd = c.data;
         return new Coverage(new CoverageData(
             convertCoverageType(cd.live),
@@ -1878,17 +1965,26 @@ private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Excep
             convertCoverageType(cd.postgame)
         ));
     }
-
+    
     private CoverageType convertCoverageType(PostSeries.CoverageType ct) {
-        return new CoverageType(
-            convertCoverageStatus(ct.api),
-            ct.cv != null ? convertCoverageStatus(ct.cv) : null,
-            ct.server != null ? convertCoverageStatus(ct.server) : null
-        );
+        if (ct == null) {
+            return null;
+        }
+        CoverageType coverageType = new CoverageType();
+        coverageType.setApi(convertCoverageStatus(ct.api));
+        if (ct.cv != null) {
+            coverageType.setCv(convertCoverageStatus(ct.cv));
+        }
+        if (ct.server != null) {
+            coverageType.setServer(convertCoverageStatus(ct.server));
+        }
+        return coverageType;
     }
-
+    
     private CoverageStatus convertCoverageStatus(PostSeries.CoverageStatus cs) {
+        if (cs == null) {
+            return null;
+        }
         return new CoverageStatus(cs.expectation, cs.fact);
     }
 }
-

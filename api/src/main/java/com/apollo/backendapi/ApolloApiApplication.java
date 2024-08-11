@@ -180,6 +180,7 @@ public class ApolloApiApplication {
         return ipc;
     }
 
+    // Fetches data from Abios on startup
     @PostConstruct
     public void fetchESportsData() {
         System.out.println("Application context loaded. Fetching eSports data...");
@@ -195,7 +196,7 @@ public class ApolloApiApplication {
     }
 
     private void fetchSeries() {
-        ApolloApiController.manager.fetchAndStoreSeries("", "", 0, 0)
+        ApolloApiController.manager.fetchAndStoreSeries("game.id=2", "start-asc", 0, 50)
             .thenRun(() -> System.out.println("Series fetching completed"))
             .exceptionally(ex -> {
                 System.err.println("Error fetching series: " + ex.getMessage());

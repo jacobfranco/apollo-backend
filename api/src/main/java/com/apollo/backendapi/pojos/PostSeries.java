@@ -3,31 +3,62 @@ package com.apollo.backendapi.pojos;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+// TODO: Remove unnecessary fields when we know 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PostSeries {
     public int id;
     public String title;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant start;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant end;
+
+    @JsonProperty("postponed_from")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    public Instant postponedFrom;
+
+    @JsonProperty("deleted_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    public Instant deletedAt;
+
     public String lifecycle;
     public int tier;
+    @JsonProperty("best_of")
     public int bestOf;
     public List<ChainItem> chain;
     public boolean streamed;
+    @JsonProperty("bracket_position")
     public BracketPosition bracketPosition;
+    public List<Participant> participants;
     public Tournament tournament;
     public Substage substage;
     public Game game;
-    public Format format;
-    public Instant postponedFrom;
-    public Instant deletedAt;
-    public List<Participant> participants;
     public List<Match> matches;
     public List<Caster> casters;
     public List<Broadcaster> broadcasters;
+    @JsonProperty("has_incident_report")
     public boolean hasIncidentReport;
-    public GameVersion gameVersion;
     public Coverage coverage;
+    public Format format;
+    @JsonProperty("game_version")
+    public GameVersion gameVersion;
+    @JsonProperty("resource_version")
     public long resourceVersion;
+
+    @JsonProperty("created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    public Instant createdAt;
+
+    @JsonProperty("updated_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
+    public Instant updatedAt;
 
     public static class ChainItem {
         public int id;
@@ -51,7 +82,9 @@ public class PostSeries {
         public int offset;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Format {
+        @JsonProperty("best_of")
         public int bestOf;
     }
 
@@ -92,11 +125,14 @@ public class PostSeries {
         public boolean official;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class BroadcasterInfo {
         public int id;
         public String name;
+        @JsonProperty("external_id")
         public String externalId;
         public Platform platform;
+        @JsonProperty("broadcast_defaults")
         public BroadcastDefaults broadcastDefaults;
     }
 
@@ -112,7 +148,9 @@ public class PostSeries {
         public int id;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Broadcast {
+        @JsonProperty("external_id")
         public String externalId;
         public Language language;
     }
@@ -127,6 +165,7 @@ public class PostSeries {
         public String description;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Coverage {
         public CoverageData data;
     }
