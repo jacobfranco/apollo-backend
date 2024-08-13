@@ -9,15 +9,6 @@ import com.apollo.backend.data.Series;
 
 public class ESports implements RamaModule {
 
-    @Override
-    public void define(Setup setup, Topologies topologies) {
-        // Define depots
-        setup.declareDepot("*seriesDepot", Depot.hashBy(ApolloHelpers.ExtractSeriesId.class));
-
-        // Define topology
-        declareSeriesIngestionTopology(topologies);
-    }
-
     private static void declareSeriesIngestionTopology(Topologies topologies) {
         StreamTopology stream = topologies.stream("seriesIngestion");
 
@@ -26,7 +17,31 @@ public class ESports implements RamaModule {
 
         // Stream processing logic
         stream.source("*seriesDepot").out("*series")
-            .macro(ApolloHelpers.extractFields("*series", "*id"))
-            .localTransform("$$seriesIdToSeries", Path.key("*id").termVal("*series"));
+                .macro(ApolloHelpers.extractFields("*series", "*id"))
+                .localTransform("$$seriesIdToSeries", Path.key("*id").termVal("*series"));
     }
+
+    private void declareQueries(Topologies topologies) {
+        topologies.query("getSeriesFromSeriesId", "*id").out("*result")
+            .hashPartition("*id")
+            .localSelect("$$seriesIdToSeries", Path.key("*id").filterPred(Ops.IS_NOT_NULL))
+            .out("*series")
+            .ifTrue(new Expr(Ops.IS_NULL, "*series"),
+                Block.each(() -> null).out("*result"),
+                Block.each(Ops.IDENTITY, "*series").out("*result"))
+            .originPartition();
+    }
+
+    @Override
+    public void define(Setup setup, Topologies topologies) {
+        // Define depots
+        setup.declareDepot("*seriesDepot", Depot.hashBy(ApolloHelpers.ExtractSeriesId.class));
+
+        // Define topology
+        declareSeriesIngestionTopology(topologies);
+
+        // Define queries
+        declareQueries(topologies);
+    }
+
 }

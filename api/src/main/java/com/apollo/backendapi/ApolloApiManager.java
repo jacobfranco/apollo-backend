@@ -174,7 +174,7 @@ public class ApolloApiManager {
     private final PState seriesIdToSeries;
 
     // ESports Queries
-    // TODO: Fill in needed queries
+    private final QueryTopologyClient<Series> getSeriesFromSeriesId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -290,7 +290,7 @@ public class ApolloApiManager {
         seriesIdToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$seriesIdToSeries");
 
         // ESports Queries
-        // TODO: Implement
+        getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
 
     }
 
@@ -1953,4 +1953,13 @@ public class ApolloApiManager {
             super(message);
         }
     }
+
+    // Get Series
+
+    public CompletableFuture<Series> getSeries(int seriesId) {
+        return getSeriesFromSeriesId.invokeAsync(seriesId);
+    }
+    
+
+
 }
