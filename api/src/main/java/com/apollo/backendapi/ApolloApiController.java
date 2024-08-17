@@ -33,11 +33,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 
 import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @CrossOrigin(exposedHeaders = { "Link" })
 public class ApolloApiController {
 
+    private static final Logger logger = LogManager.getLogger(ApolloApiController.class);
     private static final int QUERY_PARAM_ARRAY_SIZE_LIMIT = 200;
 
     public static ApolloApiManager manager;
@@ -1850,7 +1853,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-     // Map a GET request to retrieve a specific account by its ID
+     // Map a GET request to retrieve a specific series by its ID
     @GetMapping("/api/lolseries/{id}")
     public Mono<GetSeries> getLolSeries(@PathVariable("id") int seriesId) {
         return Mono.fromFuture(manager.getSeries(seriesId))
@@ -1858,6 +1861,36 @@ public class ApolloApiController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 // Convert the retrieved account information into the GetAccount DTO format
                 .map(GetSeries::new);
+    }
+
+    @GetMapping("/api/lolseries/schedule")
+    public Mono<List<GetSeries>> getLolSeriesSchedule(
+            @RequestParam double startTime,
+            @RequestParam double endTime) {
+        logger.info("Fetching series schedule from {} to {}", startTime, endTime);
+        long startMillis = (long) (startTime * 1000);
+        long endMillis = (long) (endTime * 1000);
+        return Mono.fromFuture(manager.getSeriesSchedule(startMillis, endMillis))
+            .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
+            .doOnError(e -> logger.error("Error fetching series schedule: ", e))
+            .onErrorResume(e -> {
+                logger.error("Error processing series schedule request", e);
+                return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching series schedule", e));
+            });
+    }
+    
+    @GetMapping("/api/lolseries/week")
+    public Mono<List<GetSeries>> getLolSeriesWeekSchedule(
+            @RequestParam(required = false) Double timestamp) {
+        logger.info("Fetching week schedule for timestamp: {}", timestamp);
+        long timeMillis = (timestamp != null) ? (long) (timestamp * 1000) : System.currentTimeMillis();
+        return Mono.fromFuture(manager.getWeekSchedule(timeMillis))
+            .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
+            .doOnError(e -> logger.error("Error fetching week schedule: ", e))
+            .onErrorResume(e -> {
+                logger.error("Error processing week schedule request", e);
+                return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching week schedule", e));
+            });
     }
 
 

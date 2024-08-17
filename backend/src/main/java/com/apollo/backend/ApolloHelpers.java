@@ -16,9 +16,15 @@ import rpl.shaded.scala.compat.Platform;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.thrift.*;
 
@@ -440,6 +446,25 @@ public class ApolloHelpers {
     else if (content.isSetFolloweeStatus()) return content.getFolloweeStatus();
     else throw new RuntimeException("Unexpected notification content: " + content);
   }
+
+  // ESports Helpers
+  public static List<Series> sortSeriesByStartTime(Map<Long, Map<Integer, Series>> filteredSeries) {
+    return filteredSeries.entrySet().stream()
+        .sorted(Map.Entry.comparingByKey()) // Sort by start time (key of outer map)
+        .flatMap(entry -> entry.getValue().values().stream())
+        .collect(Collectors.toList());
+}
+
+    public static long getStartOfWeek(long timestampMillis) {
+    Instant instant = Instant.ofEpochMilli(timestampMillis);
+    LocalDate date = instant.atZone(ZoneOffset.UTC).toLocalDate();
+    LocalDate startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+    return startOfWeek.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+}
+
+    public static long getEndOfWeek(long timestampMillis) {
+        return getStartOfWeek(timestampMillis) + 7 * 24 * 60 * 60 * 1000 - 1;
+    }
 
 }
 

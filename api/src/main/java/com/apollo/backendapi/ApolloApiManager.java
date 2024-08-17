@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import rpl.rama.util.vector_backed_structures.VectorBackedSortedMap;
 import rpl.shaded.org.apache.kafka.common.errors.ApiException;
 
 import com.apollo.backend.*;
@@ -175,6 +176,7 @@ public class ApolloApiManager {
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
+    private final QueryTopologyClient<VectorBackedSortedMap> getSeriesSchedule;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -291,6 +293,7 @@ public class ApolloApiManager {
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
+        getSeriesSchedule = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesSchedule");
 
     }
 
@@ -1956,10 +1959,32 @@ public class ApolloApiManager {
 
     // Get Series
 
+
     public CompletableFuture<Series> getSeries(int seriesId) {
         return getSeriesFromSeriesId.invokeAsync(seriesId);
     }
-    
+
+
+    public CompletableFuture<List<Series>> getSeriesSchedule(long startTime, long endTime) {
+        return getSeriesSchedule.invokeAsync(startTime, endTime)
+            .thenApply(result -> {
+                List<Series> seriesList = new ArrayList<>();
+                
+                for (Object entry : result.entrySet()) {
+                    Map.Entry mapEntry = (Map.Entry) entry;
+                    Map<Integer, Series> innerMap = (Map<Integer, Series>) mapEntry.getValue();
+                    seriesList.addAll(innerMap.values());
+                }
+                
+                return seriesList;
+            });
+    }
+
+    public CompletableFuture<List<Series>> getWeekSchedule(long timestamp) {
+        long startOfWeek = ApolloHelpers.getStartOfWeek(timestamp);
+        long endOfWeek = ApolloHelpers.getEndOfWeek(timestamp);
+        return getSeriesSchedule(startOfWeek, endOfWeek);
+    }
 
 
 }

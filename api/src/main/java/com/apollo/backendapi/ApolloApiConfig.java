@@ -16,6 +16,7 @@ import org.springframework.web.server.*;
 import org.springframework.web.server.session.*;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +59,10 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static final int MAX_NOTE_LENGTH = 500;
     public static final int MAX_USERNAME_LENGTH = 30;
     public static final int MAX_POLL_CHOICE_LENGTH = 30;
+
+    // ESports Config
+     public static final LocalDate LOL_SEASON_START = LocalDate.of(2024, 1, 1);
+    public static final LocalDate LOL_SEASON_END = LocalDate.of(2024, 11, 2);
 
     // Bean to handle reactive session repository
     @Bean
