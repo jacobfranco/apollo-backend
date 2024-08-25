@@ -121,8 +121,6 @@ public class ApolloApiApplication {
         // Set the controller manager to a new instance of ApolloApiManager with the IPC
         ApolloApiController.manager = new ApolloApiManager(ipc);
 
-        ApolloApiController.manager.fetchAndStoreSeries("", "", 0, 0);
-
         // Time manipulation for data entries
         int weekMillis = 1000 * 60 * 60 * 24 * 7;
         long ts = System.currentTimeMillis() - weekMillis;
