@@ -217,6 +217,7 @@ public class ApolloApiApplication {
         return ipc;
     }
 
+    /* 
     // Fetches data from Abios on startup
     @PostConstruct
     public void fetchESportsData() {
@@ -243,5 +244,7 @@ public class ApolloApiApplication {
             return null;
         });
 }
+
+*/
 
 }

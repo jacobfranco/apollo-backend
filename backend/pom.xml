@@ -17,8 +17,8 @@
 
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
 
         <!-- these are here for override-ability by build processes -->
         <custom.final.name>backend</custom.final.name>
@@ -57,6 +57,11 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.70</version>
         </dependency>
+        <dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>3.16.0</version>
+</dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>

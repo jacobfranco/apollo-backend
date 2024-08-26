@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 
@@ -58,7 +59,7 @@ public class ApolloApiHelpers {
 
      private static S3AsyncClient S3_CLIENT = null;
     public static void initS3Client() {
-        S3_CLIENT = S3AsyncClient.builder().credentialsProvider(EnvironmentVariableCredentialsProvider.create()).build();
+        S3_CLIENT = S3AsyncClient.builder().region(Region.US_EAST_2).credentialsProvider(EnvironmentVariableCredentialsProvider.create()).build();
     }
 
     public static CompletableFuture<PutObjectResponse> uploadToS3(String bucketName, String key, File file) {

@@ -17,8 +17,8 @@
     <description>Backend API</description>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <custom.final.name>backend-api</custom.final.name>
@@ -101,8 +101,13 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.11.0</version>
+            <version>1.12.0</version>
         </dependency>
+        <dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>3.16.0</version>
+</dependency>
         <dependency>
             <groupId>http-kit</groupId>
             <artifactId>http-kit</artifactId>

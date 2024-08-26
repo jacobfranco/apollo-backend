@@ -46,8 +46,8 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static S3Options S3_OPTIONS = null;
     static {
         S3_OPTIONS = new S3Options();
-        S3_OPTIONS.bucketName = "yourbucket";
-        S3_OPTIONS.url = "https://yourbucket.s3.amazonaws.com";
+        S3_OPTIONS.bucketName = "yoapollo";
+        S3_OPTIONS.url = "https://yoapollo.s3.us-east-2.amazonaws.com";
     }
     // Maximum allowable lengths for various user inputs 
     // TODO: Review This
