@@ -33,8 +33,6 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static final HashSet<String> IMAGE_EXTS = new HashSet<>(Arrays.asList("jpg", "jpeg", "png", "gif", "webp"));
     // Set of supported video file extensions
     public static final HashSet<String> VIDEO_EXTS = new HashSet<>(Arrays.asList("webm", "mp4", "m4v", "mov"));
-    // OAuth client identifier
-    public static final String OAUTH_CLIENT_ID = "cef6f1929499f942a173abd002a69a3a";
 
     // Static class for AWS S3 storage options
     public static class S3Options {
@@ -49,7 +47,7 @@ public class ApolloApiConfig implements WebFluxConfigurer {
         S3_OPTIONS.bucketName = "yoapollo";
         S3_OPTIONS.url = "https://yoapollo.s3.us-east-2.amazonaws.com";
     }
-    // Maximum allowable lengths for various user inputs 
+    // Maximum allowable lengths for various user inputs
     // TODO: Review This
     public static final int MAX_STATUS_LENGTH = 500;
     public static final int MAX_DISPLAY_NAME_LENGTH = 20;
@@ -61,7 +59,7 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static final int MAX_POLL_CHOICE_LENGTH = 30;
 
     // ESports Config
-     public static final LocalDate LOL_SEASON_START = LocalDate.of(2024, 1, 1);
+    public static final LocalDate LOL_SEASON_START = LocalDate.of(2024, 1, 1);
     public static final LocalDate LOL_SEASON_END = LocalDate.of(2024, 11, 2);
 
     // Bean to handle reactive session repository
@@ -74,7 +72,8 @@ public class ApolloApiConfig implements WebFluxConfigurer {
             @Override
             public Mono<Void> save(MapSession session) {
                 return Mono.fromRunnable(() -> {
-                    if (!session.getId().equals(session.getOriginalId())) this.sessions.remove(session.getOriginalId());
+                    if (!session.getId().equals(session.getOriginalId()))
+                        this.sessions.remove(session.getOriginalId());
                     this.sessions.put(session.getId(), new MapSession(session));
                 });
             }
@@ -83,29 +82,29 @@ public class ApolloApiConfig implements WebFluxConfigurer {
             @Override
             public Mono<MapSession> findById(String id) {
                 return Mono.defer(() ->
-                        // find the session id in the backend
-                        // we always query it first in case it has been revoked
-                        Mono.fromFuture(ApolloApiController.manager.getAccountIdFromAuthCode(id))
-                            // if we can't find it, make sure it's removed from memory
-                            .switchIfEmpty(Mono.defer(() -> this.deleteById(id).then(Mono.empty())))
-                            .flatMap(accountId ->
-                                // try to get the session from the in-memory map
-                                Mono.justOrEmpty(this.sessions.get(id))
-                                    .map(MapSession::new)
-                                    // if we can't find the session, query the backend for the account info
-                                    // and create the session. this could happen if the user logged in via
-                                    // a different API server.
-                                    .switchIfEmpty(
-                                        Mono.defer(() ->
-                                            Mono.fromFuture(ApolloApiController.manager.getAccountWithId(accountId))
-                                                .flatMap(accountWithId ->
-                                                        this.createSession()
-                                                            .flatMap(session -> {
-                                                                session.setId(id);
-                                                                session.setAttribute("accountId", accountWithId.accountId);
-                                                                session.setAttribute("accountName", accountWithId.account.name);
-                                                                return this.save(session).then(Mono.just(session));
-                                                            }))))));
+                // find the session id in the backend
+                // we always query it first in case it has been revoked
+                Mono.fromFuture(ApolloApiController.manager.getAccountIdFromAuthCode(id))
+                        // if we can't find it, make sure it's removed from memory
+                        .switchIfEmpty(Mono.defer(() -> this.deleteById(id).then(Mono.empty())))
+                        .flatMap(accountId ->
+                // try to get the session from the in-memory map
+                Mono.justOrEmpty(this.sessions.get(id))
+                        .map(MapSession::new)
+                        // if we can't find the session, query the backend for the account info
+                        // and create the session. this could happen if the user logged in via
+                        // a different API server.
+                        .switchIfEmpty(
+                                Mono.defer(
+                                        () -> Mono.fromFuture(ApolloApiController.manager.getAccountWithId(accountId))
+                                                .flatMap(accountWithId -> this.createSession()
+                                                        .flatMap(session -> {
+                                                            session.setId(id);
+                                                            session.setAttribute("accountId", accountWithId.accountId);
+                                                            session.setAttribute("accountName",
+                                                                    accountWithId.account.name);
+                                                            return this.save(session).then(Mono.just(session));
+                                                        }))))));
             }
 
             // Delete session by ID
