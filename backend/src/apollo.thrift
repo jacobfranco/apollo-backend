@@ -784,6 +784,14 @@ struct Series {
     26: i64 updatedAt
 }
 
+struct Application {
+  1: required string client_id
+  2: required string client_secret
+  3: required string name
+  4: required string redirect_uri
+  5: required string scopes
+}
+
 
 
 

@@ -916,6 +916,7 @@ public class Core implements RamaModule {
                                 .localTransform("$$accountIdToAccount", Path.must("*accountId")
                                                 .customNavBuilder(TField::new, "*fieldName")
                                                 .termVal("*fieldValue"));
+
         }
 
         // Defines the topology for handling status updates and interactions.
@@ -1520,6 +1521,17 @@ public class Core implements RamaModule {
                                                                                                                                                                 "*id")
                                                                                                                                                                 .termVoid())))));
 
+        }
+
+        private static void declareApplicationTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("applications");
+                // Declare a PState to map client IDs to Application objects
+                stream.pstate("$$clientIdToApplication", PState.mapSchema(String.class, Application.class));
+                // Source from the application depot
+                stream.source("*applicationDepot").out("*application")
+                                .localTransform("$$clientIdToApplication",
+                                                Path.key(new Expr(Application::getClient_id, "*application"))
+                                                                .termVal("*application"));
         }
 
         private void declareQueries(Topologies topologies) {
@@ -2705,6 +2717,15 @@ public class Core implements RamaModule {
                                         return new StatusQueryResults(sortedResults, mentions, false, false);
                                 }, "*sortedResults", "*mentionedAccounts", "*parentAccounts").out("*results");
 
+                topologies.query("getApplicationFromClientId", "*client_id").out("*result")
+                                .hashPartition("*client_id")
+                                .localSelect("$$clientIdToApplication", Path.key("*client_id"))
+                                .out("*application")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*application"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*application").out("*result"))
+                                .originPartition();
+
         }
 
         public static class StatusDepotExtractor implements RamaFunction1<TBase, Long> {
@@ -2743,6 +2764,8 @@ public class Core implements RamaModule {
 
         @Override
         public void define(Setup setup, Topologies topologies) {
+
+                setup.declareDepot("*applicationDepot", Depot.hashBy(ApolloHelpers.ExtractClientId.class));
 
                 setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
                 setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
@@ -2783,6 +2806,7 @@ public class Core implements RamaModule {
                 declareMicrobatchTopologies(topologies);
                 declareAccountsTopology(topologies);
                 declareStatusTopology(topologies);
+                declareApplicationTopology(topologies);
                 declareQueries(topologies);
 
         }

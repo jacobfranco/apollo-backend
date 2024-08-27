@@ -5,27 +5,14 @@ import com.google.common.collect.Lists;
 import clojure.lang.PersistentVector;
 
 import java.io.*;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.time.Instant;
 import java.util.AbstractMap.SimpleEntry;
-
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,7 +21,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import rpl.rama.util.vector_backed_structures.VectorBackedSortedMap;
-import rpl.shaded.org.apache.kafka.common.errors.ApiException;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
@@ -83,6 +69,7 @@ public class ApolloApiManager {
     private final Depot pinStatusDepot;
     private final Depot pollVoteDepot;
     private final Depot statusAttachmentWithIdDepot;
+    private final Depot applicationDepot;
 
     // Core PStates
     private final PState nameToUser;
@@ -113,6 +100,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<StatusQueryResults> getHomeTimeline;
     private final QueryTopologyClient<StatusQueryResults> getDirectTimeline;
     private final QueryTopologyClient<Map<Integer, List<StatusPointer>>> getHomeTimelinesUntil;
+    private final QueryTopologyClient<Application> getApplicationFromClientId;
 
     // Relationships Depots
     private final Depot authCodeDepot;
@@ -197,6 +185,7 @@ public class ApolloApiManager {
         pinStatusDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pinStatusDepot");
         pollVoteDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pollVoteDepot");
         statusAttachmentWithIdDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*statusAttachmentWithIdDepot");
+        applicationDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*applicationDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
@@ -227,6 +216,7 @@ public class ApolloApiManager {
         getHomeTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getHomeTimeline");
         getDirectTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getDirectTimeline");
         getHomeTimelinesUntil = cluster.clusterQuery(CORE_MODULE_NAME, "getHomeTimelinesUntil");
+        getApplicationFromClientId = cluster.clusterQuery(CORE_MODULE_NAME, "getApplicationFromClientId");
 
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -1959,25 +1949,23 @@ public class ApolloApiManager {
 
     // Get Series
 
-
     public CompletableFuture<Series> getSeries(int seriesId) {
         return getSeriesFromSeriesId.invokeAsync(seriesId);
     }
 
-
     public CompletableFuture<List<Series>> getSeriesSchedule(long startTime, long endTime) {
         return getSeriesSchedule.invokeAsync(startTime, endTime)
-            .thenApply(result -> {
-                List<Series> seriesList = new ArrayList<>();
-                
-                for (Object entry : result.entrySet()) {
-                    Map.Entry mapEntry = (Map.Entry) entry;
-                    Map<Integer, Series> innerMap = (Map<Integer, Series>) mapEntry.getValue();
-                    seriesList.addAll(innerMap.values());
-                }
-                
-                return seriesList;
-            });
+                .thenApply(result -> {
+                    List<Series> seriesList = new ArrayList<>();
+
+                    for (Object entry : result.entrySet()) {
+                        Map.Entry mapEntry = (Map.Entry) entry;
+                        Map<Integer, Series> innerMap = (Map<Integer, Series>) mapEntry.getValue();
+                        seriesList.addAll(innerMap.values());
+                    }
+
+                    return seriesList;
+                });
     }
 
     public CompletableFuture<List<Series>> getWeekSchedule(long timestamp) {
@@ -1986,5 +1974,21 @@ public class ApolloApiManager {
         return getSeriesSchedule(startOfWeek, endOfWeek);
     }
 
+    public CompletableFuture<Application> postApplication(PostApplication params) {
+        Application newApp = new Application(
+                ApolloHelpers.randomString(16), // client_id
+                ApolloHelpers.generateSecureRandomString(32), // client_secret
+                params.client_name,
+                params.redirect_uris,
+                params.scopes);
+
+        return applicationDepot
+                .appendAsync(newApp)
+                .thenApply(v -> newApp);
+    }
+
+    public CompletableFuture<Application> getApplication(String clientId) {
+        return getApplicationFromClientId.invokeAsync(clientId);
+    }
 
 }

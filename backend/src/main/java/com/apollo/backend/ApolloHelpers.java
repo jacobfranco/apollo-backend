@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.security.SecureRandom;
 
 import org.apache.thrift.*;
 
@@ -32,41 +33,68 @@ public class ApolloHelpers {
 
   public static final int BULK_FETCH_SIZE = 1000;
 
-   public static final ConcurrentHashMap<Class, Map<String, TFieldIdEnum>> TFIELD_CACHE = new ConcurrentHashMap<>();
+  public static final ConcurrentHashMap<Class, Map<String, TFieldIdEnum>> TFIELD_CACHE = new ConcurrentHashMap<>();
+
+  private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+  private static final SecureRandom secureRandom = new SecureRandom();
+  private static final Random random = new Random();
 
   public static Long parseAccountId(String id) {
-    if (id == null) return null;
+    if (id == null)
+      return null;
     String[] parts = id.split("-");
-    if ("a".equals(parts[parts.length-1]) && parts.length == 2) return Long.parseLong(parts[0]);
-    else throw new RuntimeException("Not an account id: " + id);
+    if ("a".equals(parts[parts.length - 1]) && parts.length == 2)
+      return Long.parseLong(parts[0]);
+    else
+      throw new RuntimeException("Not an account id: " + id);
   }
 
-    public static class ExtractName extends ExtractField {
-    public ExtractName() { super("name"); }
+  public static class ExtractName extends ExtractField {
+    public ExtractName() {
+      super("name");
+    }
   }
 
   public static class ExtractCode extends ExtractField {
-    public ExtractCode() { super("code"); }
+    public ExtractCode() {
+      super("code");
+    }
   }
 
   public static class ExtractToken extends ExtractField {
-    public ExtractToken() { super("token"); }
+    public ExtractToken() {
+      super("token");
+    }
   }
 
   public static class ExtractAccountId extends ExtractField {
-    public ExtractAccountId() { super("accountId"); }
+    public ExtractAccountId() {
+      super("accountId");
+    }
   }
 
   public static class ExtractUuid extends ExtractField {
-    public ExtractUuid() { super("uuid"); }
+    public ExtractUuid() {
+      super("uuid");
+    }
   }
 
   public static class ExtractItem extends ExtractField {
-    public ExtractItem() { super("item"); }
+    public ExtractItem() {
+      super("item");
+    }
   }
 
   public static class ExtractSeriesId extends ExtractField {
-    public ExtractSeriesId() { super("id"); }
+    public ExtractSeriesId() {
+      super("id");
+    }
+  }
+
+  public static class ExtractClientId extends ExtractField {
+    public ExtractClientId() {
+      super("client_id");
+    }
   }
 
   public static class ExtractTargetAuthorId implements RamaFunction1<Object, Long> {
@@ -80,19 +108,25 @@ public class ApolloHelpers {
   public static class ExtractFilterAccountId implements RamaFunction1<Object, Long> {
     @Override
     public Long invoke(Object o) {
-      if (o instanceof AddFilter) return ((AddFilter) o).getFilter().getAccountId();
-      if (o instanceof Filter) return ((Filter) o).getAccountId();
-      if (o instanceof FilterWithId) return ((FilterWithId) o).getFilter().getAccountId();
-      else return (Long) getTFieldByName((TBase) o, "accountId");
+      if (o instanceof AddFilter)
+        return ((AddFilter) o).getFilter().getAccountId();
+      if (o instanceof Filter)
+        return ((Filter) o).getAccountId();
+      if (o instanceof FilterWithId)
+        return ((FilterWithId) o).getFilter().getAccountId();
+      else
+        return (Long) getTFieldByName((TBase) o, "accountId");
     }
   }
 
-   public static Block extractFields(Object from, String... fieldVars) {
+  public static Block extractFields(Object from, String... fieldVars) {
     Block.Impl ret = Block.create();
-    for(String f: fieldVars) {
+    for (String f : fieldVars) {
       String name;
-      if(Helpers.isGeneratedVar(f)) name = Helpers.getGeneratedVarPrefix(f);
-      else name = f.substring(1);
+      if (Helpers.isGeneratedVar(f))
+        name = Helpers.getGeneratedVarPrefix(f);
+      else
+        name = f.substring(1);
       ret = ret.each(new ExtractField(name), from).out(f);
     }
     return ret;
@@ -100,30 +134,35 @@ public class ApolloHelpers {
 
   public static String normalizeURL(String url) throws URISyntaxException {
     String norm = new URI(url).normalize().toString();
-    if(norm.endsWith("/")) norm = norm.substring(0, norm.length() - 1);
+    if (norm.endsWith("/"))
+      norm = norm.substring(0, norm.length() - 1);
     return norm;
   }
 
   public static Object getTFieldByName(TBase obj, String fieldName) {
     TFieldIdEnum field = getTFieldCache(obj.getClass()).get(fieldName);
-    if(field==null) throw new RuntimeException("Field " + fieldName + " does not exist on " + obj.getClass());
+    if (field == null)
+      throw new RuntimeException("Field " + fieldName + " does not exist on " + obj.getClass());
 
     Object ret = null;
-    if(obj.isSet(field)) ret = obj.getFieldValue(field);
-    if(ret instanceof TUnion) ret = ((TUnion) ret).getFieldValue();
+    if (obj.isSet(field))
+      ret = obj.getFieldValue(field);
+    if (ret instanceof TUnion)
+      ret = ((TUnion) ret).getFieldValue();
     return ret;
   }
 
   public static Map<String, TFieldIdEnum> getTFieldCache(Class thriftClass) {
     Map<String, TFieldIdEnum> ret = TFIELD_CACHE.get(thriftClass);
-    if(ret==null) {
+    if (ret == null) {
       try {
         Field f = thriftClass.getField("metaDataMap");
         Map<TFieldIdEnum, Object> m = (Map) f.get(thriftClass);
         ret = new HashMap<>();
-        for(TFieldIdEnum e: m.keySet()) ret.put(e.getFieldName(), e);
+        for (TFieldIdEnum e : m.keySet())
+          ret.put(e.getFieldName(), e);
         TFIELD_CACHE.put(thriftClass, ret);
-      } catch(Exception e) {
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -132,7 +171,8 @@ public class ApolloHelpers {
 
   public static void setTFieldByName(TBase obj, String fieldName, Object val) {
     TFieldIdEnum field = getTFieldCache(obj.getClass()).get(fieldName);
-    if(field==null) throw new RuntimeException("Field " + fieldName + " does not exist on " + obj.getClass());
+    if (field == null)
+      throw new RuntimeException("Field " + fieldName + " does not exist on " + obj.getClass());
     obj.setFieldValue(field, val);
   }
 
@@ -141,88 +181,117 @@ public class ApolloHelpers {
   }
 
   public static long origAuthorId(long authorId, Status status) {
-    if(status.content.isSetBoost()) return status.content.getBoost().boosted.authorId;
-    else return authorId;
+    if (status.content.isSetBoost())
+      return status.content.getBoost().boosted.authorId;
+    else
+      return authorId;
   }
 
   public static long origStatusId(long statusId, Status status) {
-    if(status.content.isSetBoost()) return status.content.getBoost().boosted.statusId;
-    else return statusId;
+    if (status.content.isSetBoost())
+      return status.content.getBoost().boosted.statusId;
+    else
+      return statusId;
   }
 
   public static List<Long> getAuthorIds(StatusResult status) {
     List<Long> authorIds = new ArrayList<>();
     authorIds.add(status.author.accountId);
-    if(status.content.isSetBoost()) authorIds.add(status.content.getBoost().status.author.accountId);
+    if (status.content.isSetBoost())
+      authorIds.add(status.content.getBoost().status.author.accountId);
     return authorIds;
   }
 
   public static StatusResult normalStatusResult(Status status, StatusMetadata metadata, Account author) {
     StatusResultContent content = StatusResultContent.normal(status.content.getNormal());
-    StatusResult result = new StatusResult(new AccountWithId(status.authorId, author, new AccountMetadata()), content, metadata, status.timestamp);
+    StatusResult result = new StatusResult(new AccountWithId(status.authorId, author, new AccountMetadata()), content,
+        metadata, status.timestamp);
     return result;
   }
 
   public static StatusResult replyStatusResult(Status status, StatusMetadata metadata, Account author) {
     StatusResultContent content = StatusResultContent.reply(status.content.getReply());
-    StatusResult result = new StatusResult(new AccountWithId(status.authorId, author, new AccountMetadata()), content, metadata, status.timestamp);
+    StatusResult result = new StatusResult(new AccountWithId(status.authorId, author, new AccountMetadata()), content,
+        metadata, status.timestamp);
     return result;
   }
 
-  public static StatusResult boostStatusResult(Status status, StatusMetadata metadata, Account author, Status boostedStatus, StatusMetadata boostedMetadata, Account boostedAuthor) {
+  public static StatusResult boostStatusResult(Status status, StatusMetadata metadata, Account author,
+      Status boostedStatus, StatusMetadata boostedMetadata, Account boostedAuthor) {
     StatusResultContent boostedContent;
-    if (boostedStatus.content.isSetNormal()) boostedContent = StatusResultContent.normal(boostedStatus.content.getNormal());
-    else if (boostedStatus.content.isSetReply()) boostedContent = StatusResultContent.reply(boostedStatus.content.getReply());
-    else return null; // You can't boost a boost
-    StatusResult innerResult = new StatusResult(new AccountWithId(boostedStatus.authorId, boostedAuthor, new AccountMetadata()), boostedContent, boostedMetadata, boostedStatus.timestamp);
-    StatusResultContent content = StatusResultContent.boost(new BoostStatusResultContent(status.content.getBoost().boosted.statusId, innerResult));
-    StatusResult result = new StatusResult(new AccountWithId(status.authorId, author, new AccountMetadata()), content, metadata, status.timestamp);
+    if (boostedStatus.content.isSetNormal())
+      boostedContent = StatusResultContent.normal(boostedStatus.content.getNormal());
+    else if (boostedStatus.content.isSetReply())
+      boostedContent = StatusResultContent.reply(boostedStatus.content.getReply());
+    else
+      return null; // You can't boost a boost
+    StatusResult innerResult = new StatusResult(
+        new AccountWithId(boostedStatus.authorId, boostedAuthor, new AccountMetadata()), boostedContent,
+        boostedMetadata, boostedStatus.timestamp);
+    StatusResultContent content = StatusResultContent
+        .boost(new BoostStatusResultContent(status.content.getBoost().boosted.statusId, innerResult));
+    StatusResult result = new StatusResult(new AccountWithId(status.authorId, author, new AccountMetadata()), content,
+        metadata, status.timestamp);
     return result;
   }
 
-  public static StatusQueryResults updateStatusQueryResults(StatusQueryResults statusQueryResults, List<StatusPointer> statusPointers, int limit, boolean refreshed) {
+  public static StatusQueryResults updateStatusQueryResults(StatusQueryResults statusQueryResults,
+      List<StatusPointer> statusPointers, int limit, boolean refreshed) {
     statusQueryResults.reachedEnd = statusPointers.size() < limit;
     statusQueryResults.setRefreshed(refreshed);
-    if (statusPointers.size() > 0) statusQueryResults.setLastStatusPointer(statusPointers.get(statusPointers.size()-1));
+    if (statusPointers.size() > 0)
+      statusQueryResults.setLastStatusPointer(statusPointers.get(statusPointers.size() - 1));
     return statusQueryResults;
   }
 
   public static String getStatusText(Status status) {
-    if (status.content.isSetNormal()) return status.content.getNormal().text;
-    else if (status.content.isSetReply()) return status.content.getReply().text;
+    if (status.content.isSetNormal())
+      return status.content.getNormal().text;
+    else if (status.content.isSetReply())
+      return status.content.getReply().text;
     return "";
   }
 
-   public static String getStatusResultText(StatusResult statusResult) {
-    if (statusResult.content.isSetNormal()) return statusResult.content.getNormal().text;
-    else if (statusResult.content.isSetReply()) return statusResult.content.getReply().text;
-    else if (statusResult.content.isSetBoost()) return getStatusResultText(statusResult.content.getBoost().status);
+  public static String getStatusResultText(StatusResult statusResult) {
+    if (statusResult.content.isSetNormal())
+      return statusResult.content.getNormal().text;
+    else if (statusResult.content.isSetReply())
+      return statusResult.content.getReply().text;
+    else if (statusResult.content.isSetBoost())
+      return getStatusResultText(statusResult.content.getBoost().status);
     return "";
   }
 
   public static StatusVisibility getStatusResultVisibility(StatusResult statusResult) {
-    if (statusResult.getContent().isSetNormal()) return statusResult.getContent().getNormal().visibility;
-    else if (statusResult.getContent().isSetReply()) return statusResult.getContent().getReply().visibility;
-    else if (statusResult.getContent().isSetBoost()) return getStatusResultVisibility(statusResult.getContent().getBoost().status);
-    else throw new RuntimeException("Unexpected status content " + statusResult.getContent().getFieldValue().getClass());
+    if (statusResult.getContent().isSetNormal())
+      return statusResult.getContent().getNormal().visibility;
+    else if (statusResult.getContent().isSetReply())
+      return statusResult.getContent().getReply().visibility;
+    else if (statusResult.getContent().isSetBoost())
+      return getStatusResultVisibility(statusResult.getContent().getBoost().status);
+    else
+      throw new RuntimeException("Unexpected status content " + statusResult.getContent().getFieldValue().getClass());
   }
 
-    public static Set<String> getMentionsFromStatusResult(StatusResultWithId statusResultWithId) {
+  public static Set<String> getMentionsFromStatusResult(StatusResultWithId statusResultWithId) {
     Set<String> mentions = new HashSet<>();
     String text = getStatusResultText(statusResultWithId.status);
     for (Token token : Token.parseTokens(text)) {
-      if (token.kind == Token.TokenKind.MENTION) mentions.add(token.content);
+      if (token.kind == Token.TokenKind.MENTION)
+        mentions.add(token.content);
     }
     return mentions;
   }
 
   public static Set<String> getMentionsFromStatusResults(List<StatusResultWithId> statusResults) {
     Set<String> mentions = new HashSet<>();
-    for (StatusResultWithId statusResultWithId : statusResults) mentions.addAll(getMentionsFromStatusResult(statusResultWithId));
+    for (StatusResultWithId statusResultWithId : statusResults)
+      mentions.addAll(getMentionsFromStatusResult(statusResultWithId));
     return mentions;
   }
 
-   public static Block resolveStatusResult(String requestAccountIdVar, String filtersVar, String filterContextValueVar, String authorIdVar, String statusIdVar, String statusVar, String contentVar, String outVar) {
+  public static Block resolveStatusResult(String requestAccountIdVar, String filtersVar, String filterContextValueVar,
+      String authorIdVar, String statusIdVar, String statusVar, String contentVar, String outVar) {
     String authorVar = Helpers.genVar("author");
     String metadataVar = Helpers.genVar("metadata");
     String boostedVar = Helpers.genVar("boosted");
@@ -232,25 +301,31 @@ public class ApolloHelpers {
     String boostedAuthorVar = Helpers.genVar("boostedAuthor");
     String boostedMetadataVar = Helpers.genVar("boostedMetadata");
     return Block.localSelect("$$accountIdToAccount", Path.must(authorIdVar)).out(authorVar)
-                .macro(resolveMetadata(requestAccountIdVar, filtersVar, filterContextValueVar, authorIdVar, statusIdVar, statusVar, metadataVar))
-                .subSource(contentVar,
-                      SubSource.create(NormalStatusContent.class)
-                               .each(ApolloHelpers::normalStatusResult, statusVar, metadataVar, authorVar).out(outVar),
-                      SubSource.create(ReplyStatusContent.class)
-                               .each(ApolloHelpers::replyStatusResult, statusVar, metadataVar, authorVar).out(outVar),
-                      SubSource.create(BoostStatusContent.class)
-                               .macro(ApolloHelpers.extractFields(contentVar, boostedVar))
-                               .each((StatusPointer boosted) -> boosted.authorId, boostedVar).out(boostedAuthorIdVar)
-                               .each((StatusPointer boosted) -> boosted.statusId, boostedVar).out(boostedStatusIdVar)
-                               .hashPartition(boostedAuthorIdVar)
-                               .localSelect("$$accountIdToStatuses", Path.must(boostedAuthorIdVar, boostedStatusIdVar).first()).out(boostedStatusVar)
-                               .localSelect("$$accountIdToAccount", Path.must(boostedAuthorIdVar)).out(boostedAuthorVar)
-                               .macro(resolveMetadata(requestAccountIdVar, filtersVar, filterContextValueVar, boostedAuthorIdVar, boostedStatusIdVar, boostedStatusVar, boostedMetadataVar))
-                               .each(ApolloHelpers::boostStatusResult, statusVar, metadataVar, authorVar, boostedStatusVar, boostedMetadataVar, boostedAuthorVar).out(outVar))
-                               .hashPartition(authorIdVar);
+        .macro(resolveMetadata(requestAccountIdVar, filtersVar, filterContextValueVar, authorIdVar, statusIdVar,
+            statusVar, metadataVar))
+        .subSource(contentVar,
+            SubSource.create(NormalStatusContent.class)
+                .each(ApolloHelpers::normalStatusResult, statusVar, metadataVar, authorVar).out(outVar),
+            SubSource.create(ReplyStatusContent.class)
+                .each(ApolloHelpers::replyStatusResult, statusVar, metadataVar, authorVar).out(outVar),
+            SubSource.create(BoostStatusContent.class)
+                .macro(ApolloHelpers.extractFields(contentVar, boostedVar))
+                .each((StatusPointer boosted) -> boosted.authorId, boostedVar).out(boostedAuthorIdVar)
+                .each((StatusPointer boosted) -> boosted.statusId, boostedVar).out(boostedStatusIdVar)
+                .hashPartition(boostedAuthorIdVar)
+                .localSelect("$$accountIdToStatuses", Path.must(boostedAuthorIdVar, boostedStatusIdVar).first())
+                .out(boostedStatusVar)
+                .localSelect("$$accountIdToAccount", Path.must(boostedAuthorIdVar)).out(boostedAuthorVar)
+                .macro(resolveMetadata(requestAccountIdVar, filtersVar, filterContextValueVar, boostedAuthorIdVar,
+                    boostedStatusIdVar, boostedStatusVar, boostedMetadataVar))
+                .each(ApolloHelpers::boostStatusResult, statusVar, metadataVar, authorVar, boostedStatusVar,
+                    boostedMetadataVar, boostedAuthorVar)
+                .out(outVar))
+        .hashPartition(authorIdVar);
   }
 
-  public static Block resolveMetadata(String requestAccountIdVar, String filtersVar, String filterContextValueVar, String authorIdVar, String statusIdVar, String statusVar, String outVar) {
+  public static Block resolveMetadata(String requestAccountIdVar, String filtersVar, String filterContextValueVar,
+      String authorIdVar, String statusIdVar, String statusVar, String outVar) {
     String likeIndexVar = Helpers.genVar("likeIndex");
     String boostIndexVar = Helpers.genVar("boostIndex");
     String muteVar = Helpers.genVar("mute");
@@ -265,41 +340,54 @@ public class ApolloHelpers {
     String metaVar = Helpers.genVar("meta");
     String countsVar = Helpers.genVar("counts");
     return Block.ifTrue(new Expr(Ops.IS_NULL, requestAccountIdVar),
-                   Block.each(Ops.IDENTITY, null).out(likeIndexVar)
-                        .each(Ops.IDENTITY, null).out(boostIndexVar)
-                        .each(Ops.IDENTITY, false).out(muteVar)
-                        .each(Ops.IDENTITY, false).out(bookmarkVar)
-                        .each(Ops.IDENTITY, null).out(pinIndexVar),
-                   Block.localSelect("$$statusIdToLikers", Path.key(statusIdVar, requestAccountIdVar)).out(likeIndexVar)
-                        .localSelect("$$statusIdToBoosters", Path.key(statusIdVar, requestAccountIdVar)).out(boostIndexVar)
-                        .localSelect("$$statusIdToBookmarkers", Path.key(statusIdVar).view(Ops.CONTAINS, requestAccountIdVar)).out(bookmarkVar)
-                        .localSelect("$$statusIdToMuters", Path.key(statusIdVar).view(Ops.CONTAINS, requestAccountIdVar)).out(muteVar)
-                        // since statuses can only be pinned by creating user, it's correct to query for this on this partition, as this
-                        // can only be true for the author of the status (when authorId = requestAccountIdVar)
-                        .localSelect("$$pinnerToStatusIdsReverse", Path.key(requestAccountIdVar, statusIdVar)).out(pinIndexVar))
-                .localSelect("$$statusIdToLikers", Path.key(statusIdVar).view(Ops.SIZE)).out(likeCountVar)
-                .localSelect("$$statusIdToBoosters", Path.key(statusIdVar).view(Ops.SIZE)).out(boostCountVar)
-                .localSelect("$$statusIdToReplies", Path.key(statusIdVar).view(Ops.SIZE)).out(replyCountVar)
-                // look for matching filters
-                .each(ApolloHelpers::getStatusText, statusVar).out(textVar)
-                .each(ApolloHelpers::getMatchingFilters, statusIdVar, textVar, filtersVar, new Expr(FilterContext::findByValue, filterContextValueVar)).out(matchingFiltersVar)
-                .each((List<MatchingFilter> matchingFilters) -> matchingFilters.stream().anyMatch(matchingFilter -> matchingFilter.filter.action == FilterAction.Hide), matchingFiltersVar).out(shouldHideVar)
-                .keepTrue(new Expr(Ops.NOT, shouldHideVar))
-                // create status metadata
-                .each(Ops.TUPLE, likeIndexVar, boostIndexVar, muteVar, bookmarkVar, pinIndexVar).out(metaVar)
-                .each(Ops.TUPLE, likeCountVar, boostCountVar, replyCountVar).out(countsVar)
-                .each((List<MatchingFilter> matchingFilters, List meta,
-                       List<Integer> counts) -> new StatusMetadata(matchingFilters, meta.get(0) != null,
-                        meta.get(1) != null, (boolean) meta.get(2), (boolean) meta.get(3),
-                        meta.get(4) != null, counts.get(0), counts.get(1), counts.get(2)),
-                    matchingFiltersVar, metaVar, countsVar).out(outVar);
+        Block.each(Ops.IDENTITY, null).out(likeIndexVar)
+            .each(Ops.IDENTITY, null).out(boostIndexVar)
+            .each(Ops.IDENTITY, false).out(muteVar)
+            .each(Ops.IDENTITY, false).out(bookmarkVar)
+            .each(Ops.IDENTITY, null).out(pinIndexVar),
+        Block.localSelect("$$statusIdToLikers", Path.key(statusIdVar, requestAccountIdVar)).out(likeIndexVar)
+            .localSelect("$$statusIdToBoosters", Path.key(statusIdVar, requestAccountIdVar)).out(boostIndexVar)
+            .localSelect("$$statusIdToBookmarkers", Path.key(statusIdVar).view(Ops.CONTAINS, requestAccountIdVar))
+            .out(bookmarkVar)
+            .localSelect("$$statusIdToMuters", Path.key(statusIdVar).view(Ops.CONTAINS, requestAccountIdVar))
+            .out(muteVar)
+            // since statuses can only be pinned by creating user, it's correct to query for
+            // this on this partition, as this
+            // can only be true for the author of the status (when authorId =
+            // requestAccountIdVar)
+            .localSelect("$$pinnerToStatusIdsReverse", Path.key(requestAccountIdVar, statusIdVar)).out(pinIndexVar))
+        .localSelect("$$statusIdToLikers", Path.key(statusIdVar).view(Ops.SIZE)).out(likeCountVar)
+        .localSelect("$$statusIdToBoosters", Path.key(statusIdVar).view(Ops.SIZE)).out(boostCountVar)
+        .localSelect("$$statusIdToReplies", Path.key(statusIdVar).view(Ops.SIZE)).out(replyCountVar)
+        // look for matching filters
+        .each(ApolloHelpers::getStatusText, statusVar).out(textVar)
+        .each(ApolloHelpers::getMatchingFilters, statusIdVar, textVar, filtersVar,
+            new Expr(FilterContext::findByValue, filterContextValueVar))
+        .out(matchingFiltersVar)
+        .each((List<MatchingFilter> matchingFilters) -> matchingFilters.stream()
+            .anyMatch(matchingFilter -> matchingFilter.filter.action == FilterAction.Hide), matchingFiltersVar)
+        .out(shouldHideVar)
+        .keepTrue(new Expr(Ops.NOT, shouldHideVar))
+        // create status metadata
+        .each(Ops.TUPLE, likeIndexVar, boostIndexVar, muteVar, bookmarkVar, pinIndexVar).out(metaVar)
+        .each(Ops.TUPLE, likeCountVar, boostCountVar, replyCountVar).out(countsVar)
+        .each((List<MatchingFilter> matchingFilters, List meta,
+            List<Integer> counts) -> new StatusMetadata(matchingFilters, meta.get(0) != null,
+                meta.get(1) != null, (boolean) meta.get(2), (boolean) meta.get(3),
+                meta.get(4) != null, counts.get(0), counts.get(1), counts.get(2)),
+            matchingFiltersVar, metaVar, countsVar)
+        .out(outVar);
   }
 
   public static boolean statusResultHasPoll(StatusResult status) {
-    if (status.content.isSetNormal()) return status.content.getNormal().getPollContent() != null;
-    else if (status.content.isSetReply()) return status.content.getReply().getPollContent() != null;
-    else if (status.content.isSetBoost()) return statusResultHasPoll(status.content.getBoost().status);
-    else throw new RuntimeException("Unexpected status result type");
+    if (status.content.isSetNormal())
+      return status.content.getNormal().getPollContent() != null;
+    else if (status.content.isSetReply())
+      return status.content.getReply().getPollContent() != null;
+    else if (status.content.isSetBoost())
+      return statusResultHasPoll(status.content.getBoost().status);
+    else
+      throw new RuntimeException("Unexpected status result type");
   }
 
   public static List<FilterWithId> createFiltersWithIds(List<List> filterIdAndFilters) {
@@ -310,19 +398,24 @@ public class ApolloHelpers {
     return filters;
   }
 
-    public static ArrayList<MatchingFilter> getMatchingFilters(Long statusId, String text, List<FilterWithId> filters, FilterContext context) {
+  public static ArrayList<MatchingFilter> getMatchingFilters(Long statusId, String text, List<FilterWithId> filters,
+      FilterContext context) {
     ArrayList<MatchingFilter> matchingFilters = new ArrayList<>();
     for (FilterWithId filterWithId : filters) {
       if (filterWithId.filter.contexts.contains(context)) {
         String content = text.toLowerCase();
-        Set<String> words = Token.parseTokens(content).stream().filter(token -> token.kind != Token.TokenKind.BOUNDARY).map(token -> token.content).collect(Collectors.toSet());
+        Set<String> words = Token.parseTokens(content).stream().filter(token -> token.kind != Token.TokenKind.BOUNDARY)
+            .map(token -> token.content).collect(Collectors.toSet());
         List<KeywordFilter> relevantMatches = filterWithId.filter.keywords.stream()
-                .filter(keyword -> keyword.word.trim().length() > 0) // ignore empty keywords
-                .filter(keyword -> keyword.wholeWord ? words.contains(keyword.word.toLowerCase()) : content.contains(keyword.word.toLowerCase()))
-                .collect(Collectors.toList());
-        boolean isStatusFilterMatch = filterWithId.filter.statuses.stream().anyMatch(statusPointer -> statusId == statusPointer.statusId);
+            .filter(keyword -> keyword.word.trim().length() > 0) // ignore empty keywords
+            .filter(keyword -> keyword.wholeWord ? words.contains(keyword.word.toLowerCase())
+                : content.contains(keyword.word.toLowerCase()))
+            .collect(Collectors.toList());
+        boolean isStatusFilterMatch = filterWithId.filter.statuses.stream()
+            .anyMatch(statusPointer -> statusId == statusPointer.statusId);
         if (relevantMatches.size() > 0 || isStatusFilterMatch) {
-          matchingFilters.add(new MatchingFilter(filterWithId.filterId, filterWithId.filter, relevantMatches, isStatusFilterMatch));
+          matchingFilters.add(
+              new MatchingFilter(filterWithId.filterId, filterWithId.filter, relevantMatches, isStatusFilterMatch));
         }
       }
     }
@@ -331,10 +424,12 @@ public class ApolloHelpers {
 
   public static void updateAccountMetadata(StatusResult status, Map<Long, AccountMetadata> accountIdToMetadata) {
     AccountMetadata authorMeta = accountIdToMetadata.get(status.author.accountId);
-    if(authorMeta != null) status.author.metadata = authorMeta;
-    if(status.content.isSetBoost()) {
+    if (authorMeta != null)
+      status.author.metadata = authorMeta;
+    if (status.content.isSetBoost()) {
       AccountMetadata boostAuthorMeta = accountIdToMetadata.get(status.content.getBoost().status.author.accountId);
-      if(boostAuthorMeta != null) status.content.getBoost().status.author.metadata = boostAuthorMeta;
+      if (boostAuthorMeta != null)
+        status.content.getBoost().status.author.metadata = boostAuthorMeta;
     }
   }
 
@@ -356,40 +451,51 @@ public class ApolloHelpers {
 
   public static StatusVisibility getStatusVisibility(Status status) {
     Object content = status.getContent().getFieldValue();
-    if(content instanceof BoostStatusContent) return StatusVisibility.Public;
-    else if(content instanceof ReplyStatusContent) return ((ReplyStatusContent) content).getVisibility();
-    else if(content instanceof NormalStatusContent) return ((NormalStatusContent) content).getVisibility();
-    else throw new RuntimeException("Unexpected status content " + content.getClass());
+    if (content instanceof BoostStatusContent)
+      return StatusVisibility.Public;
+    else if (content instanceof ReplyStatusContent)
+      return ((ReplyStatusContent) content).getVisibility();
+    else if (content instanceof NormalStatusContent)
+      return ((NormalStatusContent) content).getVisibility();
+    else
+      throw new RuntimeException("Unexpected status content " + content.getClass());
   }
 
   public static AddStatus createAddStatusFromBoost(BoostStatus boostStatus) {
-    StatusContent content = StatusContent.boost(new BoostStatusContent(new StatusPointer(boostStatus.target.authorId, boostStatus.target.statusId)));
+    StatusContent content = StatusContent
+        .boost(new BoostStatusContent(new StatusPointer(boostStatus.target.authorId, boostStatus.target.statusId)));
     Status status = new Status(boostStatus.accountId, content, boostStatus.timestamp);
     return new AddStatus(boostStatus.uuid, status);
   }
 
   public static PollContent extractPollContent(Status status) {
     Object content = status.getContent().getFieldValue();
-    if(content instanceof NormalStatusContent) return ((NormalStatusContent) content).getPollContent();
-    else if(content instanceof ReplyStatusContent) return ((ReplyStatusContent) content).getPollContent();
-    else return null;
+    if (content instanceof NormalStatusContent)
+      return ((NormalStatusContent) content).getPollContent();
+    else if (content instanceof ReplyStatusContent)
+      return ((ReplyStatusContent) content).getPollContent();
+    else
+      return null;
   }
 
   public static String serializeStatusPointer(StatusPointer statusPointer) {
     // the id is a statusId-authorId combo. the author id is necessary so
     // we don't have to query for the author separately when requesting the status.
     // they are padded with zeroes to ensure that sorting works correctly.
-    return String.format("%019d", statusPointer.statusId) + "-" + String.format("%019d", statusPointer.authorId) + "-sa";
+    return String.format("%019d", statusPointer.statusId) + "-" + String.format("%019d", statusPointer.authorId)
+        + "-sa";
   }
 
   public static StatusPointer parseStatusPointer(String id) {
-    if (id == null) return null;
+    if (id == null)
+      return null;
     String[] parts = id.split("-");
-    if ("sa".equals(parts[parts.length-1]) && parts.length == 3) {
+    if ("sa".equals(parts[parts.length - 1]) && parts.length == 3) {
       long statusId = Long.parseLong(parts[0]);
       long authorId = Long.parseLong(parts[1]);
       return new StatusPointer(authorId, statusId);
-    } else throw new RuntimeException("Not a status pointer: " + id);
+    } else
+      throw new RuntimeException("Not a status pointer: " + id);
   }
 
   public static String serializeNotificationId(long notificationId, long timestamp) {
@@ -397,22 +503,34 @@ public class ApolloHelpers {
   }
 
   public static String getTypeFromNotificationContent(NotificationContent content) {
-    if (content.isSetMention()) return "mention";
-    else if (content.isSetBoost()) return "repost";
-    else if (content.isSetFollow()) return "follow";
-    else if (content.isSetFollowRequest()) return "follow_request";
-    else if (content.isSetLike()) return "like";
-    else if (content.isSetPollComplete()) return "poll";
-    else if (content.isSetBoostedUpdate()) return "update";
-    else if (content.isSetFolloweeStatus()) return "status";
-    else throw new RuntimeException("Unexpected notification content: " + content);
+    if (content.isSetMention())
+      return "mention";
+    else if (content.isSetBoost())
+      return "repost";
+    else if (content.isSetFollow())
+      return "follow";
+    else if (content.isSetFollowRequest())
+      return "follow_request";
+    else if (content.isSetLike())
+      return "like";
+    else if (content.isSetPollComplete())
+      return "poll";
+    else if (content.isSetBoostedUpdate())
+      return "update";
+    else if (content.isSetFolloweeStatus())
+      return "status";
+    else
+      throw new RuntimeException("Unexpected notification content: " + content);
   }
 
   public static Long parseNotificationId(String id) {
-    if (id == null) return null;
+    if (id == null)
+      return null;
     String[] parts = id.split("-");
-    if ("tn".equals(parts[parts.length-1]) && parts.length == 3) return Long.parseLong(parts[1]);
-    else throw new RuntimeException("Not a notification id: " + id);
+    if ("tn".equals(parts[parts.length - 1]) && parts.length == 3)
+      return Long.parseLong(parts[1]);
+    else
+      throw new RuntimeException("Not a notification id: " + id);
   }
 
   public static List<NotificationWithId> createNotificationWithIds(List<List> timelineIndexAndNotifications) {
@@ -424,27 +542,45 @@ public class ApolloHelpers {
   }
 
   public static long getAccountIdFromNotificationContent(NotificationContent content) {
-    if (content.isSetMention()) return content.getMention().authorId;
-    else if (content.isSetBoost()) return content.getBoost().responderAccountId;
-    else if (content.isSetFollow()) return content.getFollow();
-    else if (content.isSetFollowRequest()) return content.getFollowRequest();
-    else if (content.isSetLike()) return content.getLike().responderAccountId;
-    else if (content.isSetPollComplete()) return content.getPollComplete().authorId;
-    else if (content.isSetBoostedUpdate()) return content.getBoostedUpdate().authorId;
-    else if (content.isSetFolloweeStatus()) return content.getFolloweeStatus().authorId;
-    else throw new RuntimeException("Unexpected notification content: " + content);
+    if (content.isSetMention())
+      return content.getMention().authorId;
+    else if (content.isSetBoost())
+      return content.getBoost().responderAccountId;
+    else if (content.isSetFollow())
+      return content.getFollow();
+    else if (content.isSetFollowRequest())
+      return content.getFollowRequest();
+    else if (content.isSetLike())
+      return content.getLike().responderAccountId;
+    else if (content.isSetPollComplete())
+      return content.getPollComplete().authorId;
+    else if (content.isSetBoostedUpdate())
+      return content.getBoostedUpdate().authorId;
+    else if (content.isSetFolloweeStatus())
+      return content.getFolloweeStatus().authorId;
+    else
+      throw new RuntimeException("Unexpected notification content: " + content);
   }
 
   public static StatusPointer getStatusPointerFromNotificationContent(NotificationContent content) {
-    if (content.isSetMention()) return content.getMention();
-    else if (content.isSetBoost()) return content.getBoost().target;
-    else if (content.isSetFollow()) return null;
-    else if (content.isSetFollowRequest()) return null;
-    else if (content.isSetLike()) return content.getLike().target;
-    else if (content.isSetPollComplete()) return content.getPollComplete();
-    else if (content.isSetBoostedUpdate()) return content.getBoostedUpdate();
-    else if (content.isSetFolloweeStatus()) return content.getFolloweeStatus();
-    else throw new RuntimeException("Unexpected notification content: " + content);
+    if (content.isSetMention())
+      return content.getMention();
+    else if (content.isSetBoost())
+      return content.getBoost().target;
+    else if (content.isSetFollow())
+      return null;
+    else if (content.isSetFollowRequest())
+      return null;
+    else if (content.isSetLike())
+      return content.getLike().target;
+    else if (content.isSetPollComplete())
+      return content.getPollComplete();
+    else if (content.isSetBoostedUpdate())
+      return content.getBoostedUpdate();
+    else if (content.isSetFolloweeStatus())
+      return content.getFolloweeStatus();
+    else
+      throw new RuntimeException("Unexpected notification content: " + content);
   }
 
   // ESports Helpers
@@ -453,20 +589,35 @@ public class ApolloHelpers {
         .sorted(Map.Entry.comparingByKey()) // Sort by start time (key of outer map)
         .flatMap(entry -> entry.getValue().values().stream())
         .collect(Collectors.toList());
-}
+  }
 
-    public static long getStartOfWeek(long timestampMillis) {
+  public static long getStartOfWeek(long timestampMillis) {
     Instant instant = Instant.ofEpochMilli(timestampMillis);
     LocalDate date = instant.atZone(ZoneOffset.UTC).toLocalDate();
     LocalDate startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
     return startOfWeek.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
-}
+  }
 
-    public static long getEndOfWeek(long timestampMillis) {
-        return getStartOfWeek(timestampMillis) + 7 * 24 * 60 * 60 * 1000 - 1;
+  public static long getEndOfWeek(long timestampMillis) {
+    return getStartOfWeek(timestampMillis) + 7 * 24 * 60 * 60 * 1000 - 1;
+  }
+
+  public static String generateSecureRandomString(int length) {
+    StringBuilder builder = new StringBuilder(length);
+    for (int i = 0; i < length; i++) {
+      int index = secureRandom.nextInt(ALPHA_NUMERIC_STRING.length());
+      builder.append(ALPHA_NUMERIC_STRING.charAt(index));
     }
+    return builder.toString();
+  }
+
+  public static String randomString(int length) {
+    StringBuilder builder = new StringBuilder(length);
+    for (int i = 0; i < length; i++) {
+      int index = random.nextInt(ALPHA_NUMERIC_STRING.length());
+      builder.append(ALPHA_NUMERIC_STRING.charAt(index));
+    }
+    return builder.toString();
+  }
 
 }
-
-
-

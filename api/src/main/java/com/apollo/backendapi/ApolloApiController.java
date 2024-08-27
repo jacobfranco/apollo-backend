@@ -112,32 +112,26 @@ public class ApolloApiController {
     // Define a controller method to handle POST requests for application
     // registration with JSON payload
     @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<GetApplication> postApplication(@RequestBody(required = true) PostApplication params)
-            throws NoSuchAlgorithmException {
-        // Initialize a new GetApplication instance to hold the application data
-        GetApplication app = new GetApplication();
-        app.redirect_uri = params.redirect_uris;
-        // Generate a new client secret for the application
-        app.client_secret = "secret_" + ApolloApiHelpers.randomString(16);
-        // Currently returns the application without storing it, needs future
-        // implementation for storage
-        return Mono.just(app);
+    public Mono<GetApplication> postApplication(@RequestBody(required = true) PostApplication params) {
+        return Mono.fromFuture(manager.postApplication(params))
+                .map(GetApplication::new);
+    }
+
+    @GetMapping("/api/apps/{clientId}")
+    public Mono<GetApplication> getApplication(@PathVariable String clientId) {
+        return Mono.fromFuture(manager.getApplication(clientId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found")))
+                .map(GetApplication::new);
     }
 
     // Define a controller method to handle POST requests for application
     // registration with form URL encoded payload
     @PostMapping(value = "/api/apps", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public Mono<GetApplication> postApplication(ServerWebExchange exchange) {
-        // Parse form data and delegate to the JSON payload handling method
         return exchange.getFormData()
                 .flatMap(formParams -> {
                     PostApplication params = ApolloApiFormParser.parseParams(formParams, new PostApplication());
-                    try {
-                        return this.postApplication(params);
-                    } catch (NoSuchAlgorithmException e) {
-                        // Wrap the NoSuchAlgorithmException in a RuntimeException
-                        throw new RuntimeException(e);
-                    }
+                    return this.postApplication(params);
                 });
     }
 
@@ -174,7 +168,6 @@ public class ApolloApiController {
     // with form URL encoded payload
     @PostMapping(value = "/oauth/token", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public Mono<GetToken> postOauthToken(WebSession session, ServerWebExchange exchange) {
-        // Parse form data and delegate to the JSON payload handling method
         return exchange.getFormData()
                 .flatMap(formParams -> {
                     PostToken params = ApolloApiFormParser.parseParams(formParams, new PostToken());
@@ -1115,7 +1108,7 @@ public class ApolloApiController {
      */
 
     @PostMapping("/api/statuses/{id}/like")
-    public Mono<GetStatus> postFavoriteStatus(WebSession session, @PathVariable("id") String id) {
+    public Mono<GetStatus> postLikeStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
 
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
@@ -1128,7 +1121,7 @@ public class ApolloApiController {
     }
 
     @PostMapping("/api/statuses/{id}/unlike")
-    public Mono<GetStatus> postRemoveFavoriteStatus(WebSession session, @PathVariable("id") String id) {
+    public Mono<GetStatus> postRemoveLikeStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
 
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
@@ -1273,7 +1266,7 @@ public class ApolloApiController {
     }
 
     @GetMapping("/api/likes")
-    public Mono<List<GetStatus>> getFavorites(ServerWebExchange exchange, WebSession session,
+    public Mono<List<GetStatus>> getLikes(ServerWebExchange exchange, WebSession session,
             @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
         long requestAccountId = getMandatoryAccountId(session);
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
@@ -1853,7 +1846,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-     // Map a GET request to retrieve a specific series by its ID
+    // Map a GET request to retrieve a specific series by its ID
     @GetMapping("/api/lolseries/{id}")
     public Mono<GetSeries> getLolSeries(@PathVariable("id") int seriesId) {
         return Mono.fromFuture(manager.getSeries(seriesId))
@@ -1871,28 +1864,28 @@ public class ApolloApiController {
         long startMillis = (long) (startTime * 1000);
         long endMillis = (long) (endTime * 1000);
         return Mono.fromFuture(manager.getSeriesSchedule(startMillis, endMillis))
-            .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
-            .doOnError(e -> logger.error("Error fetching series schedule: ", e))
-            .onErrorResume(e -> {
-                logger.error("Error processing series schedule request", e);
-                return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching series schedule", e));
-            });
+                .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
+                .doOnError(e -> logger.error("Error fetching series schedule: ", e))
+                .onErrorResume(e -> {
+                    logger.error("Error processing series schedule request", e);
+                    return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Error fetching series schedule", e));
+                });
     }
-    
+
     @GetMapping("/api/lolseries/week")
     public Mono<List<GetSeries>> getLolSeriesWeekSchedule(
             @RequestParam(required = false) Double timestamp) {
         logger.info("Fetching week schedule for timestamp: {}", timestamp);
         long timeMillis = (timestamp != null) ? (long) (timestamp * 1000) : System.currentTimeMillis();
         return Mono.fromFuture(manager.getWeekSchedule(timeMillis))
-            .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
-            .doOnError(e -> logger.error("Error fetching week schedule: ", e))
-            .onErrorResume(e -> {
-                logger.error("Error processing week schedule request", e);
-                return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error fetching week schedule", e));
-            });
+                .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
+                .doOnError(e -> logger.error("Error fetching week schedule: ", e))
+                .onErrorResume(e -> {
+                    logger.error("Error processing week schedule request", e);
+                    return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Error fetching week schedule", e));
+                });
     }
 
-
-   
 }
