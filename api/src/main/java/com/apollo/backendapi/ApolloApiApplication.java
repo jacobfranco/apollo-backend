@@ -217,34 +217,42 @@ public class ApolloApiApplication {
         return ipc;
     }
 
-    /* 
-    // Fetches data from Abios on startup
-    @PostConstruct
-    public void fetchESportsData() {
-        System.out.println("Application context loaded. Fetching eSports data...");
-        if (ApolloApiController.manager != null) {
-            fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START, ApolloApiConfig.LOL_SEASON_END);
-            // Add more data fetching calls here as needed
-        } else {
-            System.err.println("ApolloApiController.manager is null. Unable to fetch eSports data.");
-        }
-    }
-
-    private void fetchAllLolSeries(LocalDate startDate, LocalDate endDate) {
-    String startDateString = startDate.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-    String endDateString = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-    
-    String filter = String.format("game.id=2,start>=%s,start<=%s", startDateString, endDateString);
-    String encodedFilter = URLEncoder.encode(filter, StandardCharsets.UTF_8);
-    
-    ApolloApiController.manager.fetchAndStoreSeries(encodedFilter, "start-asc", 0, 50)
-        .thenRun(() -> System.out.println("Series fetching completed"))
-        .exceptionally(ex -> {
-            System.err.println("Error fetching series: " + ex.getMessage());
-            return null;
-        });
-}
-
-*/
+    /*
+     * // Fetches data from Abios on startup
+     * 
+     * @PostConstruct
+     * public void fetchESportsData() {
+     * System.out.println("Application context loaded. Fetching eSports data...");
+     * if (ApolloApiController.manager != null) {
+     * fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
+     * ApolloApiConfig.LOL_SEASON_END);
+     * // Add more data fetching calls here as needed
+     * } else {
+     * System.err.
+     * println("ApolloApiController.manager is null. Unable to fetch eSports data."
+     * );
+     * }
+     * }
+     * 
+     * private void fetchAllLolSeries(LocalDate startDate, LocalDate endDate) {
+     * String startDateString =
+     * startDate.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+     * String endDateString = endDate.atTime(23, 59,
+     * 59).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+     * 
+     * String filter = String.format("game.id=2,start>=%s,start<=%s",
+     * startDateString, endDateString);
+     * String encodedFilter = URLEncoder.encode(filter, StandardCharsets.UTF_8);
+     * 
+     * ApolloApiController.manager.fetchAndStoreSeries(encodedFilter, "start-asc",
+     * 0, 50)
+     * .thenRun(() -> System.out.println("Series fetching completed"))
+     * .exceptionally(ex -> {
+     * System.err.println("Error fetching series: " + ex.getMessage());
+     * return null;
+     * });
+     * }
+     * 
+     */
 
 }

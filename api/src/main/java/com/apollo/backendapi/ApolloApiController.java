@@ -327,8 +327,8 @@ public class ApolloApiController {
     }
 
     @GetMapping("/api/accounts/lookup")
-    public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String acct) {
-        return Mono.fromFuture(manager.getAccountId(acct))
+    public Mono<GetAccount> getAccountLookup(@RequestParam(required = false) String id) {
+        return Mono.fromFuture(manager.getAccountId(id))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))

@@ -21,6 +21,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import rpl.rama.util.vector_backed_structures.VectorBackedSortedMap;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
@@ -38,6 +43,7 @@ public class ApolloApiManager {
     // Load environment variables for Abios
     private static final Dotenv dotenv = Dotenv.load();
     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
+    private static final AwsCredentialsProvider credentialsProvider;
 
     private final AbiosApiClient apiClient;
 
@@ -1989,6 +1995,35 @@ public class ApolloApiManager {
 
     public CompletableFuture<Application> getApplication(String clientId) {
         return getApplicationFromClientId.invokeAsync(clientId);
+    }
+
+    static {
+        if (System.getenv("AWS_EXECUTION_ENV") != null) {
+            System.out.println("Running on EC2, using default credentials provider chain");
+            credentialsProvider = DefaultCredentialsProvider.create();
+        } else {
+            System.out.println("Local development, loading from .env file");
+            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+
+            if (accessKeyId == null || secretAccessKey == null) {
+                throw new IllegalStateException("AWS credentials not found in .env file");
+            }
+
+            System.out.println("Access Key ID: " + accessKeyId.substring(0, 5) + "...");
+            System.out.println("Secret Access Key: ***");
+
+            credentialsProvider = StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+        }
+    }
+
+    public static AwsCredentialsProvider getAwsCredentialsProvider() {
+        return credentialsProvider;
+    }
+
+    public static Region getAwsRegion() {
+        return Region.US_EAST_2; // You can make this configurable if needed
     }
 
 }

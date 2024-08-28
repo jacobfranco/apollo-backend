@@ -4,6 +4,8 @@ import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 import java.io.*;
 import java.net.*;
 import java.security.*;
@@ -26,16 +28,22 @@ import org.springframework.web.server.*;
 import org.springframework.http.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.model.*;
-
 
 public class ApolloApiHelpers {
 
     private static final DelegatingPasswordEncoder PASSWORD_ENCODER;
+
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+    private static final String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
 
     static {
         HashMap<String, PasswordEncoder> encoders = new HashMap<>();
@@ -51,15 +59,26 @@ public class ApolloApiHelpers {
         return PASSWORD_ENCODER.matches(password, passwordHash);
     }
 
-     public static String randomString(int size) throws NoSuchAlgorithmException {
+    public static String randomString(int size) throws NoSuchAlgorithmException {
         byte[] bytes = new byte[size];
         SecureRandom.getInstanceStrong().nextBytes(bytes);
         return Hex.toHexString(bytes);
     }
 
-     private static S3AsyncClient S3_CLIENT = null;
+    private static S3AsyncClient S3_CLIENT = null;
+
     public static void initS3Client() {
-        S3_CLIENT = S3AsyncClient.builder().region(Region.US_EAST_2).credentialsProvider(EnvironmentVariableCredentialsProvider.create()).build();
+        try {
+            S3_CLIENT = S3AsyncClient.builder()
+                    .credentialsProvider(ApolloApiManager.getAwsCredentialsProvider())
+                    .region(ApolloApiManager.getAwsRegion())
+                    .build();
+            System.out.println("S3 client initialized successfully");
+        } catch (Exception e) {
+            System.err.println("Error initializing S3 client: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to be caught in ApolloApiApplication
+        }
     }
 
     public static CompletableFuture<PutObjectResponse> uploadToS3(String bucketName, String key, File file) {
@@ -67,7 +86,7 @@ public class ApolloApiHelpers {
         return S3_CLIENT.putObject(objectRequest, AsyncRequestBody.fromFile(file));
     }
 
-     public static boolean isValidURL(String url) {
+    public static boolean isValidURL(String url) {
         try {
             new URL(url).toURI();
             return true;
@@ -78,42 +97,59 @@ public class ApolloApiHelpers {
 
     public static String createFilterContext(FilterContext context) {
         switch (context) {
-            case Home: return "home";
-            case Notifications: return "notifications";
-            case Public: return "public";
-            case Thread: return "thread";
-            case Account: return "account";
+            case Home:
+                return "home";
+            case Notifications:
+                return "notifications";
+            case Public:
+                return "public";
+            case Thread:
+                return "thread";
+            case Account:
+                return "account";
         }
         throw new RuntimeException("Invalid filter context");
     }
 
     public static String createFilterAction(FilterAction action) {
         switch (action) {
-            case Warn: return "warn";
-            case Hide: return "hide";
+            case Warn:
+                return "warn";
+            case Hide:
+                return "hide";
         }
         throw new RuntimeException("Invalid filter action");
     }
 
     public static StatusVisibility createStatusVisibility(String visibilityStr) {
-        if ("public".equals(visibilityStr)) return StatusVisibility.Public;
-        else if ("unlisted".equals(visibilityStr)) return StatusVisibility.Unlisted;
-        else if ("private".equals(visibilityStr)) return StatusVisibility.Private;
-        else if ("direct".equals(visibilityStr)) return StatusVisibility.Direct;
-        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if ("public".equals(visibilityStr))
+            return StatusVisibility.Public;
+        else if ("unlisted".equals(visibilityStr))
+            return StatusVisibility.Unlisted;
+        else if ("private".equals(visibilityStr))
+            return StatusVisibility.Private;
+        else if ("direct".equals(visibilityStr))
+            return StatusVisibility.Direct;
+        else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
     public static String createStatusVisibility(StatusVisibility visibility) {
         switch (visibility) {
-            case Public: return "public";
-            case Unlisted: return "unlisted";
-            case Private: return "private";
-            case Direct: return "direct";
+            case Public:
+                return "public";
+            case Unlisted:
+                return "unlisted";
+            case Private:
+                return "private";
+            case Direct:
+                return "direct";
         }
         throw new RuntimeException("Invalid visibility");
     }
 
-    public static <T, O> void setLinkHeader(ServerWebExchange exchange, ApolloApiManager.QueryResults<T, O> queryResults) {
+    public static <T, O> void setLinkHeader(ServerWebExchange exchange,
+            ApolloApiManager.QueryResults<T, O> queryResults) {
         if (queryResults.linkHeaderParams != null && !queryResults.reachedEnd) {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(ApolloConfig.API_URL);
             builder.path(exchange.getRequest().getPath().pathWithinApplication().value());
@@ -132,13 +168,15 @@ public class ApolloApiHelpers {
 
     public static List<GetAccount> createGetAccounts(List<AccountWithId> results) {
         List<GetAccount> getAccounts = new ArrayList<>();
-        for (AccountWithId result : results) getAccounts.add(new GetAccount(result));
+        for (AccountWithId result : results)
+            getAccounts.add(new GetAccount(result));
         return getAccounts;
     }
 
     public static List<GetConversation> createGetConversations(List<Conversation> convos) {
         List<GetConversation> getConversations = new ArrayList<>();
-        for (Conversation convo : convos) getConversations.add(new GetConversation(convo));
+        for (Conversation convo : convos)
+            getConversations.add(new GetConversation(convo));
         return getConversations;
     }
 
@@ -170,20 +208,25 @@ public class ApolloApiHelpers {
 
     public static List<GetStatus> createGetStatuses(StatusQueryResults statusQueryResults) {
         List<GetStatus> getStatuses = new ArrayList<>();
-        for (StatusResultWithId result : statusQueryResults.results) getStatuses.add(new GetStatus(result, statusQueryResults.mentions));
+        for (StatusResultWithId result : statusQueryResults.results)
+            getStatuses.add(new GetStatus(result, statusQueryResults.mentions));
         return getStatuses;
     }
 
     public static List<GetStatus> createGetStatuses(List<StatusQueryResult> statusQueryResults) {
         List<GetStatus> getStatuses = new ArrayList<>();
-        for (StatusQueryResult statusQueryResult : statusQueryResults) getStatuses.add(new GetStatus(statusQueryResult.result, statusQueryResult.mentions));
+        for (StatusQueryResult statusQueryResult : statusQueryResults)
+            getStatuses.add(new GetStatus(statusQueryResult.result, statusQueryResult.mentions));
         return getStatuses;
     }
 
     public static String getStatusResultContentText(StatusResultContent content) {
-        if (content.isSetNormal()) return content.getNormal().text;
-        else if (content.isSetReply()) return content.getReply().text;
-        else if (content.isSetBoost()) return getStatusResultContentText(content.getBoost().status.content);
+        if (content.isSetNormal())
+            return content.getNormal().text;
+        else if (content.isSetReply())
+            return content.getReply().text;
+        else if (content.isSetBoost())
+            return getStatusResultContentText(content.getBoost().status.content);
         return "";
     }
 
@@ -196,7 +239,8 @@ public class ApolloApiHelpers {
                 builder.queryParam(entry.getKey(), entry.getValue());
             }
             // collect the new params (these will override the existing ones)
-            builder.replaceQueryParam("max_id", ApolloHelpers.serializeStatusPointer(statusQueryResults.lastStatusPointer));
+            builder.replaceQueryParam("max_id",
+                    ApolloHelpers.serializeStatusPointer(statusQueryResults.lastStatusPointer));
             // set the header
             exchange.getResponse().getHeaders().add("Link", String.format("<%s>; rel=\"next\"", builder.toUriString()));
         }
@@ -204,10 +248,12 @@ public class ApolloApiHelpers {
 
     public static Map<String, String> createSearchParams(Long nextId, String term) {
         if (nextId != null && term != null) {
-            return new HashMap(){{
-                put("nextId", nextId);
-                put("term", term);
-            }};
+            return new HashMap() {
+                {
+                    put("nextId", nextId);
+                    put("term", term);
+                }
+            };
         } else {
             return null;
         }
@@ -232,7 +278,8 @@ public class ApolloApiHelpers {
 
     public static String sanitize(String input, int maxLength) {
         String sanitized = input.trim();
-        if (sanitized.length() > maxLength) return sanitized.substring(0, maxLength);
+        if (sanitized.length() > maxLength)
+            return sanitized.substring(0, maxLength);
         return sanitized;
     }
 
@@ -242,7 +289,8 @@ public class ApolloApiHelpers {
 
     public static Map<String, GetMarker> createGetMarkers(Map<String, Marker> markers) {
         Map<String, GetMarker> getMarkers = new HashMap<>();
-        for (Map.Entry<String, Marker> entry : markers.entrySet()) getMarkers.put(entry.getKey(), new GetMarker(entry.getValue()));
+        for (Map.Entry<String, Marker> entry : markers.entrySet())
+            getMarkers.put(entry.getKey(), new GetMarker(entry.getValue()));
         return getMarkers;
     }
 
@@ -253,7 +301,8 @@ public class ApolloApiHelpers {
         report.comment = params.comment;
         report.created_at = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
         report.status_ids = params.status_ids;
-        if (params.rule_ids != null) report.rule_ids = params.rule_ids.stream().map(Object::toString).collect(Collectors.toList());
+        if (params.rule_ids != null)
+            report.rule_ids = params.rule_ids.stream().map(Object::toString).collect(Collectors.toList());
         report.target_account = new GetAccount(targetAccount);
         return report;
     }
@@ -261,25 +310,31 @@ public class ApolloApiHelpers {
     public static List<GetNotification> createGetNotifications(List<GetNotification.Bundle> bundles) {
         List<GetNotification> getNotifications = new ArrayList<>();
         for (GetNotification.Bundle bundle : bundles) {
-            if (bundle != null) getNotifications.add(new GetNotification(bundle));
+            if (bundle != null)
+                getNotifications.add(new GetNotification(bundle));
         }
         return getNotifications;
     }
 
     public static boolean isValidFile(String kind, File file) {
         try {
-          if ("image".equals(kind)) ImageIO.read(file); // make sure it's a valid image file
-          else if ("video".equals(kind)) FrameGrab.createFrameGrab(NIOUtils.readableChannel(file)); // make sure it's a valid video file
-          return true;
+            if ("image".equals(kind))
+                ImageIO.read(file); // make sure it's a valid image file
+            else if ("video".equals(kind))
+                FrameGrab.createFrameGrab(NIOUtils.readableChannel(file)); // make sure it's a valid video file
+            return true;
         } catch (IOException | JCodecException e) {
-          return false;
+            return false;
         }
     }
 
     public static AttachmentKind createAttachmentKind(String kindStr) {
-        if ("image".equals(kindStr)) return AttachmentKind.Image;
-        else if ("video".equals(kindStr)) return AttachmentKind.Video;
-        else throw new RuntimeException("Invalid attachment type");
+        if ("image".equals(kindStr))
+            return AttachmentKind.Image;
+        else if ("video".equals(kindStr))
+            return AttachmentKind.Video;
+        else
+            throw new RuntimeException("Invalid attachment type");
     }
 
 }
