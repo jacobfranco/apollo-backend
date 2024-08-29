@@ -73,6 +73,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 (Class<? extends TBase<?, ?>>) PinStatus.class,
                 (Class<? extends TBase<?, ?>>) PollContent.class,
                 (Class<? extends TBase<?, ?>>) PollInfo.class,
+                (Class<? extends TBase<?, ?>>) PollVote.class,
                 (Class<? extends TBase<?, ?>>) ProfileSearchRecord.class,
                 (Class<? extends TBase<?, ?>>) QueryFilterOptions.class,
                 (Class<? extends TBase<?, ?>>) RejectFollowRequest.class,
