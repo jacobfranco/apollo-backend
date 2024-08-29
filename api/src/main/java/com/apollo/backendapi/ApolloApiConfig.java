@@ -182,12 +182,12 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
         DefaultPartHttpMessageReader partReader = new DefaultPartHttpMessageReader();
         partReader.setMaxParts(40); // Limit on number of multipart parts
-        partReader.setMaxDiskUsagePerPart(4 * 1024 * 1024); // Limit on disk usage per part
+        partReader.setMaxDiskUsagePerPart(30 * 1024 * 1024); // 30 MB limit per part
         partReader.setEnableLoggingRequestDetails(true); // Enable detailed logging for debugging
         MultipartHttpMessageReader multipartReader = new MultipartHttpMessageReader(partReader);
         multipartReader.setEnableLoggingRequestDetails(true); // Enable detailed logging for multipart reader
         configurer.defaultCodecs().multipartReader(multipartReader);
-        configurer.defaultCodecs().maxInMemorySize(512 * 1024); // Set memory limit for in-memory codecs
+        configurer.defaultCodecs().maxInMemorySize(30 * 1024 * 1024); // 30 MB limit for in-memory codecs
     }
 
     // Route for serving static resources from a directory
