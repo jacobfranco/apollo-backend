@@ -515,7 +515,7 @@ public class ApolloApiController {
             @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Boolean only_media,
             @RequestParam(required = false) Boolean exclude_replies,
-            @RequestParam(required = false) Boolean exclude_reblogs,
+            @RequestParam(required = false) Boolean exclude_reposts,
             @RequestParam(required = false) Boolean pinned,
             @RequestParam(required = false) String tagged) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
@@ -530,7 +530,7 @@ public class ApolloApiController {
             future = manager.getTaggedStatuses(requestAccountId, timelineAccountId, tagged, statusPointer, limit);
         else
             future = manager.getAccountTimeline(requestAccountId, timelineAccountId, statusPointer, limit,
-                    exclude_replies == null || !exclude_replies, exclude_reblogs == null || !exclude_reblogs);
+                    exclude_replies == null || !exclude_replies, exclude_reposts == null || !exclude_reposts);
         return Mono.fromFuture(future)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(statusQueryResults -> {
@@ -671,6 +671,15 @@ public class ApolloApiController {
                         }));
     }
 
+    @GetMapping("/api/statuses/{id}")
+    public Mono<GetStatus> getStatus(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetStatus::new);
+    }
+
     @PutMapping(value = "/api/statuses/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<GetStatus> putStatus(WebSession session, @PathVariable("id") String id,
             @RequestBody(required = true) PutStatus params) {
@@ -732,7 +741,7 @@ public class ApolloApiController {
                 .map(GetStatusSource::new);
     }
 
-    @GetMapping("/api/v1/statuses/{id}/context")
+    @GetMapping("/api/statuses/{id}/context")
     public Mono<GetContext> getContext(WebSession session, @PathVariable("id") String id) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
@@ -1039,7 +1048,7 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.getTrendingHashtags(limit, offset)).map(ApolloApiHelpers::createGetTags);
     }
 
-    @GetMapping("/api/v1/trends/statuses")
+    @GetMapping("/api/trends/statuses")
     public Mono<List<GetStatus>> getTrendingStatuses(WebSession session, @RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Integer offset) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
@@ -1543,7 +1552,7 @@ public class ApolloApiController {
 
     }
 
-    @DeleteMapping("/api/v2/filters/{id}")
+    @DeleteMapping("/api/filters/{id}")
     public Mono<Void> deleteFilter(WebSession session, @PathVariable("id") Long filterId) {
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.deleteFilter(requestAccountId, filterId));
@@ -1738,7 +1747,7 @@ public class ApolloApiController {
                 });
     }
 
-    @GetMapping("/api/v1/timelines/public")
+    @GetMapping("/api/timelines/public")
     public Mono<List<GetStatus>> getPublicTimeline(WebSession session, ServerWebExchange exchange,
             @RequestParam(required = false) String max_id,
             @RequestParam(required = false) Integer limit) {

@@ -40,7 +40,8 @@ public class ApolloApiStreamingConfig {
         String stream;
         List<ProxyState<SortedMap>> proxies;
 
-        public StreamState(WebSocketSession session, Long accountId, FluxSink<WebSocketMessage> sink, String stream, List<ProxyState<SortedMap>> proxies) {
+        public StreamState(WebSocketSession session, Long accountId, FluxSink<WebSocketMessage> sink, String stream,
+                List<ProxyState<SortedMap>> proxies) {
             this.session = session;
             this.accountId = accountId;
             this.sink = sink;
@@ -49,7 +50,8 @@ public class ApolloApiStreamingConfig {
         }
 
         void close() throws IOException {
-            for (ProxyState<SortedMap> proxy : this.proxies) proxy.close();
+            for (ProxyState<SortedMap> proxy : this.proxies)
+                proxy.close();
         }
     }
 
@@ -86,50 +88,65 @@ public class ApolloApiStreamingConfig {
         }
     }
 
-    public static void sendStatusPointer(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream, Long accountId, StatusPointer statusPointer) {
+    public static void sendStatusPointer(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
+            Long accountId, StatusPointer statusPointer) {
         // direct streams return a "conversation" event
         if ("direct".equals(stream))
             ApolloApiController.manager.getConversationFromStatusId(accountId, statusPointer)
-                                         .thenAccept(conversation -> {
-                                             if (conversation == null) return;
-                                             String eventStr = serializeEvent(conversation, stream);
-                                             if (eventStr != null) sink.next(session.textMessage(eventStr));
-                                         });
+                    .thenAccept(conversation -> {
+                        if (conversation == null)
+                            return;
+                        String eventStr = serializeEvent(conversation, stream);
+                        if (eventStr != null)
+                            sink.next(session.textMessage(eventStr));
+                    });
         // other streams return an "update" event
         else {
             final FilterContext context;
-            if ("user".equals(stream)) context = FilterContext.Home;
-            else context = FilterContext.Public;
+            if ("user".equals(stream))
+                context = FilterContext.Home;
+            else
+                context = FilterContext.Public;
             QueryFilterOptions filterOptions = new QueryFilterOptions(context, true);
             ApolloApiController.manager.getStatus(accountId, statusPointer, filterOptions)
-                                 .thenAccept(statusQueryResult -> {
-                                     sendStatusQueryResult(session, sink, stream, statusQueryResult);
-                                 });
+                    .thenAccept(statusQueryResult -> {
+                        sendStatusQueryResult(session, sink, stream, statusQueryResult);
+                    });
         }
     }
 
-    public static void sendStatusQueryResult(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream, StatusQueryResult statusQueryResult) {
-        if (statusQueryResult == null) return;
+    public static void sendStatusQueryResult(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
+            StatusQueryResult statusQueryResult) {
+        if (statusQueryResult == null)
+            return;
         String eventStr = serializeEvent(statusQueryResult, stream);
-        if (eventStr != null) sink.next(session.textMessage(eventStr));
+        if (eventStr != null)
+            sink.next(session.textMessage(eventStr));
     }
 
-    public static void sendNotificationWithId(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream, long accountId, NotificationWithId nwid) {
+    public static void sendNotificationWithId(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
+            long accountId, NotificationWithId nwid) {
         ApolloApiController.manager.getNotification(accountId, nwid)
-                                     .thenAccept(bundle -> {
-                                         if (bundle == null) return;
-                                         String eventStr = serializeEvent(bundle, stream);
-                                         if (eventStr != null) sink.next(session.textMessage(eventStr));
-                                     });
+                .thenAccept(bundle -> {
+                    if (bundle == null)
+                        return;
+                    String eventStr = serializeEvent(bundle, stream);
+                    if (eventStr != null)
+                        sink.next(session.textMessage(eventStr));
+                });
     }
 
-   // caches of the latest query results of each global timeline
-   public static final ConcurrentHashMap<LocalTimeline, ConcurrentSkipListMap<Long, StatusQueryResult>> LOCAL_TIMELINE_TO_INDEX_TO_STATUS = new ConcurrentHashMap() {{
-    put(LocalTimeline.Public, new ConcurrentSkipListMap<>());
-}};
-public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPointer, Long>> LOCAL_TIMELINE_TO_STATUS_POINTER_TO_INDEX = new ConcurrentHashMap() {{
-    put(LocalTimeline.Public, new ConcurrentHashMap<>());
-}};
+    // caches of the latest query results of each global timeline
+    public static final ConcurrentHashMap<LocalTimeline, ConcurrentSkipListMap<Long, StatusQueryResult>> LOCAL_TIMELINE_TO_INDEX_TO_STATUS = new ConcurrentHashMap() {
+        {
+            put(LocalTimeline.Public, new ConcurrentSkipListMap<>());
+        }
+    };
+    public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPointer, Long>> LOCAL_TIMELINE_TO_STATUS_POINTER_TO_INDEX = new ConcurrentHashMap() {
+        {
+            put(LocalTimeline.Public, new ConcurrentHashMap<>());
+        }
+    };
     public static final int GLOBAL_TIMELINE_CACHE_SIZE = 4000; // how many statuses to keep in memory for each timeline
     public static final int GLOBAL_TIMELINE_QUERY_LIMIT = 10; // how many statuses to query on each iteration
 
@@ -175,98 +192,112 @@ public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPoi
                 final String wsSessionId = session.getId();
                 final Long accountId = (Long) session.getAttributes().get("accountId");
 
-                MultiValueMap<String, String> params = UriComponentsBuilder.fromUri(session.getHandshakeInfo().getUri()).build().getQueryParams();
+                MultiValueMap<String, String> params = UriComponentsBuilder.fromUri(session.getHandshakeInfo().getUri())
+                        .build().getQueryParams();
 
                 return session.send(Flux.create(sink -> {
-                                        if (SESSION_ID_TO_STATE.containsKey(wsSessionId)) return;
-                                        if (!params.containsKey("stream")) return;
-                                        String stream = params.get("stream").get(0);
+                    if (SESSION_ID_TO_STATE.containsKey(wsSessionId))
+                        return;
+                    if (!params.containsKey("stream"))
+                        return;
+                    String stream = params.get("stream").get(0);
 
-                                        if ("public".equals(stream) || "public:local".equals(stream) || "public:remote".equals(stream)) {
-                                            SESSION_ID_TO_STATE.put(wsSessionId, new StreamState(session, accountId, sink, stream, new ArrayList<>()));
-                                        } else {
-                                            ProxyState.Callback<SortedMap> statusCallback =
-                                              (SortedMap newVal, Diff diff, SortedMap oldVal) -> {
-                                                StatusPointerDiffProcessor processor = new StatusPointerDiffProcessor();
-                                                diff.process(processor);
-                                                // no diff was provided (rare)
-                                                if (processor.statusPointers == null) {
-                                                  if (newVal != null && oldVal != null) {
-                                                    for (Object key : newVal.keySet()) {
-                                                        long timelineIndex = (long) key;
-                                                        if (!oldVal.containsKey(timelineIndex)) {
-                                                          StatusPointer statusPointer = (StatusPointer) newVal.get(timelineIndex);
-                                                          sendStatusPointer(session, sink, stream, accountId, statusPointer);
-                                                        }
-                                                    }
-                                                  }
-                                                } else {
-                                                  for (StatusPointer statusPointer : processor.statusPointers) sendStatusPointer(session, sink, stream, accountId, statusPointer);
-                                                }
-                                              };
+                    if ("public".equals(stream) || "public:local".equals(stream) || "public:remote".equals(stream)) {
+                        SESSION_ID_TO_STATE.put(wsSessionId,
+                                new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+                    } else {
+                        ProxyState.Callback<SortedMap> statusCallback = (SortedMap newVal, Diff diff,
+                                SortedMap oldVal) -> {
+                            StatusPointerDiffProcessor processor = new StatusPointerDiffProcessor();
+                            diff.process(processor);
+                            // no diff was provided (rare)
+                            if (processor.statusPointers == null) {
+                                if (newVal != null && oldVal != null) {
+                                    for (Object key : newVal.keySet()) {
+                                        long timelineIndex = (long) key;
+                                        if (!oldVal.containsKey(timelineIndex)) {
+                                            StatusPointer statusPointer = (StatusPointer) newVal.get(timelineIndex);
+                                            sendStatusPointer(session, sink, stream, accountId, statusPointer);
+                                        }
+                                    }
+                                }
+                            } else {
+                                for (StatusPointer statusPointer : processor.statusPointers)
+                                    sendStatusPointer(session, sink, stream, accountId, statusPointer);
+                            }
+                        };
 
-                                            if ("hashtag".equals(stream)) {
-                                                if (!params.containsKey("tag")) {
-                                                    sink.complete();
-                                                    return;
-                                                }
-                                                String tag = params.get("tag").get(0);
-                                                ApolloApiController.manager
-                                                        .proxyHashtagTimeline(tag, statusCallback)
-                                                        .thenAccept(proxy -> SESSION_ID_TO_STATE.put(wsSessionId, new StreamState(session, accountId, sink, stream, Arrays.asList(proxy))));
-                                            } else if ("user".equals(stream)) {
-                                                if (accountId == null) return; // login required
-                                                ProxyState.Callback<SortedMap> notificationCallback =
-                                                  (SortedMap newVal, Diff diff, SortedMap oldVal) -> {
-                                                    NotificationWithIdDiffProcessor processor = new NotificationWithIdDiffProcessor();
-                                                    diff.process(processor);
-                                                    // no diff was provided (rare)
-                                                    if (processor.nwids == null) {
-                                                      if (newVal != null && oldVal != null) {
-                                                        for (Object key : newVal.keySet()) {
-                                                            long notificationId = (long) key;
-                                                            if (!oldVal.containsKey(notificationId)) {
-                                                              Notification notification = (Notification) newVal.get(notificationId);
-                                                              sendNotificationWithId(session, sink, stream, accountId, new NotificationWithId(notificationId, notification));
-                                                            }
-                                                        }
-                                                      }
-                                                    } else {
-                                                      for (NotificationWithId nwid : processor.nwids) sendNotificationWithId(session, sink, stream, accountId, nwid);
-                                                    }
-                                                  };
-                                                // make reactive queries for home and notifications timelines
-                                                ApolloApiController.manager
-                                                        .proxyHomeTimeline(accountId, statusCallback)
-                                                        .thenCompose(homeProxy -> {
-                                                            // temporarily save home proxy by itself so it will be properly closed
-                                                            // if the notifications proxy is not successfully created.
-                                                            SESSION_ID_TO_STATE.put(wsSessionId, new StreamState(session, accountId, sink, stream, Arrays.asList(homeProxy)));
-                                                            // make reactive query for notifications timeline
-                                                            return ApolloApiController.manager
-                                                                    .proxyNotificationsTimeline(accountId, notificationCallback)
-                                                                    .thenAccept(notificationsProxy -> SESSION_ID_TO_STATE.put(wsSessionId, new StreamState(session, accountId, sink, stream, Arrays.asList(homeProxy, notificationsProxy))));
-                                                        });
-                                            } else if ("direct".equals(stream)) {
-                                                if (accountId == null) return; // login required
-                                                ApolloApiController.manager
-                                                        .proxyDirectTimeline(accountId, statusCallback)
-                                                        .thenAccept(proxy -> SESSION_ID_TO_STATE.put(wsSessionId, new StreamState(session, accountId, sink, stream, Arrays.asList(proxy))));
+                        if ("hashtag".equals(stream)) {
+                            if (!params.containsKey("tag")) {
+                                sink.complete();
+                                return;
+                            }
+                            String tag = params.get("tag").get(0);
+                            ApolloApiController.manager
+                                    .proxyHashtagTimeline(tag, statusCallback)
+                                    .thenAccept(proxy -> SESSION_ID_TO_STATE.put(wsSessionId,
+                                            new StreamState(session, accountId, sink, stream, Arrays.asList(proxy))));
+                        } else if ("user".equals(stream)) {
+                            if (accountId == null)
+                                return; // login required
+                            ProxyState.Callback<SortedMap> notificationCallback = (SortedMap newVal, Diff diff,
+                                    SortedMap oldVal) -> {
+                                NotificationWithIdDiffProcessor processor = new NotificationWithIdDiffProcessor();
+                                diff.process(processor);
+                                // no diff was provided (rare)
+                                if (processor.nwids == null) {
+                                    if (newVal != null && oldVal != null) {
+                                        for (Object key : newVal.keySet()) {
+                                            long notificationId = (long) key;
+                                            if (!oldVal.containsKey(notificationId)) {
+                                                Notification notification = (Notification) newVal.get(notificationId);
+                                                sendNotificationWithId(session, sink, stream, accountId,
+                                                        new NotificationWithId(notificationId, notification));
                                             }
                                         }
-                                    }))
-                              .and(session.receive()
-                                          .doFinally(sig -> {
-                                              session.close();
-                                              StreamState state = SESSION_ID_TO_STATE.remove(wsSessionId);
-                                              if (state != null) {
-                                                try {
-                                                  state.close();
-                                                } catch (IOException e) {
-                                                  throw new RuntimeException(e);
-                                                }
-                                              }
-                                          }).then());
+                                    }
+                                } else {
+                                    for (NotificationWithId nwid : processor.nwids)
+                                        sendNotificationWithId(session, sink, stream, accountId, nwid);
+                                }
+                            };
+                            // make reactive queries for home and notifications timelines
+                            ApolloApiController.manager
+                                    .proxyHomeTimeline(accountId, statusCallback)
+                                    .thenCompose(homeProxy -> {
+                                        // temporarily save home proxy by itself so it will be properly closed
+                                        // if the notifications proxy is not successfully created.
+                                        SESSION_ID_TO_STATE.put(wsSessionId, new StreamState(session, accountId, sink,
+                                                stream, Arrays.asList(homeProxy)));
+                                        // make reactive query for notifications timeline
+                                        return ApolloApiController.manager
+                                                .proxyNotificationsTimeline(accountId, notificationCallback)
+                                                .thenAccept(notificationsProxy -> SESSION_ID_TO_STATE.put(wsSessionId,
+                                                        new StreamState(session, accountId, sink, stream,
+                                                                Arrays.asList(homeProxy, notificationsProxy))));
+                                    });
+                        } else if ("direct".equals(stream)) {
+                            if (accountId == null)
+                                return; // login required
+                            ApolloApiController.manager
+                                    .proxyDirectTimeline(accountId, statusCallback)
+                                    .thenAccept(proxy -> SESSION_ID_TO_STATE.put(wsSessionId,
+                                            new StreamState(session, accountId, sink, stream, Arrays.asList(proxy))));
+                        }
+                    }
+                }))
+                        .and(session.receive()
+                                .doFinally(sig -> {
+                                    session.close();
+                                    StreamState state = SESSION_ID_TO_STATE.remove(wsSessionId);
+                                    if (state != null) {
+                                        try {
+                                            state.close();
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                }).then());
             }
         };
     }
@@ -275,8 +306,8 @@ public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPoi
     public HandlerMapping webSocketHandlerMapping() {
         Map<String, WebSocketHandler> map = new HashMap<>();
         WebSocketHandler handler = webSocketHandler();
-        map.put("/api/v1/streaming/", handler);
-        map.put("/api/v1/streaming", handler);
+        map.put("/api/streaming/", handler);
+        map.put("/api/streaming", handler);
 
         SimpleUrlHandlerMapping handlerMapping = new SimpleUrlHandlerMapping();
         handlerMapping.setOrder(Ordered.HIGHEST_PRECEDENCE);
@@ -299,33 +330,35 @@ public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPoi
                 HttpHeaders headers = request.getHeaders();
 
                 if (HttpMethod.GET != method) {
-                    return Mono.error(new MethodNotAllowedException(request.getMethodValue(), Collections.singleton(HttpMethod.GET)));
+                    return Mono.error(new MethodNotAllowedException(request.getMethodValue(),
+                            Collections.singleton(HttpMethod.GET)));
                 }
 
                 if (!"WebSocket".equalsIgnoreCase(headers.getUpgrade())) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid 'Upgrade' header: " + headers));
+                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Invalid 'Upgrade' header: " + headers));
                 }
 
                 List<String> connectionValue = headers.getConnection();
                 if (!connectionValue.contains("Upgrade") && !connectionValue.contains("upgrade")) {
-                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid 'Connection' header: " + headers));
+                    return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Invalid 'Connection' header: " + headers));
                 }
 
                 String protocol = headers.getFirst(SEC_WEBSOCKET_PROTOCOL_HEADER);
 
-                return initAttributes(exchange).flatMap(attributes ->
-                        new ReactorNettyRequestUpgradeStrategy().upgrade(exchange, handler, protocol,
-                                () -> createHandshakeInfo(exchange, request, protocol, attributes))
-                );
+                return initAttributes(exchange).flatMap(
+                        attributes -> new ReactorNettyRequestUpgradeStrategy().upgrade(exchange, handler, protocol,
+                                () -> createHandshakeInfo(exchange, request, protocol, attributes)));
             }
 
             private Mono<Map<String, Object>> initAttributes(ServerWebExchange exchange) {
-                return exchange.getSession().map(session ->
-                        session.getAttributes().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+                return exchange.getSession().map(session -> session.getAttributes().entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
             }
 
             private HandshakeInfo createHandshakeInfo(ServerWebExchange exchange, ServerHttpRequest request,
-                                                      String protocol, Map<String, Object> attributes) {
+                    String protocol, Map<String, Object> attributes) {
 
                 URI uri = request.getURI();
                 // Copy request headers, as they might be pooled and recycled by
@@ -336,7 +369,8 @@ public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPoi
                 Mono<Principal> principal = exchange.getPrincipal();
                 String logPrefix = exchange.getLogPrefix();
                 InetSocketAddress remoteAddress = request.getRemoteAddress();
-                return new HandshakeInfo(uri, headers, cookies, principal, protocol, remoteAddress, attributes, logPrefix);
+                return new HandshakeInfo(uri, headers, cookies, principal, protocol, remoteAddress, attributes,
+                        logPrefix);
             }
         };
     }

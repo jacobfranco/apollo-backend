@@ -909,9 +909,9 @@ public class ApolloApiManager {
                 MAX_PAGING_ITERATIONS);
     }
 
-    public CompletableFuture<StatusQueryResult> postLikeStatus(long favoriterId, StatusPointer pointer) {
-        return likeStatusDepot.appendAsync(new LikeStatus(favoriterId, pointer, System.currentTimeMillis()))
-                .thenCompose(res -> this.getStatus(favoriterId, pointer))
+    public CompletableFuture<StatusQueryResult> postLikeStatus(long likerId, StatusPointer pointer) {
+        return likeStatusDepot.appendAsync(new LikeStatus(likerId, pointer, System.currentTimeMillis()))
+                .thenCompose(res -> this.getStatus(likerId, pointer))
                 .thenApply(resultMaybe -> {
                     if (resultMaybe == null)
                         return null;
@@ -924,9 +924,9 @@ public class ApolloApiManager {
                 });
     }
 
-    public CompletableFuture<StatusQueryResult> postRemoveLikeStatus(long favoriterId, StatusPointer pointer) {
-        return likeStatusDepot.appendAsync(new LikeStatus(favoriterId, pointer, System.currentTimeMillis()))
-                .thenCompose(res -> this.getStatus(favoriterId, pointer))
+    public CompletableFuture<StatusQueryResult> postRemoveLikeStatus(long likerId, StatusPointer pointer) {
+        return likeStatusDepot.appendAsync(new LikeStatus(likerId, pointer, System.currentTimeMillis()))
+                .thenCompose(res -> this.getStatus(likerId, pointer))
                 .thenApply(resultMaybe -> {
                     if (resultMaybe == null)
                         return null;
@@ -1190,11 +1190,11 @@ public class ApolloApiManager {
                 .thenCompose(resultMaybe -> {
                     if (resultMaybe == null)
                         return CompletableFuture.completedFuture(null);
-                    // get the favoriters
+                    // get the likers
                     SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
-                    CompletableFuture<List<Long>> favoriterIdsFuture = statusIdToLikers.selectAsync(authorId,
+                    CompletableFuture<List<Long>> likerIdsFuture = statusIdToLikers.selectAsync(authorId,
                             Path.key(statusId).sortedMapRangeFrom(offset, options).mapKeys());
-                    return favoriterIdsFuture.thenCompose(this::getAccountsFromAccountIds)
+                    return likerIdsFuture.thenCompose(this::getAccountsFromAccountIds)
                             .thenApply(accountWithIds -> {
                                 Long lastId = null;
                                 List<SimpleEntry<String, String>> linkHeaderParams = null;
