@@ -116,6 +116,7 @@ public class ApolloApiManager {
     private final Depot filterDepot;
     private final Depot removeFollowSuggestionDepot;
     private final Depot followHashtagDepot;
+    private final Depot followSpaceDepot;
 
     // Relationship PStates
     private final PState authCodeToAccountId;
@@ -127,6 +128,7 @@ public class ApolloApiManager {
     private final PState postUUIDToGeneratedId;
     private final PState accountIdToFilterIdToFilter;
     private final PState hashtagToFollowers;
+    private final PState spaceToFollowers;
 
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
@@ -145,10 +147,14 @@ public class ApolloApiManager {
     private final PState accountIdToHashtagActivity;
     private final PState hashtagToStatusPointers;
     private final PState hashtagToStatusPointersReverse;
+    private final PState spaceTrends;
+    private final PState spaceToStatusPointersReverse;
 
     // Hashtag Queries
     private final QueryTopologyClient<Map<String, ItemStats>> batchHashtagStats;
     private final QueryTopologyClient<StatusQueryResults> getHashtagTimeline;
+    private final QueryTopologyClient<Map<String, ItemStats>> batchSpaceStats;
+    private final QueryTopologyClient<StatusQueryResults> getSpaceTimeline;
 
     // Search PStates
     private final PState activeAccountIds;
@@ -232,6 +238,7 @@ public class ApolloApiManager {
         filterDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*filterDepot");
         removeFollowSuggestionDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*removeFollowSuggestionDepot");
         followHashtagDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followHashtagDepot");
+        followSpaceDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followSpaceDepot");
 
         // Relationship PStates
         authCodeToAccountId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$authCodeToAccountId");
@@ -244,6 +251,7 @@ public class ApolloApiManager {
         postUUIDToGeneratedId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$postUUIDToGeneratedId");
         accountIdToFilterIdToFilter = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFilterIdToFilter");
         hashtagToFollowers = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$hashtagToFollowers");
+        spaceToFollowers = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$spaceToFollowers");
 
         // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
@@ -264,10 +272,15 @@ public class ApolloApiManager {
         hashtagToStatusPointers = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagToStatusPointers");
         hashtagToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME,
                 "$$hashtagToStatusPointersReverse");
+        spaceTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$spaceTrends");
+        spaceToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME,
+                "$$spaceToStatusPointersReverse");
 
         // Hashtag Queries
         batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
         getHashtagTimeline = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getHashtagTimeline");
+        batchSpaceStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchSpaceStats");
+        getSpaceTimeline = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getSpaceTimeline");
 
         // Search PStates
         activeAccountIds = cluster.clusterPState(SEARCH_MODULE_NAME, "$$activeAccountIds");
@@ -2023,7 +2036,53 @@ public class ApolloApiManager {
     }
 
     public static Region getAwsRegion() {
-        return Region.US_EAST_2; // You can make this configurable if needed
+        return Region.US_EAST_2; // TODO: Make configurable if needed
     }
 
+    public CompletableFuture<ItemStats> getSpaceStats(String space) {
+        return batchSpaceStats.invokeAsync(Arrays.asList(space)).thenApply(info -> info.get(space));
+    }
+
+    public CompletableFuture<Boolean> postFollowSpace(long accountId, String space) {
+        return followSpaceDepot.appendAsync(new FollowSpace(accountId, space, System.currentTimeMillis()))
+                .thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> postRemoveFollowSpace(long accountId, String space) {
+        return followSpaceDepot.appendAsync(new RemoveFollowSpace(accountId, space, System.currentTimeMillis()))
+                .thenApply(res -> true);
+    }
+
+    public CompletableFuture<Boolean> isFollowingSpace(long accountId, String space) {
+        return spaceToFollowers.selectOneAsync(Path.key(space).view(Ops.CONTAINS, accountId));
+    }
+
+    // TODO: Idk if this works
+    public CompletableFuture<List<String>> getFollowedSpaces(long accountId) {
+        return spaceToFollowers.selectAsync(Path.key(accountId).all())
+                .thenApply(entries -> entries.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.toList()));
+    }
+
+    public CompletableFuture<Map<String, ItemStats>> getTrendingSpaces(Integer limitMaybe, Integer offsetMaybe) {
+        long offset = offsetMaybe == null ? 0 : offsetMaybe;
+        int defaultLimit = 10;
+        int maxLimit = 20;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+        return spaceTrends.selectAsync(Path.all().first())
+                .thenApply(spaces -> spaces.stream().skip(offset).limit(limit).collect(Collectors.toList()))
+                .thenCompose(batchSpaceStats::invokeAsync)
+                .thenApply(res -> res == null ? new HashMap<>() : res);
+    }
+
+    public CompletableFuture<StatusQueryResults> getSpaceTimeline(String space, Long requestAccountIdMaybe,
+            StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging(
+                (offset, limit) -> spaceToStatusPointersReverse
+                        .selectOneAsync(Path.key(space, offset).nullToVal(-1L))
+                        .thenCompose(timelineIndex -> getSpaceTimeline.invokeAsync(space, requestAccountIdMaybe,
+                                timelineIndex, limit)),
+                offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
 }

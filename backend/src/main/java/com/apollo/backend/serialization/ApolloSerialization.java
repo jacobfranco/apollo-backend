@@ -7,7 +7,7 @@ import java.util.*;
 
 public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
 
-    // TODO: Add the rest / make sure that this actually works still
+    // TODO: make sure that this actually works still
     @Override
     protected Map<Integer, Class<? extends TBase<?, ?>>> typeIds() {
         Map<Integer, Class<? extends TBase<?, ?>>> ret = new HashMap<>();
@@ -50,6 +50,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 (Class<? extends TBase<?, ?>>) FilterWithId.class,
                 (Class<? extends TBase<?, ?>>) FollowAccount.class,
                 (Class<? extends TBase<?, ?>>) FollowHashtag.class,
+                (Class<? extends TBase<?, ?>>) FollowSpace.class,
                 (Class<? extends TBase<?, ?>>) Follower.class,
                 (Class<? extends TBase<?, ?>>) FollowerFanout.class,
                 (Class<? extends TBase<?, ?>>) FollowLockedAccount.class,
@@ -88,6 +89,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 (Class<? extends TBase<?, ?>>) RemoveFilter.class,
                 (Class<? extends TBase<?, ?>>) RemoveFollowAccount.class,
                 (Class<? extends TBase<?, ?>>) RemoveFollowHashtag.class,
+                (Class<? extends TBase<?, ?>>) RemoveFollowSpace.class,
                 (Class<? extends TBase<?, ?>>) RemoveLikeStatus.class,
                 (Class<? extends TBase<?, ?>>) RemoveMuteAccount.class,
                 (Class<? extends TBase<?, ?>>) RemoveMuteStatus.class,
@@ -98,6 +100,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 (Class<? extends TBase<?, ?>>) ReplyStatusContent.class,
                 (Class<? extends TBase<?, ?>>) ReplyStatusContent.class,
                 (Class<? extends TBase<?, ?>>) Series.class,
+                (Class<? extends TBase<?, ?>>) SpaceFanout.class,
                 (Class<? extends TBase<?, ?>>) Status.class,
                 (Class<? extends TBase<?, ?>>) StatusContent.class,
                 (Class<? extends TBase<?, ?>>) StatusMetadata.class,

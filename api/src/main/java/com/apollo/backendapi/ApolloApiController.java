@@ -1038,6 +1038,7 @@ public class ApolloApiController {
      * Trends Actions Endpoints
      * ======================================
      * - GET /api/trends
+     * - GET /api/trends/spaces
      * - GET /api/trends/statuses
      * ======================================
      */
@@ -1046,6 +1047,12 @@ public class ApolloApiController {
     public Mono<List<GetTag>> getTrendingTags(@RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Integer offset) {
         return Mono.fromFuture(manager.getTrendingHashtags(limit, offset)).map(ApolloApiHelpers::createGetTags);
+    }
+
+    @GetMapping("/api/trends/spaces")
+    public Mono<List<GetSpace>> getTrendingSpaces(@RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset) {
+        return Mono.fromFuture(manager.getTrendingSpaces(limit, offset)).map(ApolloApiHelpers::createGetSpaces);
     }
 
     @GetMapping("/api/trends/statuses")
@@ -1676,6 +1683,7 @@ public class ApolloApiController {
      * - GET /api/tags/{id}
      * - POST /api/tags/{id}/follow
      * - POST /api/tags/{id}/follow
+     * - GET /api/followed_tags
      * ======================================
      */
 
@@ -1714,10 +1722,56 @@ public class ApolloApiController {
     }
 
     /*
+     * Spaces Endpoints
+     * ======================================
+     * - GET /api/spaces/{id}
+     * - POST /api/spaces/{id}/follow
+     * - POST /api/spaces/{id}/follow
+     * - GET /api/followed_spaces
+     * ======================================
+     */
+
+    @GetMapping("/api/spaces/{id}")
+    public Mono<GetSpace> getSpace(WebSession session, @PathVariable("id") String id) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        return Mono.fromFuture(manager.getSpaceStats(id))
+                .flatMap(stats -> (requestAccountId == null ? Mono.just(false)
+                        : Mono.fromFuture(manager.isFollowingSpace(requestAccountId, id)))
+                        .map(isFollowing -> ApolloApiHelpers.createGetSpace(id, stats, isFollowing)));
+    }
+
+    @PostMapping("/api/spaces/{id}/follow")
+    public Mono<GetSpace> postFollowSpace(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.postFollowSpace(requestAccountId, id))
+                .flatMap(res -> this.getSpace(session, id));
+    }
+
+    @PostMapping("/api/spaces/{id}/unfollow")
+    public Mono<GetSpace> postUnfollowSpace(WebSession session, @PathVariable("id") String id) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.postRemoveFollowSpace(requestAccountId, id))
+                .flatMap(res -> this.getSpace(session, id));
+    }
+
+    // TODO: Idk if this works
+    @GetMapping("/api/followed_spaces")
+    public Mono<List<String>> getFollowedSpaces(WebSession session) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId");
+        if (requestAccountId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        return Mono.fromFuture(manager.getFollowedSpaces(requestAccountId));
+    }
+
+    /*
      * Timeline Endpoints
      * ======================================
      * - GET /api/timelines/home
-     * - POST /api/timelines/direct
+     * - GET /api/timelines/direct
+     * - GET /api/timelines/public
+     * - GET /api/timelines/tag/{hashtag}
      * ======================================
      */
 
@@ -1773,6 +1827,20 @@ public class ApolloApiController {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         return Mono.fromFuture(manager.getHashtagTimeline(hashtag, requestAccountId, statusPointer, limit))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(statusQueryResults -> {
+                    ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
+                    return ApolloApiHelpers.createGetStatuses(statusQueryResults);
+                });
+    }
+
+    @GetMapping("/api/timelines/space/{space}")
+    public Mono<List<GetStatus>> getSpaceTimeline(WebSession session, ServerWebExchange exchange,
+            @PathVariable("space") String space, @RequestParam(required = false) String max_id,
+            @RequestParam(required = false) Integer limit) {
+        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
+        return Mono.fromFuture(manager.getSpaceTimeline(space, requestAccountId, statusPointer, limit))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(statusQueryResults -> {
                     ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);

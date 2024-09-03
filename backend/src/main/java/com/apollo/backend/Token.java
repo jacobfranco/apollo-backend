@@ -22,6 +22,7 @@ public class Token implements RamaSerializable {
         LINK,
         HASHTAG,
         MENTION,
+        SPACE
     }
 
     public TokenKind kind;
@@ -39,7 +40,8 @@ public class Token implements RamaSerializable {
     public static List<Token> parseTokens(String content) {
         List<Token> tokens = new ArrayList<>();
         Token currentToken = new Token(TokenKind.BOUNDARY, "");
-        for (char ch : content.toCharArray()) {
+        for (int i = 0; i < content.length(); i++) {
+            char ch = content.charAt(i);
             boolean linkParsing = currentToken.kind == TokenKind.LINK;
             Set<Character> chars = linkParsing ? linkBoundaryChars : boundaryChars;
             if (chars.contains(ch)) {
@@ -59,6 +61,13 @@ public class Token implements RamaSerializable {
                 currentToken = new Token(TokenKind.BOUNDARY, "@");
                 finishToken(tokens, currentToken);
                 currentToken = new Token(TokenKind.MENTION, "");
+            } else if (!linkParsing && ch == '/' && i + 2 < content.length() && content.charAt(i + 1) == 's'
+                    && content.charAt(i + 2) == '/') {
+                finishToken(tokens, currentToken);
+                currentToken = new Token(TokenKind.BOUNDARY, "/s/");
+                finishToken(tokens, currentToken);
+                currentToken = new Token(TokenKind.SPACE, "");
+                i += 2; // Skip the next two characters as we've already processed them
             } else {
                 if (currentToken.kind == TokenKind.BOUNDARY) {
                     finishToken(tokens, currentToken);
@@ -100,6 +109,15 @@ public class Token implements RamaSerializable {
         return urls;
     }
 
+    public static Set<String> filterSpaces(List<Token> tokens) {
+        HashSet<String> spaces = new HashSet<>();
+        for (Token token : tokens) {
+            if (token.kind == TokenKind.SPACE)
+                spaces.add(token.content);
+        }
+        return spaces;
+    }
+
     public Token(TokenKind kind, String content) {
         this.kind = kind;
         this.content = content;
@@ -110,6 +128,8 @@ public class Token implements RamaSerializable {
             return "#" + content;
         else if (kind == TokenKind.MENTION)
             return "@" + content;
+        else if (kind == TokenKind.SPACE)
+            return "/s/" + content;
         else
             return content;
     }

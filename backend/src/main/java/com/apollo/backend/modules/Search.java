@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import static com.apollo.backend.ApolloHelpers.*;
 
 /*
- * This implements search for users, statuses, and hashtags. Search is term-based,
+ * This implements search for users, statuses, spaces and hashtags. Search is term-based,
  * and an implicit 5-prefix term is extracted for usernames and a 2-prefix term is
  * extracted for hashtags.
  *
@@ -76,6 +76,15 @@ public class Search implements RamaModule {
         public static void emitHashtagTokens(String hashtag, OutputCollector collector) {
                 for (int i = 2; i <= Math.min(hashtag.length(), 5); i++)
                         collector.emit(hashtag.substring(0, i));
+        }
+
+        public static MatchInfo numSpaceTermMatches(Object spaceObj, String searchTerm, Object ignore) {
+                return new MatchInfo(spaceObj, ((String) spaceObj).startsWith(searchTerm) ? 1 : 0);
+        }
+
+        public static void emitSpaceTokens(String space, OutputCollector collector) {
+                for (int i = 2; i <= Math.min(space.length(), 5); i++)
+                        collector.emit(space.substring(0, i));
         }
 
         // This is the core function in search, looking at a page of documents and
@@ -353,6 +362,7 @@ public class Search implements RamaModule {
                 setup.clusterDepot("*accountWithIdDepot", Core.class.getName(), "*accountWithIdDepot");
                 setup.clusterDepot("*accountEditDepot", Core.class.getName(), "*accountEditDepot");
                 setup.clusterDepot("*reviewHashtagDepot", TrendsAndHashtags.class.getName(), "*reviewHashtagDepot");
+                setup.clusterDepot("*reviewSpaceDepot", TrendsAndHashtags.class.getName(), "*reviewSpaceDepot");
                 setup.clusterPState("$$nameToUser", Core.class.getName(), "$$nameToUser");
                 setup.clusterPState("$$accountIdToAccount", Core.class.getName(), "$$accountIdToAccount");
                 setup.clusterQuery("*getAccountsFromAccountIds", Core.class.getName(), "getAccountsFromAccountIds");
@@ -378,6 +388,16 @@ public class Search implements RamaModule {
                 KeyToUniqueFixedItemsPStateGroup reviewedHashtagPrefixes = new KeyToUniqueFixedItemsPStateGroup(
                                 "$$reviewedHashtagPrefixes", 10000, String.class, String.class);
                 reviewedHashtagPrefixes.declarePStates(search);
+
+                // space prefix -> full spaces
+                KeyToUniqueFixedItemsPStateGroup spacePrefixes = new KeyToUniqueFixedItemsPStateGroup(
+                                "$$spacePrefixes",
+                                10000, String.class, String.class);
+                spacePrefixes.declarePStates(search);
+                // space prefix -> full spaces
+                KeyToUniqueFixedItemsPStateGroup reviewedSpacePrefixes = new KeyToUniqueFixedItemsPStateGroup(
+                                "$$reviewedSpacePrefixes", 10000, String.class, String.class);
+                reviewedSpacePrefixes.declarePStates(search);
 
                 search.pstate("$$newAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
                 search.pstate("$$activeAccountIds", List.class).global().initialValue(PersistentVector.EMPTY);
@@ -436,6 +456,15 @@ public class Search implements RamaModule {
                                 .each(Search::emitHashtagTokens, "*hashtag").out("*prefix")
                                 .hashPartition("*prefix")
                                 .macro(hashtagPrefixes.addItem("*prefix", "*hashtag"))
+
+                                // index spaces
+                                .keepTrue(new Expr(Ops.EQUAL, StatusVisibility.Public, "*visibility"))
+                                .each(Token::parseTokens, "*text").out("*tokens")
+                                .each(Token::filterSpaces, "*tokens").out("*spaces")
+                                .each(Ops.EXPLODE, "*spaces").out("*space")
+                                .each(Search::emitSpaceTokens, "*space").out("*prefix")
+                                .hashPartition("*prefix")
+                                .macro(spacePrefixes.addItem("*prefix", "*space"))
 
                                 .hook("FanoutRoot")
                                 .each(Ops.IDENTITY, "*authorId").out("*targetAccountId")
@@ -535,6 +564,20 @@ public class Search implements RamaModule {
                                                                 .hashPartition("*prefix")
                                                                 .macro(reviewedHashtagPrefixes.removeItem("*prefix",
                                                                                 "*item")));
+                search.source("*reviewSpaceDepot").out("*microbatch")
+                                .explodeMicrobatch("*microbatch").out("*data")
+                                .macro(extractFields("*data", "*item"))
+                                .subSource("*data",
+                                                SubSource.create(ReviewItem.class)
+                                                                .each(Search::emitSpaceTokens, "*item").out("*prefix")
+                                                                .hashPartition("*prefix")
+                                                                .macro(reviewedSpacePrefixes.addItem("*prefix",
+                                                                                "*item")),
+                                                SubSource.create(RemoveReviewItem.class)
+                                                                .each(Search::emitSpaceTokens, "*item").out("*prefix")
+                                                                .hashPartition("*prefix")
+                                                                .macro(reviewedSpacePrefixes.removeItem("*prefix",
+                                                                                "*item")));
 
                 String accountIdVar = Helpers.genVar("accountId");
                 // Returns map with "term", "nextId", "matchList".
@@ -614,5 +657,33 @@ public class Search implements RamaModule {
                                                                 .out(keyVar)
                                                                 .hashPartition(keyVar),
                                                 Search::numHashtagTermMatches));
+
+                topologies.query("spaceSearch", "*str", "*startParams", "*limit").out("*info")
+                                .each((String str) -> Arrays.asList(str), "*str").out("*terms")
+                                .macro(termsSearchQuery(
+                                                "$$spacePrefixes",
+                                                (String paramsVar) -> Block
+                                                                .each(Search::basicSearchStartingInfo, "*str")
+                                                                .out(paramsVar),
+                                                (String termVar, String keyVar) -> Block
+                                                                .each((String str) -> str.substring(0,
+                                                                                Math.min(5, str.length())), termVar)
+                                                                .out(keyVar)
+                                                                .hashPartition(keyVar),
+                                                Search::numSpaceTermMatches));
+
+                topologies.query("reviewedSpaceSearch", "*str", "*startParams", "*limit").out("*info")
+                                .each((String str) -> Arrays.asList(str), "*str").out("*terms")
+                                .macro(termsSearchQuery(
+                                                "$$reviewedSpacePrefixes",
+                                                (String paramsVar) -> Block
+                                                                .each(Search::basicSearchStartingInfo, "*str")
+                                                                .out(paramsVar),
+                                                (String termVar, String keyVar) -> Block
+                                                                .each((String str) -> str.substring(0,
+                                                                                Math.min(5, str.length())), termVar)
+                                                                .out(keyVar)
+                                                                .hashPartition(keyVar),
+                                                Search::numSpaceTermMatches));
         }
 }

@@ -28,13 +28,8 @@ import org.springframework.web.server.*;
 import org.springframework.http.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.s3.S3AsyncClientBuilder;
 import software.amazon.awssdk.services.s3.model.*;
 
 public class ApolloApiHelpers {
@@ -335,6 +330,24 @@ public class ApolloApiHelpers {
             return AttachmentKind.Video;
         else
             throw new RuntimeException("Invalid attachment type");
+    }
+
+    public static GetSpace createGetSpace(String spaceName, ItemStats stats, boolean isFollowing) {
+        GetSpace space = new GetSpace(spaceName);
+        Map<Long, DayBucket> buckets = stats.dayBuckets;
+        buckets.forEach((Long day, DayBucket b) -> {
+            space.history.add(new GetSpace.HistoryItem(day, b.uses, b.accounts));
+        });
+        space.following = isFollowing;
+        return space;
+    }
+
+    public static List<GetSpace> createGetSpaces(Map<String, ItemStats> spaceToStats) {
+        List<GetSpace> getSpaces = new ArrayList<>();
+        spaceToStats.forEach((String space, ItemStats stats) -> {
+            getSpaces.add(createGetSpace(space, stats, false));
+        });
+        return getSpaces;
     }
 
 }

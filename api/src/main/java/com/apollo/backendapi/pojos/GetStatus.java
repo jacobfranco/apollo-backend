@@ -38,6 +38,7 @@ public class GetStatus {
 
     public List<Mention> mentions;
     public List<GetTag> tags;
+    public List<GetSpace> spaces;
     public int reposts_count;
     public int likes_count;
     public int replies_count;
@@ -99,6 +100,7 @@ public class GetStatus {
         this.media_attachments = new ArrayList<>();
         this.mentions = new ArrayList<>();
         this.tags = new ArrayList<>();
+        this.spaces = new ArrayList<>();
 
         // `mentions` can contain accounts from other statuses that were
         // in the same query result, so we need to filter them down
@@ -175,6 +177,11 @@ public class GetStatus {
                     this.content += String.format("<a href=\"%s/tags/%s\">%s</a>", ApolloConfig.FRONTEND_URL,
                             tokenContent, tokenContent);
                     this.tags.add(new GetTag(tokenContent));
+                    break;
+                case SPACE:
+                    this.content += String.format("<a href=\"%s/s/%s\">%s</a>", ApolloConfig.FRONTEND_URL,
+                            tokenContent, tokenContent);
+                    this.spaces.add(new GetSpace(tokenContent));
                     break;
                 case MENTION:
                     if (mentions.containsKey(tokenContent)) {

@@ -470,6 +470,7 @@ public class Core implements RamaModule {
                 // fanout pstates
                 fan.pstate("$$statusIdToFollowerFanouts", PState.mapSchema(Long.class, List.class)); // List<FollowerFanout>
                 fan.pstate("$$hashtagFanoutToIndex", PState.mapSchema(HashtagFanout.class, Long.class));
+                fan.pstate("$$spaceFanoutToIndex", PState.mapSchema(SpaceFanout.class, Long.class));
 
                 // conversations
                 TaskUniqueIdPState conversationStatusIndex = new TaskUniqueIdPState("$$conversationStatusIndex")
@@ -547,6 +548,15 @@ public class Core implements RamaModule {
                                 .macro(extractFields("*hashtagFanout", "*authorId", "*statusId", "*hashtag"))
                                 .anchor("HashtagFanoutContinue")
 
+                                // continue fanout of new statuses to spaces
+                                .hook("FanoutRoot")
+                                .allPartition()
+                                .localSelect("$$spaceFanoutToIndex", Path.all()).out("*keyAndVal")
+                                .each(Ops.EXPAND, "*keyAndVal").out("*spaceFanout", "*nextIndex")
+                                .localTransform("$$spaceFanoutToIndex", Path.key("*spaceFanout").termVoid())
+                                .macro(extractFields("*spaceFanout", "*authorId", "*statusId", "*space"))
+                                .anchor("SpaceFanoutContinue")
+
                                 // handle incoming depot appends
                                 .hook("FanoutRoot")
                                 .explodeMicrobatch("*microbatch").out("*data")
@@ -623,7 +633,18 @@ public class Core implements RamaModule {
                                                                                                                                 .each(Ops.EXPLODE,
                                                                                                                                                 "*hashtags")
                                                                                                                                 .out("*hashtag")
-                                                                                                                                .anchor("NormalHashtagFanout"))))
+                                                                                                                                .anchor("NormalHashtagFanout")
+                                                                                                                                // Add
+                                                                                                                                // space
+                                                                                                                                // fanout
+                                                                                                                                .hook("NormalHashtagFanout")
+                                                                                                                                .each(Token::filterSpaces,
+                                                                                                                                                "*tokens")
+                                                                                                                                .out("*spaces")
+                                                                                                                                .each(Ops.EXPLODE,
+                                                                                                                                                "*spaces")
+                                                                                                                                .out("*space")
+                                                                                                                                .anchor("NormalSpaceFanout"))))
 
                                 .hook("NormalFanoutBegin")
                                 .select("$$partitionedFollowersControl", Path.key("*authorId")).out("*tasks")
@@ -701,6 +722,27 @@ public class Core implements RamaModule {
                                                                 "*authorId", "*statusId", "*hashtag")
                                                                 .out("*followerFanout")
                                                                 .localTransform("$$hashtagFanoutToIndex",
+                                                                                Path.key("*followerFanout").termVal(
+                                                                                                "*nextFollowerId")))
+                                .each(Ops.EXPLODE, "*fetchedFollowerIds").out("*followerId")
+                                .hashPartition("*followerId")
+                                .each(HomeTimelines::addTimelineItem, "*homeTimelines", "*followerId", "*statusPointer",
+                                                new Expr(Ops.CURRENT_MICROBATCH_ID))
+
+                                // fan out new status to spaces
+                                .unify("NormalSpaceFanout", "SpaceFanoutContinue")
+                                .each((RamaFunction2<Long, Long, StatusPointer>) StatusPointer::new, "*authorId",
+                                                "*statusId")
+                                .out("*statusPointer")
+                                .hashPartition("$$spaceToFollowers", "*space")
+                                .macro(safeFetchSetFollowers("$$spaceToFollowers", "*space", "*nextIndex",
+                                                singlePartitionFanoutLimit, "*fetchedFollowerIds", "*nextFollowerId"))
+                                // update fanout pstate if necessary
+                                .ifTrue(new Expr(Ops.IS_NOT_NULL, "*nextFollowerId"),
+                                                Block.each((RamaFunction3<Long, Long, String, SpaceFanout>) SpaceFanout::new,
+                                                                "*authorId", "*statusId", "*space")
+                                                                .out("*followerFanout")
+                                                                .localTransform("$$spaceFanoutToIndex",
                                                                                 Path.key("*followerFanout").termVal(
                                                                                                 "*nextFollowerId")))
                                 .each(Ops.EXPLODE, "*fetchedFollowerIds").out("*followerId")
@@ -2799,6 +2841,7 @@ public class Core implements RamaModule {
                 setup.clusterPState("$$partitionedFollowers", Relationships.class.getName(), "$$partitionedFollowers");
 
                 setup.clusterPState("$$hashtagToFollowers", Relationships.class.getName(), "$$hashtagToFollowers");
+                setup.clusterPState("$$spaceToFollowers", Relationships.class.getName(), "$$spaceToFollowers");
                 setup.clusterPState("$$accountIdToFilterIdToFilter", Relationships.class.getName(),
                                 "$$accountIdToFilterIdToFilter");
 

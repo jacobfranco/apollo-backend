@@ -792,6 +792,24 @@ struct Application {
   5: required string scopes
 }
 
+struct SpaceFanout {
+  1: required AccountId authorId;
+  2: required StatusId statusId;
+  3: required string space;
+}
+
+struct FollowSpace {
+  1: required AccountId accountId;
+  2: required string token;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveFollowSpace {
+  1: required AccountId accountId;
+  2: required string token;
+  3: required Timestamp timestamp;
+}
+
 
 
 

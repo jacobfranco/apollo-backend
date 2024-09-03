@@ -270,6 +270,7 @@ public class Relationships implements RamaModule {
     featurerToFeaturees.declarePStates(stream);
 
     stream.pstate("$$hashtagToFollowers", PState.mapSchema(String.class, PState.setSchema(Long.class).subindexed()));
+    stream.pstate("$$spaceToFollowers", PState.mapSchema(String.class, PState.setSchema(Long.class).subindexed()));
     stream.source("*followAndBlockAccountDepot", StreamSourceOptions.retryAllAfter()).out("*initialData")
         .anchor("SocialGraphRoot")
         .each(Ops.IDENTITY, "*initialData").out("*data")
@@ -496,6 +497,15 @@ public class Relationships implements RamaModule {
                 .macro(extractFields("*data", "*accountId", "*token"))
                 .localTransform("$$hashtagToFollowers", Path.key("*token").setElem("*accountId").termVoid()));
 
+    stream.source("*followSpaceDepot", StreamSourceOptions.retryAllAfter()).out("*data")
+        .subSource("*data",
+            SubSource.create(FollowSpace.class)
+                .macro(extractFields("*data", "*accountId", "*token"))
+                .localTransform("$$spaceToFollowers", Path.key("*token").voidSetElem().termVal("*accountId")),
+            SubSource.create(RemoveFollowSpace.class)
+                .macro(extractFields("*data", "*accountId", "*token"))
+                .localTransform("$$spaceToFollowers", Path.key("*token").setElem("*accountId").termVoid()));
+
     stream.pstate("$$authCodeToAccountId", PState.mapSchema(String.class, Long.class));
 
     stream.source("*authCodeDepot").out("*data")
@@ -656,6 +666,7 @@ public class Relationships implements RamaModule {
     setup.declareDepot("*muteAccountDepot", Depot.hashBy(ExtractAccountId.class));
     setup.declareDepot("*featureAccountDepot", Depot.hashBy(ExtractAccountId.class));
     setup.declareDepot("*followHashtagDepot", Depot.hashBy(ExtractToken.class));
+    setup.declareDepot("*followSpaceDepot", Depot.hashBy(ExtractToken.class));
     setup.declareDepot("*filterDepot", Depot.hashBy(ExtractFilterAccountId.class));
     setup.declareDepot("*removeFollowSuggestionDepot", Depot.hashBy(ExtractAccountId.class));
     setup.declareDepot("*authCodeDepot", Depot.hashBy(ExtractCode.class));
