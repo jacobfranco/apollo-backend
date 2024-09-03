@@ -4,21 +4,17 @@ import java.util.*;
 import com.rpl.rama.*;
 
 public class Token implements RamaSerializable {
-    private static final HashSet<Character> linkBoundaryChars =
-      new HashSet<>(Arrays.asList(
-        // whitespace chars
-        ' ', '\t', '\n', '\r', '\f', '\b',
-        // special chars not allowed in URLs
-        '`', '\'', '"', '(', ')', '[', ']', '{', '}', '<', '>'
-      ));
-    private static final HashSet<Character> boundaryChars =
-            new HashSet<>(Arrays.asList(
-                    // whitespace chars
-                    ' ', '\t', '\n', '\r', '\f', '\b',
-                    // special chars
-                    '!', '$', '%', '^', '&', '*', '?', '\\', '.', ',', '`', '\'', '"', ';',
-                    '|', '-', '+', '=', '(', ')', '[', ']', '{', '}', '<', '>'
-            ));
+    private static final HashSet<Character> linkBoundaryChars = new HashSet<>(Arrays.asList(
+            // whitespace chars
+            ' ', '\t', '\n', '\r', '\f', '\b',
+            // special chars not allowed in URLs
+            '`', '\'', '"', '(', ')', '[', ']', '{', '}', '<', '>'));
+    private static final HashSet<Character> boundaryChars = new HashSet<>(Arrays.asList(
+            // whitespace chars
+            ' ', '\t', '\n', '\r', '\f', '\b',
+            // special chars
+            '!', '$', '%', '^', '&', '*', '?', '\\', '.', ',', '`', '\'', '"', ';',
+            '|', '-', '+', '=', '(', ')', '[', ']', '{', '}', '<', '>'));
 
     public enum TokenKind {
         BOUNDARY,
@@ -36,7 +32,8 @@ public class Token implements RamaSerializable {
     }
 
     private static void finishToken(List<Token> tokens, Token token) {
-        if (token.content.length() > 0) tokens.add(token);
+        if (token.content.length() > 0)
+            tokens.add(token);
     }
 
     public static List<Token> parseTokens(String content) {
@@ -46,7 +43,8 @@ public class Token implements RamaSerializable {
             boolean linkParsing = currentToken.kind == TokenKind.LINK;
             Set<Character> chars = linkParsing ? linkBoundaryChars : boundaryChars;
             if (chars.contains(ch)) {
-                if (currentToken.kind == TokenKind.BOUNDARY) currentToken.content += ch;
+                if (currentToken.kind == TokenKind.BOUNDARY)
+                    currentToken.content += ch;
                 else {
                     finishToken(tokens, currentToken);
                     currentToken = new Token(TokenKind.BOUNDARY, String.valueOf(ch));
@@ -56,18 +54,19 @@ public class Token implements RamaSerializable {
                 currentToken = new Token(TokenKind.BOUNDARY, "#");
                 finishToken(tokens, currentToken);
                 currentToken = new Token(TokenKind.HASHTAG, "");
-            } else if (!linkParsing && ch == '@') { // TODO: Maybe fix ? 
-                    finishToken(tokens, currentToken);
-                    currentToken = new Token(TokenKind.BOUNDARY, "@");
-                    finishToken(tokens, currentToken);
-                    currentToken = new Token(TokenKind.MENTION, "");
-            }
-            else {
+            } else if (!linkParsing && ch == '@') {
+                finishToken(tokens, currentToken);
+                currentToken = new Token(TokenKind.BOUNDARY, "@");
+                finishToken(tokens, currentToken);
+                currentToken = new Token(TokenKind.MENTION, "");
+            } else {
                 if (currentToken.kind == TokenKind.BOUNDARY) {
                     finishToken(tokens, currentToken);
                     currentToken = new Token(TokenKind.WORD, String.valueOf(ch));
-                } else currentToken.content += ch;
-                if (currentToken.kind == TokenKind.WORD && isLink(currentToken.content)) currentToken.kind = TokenKind.LINK;
+                } else
+                    currentToken.content += ch;
+                if (currentToken.kind == TokenKind.WORD && isLink(currentToken.content))
+                    currentToken.kind = TokenKind.LINK;
             }
         }
         finishToken(tokens, currentToken);
@@ -76,24 +75,27 @@ public class Token implements RamaSerializable {
 
     public static Set<String> filterHashtags(List<Token> tokens) {
         Set<String> hashtags = new HashSet<>();
-        for(Token token : tokens) {
-            if(token.kind == TokenKind.HASHTAG) hashtags.add(token.content);
+        for (Token token : tokens) {
+            if (token.kind == TokenKind.HASHTAG)
+                hashtags.add(token.content);
         }
         return hashtags;
     }
 
     public static Set<String> filterMentions(List<Token> tokens) {
         HashSet<String> mentions = new HashSet<>();
-        for(Token token : tokens) {
-            if(token.kind == TokenKind.MENTION) mentions.add(token.content);
+        for (Token token : tokens) {
+            if (token.kind == TokenKind.MENTION)
+                mentions.add(token.content);
         }
         return mentions;
     }
 
     public static Set<String> filterLinks(List<Token> tokens) {
         HashSet<String> urls = new HashSet<>();
-        for(Token token : tokens) {
-            if(token.kind == TokenKind.LINK) urls.add(token.content);
+        for (Token token : tokens) {
+            if (token.kind == TokenKind.LINK)
+                urls.add(token.content);
         }
         return urls;
     }
@@ -104,9 +106,12 @@ public class Token implements RamaSerializable {
     }
 
     public String getOrigContent() {
-        if(kind==TokenKind.HASHTAG) return "#" + content;
-        else if(kind==TokenKind.MENTION) return "@" + content;
-        else return content;
+        if (kind == TokenKind.HASHTAG)
+            return "#" + content;
+        else if (kind == TokenKind.MENTION)
+            return "@" + content;
+        else
+            return content;
     }
 
     @Override

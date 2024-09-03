@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 public class GetAccount {
     public String id;
     public String username;
-    public String acct;
     public String display_name;
     public String note;
     public boolean locked;
@@ -71,7 +70,6 @@ public class GetAccount {
     public GetAccount(long accountId, Account account, AccountMetadata metadata) {
         this.id = ApolloHelpers.serializeAccountId(accountId);
         this.username = account.name;
-        this.acct = account.name;
         this.display_name = account.isSetDisplayName() ? StringEscapeUtils.escapeHtml4(account.displayName) : "";
         this.note = account.isSetBio() ? StringEscapeUtils.escapeHtml4(account.bio) : "";
         this.locked = account.locked;
