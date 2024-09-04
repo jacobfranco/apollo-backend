@@ -1728,12 +1728,19 @@ public class ApolloApiController {
     /*
      * Spaces Endpoints
      * ======================================
+     * - GET /api/spaces
      * - GET /api/spaces/{id}
      * - POST /api/spaces/{id}/follow
      * - POST /api/spaces/{id}/follow
      * - GET /api/followed_spaces
      * ======================================
      */
+
+    @GetMapping("/api/spaces")
+    public Set<GetSpace> getAllSpaces() {
+        // Convert the List to a Set to return unique objects
+        return ApolloSpaces.SPACES.stream().collect(Collectors.toSet());
+    }
 
     @GetMapping("/api/spaces/{id}")
     public Mono<GetSpace> getSpace(WebSession session, @PathVariable("id") String id) {

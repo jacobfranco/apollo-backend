@@ -143,11 +143,11 @@ public class ApolloApiManager {
 
     // Hashtag PStates
     private final PState hashtagTrends;
+    private final PState spaceTrends;
     private final PState statusTrends;
     private final PState accountIdToHashtagActivity;
     private final PState hashtagToStatusPointers;
     private final PState hashtagToStatusPointersReverse;
-    private final PState spaceTrends;
     private final PState spaceToStatusPointersReverse;
 
     // Hashtag Queries
