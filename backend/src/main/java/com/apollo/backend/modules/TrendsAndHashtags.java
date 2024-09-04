@@ -10,6 +10,7 @@ import com.rpl.rama.*;
 import com.rpl.rama.helpers.*;
 import com.rpl.rama.module.*;
 import com.rpl.rama.ops.*;
+import com.apollo.backendapi.ApolloSpaces;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -465,9 +466,15 @@ public class TrendsAndHashtags implements RamaModule {
                                                                                 new Expr(Ops.SIZE, "*spaces"), 0),
                                                                                 Block.materialize("*authorId",
                                                                                                 "*statusId",
-                                                                                                "*timestamp",
-                                                                                                "*spaces")
-                                                                                                .out("$$spaces"))
+                                                                                                "*timestamp", "*spaces")
+                                                                                                .out("$$spaces")
+                                                                                                .each(Ops.EXPLODE,
+                                                                                                                "*spaces")
+                                                                                                .out("*space")
+                                                                                                .keepTrue(new Expr(
+                                                                                                                ApolloSpaces.SPACE_MAP::containsKey,
+                                                                                                                "*space"))
+                                                                                                .anchor("NormalSpaceFanout"))
                                                                 .ifTrue(new Expr(Ops.GREATER_THAN,
                                                                                 new Expr(Ops.SIZE, "*links"), 0),
                                                                                 Block.materialize("*authorId",

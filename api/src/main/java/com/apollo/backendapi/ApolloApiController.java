@@ -1052,7 +1052,11 @@ public class ApolloApiController {
     @GetMapping("/api/trends/spaces")
     public Mono<List<GetSpace>> getTrendingSpaces(@RequestParam(required = false) Integer limit,
             @RequestParam(required = false) Integer offset) {
-        return Mono.fromFuture(manager.getTrendingSpaces(limit, offset)).map(ApolloApiHelpers::createGetSpaces);
+        return Mono.fromFuture(manager.getTrendingSpaces(limit, offset))
+                .map(stats -> stats.entrySet().stream()
+                        .map(entry -> ApolloApiHelpers.createGetSpace(entry.getKey(), entry.getValue(), false))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()));
     }
 
     @GetMapping("/api/trends/statuses")
@@ -1733,7 +1737,10 @@ public class ApolloApiController {
 
     @GetMapping("/api/spaces/{id}")
     public Mono<GetSpace> getSpace(WebSession session, @PathVariable("id") String id) {
-        Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
+        if (!ApolloSpaces.SPACE_MAP.containsKey(id)) {
+            return Mono.empty();
+        }
+        Long requestAccountId = (Long) session.getAttributes().get("accountId");
         return Mono.fromFuture(manager.getSpaceStats(id))
                 .flatMap(stats -> (requestAccountId == null ? Mono.just(false)
                         : Mono.fromFuture(manager.isFollowingSpace(requestAccountId, id)))
@@ -1742,6 +1749,9 @@ public class ApolloApiController {
 
     @PostMapping("/api/spaces/{id}/follow")
     public Mono<GetSpace> postFollowSpace(WebSession session, @PathVariable("id") String id) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(id)) {
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
+        }
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.postFollowSpace(requestAccountId, id))
                 .flatMap(res -> this.getSpace(session, id));
@@ -1749,6 +1759,9 @@ public class ApolloApiController {
 
     @PostMapping("/api/spaces/{id}/unfollow")
     public Mono<GetSpace> postUnfollowSpace(WebSession session, @PathVariable("id") String id) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(id)) {
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
+        }
         long requestAccountId = getMandatoryAccountId(session);
         return Mono.fromFuture(manager.postRemoveFollowSpace(requestAccountId, id))
                 .flatMap(res -> this.getSpace(session, id));
@@ -1761,8 +1774,10 @@ public class ApolloApiController {
         if (requestAccountId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-
-        return Mono.fromFuture(manager.getFollowedSpaces(requestAccountId));
+        return Mono.fromFuture(manager.getFollowedSpaces(requestAccountId))
+                .map(spaces -> spaces.stream()
+                        .filter(ApolloSpaces.SPACE_MAP::containsKey)
+                        .collect(Collectors.toList()));
     }
 
     /*

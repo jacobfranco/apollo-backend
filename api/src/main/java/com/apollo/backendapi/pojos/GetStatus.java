@@ -179,9 +179,15 @@ public class GetStatus {
                     this.tags.add(new GetTag(tokenContent));
                     break;
                 case SPACE:
-                    this.content += String.format("<a href=\"%s/s/%s\">%s</a>", ApolloConfig.FRONTEND_URL,
-                            tokenContent, tokenContent);
-                    this.spaces.add(new GetSpace(tokenContent));
+                    GetSpace predefinedSpace = ApolloSpaces.SPACE_MAP.get(tokenContent);
+                    if (predefinedSpace != null) {
+                        String spaceUrl = String.format("/s/%s", predefinedSpace.id);
+                        this.content += String.format("<a href=\"%s%s\">%s</a>", ApolloConfig.FRONTEND_URL,
+                                spaceUrl, predefinedSpace.id);
+                        this.spaces.add(predefinedSpace);
+                    } else {
+                        this.content += tokenContent;
+                    }
                     break;
                 case MENTION:
                     if (mentions.containsKey(tokenContent)) {

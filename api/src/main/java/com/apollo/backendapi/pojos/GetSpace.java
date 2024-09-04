@@ -5,6 +5,7 @@ import java.util.*;
 public class GetSpace {
     public String name;
     public String url;
+    public String imageUrl;
 
     public static class HistoryItem {
         public String day; // unix timestamp
@@ -28,18 +29,10 @@ public class GetSpace {
     public boolean usable;
     public boolean requires_review;
 
-    public GetSpace() {
-    }
-
-    public GetSpace(String name) {
+    public GetSpace(String name, String id, String imageUrl) {
         this.name = name;
-        this.url = "/s/" + name;
-        this.id = name;
-    }
-
-    public GetSpace(String name, String url, String id) {
-        this.name = name;
-        this.url = url;
+        this.url = "/s/" + id;
         this.id = id;
+        this.imageUrl = imageUrl;
     }
 }

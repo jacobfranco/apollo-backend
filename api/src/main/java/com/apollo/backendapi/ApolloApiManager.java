@@ -2040,20 +2040,32 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<ItemStats> getSpaceStats(String space) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
+            return CompletableFuture.completedFuture(null);
+        }
         return batchSpaceStats.invokeAsync(Arrays.asList(space)).thenApply(info -> info.get(space));
     }
 
     public CompletableFuture<Boolean> postFollowSpace(long accountId, String space) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
+            return CompletableFuture.completedFuture(false);
+        }
         return followSpaceDepot.appendAsync(new FollowSpace(accountId, space, System.currentTimeMillis()))
                 .thenApply(res -> true);
     }
 
     public CompletableFuture<Boolean> postRemoveFollowSpace(long accountId, String space) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
+            return CompletableFuture.completedFuture(false);
+        }
         return followSpaceDepot.appendAsync(new RemoveFollowSpace(accountId, space, System.currentTimeMillis()))
                 .thenApply(res -> true);
     }
 
     public CompletableFuture<Boolean> isFollowingSpace(long accountId, String space) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
+            return CompletableFuture.completedFuture(false);
+        }
         return spaceToFollowers.selectOneAsync(Path.key(space).view(Ops.CONTAINS, accountId));
     }
 
@@ -2062,6 +2074,7 @@ public class ApolloApiManager {
         return spaceToFollowers.selectAsync(Path.key(accountId).all())
                 .thenApply(entries -> entries.stream()
                         .map(Object::toString)
+                        .filter(ApolloSpaces.SPACE_MAP::containsKey)
                         .collect(Collectors.toList()));
     }
 
@@ -2071,13 +2084,21 @@ public class ApolloApiManager {
         int maxLimit = 20;
         int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
         return spaceTrends.selectAsync(Path.all().first())
-                .thenApply(spaces -> spaces.stream().skip(offset).limit(limit).collect(Collectors.toList()))
+                .thenApply(spaces -> spaces.stream()
+                        .filter(ApolloSpaces.SPACE_MAP::containsKey)
+                        .skip(offset)
+                        .limit(limit)
+                        .collect(Collectors.toList()))
                 .thenCompose(batchSpaceStats::invokeAsync)
                 .thenApply(res -> res == null ? new HashMap<>() : res);
     }
 
     public CompletableFuture<StatusQueryResults> getSpaceTimeline(String space, Long requestAccountIdMaybe,
             StatusPointer offsetMaybe, Integer limitMaybe) {
+        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
+            return CompletableFuture
+                    .completedFuture(new StatusQueryResults(new ArrayList<>(), new HashMap<>(), false, false));
+        }
         return queryStatusesWithPaging(
                 (offset, limit) -> spaceToStatusPointersReverse
                         .selectOneAsync(Path.key(space, offset).nullToVal(-1L))

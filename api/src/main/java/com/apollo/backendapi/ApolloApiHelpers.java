@@ -332,12 +332,21 @@ public class ApolloApiHelpers {
             throw new RuntimeException("Invalid attachment type");
     }
 
-    public static GetSpace createGetSpace(String spaceName, ItemStats stats, boolean isFollowing) {
-        GetSpace space = new GetSpace(spaceName);
-        Map<Long, DayBucket> buckets = stats.dayBuckets;
-        buckets.forEach((Long day, DayBucket b) -> {
-            space.history.add(new GetSpace.HistoryItem(day, b.uses, b.accounts));
-        });
+    public static GetSpace createGetSpace(String spaceId, ItemStats stats, boolean isFollowing) {
+        GetSpace predefinedSpace = ApolloSpaces.SPACE_MAP.get(spaceId);
+        if (predefinedSpace == null) {
+            throw new IllegalArgumentException("Invalid space ID: " + spaceId);
+        }
+
+        GetSpace space = new GetSpace(predefinedSpace.name, predefinedSpace.id,
+                predefinedSpace.imageUrl);
+
+        if (stats != null && stats.dayBuckets != null) {
+            stats.dayBuckets.forEach((day, bucket) -> {
+                space.history.add(new GetSpace.HistoryItem(day, bucket.uses, bucket.accounts));
+            });
+        }
+
         space.following = isFollowing;
         return space;
     }
