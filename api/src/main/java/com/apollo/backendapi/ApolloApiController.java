@@ -1794,6 +1794,7 @@ public class ApolloApiController {
      * - GET /api/timelines/direct
      * - GET /api/timelines/public
      * - GET /api/timelines/tag/{hashtag}
+     * - GET /api/timelines/space/{space}
      * ======================================
      */
 

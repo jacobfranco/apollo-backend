@@ -31,10 +31,23 @@
 #    Alternatively, if there is a better way to solve this problem, be my guest.  
 #
 
-# Remove any directories starting with ipc in the /tmp directory
-rm -rf /tmp/ipc*
+# Create Rama temp directory in /tmp
+RAMA_TEMP="/tmp/rama_temp"
+if [ ! -d "$RAMA_TEMP" ]; then
+    echo "Creating Rama temp directory at $RAMA_TEMP"
+    mkdir -p "$RAMA_TEMP"
+fi
 
-# Run mvn clean install, can probably be removed later but its useful for now
+# Clean up old Rama temp files
+echo "Cleaning up old Rama temp files"
+find "$RAMA_TEMP" -type f -mtime +1 -delete
+
+# Remove any directories starting with ipc in the Rama temp directory
+echo "Removing ipc* directories from Rama temp"
+rm -rf "$RAMA_TEMP"/ipc*
+
+# Run mvn clean install
+echo "Running mvn clean install"
 mvn clean install
 
 # Navigate to the script's directory
@@ -44,6 +57,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd "$DIR"/../../api
 
 # Start the Spring Boot application with optimized JVM arguments
+echo "Starting Spring Boot application"
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="\
 -Xss2m \
 -Xmx2048m \
@@ -56,5 +70,6 @@ mvn spring-boot:run -Dspring-boot.run.jvmArguments="\
 -XX:ConcGCThreads=4 \
 -XX:ParallelGCThreads=4 \
 -XX:+HeapDumpOnOutOfMemoryError \
--XX:HeapDumpPath=/tmp \
+-XX:HeapDumpPath=$RAMA_TEMP \
+-Djava.io.tmpdir=$RAMA_TEMP \
 -Djava.security.egd=file:/dev/./urandom"
