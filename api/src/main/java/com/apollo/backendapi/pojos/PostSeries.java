@@ -34,8 +34,8 @@ public class PostSeries {
     public List<Integer> chainIds;
     public boolean streamed;
     @JsonProperty("bracket_position")
-    public BracketPosition bracketPosition;
-    public List<Participant> participants;
+    public PostBracketPosition bracketPosition;
+    public List<PostParticipant> participants;
     @JsonProperty("tournament.id")
     public int tournamentId;
     @JsonProperty("substage.id")
@@ -44,14 +44,14 @@ public class PostSeries {
     public int gameId;
     @JsonProperty("matches[*].id")
     public List<Integer> matchIds;
-    public List<Caster> casters;
-    public List<Broadcaster> broadcasters;
+    public List<PostCaster> casters;
+    public List<PostBroadcaster> broadcasters;
     @JsonProperty("has_incident_report")
     public boolean hasIncidentReport;
-    public Coverage coverage;
-    public Format format;
+    public PostCoverage coverage;
+    public PostFormat format;
     @JsonProperty("game_version")
-    public GameVersion gameVersion;
+    public PostGameVersion gameVersion;
     @JsonProperty("resource_version")
     public long resourceVersion;
 
@@ -62,102 +62,4 @@ public class PostSeries {
     @JsonProperty("updated_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant updatedAt;
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class BracketPosition {
-        public String part;
-        public int col;
-        public int offset;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Participant {
-        public int seed;
-        public int score;
-        public boolean forfeit;
-        @JsonProperty("roster.id")
-        public int rosterId;
-        public boolean winner;
-        public ParticipantStats stats;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ParticipantStats {
-        public Integer kills;
-        public Integer placement;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Caster {
-        public boolean primary;
-        @JsonProperty("caster.id")
-        public int casterId;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Broadcaster {
-        @JsonProperty("broadcaster.id")
-        public int broadcasterId;
-        @JsonProperty("broadcaster.name")
-        public String broadcasterName;
-        @JsonProperty("broadcaster.external_id")
-        public String broadcasterExternalId;
-        @JsonProperty("broadcaster.platform.id")
-        public int broadcasterPlatformId;
-        @JsonProperty("broadcaster.broadcast_defaults.language.id")
-        public int broadcasterDefaultLanguageId;
-        public List<Broadcast> broadcasts;
-        public boolean official;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Broadcast {
-        @JsonProperty("external_id")
-        public String externalId;
-        @JsonProperty("language.id")
-        public int languageId;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class GameVersion {
-        public Release release;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Release {
-        public String uuid;
-        public String date;
-        public String description;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Coverage {
-        public CoverageData data;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CoverageData {
-        public CoverageType live;
-        public CoverageType realtime;
-        public CoverageType postgame;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CoverageType {
-        public CoverageStatus api;
-        public CoverageStatus cv;
-        public CoverageStatus server;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CoverageStatus {
-        public String expectation;
-        public String fact;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Format {
-        @JsonProperty("best_of")
-        public int bestOf;
-    }
 }

@@ -1783,16 +1783,12 @@ public class ApolloApiManager {
             try {
                 String seriesData = apiClient.getSeries(filter, order, skip, take);
                 List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
-                List<CompletableFuture<Boolean>> futures = new ArrayList<>();
-
-                for (PostSeries postSeries : postSeriesList) {
-                    Series thriftSeries = convertToThriftSeries(postSeries);
-                    futures.add(seriesDepot.appendAsync(thriftSeries));
-                }
+                List<CompletableFuture<Boolean>> futures = postSeriesList.stream()
+                        .map(this::convertAndAppendSeries)
+                        .collect(Collectors.toList());
 
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-                // Handle pagination if needed
                 if (postSeriesList.size() == take) {
                     fetchAndStoreSeries(filter, order, skip + take, take);
                 } else {
@@ -1800,9 +1796,7 @@ public class ApolloApiManager {
                 }
             } catch (ApiException e) {
                 System.out.println("API returned an error: " + e.getMessage());
-                // Handle the API error appropriately
             } catch (Exception e) {
-                // Log the error and potentially retry or handle it appropriately
                 e.printStackTrace();
             }
         });
@@ -1811,7 +1805,6 @@ public class ApolloApiManager {
     private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Exception {
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
-        // Check if the response is an error
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
@@ -1827,6 +1820,11 @@ public class ApolloApiManager {
         } else {
             throw new IllegalArgumentException("Unexpected JSON structure");
         }
+    }
+
+    private CompletableFuture<Boolean> convertAndAppendSeries(PostSeries postSeries) {
+        Series thriftSeries = convertToThriftSeries(postSeries);
+        return seriesDepot.appendAsync(thriftSeries);
     }
 
     private Series convertToThriftSeries(PostSeries postSeries) {
@@ -1862,11 +1860,11 @@ public class ApolloApiManager {
         return series;
     }
 
-    private BracketPosition convertBracketPosition(PostSeries.BracketPosition bp) {
+    private BracketPosition convertBracketPosition(PostBracketPosition bp) {
         return bp != null ? new BracketPosition(bp.part, bp.col, bp.offset) : null;
     }
 
-    private Participant convertParticipant(PostSeries.Participant p) {
+    private Participant convertParticipant(PostParticipant p) {
         Participant participant = new Participant();
         participant.setSeed(p.seed);
         participant.setScore(p.score);
@@ -1877,7 +1875,7 @@ public class ApolloApiManager {
         return participant;
     }
 
-    private ParticipantStats convertParticipantStats(PostSeries.ParticipantStats stats) {
+    private ParticipantStats convertParticipantStats(PostParticipantStats stats) {
         if (stats == null) {
             return null;
         }
@@ -1887,11 +1885,11 @@ public class ApolloApiManager {
         return participantStats;
     }
 
-    private Caster convertCaster(PostSeries.Caster c) {
+    private Caster convertCaster(PostCaster c) {
         return new Caster(c.primary, c.casterId);
     }
 
-    private Broadcaster convertBroadcaster(PostSeries.Broadcaster b) {
+    private Broadcaster convertBroadcaster(PostBroadcaster b) {
         Broadcaster broadcaster = new Broadcaster();
         broadcaster.setBroadcasterId(b.broadcasterId);
         broadcaster.setBroadcasterName(b.broadcasterName);
@@ -1903,11 +1901,11 @@ public class ApolloApiManager {
         return broadcaster;
     }
 
-    private Broadcast convertBroadcast(PostSeries.Broadcast b) {
+    private Broadcast convertBroadcast(PostBroadcast b) {
         return new Broadcast(b.externalId, b.languageId);
     }
 
-    private GameVersion convertGameVersion(PostSeries.GameVersion gv) {
+    private GameVersion convertGameVersion(PostGameVersion gv) {
         if (gv == null || gv.release == null) {
             return null;
         }
@@ -1916,7 +1914,7 @@ public class ApolloApiManager {
         return gameVersion;
     }
 
-    private Release convertRelease(PostSeries.Release r) {
+    private Release convertRelease(PostRelease r) {
         if (r == null) {
             return null;
         }
@@ -1927,18 +1925,18 @@ public class ApolloApiManager {
         return release;
     }
 
-    private Coverage convertCoverage(PostSeries.Coverage c) {
+    private Coverage convertCoverage(PostCoverage c) {
         if (c == null || c.data == null) {
             return null;
         }
-        PostSeries.CoverageData cd = c.data;
+        PostCoverage.PostCoverageData cd = c.data;
         return new Coverage(new CoverageData(
                 convertCoverageType(cd.live),
                 convertCoverageType(cd.realtime),
                 convertCoverageType(cd.postgame)));
     }
 
-    private CoverageType convertCoverageType(PostSeries.CoverageType ct) {
+    private CoverageType convertCoverageType(PostCoverage.PostCoverageType ct) {
         if (ct == null) {
             return null;
         }
@@ -1953,7 +1951,7 @@ public class ApolloApiManager {
         return coverageType;
     }
 
-    private CoverageStatus convertCoverageStatus(PostSeries.CoverageStatus cs) {
+    private CoverageStatus convertCoverageStatus(PostCoverage.PostCoverageStatus cs) {
         if (cs == null) {
             return null;
         }
@@ -1993,6 +1991,8 @@ public class ApolloApiManager {
         return getSeriesSchedule(startOfWeek, endOfWeek);
     }
 
+    // OAuth
+
     public CompletableFuture<Application> postApplication(PostApplication params) {
         Application newApp = new Application(
                 ApolloHelpers.randomString(16), // client_id
@@ -2023,9 +2023,6 @@ public class ApolloApiManager {
                 throw new IllegalStateException("AWS credentials not found in .env file");
             }
 
-            System.out.println("Access Key ID: " + accessKeyId.substring(0, 5) + "...");
-            System.out.println("Secret Access Key: ***");
-
             credentialsProvider = StaticCredentialsProvider.create(
                     AwsBasicCredentials.create(accessKeyId, secretAccessKey));
         }
@@ -2038,6 +2035,8 @@ public class ApolloApiManager {
     public static Region getAwsRegion() {
         return Region.US_EAST_2; // TODO: Make configurable if needed
     }
+
+    // Spaces
 
     public CompletableFuture<ItemStats> getSpaceStats(String space) {
         if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {

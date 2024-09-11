@@ -1940,9 +1940,11 @@ public class ApolloApiController {
     }
 
     /*
-     * ESports Endpoints
+     * League of Legends Series Endpoints
      * ======================================
-     * -
+     * - GET /api/lolseries/{id}
+     * - GET /api/lolseries/schedule
+     * - GET /api/lolseries/week
      * ======================================
      */
 
