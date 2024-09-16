@@ -28,7 +28,7 @@ public class ESports implements RamaModule {
 
                 stream.pstate("$$matchIdToMatch", PState.mapSchema(Integer.class, Match.class));
                 stream.pstate("$$seriesIdToMatches",
-                                PState.mapSchema(Integer.class, Match.class));
+                                PState.mapSchema(Integer.class, PState.listSchema(Match.class)));
 
                 stream.source("*matchDepot").out("*match")
                                 .macro(ApolloHelpers.extractFields("*match", "*id", "*seriesId"))
@@ -36,8 +36,16 @@ public class ESports implements RamaModule {
                                 .localTransform("$$matchIdToMatch",
                                                 Path.key("*id").termVal("*match"))
                                 .each(Ops.PRINTLN, "Match added to $$matchIdToMatch:", "*id", "->", "*match")
+                                .hashPartition("*seriesId")
+                                .localSelect("$$seriesIdToMatches", Path.key("*seriesId"))
+                                .out("*existingMatches")
+                                .ifTrue(
+                                                new Expr(Ops.IS_NULL, "*existingMatches"),
+                                                Block.each(Ops.TUPLE, "*match").out("*updatedMatches"),
+                                                Block.each(ApolloHelpers::appendMatch, "*existingMatches", "*match")
+                                                                .out("*updatedMatches"))
                                 .localTransform("$$seriesIdToMatches",
-                                                Path.key("*seriesId").termVal("*match"))
+                                                Path.key("*seriesId").termVal("*updatedMatches"))
                                 .each(Ops.PRINTLN, "Match added to $$seriesIdToMatches:", "*seriesId", "*match");
         }
 
@@ -69,7 +77,6 @@ public class ESports implements RamaModule {
                 topologies.query("getMatchesFromSeriesId", "*seriesId").out("*result")
                                 .each(Ops.PRINTLN, "Getting matches from series id: ", "*seriesId")
                                 .hashPartition("*seriesId")
-                                .each(Ops.PRINTLN, "Series ID to Matches PState: ", "$$seriesIdToMatches")
                                 .localSelect("$$seriesIdToMatches", Path.key("*seriesId"))
                                 .out("*matches")
                                 .each(Ops.PRINTLN, "Matches found for series:", "*seriesId", "Matches:", "*matches")

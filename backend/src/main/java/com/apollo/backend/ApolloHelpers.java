@@ -626,4 +626,13 @@ public class ApolloHelpers {
     return builder.toString();
   }
 
+  public static List<Match> appendMatch(List<Match> existingMatches, Match match) {
+    List<Match> updatedMatches = new ArrayList<>();
+    if (existingMatches != null) {
+      updatedMatches.addAll(existingMatches);
+    }
+    updatedMatches.add(match);
+    return updatedMatches;
+  }
+
 }
