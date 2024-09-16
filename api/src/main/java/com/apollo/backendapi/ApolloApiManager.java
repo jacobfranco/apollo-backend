@@ -5,13 +5,24 @@ import com.google.common.collect.Lists;
 import clojure.lang.PersistentVector;
 
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+
+import org.apache.http.client.HttpResponseException;
+
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,6 +42,7 @@ import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
 import com.apollo.backendapi.pojos.*;
+import com.apollo.shared.ApolloSpaces;
 import com.rpl.rama.*;
 import com.rpl.rama.cluster.ClusterManagerBase;
 import com.rpl.rama.ops.Ops;
@@ -47,6 +59,13 @@ public class ApolloApiManager {
 
     private final AbiosApiClient apiClient;
 
+    // Abios Rate Limit Constants
+    private final AtomicInteger remainingRequests = new AtomicInteger(Integer.MAX_VALUE);
+    private final AtomicLong resetTime = new AtomicLong(0);
+    private final AtomicInteger rateLimit = new AtomicInteger(Integer.MAX_VALUE);
+    private final AtomicInteger burstLimit = new AtomicInteger(Integer.MAX_VALUE);
+
+    // Social Constants
     private static final int MAX_PAGING_ITERATIONS = 10;
     private static final int MAX_LIMIT = 40;
     private static final int DEFAULT_LIMIT = 20;
@@ -170,13 +189,13 @@ public class ApolloApiManager {
 
     // ESports Depots
     private final Depot seriesDepot;
-
-    // ESports PStates
-    private final PState seriesIdToSeries;
+    private final Depot matchDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
     private final QueryTopologyClient<VectorBackedSortedMap> getSeriesSchedule;
+    private final QueryTopologyClient<Match> getMatchFromMatchId;
+    private final QueryTopologyClient<List<Match>> getMatchesFromSeriesId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -296,13 +315,13 @@ public class ApolloApiManager {
 
         // ESports Depots
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
-
-        // ESports PStates
-        seriesIdToSeries = cluster.clusterPState(ESPORTS_MODULE_NAME, "$$seriesIdToSeries");
+        matchDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
         getSeriesSchedule = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesSchedule");
+        getMatchFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchFromMatchId");
+        getMatchesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchesFromSeriesId");
 
     }
 
@@ -1771,35 +1790,80 @@ public class ApolloApiManager {
                         .collect(Collectors.toList()));
     }
 
-    /*
-     * TODO: ESports Module Methods
-     * 
-     */
+    // eSports
 
-    // New methods
+    public void fetchAllLolSeries(LocalDate startDate, LocalDate endDate) {
+        String startDateString = startDate.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+        String endDateString = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_INSTANT);
+        String filter = String.format("game.id=2,start>=%s,start<=%s", startDateString, endDateString);
+        fetchAndStoreSeries(filter, "start-asc", 0, 50);
 
-    public CompletableFuture<Void> fetchAndStoreSeries(String filter, String order, int skip, int take) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                String seriesData = apiClient.getSeries(filter, order, skip, take);
-                List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
-                List<CompletableFuture<Boolean>> futures = postSeriesList.stream()
-                        .map(this::convertAndAppendSeries)
-                        .collect(Collectors.toList());
+    }
 
-                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    private void fetchAndStoreSeries(String filter, String order, int skip, int take) {
+        try {
+            System.out.println("Fetching series batch: skip=" + skip + ", take=" + take);
+            waitIfNecessary();
+            String seriesData = apiClient.getSeries(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
-                if (postSeriesList.size() == take) {
-                    fetchAndStoreSeries(filter, order, skip + take, take);
-                } else {
-                    System.out.println("Fetching and storing complete. All series have been processed.");
-                }
-            } catch (ApiException e) {
-                System.out.println("API returned an error: " + e.getMessage());
-            } catch (Exception e) {
-                e.printStackTrace();
+            List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
+            System.out.println("Fetched " + postSeriesList.size() + " series");
+
+            for (PostSeries postSeries : postSeriesList) {
+                Series series = convertToThriftSeries(postSeries);
+                seriesDepot.appendAsync(series).join();
+                fetchAndStoreMatchesForSeries(postSeries.id);
             }
-        });
+
+            if (postSeriesList.size() == take) {
+                fetchAndStoreSeries(filter, order, skip + take, take);
+            } else {
+                System.out.println("All series and their matches have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "series batch", skip);
+        }
+    }
+
+    private void fetchAndStoreMatchesForSeries(int seriesId) {
+        int skip = 0;
+        int take = 50;
+        boolean hasMore = true;
+
+        while (hasMore) {
+            try {
+                System.out.println(
+                        "Fetching matches for series " + seriesId + " with skip=" + skip + " and take=" + take);
+                waitIfNecessary();
+                String matchesData = apiClient.getMatchesForSeries(seriesId, null, "start-asc", skip, take);
+                updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+                List<PostMatch> postMatches = parseJsonToPostMatchList(matchesData);
+                System.out.println("Received " + postMatches.size() + " matches for series " + seriesId);
+
+                if (postMatches.isEmpty()) {
+                    hasMore = false;
+                } else {
+                    for (PostMatch postMatch : postMatches) {
+                        Match match = convertToThriftMatch(postMatch);
+                        System.out.println("Storing match: id=" + match.getId() + ", seriesId=" + match.getSeriesId() +
+                                ", order=" + match.getOrder() + ", original seriesId=" + postMatch.getSeriesId());
+                        matchDepot.appendAsync(match).join();
+                    }
+
+                    if (postMatches.size() < take) {
+                        hasMore = false;
+                    } else {
+                        skip += take;
+                    }
+                }
+            } catch (Exception e) {
+                handleException(e, "matches for series", seriesId);
+                hasMore = false;
+            }
+        }
     }
 
     private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Exception {
@@ -1811,57 +1875,207 @@ public class ApolloApiManager {
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
+        List<PostSeries> seriesList = new ArrayList<>();
+
         if (rootNode.isArray()) {
-            return objectMapper.readValue(jsonData, new TypeReference<List<PostSeries>>() {
-            });
+            for (JsonNode node : rootNode) {
+                seriesList.add(objectMapper.treeToValue(node, PostSeries.class));
+            }
         } else if (rootNode.isObject()) {
-            PostSeries singleSeries = objectMapper.treeToValue(rootNode, PostSeries.class);
-            return Collections.singletonList(singleSeries);
+            if (rootNode.has("series") && rootNode.get("series").isArray()) {
+                for (JsonNode seriesNode : rootNode.get("series")) {
+                    seriesList.add(objectMapper.treeToValue(seriesNode, PostSeries.class));
+                }
+            } else {
+                seriesList.add(objectMapper.treeToValue(rootNode, PostSeries.class));
+            }
         } else {
-            throw new IllegalArgumentException("Unexpected JSON structure");
+            System.err.println("Unexpected Series JSON structure: " + jsonData);
+            throw new IllegalArgumentException("Unexpected JSON structure for series");
         }
+
+        return seriesList;
     }
 
-    private CompletableFuture<Boolean> convertAndAppendSeries(PostSeries postSeries) {
-        Series thriftSeries = convertToThriftSeries(postSeries);
-        return seriesDepot.appendAsync(thriftSeries);
+    private List<PostMatch> parseJsonToPostMatchList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostMatch> matches = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                matches.add(objectMapper.treeToValue(node, PostMatch.class));
+            }
+        } else if (rootNode.isObject()) {
+            matches.add(objectMapper.treeToValue(rootNode, PostMatch.class));
+        } else {
+            System.err.println("Unexpected Match JSON structure: " + jsonData);
+            return Collections.emptyList();
+        }
+
+        return matches;
     }
 
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
         series.setTitle(postSeries.title);
-        series.setStart(postSeries.start != null ? postSeries.start.toEpochMilli() : 0);
-        series.setEnd(postSeries.end != null ? postSeries.end.toEpochMilli() : 0);
-        series.setPostponedFrom(postSeries.postponedFrom != null ? postSeries.postponedFrom.toEpochMilli() : 0);
-        series.setDeletedAt(postSeries.deletedAt != null ? postSeries.deletedAt.toEpochMilli() : 0);
+        series.setStart(toEpochMilli(postSeries.start));
+        series.setEnd(toEpochMilli(postSeries.end));
+        series.setPostponedFrom(toEpochMilli(postSeries.postponedFrom));
+        series.setDeletedAt(toEpochMilli(postSeries.deletedAt));
         series.setLifecycle(postSeries.lifecycle);
         series.setTier(postSeries.tier);
         series.setBestOf(postSeries.bestOf);
-        series.setChainIds(postSeries.chainIds);
+        series.setChainIds(postSeries.getChainIds());
         series.setStreamed(postSeries.streamed);
         series.setBracketPosition(convertBracketPosition(postSeries.bracketPosition));
         series.setParticipants(
                 postSeries.participants.stream().map(this::convertParticipant).collect(Collectors.toList()));
-        series.setTournamentId(postSeries.tournamentId);
-        series.setSubstageId(postSeries.substageId);
-        series.setGameId(postSeries.gameId);
-        series.setMatchIds(postSeries.matchIds);
-        series.setCasters(postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()));
+        series.setTournamentId(postSeries.getTournamentId());
+        series.setSubstageId(postSeries.getSubstageId());
+        series.setGameId(postSeries.getGameId());
+        series.setMatchIds(postSeries.getMatchIds());
+        series.setCasters(
+                postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()));
         series.setBroadcasters(
                 postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()));
         series.setHasIncidentReport(postSeries.hasIncidentReport);
         series.setCoverage(convertCoverage(postSeries.coverage));
-        series.setFormatBestOf(postSeries.format.bestOf);
+        series.setFormatBestOf(postSeries.format != null ? postSeries.format.bestOf : 0);
         series.setGameVersion(convertGameVersion(postSeries.gameVersion));
         series.setResourceVersion(postSeries.resourceVersion);
-        series.setCreatedAt(postSeries.createdAt != null ? postSeries.createdAt.toEpochMilli() : 0);
-        series.setUpdatedAt(postSeries.updatedAt != null ? postSeries.updatedAt.toEpochMilli() : 0);
+        series.setCreatedAt(toEpochMilli(postSeries.createdAt));
+        series.setUpdatedAt(toEpochMilli(postSeries.updatedAt));
         return series;
     }
 
+    private Match convertToThriftMatch(PostMatch postMatch) {
+        Match match = new Match();
+        match.setId(postMatch.id);
+        match.setMapId(postMatch.getMapId());
+        match.setLifecycle(postMatch.lifecycle);
+        match.setOrder(postMatch.order);
+        match.setSeriesId(postMatch.getSeriesId());
+        match.setDeletedAt(postMatch.deletedAt != null ? postMatch.deletedAt.toEpochMilli() : 0);
+        match.setGameId(postMatch.getGameId());
+        match.setParticipants(
+                postMatch.participants != null
+                        ? postMatch.participants.stream().map(this::convertParticipant).collect(Collectors.toList())
+                        : Collections.emptyList());
+        match.setCoverage(convertCoverage(postMatch.coverage));
+        match.setResourceVersion(postMatch.resourceVersion);
+        return match;
+    }
+
+    // Utility method to handle Instant to epoch milliseconds conversion
+    private long toEpochMilli(Instant instant) {
+        return instant != null ? instant.toEpochMilli() : 0;
+    }
+
+    // eSports getters
+
+    public CompletableFuture<Series> getSeries(int seriesId) {
+        return getSeriesFromSeriesId.invokeAsync(seriesId);
+    }
+
+    public CompletableFuture<Match> getMatch(int matchId) {
+        return getMatchFromMatchId.invokeAsync(matchId);
+    }
+
+    public CompletableFuture<List<Series>> getSeriesSchedule(long startTime, long endTime) {
+        return getSeriesSchedule.invokeAsync(startTime, endTime)
+                .thenApply(result -> {
+                    List<Series> seriesList = new ArrayList<>();
+
+                    for (Object entry : result.entrySet()) {
+                        Map.Entry mapEntry = (Map.Entry) entry;
+                        Map<Integer, Series> innerMap = (Map<Integer, Series>) mapEntry.getValue();
+                        seriesList.addAll(innerMap.values());
+                    }
+
+                    return seriesList;
+                });
+    }
+
+    public CompletableFuture<List<Series>> getWeekSchedule(long timestamp) {
+        long startOfWeek = ApolloHelpers.getStartOfWeek(timestamp);
+        long endOfWeek = ApolloHelpers.getEndOfWeek(timestamp);
+        return getSeriesSchedule(startOfWeek, endOfWeek);
+    }
+
+    public CompletableFuture<List<Match>> getMatchesForSeries(int seriesId) {
+        return getMatchesFromSeriesId.invokeAsync(seriesId)
+                .thenApply(matches -> {
+                    if (matches == null || matches.isEmpty()) {
+                        return Collections.emptyList();
+                    }
+                    return matches;
+                });
+    }
+
+    // OAuth
+
+    public CompletableFuture<Application> postApplication(PostApplication params) {
+        Application newApp = new Application(
+                ApolloHelpers.randomString(16), // client_id
+                ApolloHelpers.generateSecureRandomString(32), // client_secret
+                params.client_name,
+                params.redirect_uris,
+                params.scopes);
+
+        return applicationDepot
+                .appendAsync(newApp)
+                .thenApply(v -> newApp);
+    }
+
+    public CompletableFuture<Application> getApplication(String clientId) {
+        return getApplicationFromClientId.invokeAsync(clientId);
+    }
+
+    static {
+        if (System.getenv("AWS_EXECUTION_ENV") != null) {
+            System.out.println("Running on EC2, using default credentials provider chain");
+            credentialsProvider = DefaultCredentialsProvider.create();
+        } else {
+            System.out.println("Local development, loading from .env file");
+            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+
+            if (accessKeyId == null || secretAccessKey == null) {
+                throw new IllegalStateException("AWS credentials not found in .env file");
+            }
+
+            credentialsProvider = StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+        }
+    }
+
+    public static AwsCredentialsProvider getAwsCredentialsProvider() {
+        return credentialsProvider;
+    }
+
+    public static Region getAwsRegion() {
+        return Region.US_EAST_2; // TODO: Make configurable if needed
+    }
+
+    // eSports Helpers
+
     private BracketPosition convertBracketPosition(PostBracketPosition bp) {
-        return bp != null ? new BracketPosition(bp.part, bp.col, bp.offset) : null;
+        if (bp == null) {
+            return null;
+        }
+        BracketPosition bracketPosition = new BracketPosition();
+        bracketPosition.setPart(bp.part);
+        bracketPosition.setCol(bp.col);
+        bracketPosition.setOffset(bp.offset);
+        return bracketPosition;
     }
 
     private Participant convertParticipant(PostParticipant p) {
@@ -1869,7 +2083,7 @@ public class ApolloApiManager {
         participant.setSeed(p.seed);
         participant.setScore(p.score);
         participant.setForfeit(p.forfeit);
-        participant.setRosterId(p.rosterId);
+        participant.setRosterId(p.roster != null ? p.roster.id : 0);
         participant.setWinner(p.winner);
         participant.setStats(convertParticipantStats(p.stats));
         return participant;
@@ -1964,78 +2178,6 @@ public class ApolloApiManager {
         }
     }
 
-    // Get Series
-
-    public CompletableFuture<Series> getSeries(int seriesId) {
-        return getSeriesFromSeriesId.invokeAsync(seriesId);
-    }
-
-    public CompletableFuture<List<Series>> getSeriesSchedule(long startTime, long endTime) {
-        return getSeriesSchedule.invokeAsync(startTime, endTime)
-                .thenApply(result -> {
-                    List<Series> seriesList = new ArrayList<>();
-
-                    for (Object entry : result.entrySet()) {
-                        Map.Entry mapEntry = (Map.Entry) entry;
-                        Map<Integer, Series> innerMap = (Map<Integer, Series>) mapEntry.getValue();
-                        seriesList.addAll(innerMap.values());
-                    }
-
-                    return seriesList;
-                });
-    }
-
-    public CompletableFuture<List<Series>> getWeekSchedule(long timestamp) {
-        long startOfWeek = ApolloHelpers.getStartOfWeek(timestamp);
-        long endOfWeek = ApolloHelpers.getEndOfWeek(timestamp);
-        return getSeriesSchedule(startOfWeek, endOfWeek);
-    }
-
-    // OAuth
-
-    public CompletableFuture<Application> postApplication(PostApplication params) {
-        Application newApp = new Application(
-                ApolloHelpers.randomString(16), // client_id
-                ApolloHelpers.generateSecureRandomString(32), // client_secret
-                params.client_name,
-                params.redirect_uris,
-                params.scopes);
-
-        return applicationDepot
-                .appendAsync(newApp)
-                .thenApply(v -> newApp);
-    }
-
-    public CompletableFuture<Application> getApplication(String clientId) {
-        return getApplicationFromClientId.invokeAsync(clientId);
-    }
-
-    static {
-        if (System.getenv("AWS_EXECUTION_ENV") != null) {
-            System.out.println("Running on EC2, using default credentials provider chain");
-            credentialsProvider = DefaultCredentialsProvider.create();
-        } else {
-            System.out.println("Local development, loading from .env file");
-            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
-            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
-
-            if (accessKeyId == null || secretAccessKey == null) {
-                throw new IllegalStateException("AWS credentials not found in .env file");
-            }
-
-            credentialsProvider = StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
-        }
-    }
-
-    public static AwsCredentialsProvider getAwsCredentialsProvider() {
-        return credentialsProvider;
-    }
-
-    public static Region getAwsRegion() {
-        return Region.US_EAST_2; // TODO: Make configurable if needed
-    }
-
     // Spaces
 
     public CompletableFuture<ItemStats> getSpaceStats(String space) {
@@ -2104,5 +2246,63 @@ public class ApolloApiManager {
                         .thenCompose(timelineIndex -> getSpaceTimeline.invokeAsync(space, requestAccountIdMaybe,
                                 timelineIndex, limit)),
                 offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    // Initial eSports Data Fetching
+
+    private void waitIfNecessary() throws InterruptedException {
+        while (true) {
+            int remaining = remainingRequests.get();
+            long reset = resetTime.get();
+            long now = Instant.now().toEpochMilli();
+
+            if (remaining > 0 || now >= reset) {
+                break;
+            }
+
+            long sleepTime = Math.max(0, reset - now);
+            System.out.println("Rate limit reached. Waiting for " + sleepTime + "ms");
+            Thread.sleep(sleepTime);
+        }
+    }
+
+    private void updateRateLimitInfo(Map<String, String> headers) {
+        headers.forEach((key, value) -> {
+            if (value != null) {
+                switch (key.toLowerCase()) {
+                    case "x-ratelimit-remaining":
+                        remainingRequests.set(Integer.parseInt(value));
+                        break;
+                    case "x-ratelimit-reset":
+                        resetTime.set(Instant.now().toEpochMilli() + Long.parseLong(value));
+                        break;
+                    case "x-ratelimit-limit":
+                        rateLimit.set(Integer.parseInt(value));
+                        break;
+                    case "x-ratelimit-burst":
+                        burstLimit.set(Integer.parseInt(value));
+                        break;
+                }
+            }
+        });
+    }
+
+    private void handleException(Exception e, String context, int identifier) {
+        System.err.println("Error fetching " + context + " " + identifier + ": " + e.getMessage());
+        if (e instanceof IOException) {
+            IOException ioException = (IOException) e;
+            if (ioException.getMessage().contains("429")) { // Assuming 429 is mentioned in the error message
+                System.out.println("Rate limit hit. Retrying after 1000ms");
+                try {
+                    Thread.sleep(1000); // Wait for 1 second before retrying
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            } else {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new RuntimeException(e);
+        }
     }
 }

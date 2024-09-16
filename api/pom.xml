@@ -3,39 +3,20 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-     <parent>
-    <groupId>com.apollo</groupId>
-    <artifactId>apollo-backend</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath> 
-</parent>
+    <parent>
+        <groupId>com.apollo</groupId>
+        <artifactId>apollo-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <groupId>com.apollo</groupId>
     <artifactId>backendapi</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
     <name>backendapi</name>
     <description>Backend API</description>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
         <custom.final.name>backend-api</custom.final.name>
-        <rama.version>0.9.1</rama.version>
-        <rama-helpers.version>0.9.0</rama-helpers.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>clojars.org</id>
-            <url>https://clojars.org/repo</url>
-        </repository>
-        <repository>
-          <id>nexus-releases</id>
-          <url>https://nexus.redplanetlabs.com/repository/maven-public-releases</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -47,36 +28,32 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter</artifactId>
-          <exclusions>
-            <exclusion>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-starter-logging</artifactId>
-            </exclusion>
-          </exclusions>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-log4j2</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-core</artifactId>
         </dependency>
         <dependency>
-    <groupId>org.json</groupId>
-    <artifactId>json</artifactId>
-    <version>20240303</version>
-</dependency>
-
-
-
-
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.70</version>
+            <groupId>com.apollo</groupId>
+            <artifactId>shared</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.bucket4j</groupId>
@@ -104,39 +81,37 @@
             <version>1.12.0</version>
         </dependency>
         <dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-lang3</artifactId>
-    <version>3.16.0</version>
-</dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.16.0</version>
+        </dependency>
         <dependency>
             <groupId>http-kit</groupId>
             <artifactId>http-kit</artifactId>
             <version>2.7.0</version>
         </dependency>
-
         <dependency>
-    <groupId>io.github.cdimascio</groupId>
-    <artifactId>dotenv-java</artifactId>
-    <version>2.2.0</version>
-</dependency>
-<dependency>
-    <groupId>org.apache.httpcomponents</groupId>
-    <artifactId>httpclient</artifactId>
-    <version>4.5.13</version>
-</dependency>
-  <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-core</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-annotations</artifactId>
-  </dependency>
-
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -161,7 +136,6 @@
         <dependency>
             <groupId>com.rpl</groupId>
             <artifactId>rama</artifactId>
-            <version>${rama.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -170,11 +144,9 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>com.rpl</groupId>
             <artifactId>rama-helpers</artifactId>
-            <version>${rama-helpers.version}</version>
         </dependency>
         <dependency>
             <groupId>com.clearspring.analytics</groupId>
@@ -182,10 +154,10 @@
             <version>2.9.5</version>
         </dependency>
         <dependency>
-    <groupId>com.apollo</groupId>
-    <artifactId>backend</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
+            <groupId>com.apollo</groupId>
+            <artifactId>backend</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -197,5 +169,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

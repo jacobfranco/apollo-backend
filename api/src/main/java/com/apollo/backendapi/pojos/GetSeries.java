@@ -3,6 +3,7 @@ package com.apollo.backendapi.pojos;
 import com.apollo.backend.data.Series;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GetSeries {
     public int id;
@@ -18,9 +19,9 @@ public class GetSeries {
     public boolean streamed;
     public GetBracketPosition bracketPosition;
     public List<GetParticipant> participants;
-    public int tournamentId;
-    public int substageId;
-    public int gameId;
+    public GetTournamentInfo tournament;
+    public GetSubstageInfo substage;
+    public GetGameInfo game;
     public List<Integer> matchIds;
     public List<GetCaster> casters;
     public List<GetBroadcaster> broadcasters;
@@ -47,13 +48,13 @@ public class GetSeries {
         this.streamed = series.isStreamed();
         this.bracketPosition = series.isSetBracketPosition() ? new GetBracketPosition(series.getBracketPosition())
                 : null;
-        this.participants = series.getParticipants().stream().map(GetParticipant::new).toList();
-        this.tournamentId = series.getTournamentId();
-        this.substageId = series.getSubstageId();
-        this.gameId = series.getGameId();
+        this.participants = series.getParticipants().stream().map(GetParticipant::new).collect(Collectors.toList());
+        this.tournament = new GetTournamentInfo(series.getTournamentId());
+        this.substage = new GetSubstageInfo(series.getSubstageId());
+        this.game = new GetGameInfo(series.getGameId());
         this.matchIds = series.getMatchIds();
-        this.casters = series.getCasters().stream().map(GetCaster::new).toList();
-        this.broadcasters = series.getBroadcasters().stream().map(GetBroadcaster::new).toList();
+        this.casters = series.getCasters().stream().map(GetCaster::new).collect(Collectors.toList());
+        this.broadcasters = series.getBroadcasters().stream().map(GetBroadcaster::new).collect(Collectors.toList());
         this.hasIncidentReport = series.isHasIncidentReport();
         this.coverage = series.isSetCoverage() ? new GetCoverage(series.getCoverage()) : null;
         this.format = series.isSetFormatBestOf() ? new GetFormat(series.getFormatBestOf()) : null;

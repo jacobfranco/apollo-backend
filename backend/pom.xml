@@ -4,54 +4,33 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.apollo</groupId>
-    <artifactId>backend</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-
     <parent>
-    <groupId>com.apollo</groupId>
-    <artifactId>apollo-backend</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath> 
-</parent>
+        <groupId>com.apollo</groupId>
+        <artifactId>apollo-backend</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
+    <artifactId>backend</artifactId>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-
-        <!-- these are here for override-ability by build processes -->
         <custom.final.name>backend</custom.final.name>
     </properties>
 
-    <repositories>
-      <repository>
-          <id>clojars.org</id>
-          <url>https://clojars.org/repo</url>
-      </repository>
-      <repository>
-        <id>nexus-releases</id>
-        <url>https://nexus.redplanetlabs.com/repository/maven-public-releases</url>
-      </repository>
-    </repositories>
-
     <dependencies>
-    <dependency>
-    <groupId>com.apollo</groupId>
-    <artifactId>backendapi</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-</dependency>
-
+        <dependency>
+            <groupId>com.apollo</groupId>
+            <artifactId>shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.rpl</groupId>
             <artifactId>rama</artifactId>
-            <version>0.9.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.rpl</groupId>
             <artifactId>rama-helpers</artifactId>
-            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>com.clearspring.analytics</groupId>
@@ -64,22 +43,20 @@
             <version>1.70</version>
         </dependency>
         <dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-lang3</artifactId>
-    <version>3.16.0</version>
-</dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.16.0</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.12.0</version>
         </dependency>
-
-         <dependency>
-        <groupId>org.asynchttpclient</groupId>
-        <artifactId>async-http-client</artifactId>
-        <version>3.0.0</version>
-    </dependency>
-
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>3.0.0</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -90,25 +67,12 @@
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>http-kit</groupId>
             <artifactId>http-kit</artifactId>
             <version>2.7.0</version>
         </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.8.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <finalName>${custom.final.name}</finalName>

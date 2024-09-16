@@ -3,6 +3,8 @@ package com.apollo.backendapi;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
+import com.apollo.shared.ApolloSpaces;
+import com.apollo.shared.pojos.GetSpace;
 
 import io.github.cdimascio.dotenv.Dotenv;
 

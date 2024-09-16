@@ -91,6 +91,12 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractMatchId extends ExtractField {
+    public ExtractMatchId() {
+      super("id");
+    }
+  }
+
   public static class ExtractClientId extends ExtractField {
     public ExtractClientId() {
       super("client_id");

@@ -10,7 +10,7 @@ import com.rpl.rama.*;
 import com.rpl.rama.helpers.*;
 import com.rpl.rama.module.*;
 import com.rpl.rama.ops.*;
-import com.apollo.backendapi.ApolloSpaces;
+import com.apollo.shared.ApolloSpaces;
 
 import java.io.*;
 import java.net.URISyntaxException;

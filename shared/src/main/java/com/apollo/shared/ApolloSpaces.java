@@ -1,6 +1,6 @@
-package com.apollo.backendapi;
+package com.apollo.shared;
 
-import com.apollo.backendapi.pojos.GetSpace;
+import com.apollo.shared.pojos.GetSpace;
 
 import java.util.Arrays;
 import java.util.List;

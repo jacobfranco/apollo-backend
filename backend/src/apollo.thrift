@@ -784,6 +784,20 @@ struct Series {
     26: i64 updatedAt
 }
 
+struct Match {
+    1: i32 id
+    2: i32 mapId
+    3: string lifecycle
+    4: i32 order
+    5: i32 seriesId
+    6: optional i64 deletedAt
+    7: i32 gameId
+    8: list<Participant> participants
+    9: Coverage coverage
+    10: i64 resourceVersion
+}
+
+
 struct Application {
   1: required string client_id
   2: required string client_secret

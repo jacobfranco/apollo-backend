@@ -3,6 +3,9 @@ package com.apollo.backendapi.pojos;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.*;
+import com.apollo.shared.ApolloSpaces;
+import com.apollo.shared.pojos.GetSpace;
+
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.time.Instant;

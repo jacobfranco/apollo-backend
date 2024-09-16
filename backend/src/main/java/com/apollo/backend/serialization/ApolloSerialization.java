@@ -62,6 +62,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 (Class<? extends TBase<?, ?>>) KeyValuePair.class,
                 (Class<? extends TBase<?, ?>>) LikeStatus.class,
                 (Class<? extends TBase<?, ?>>) Marker.class,
+                (Class<? extends TBase<?, ?>>) Match.class,
                 (Class<? extends TBase<?, ?>>) MuteAccount.class,
                 (Class<? extends TBase<?, ?>>) MuteAccountOptions.class,
                 (Class<? extends TBase<?, ?>>) MuteStatus.class,

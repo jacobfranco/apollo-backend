@@ -3,6 +3,8 @@ package com.apollo.backendapi;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
+import com.apollo.shared.ApolloSpaces;
+import com.apollo.shared.pojos.GetSpace;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.*;
@@ -1988,6 +1990,28 @@ public class ApolloApiController {
                     return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                             "Error fetching week schedule", e));
                 });
+    }
+
+    /*
+     * League of Legends Match Endpoints
+     * ======================================
+     * - GET /api/lolmatches/{id}
+     * - GET /api/lolseries/series/{seriesId}
+     * ======================================
+     */
+
+    @GetMapping("/api/lolmatches/{id}")
+    public Mono<GetMatch> getLolMatch(@PathVariable("id") int matchId) {
+        return Mono.fromFuture(manager.getMatch(matchId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetMatch::new);
+    }
+
+    @GetMapping("/api/lolmatches/series/{seriesId}")
+    public Mono<List<GetMatch>> getLolMatchesForSeries(@PathVariable("seriesId") int seriesId) {
+        return Mono.fromFuture(manager.getMatchesForSeries(seriesId))
+                .map(matchList -> matchList.stream().map(GetMatch::new).collect(Collectors.toList()));
+
     }
 
 }

@@ -1,8 +1,10 @@
-package com.apollo.backendapi.pojos;
+package com.apollo.shared.pojos;
 
 import java.util.*;
 
-public class GetSpace {
+import com.rpl.rama.RamaSerializable;
+
+public class GetSpace implements RamaSerializable {
     public String name;
     public String url;
     public String imageUrl;
