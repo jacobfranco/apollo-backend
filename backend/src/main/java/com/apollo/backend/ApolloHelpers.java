@@ -97,6 +97,12 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractRosterId extends ExtractField {
+    public ExtractRosterId() {
+      super("id");
+    }
+  }
+
   public static class ExtractClientId extends ExtractField {
     public ExtractClientId() {
       super("client_id");
@@ -624,15 +630,6 @@ public class ApolloHelpers {
       builder.append(ALPHA_NUMERIC_STRING.charAt(index));
     }
     return builder.toString();
-  }
-
-  public static List<Match> appendMatch(List<Match> existingMatches, Match match) {
-    List<Match> updatedMatches = new ArrayList<>();
-    if (existingMatches != null) {
-      updatedMatches.addAll(existingMatches);
-    }
-    updatedMatches.add(match);
-    return updatedMatches;
   }
 
 }

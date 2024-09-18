@@ -190,12 +190,14 @@ public class ApolloApiManager {
     // ESports Depots
     private final Depot seriesDepot;
     private final Depot matchDepot;
+    private final Depot rosterDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
     private final QueryTopologyClient<VectorBackedSortedMap> getSeriesSchedule;
     private final QueryTopologyClient<Match> getMatchFromMatchId;
     private final QueryTopologyClient<List<Match>> getMatchesFromSeriesId;
+    private final QueryTopologyClient<Roster> getRosterFromRosterId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -316,12 +318,14 @@ public class ApolloApiManager {
         // ESports Depots
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
         matchDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchDepot");
+        rosterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*rosterDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
         getSeriesSchedule = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesSchedule");
         getMatchFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchFromMatchId");
         getMatchesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchesFromSeriesId");
+        getRosterFromRosterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getRosterFromRosterId");
 
     }
 
@@ -1803,17 +1807,16 @@ public class ApolloApiManager {
 
     private void fetchAndStoreSeries(String filter, String order, int skip, int take) {
         try {
-            System.out.println("Fetching series batch: skip=" + skip + ", take=" + take);
             waitIfNecessary();
             String seriesData = apiClient.getSeries(filter, order, skip, take);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
-            System.out.println("Fetched " + postSeriesList.size() + " series");
 
             for (PostSeries postSeries : postSeriesList) {
                 Series series = convertToThriftSeries(postSeries);
                 seriesDepot.appendAsync(series).join();
+                fetchAndStoreRostersForSeries(postSeries.id);
                 fetchAndStoreMatchesForSeries(postSeries.id);
             }
 
@@ -1834,23 +1837,19 @@ public class ApolloApiManager {
 
         while (hasMore) {
             try {
-                System.out.println(
-                        "Fetching matches for series " + seriesId + " with skip=" + skip + " and take=" + take);
                 waitIfNecessary();
                 String matchesData = apiClient.getMatchesForSeries(seriesId, null, "start-asc", skip, take);
                 updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
                 List<PostMatch> postMatches = parseJsonToPostMatchList(matchesData);
-                System.out.println("Received " + postMatches.size() + " matches for series " + seriesId);
 
                 if (postMatches.isEmpty()) {
                     hasMore = false;
                 } else {
                     for (PostMatch postMatch : postMatches) {
                         Match match = convertToThriftMatch(postMatch);
-                        System.out.println("Storing match: id=" + match.getId() + ", seriesId=" + match.getSeriesId() +
-                                ", order=" + match.getOrder() + ", original seriesId=" + postMatch.getSeriesId());
                         matchDepot.appendAsync(match).join();
+                        fetchAndStoreRostersForMatch(match.getId());
                     }
 
                     if (postMatches.size() < take) {
@@ -1863,6 +1862,54 @@ public class ApolloApiManager {
                 handleException(e, "matches for series", seriesId);
                 hasMore = false;
             }
+        }
+    }
+
+    private void fetchAndStoreRostersForSeries(int seriesId) {
+        try {
+            waitIfNecessary();
+            String rostersData = apiClient.getSeriesRosters(seriesId);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            // Log the raw JSON response for debugging
+            System.out.println("Raw JSON response for series " + seriesId + " rosters: " + rostersData);
+
+            List<PostRoster> postRosters = parseJsonToPostRosterList(rostersData);
+            List<Roster> rosters = postRosters.stream()
+                    .map(this::convertToThriftRoster)
+                    .collect(Collectors.toList());
+
+            // Store rosters in Rama
+            for (Roster roster : rosters) {
+                rosterDepot.appendAsync(roster).join();
+            }
+
+        } catch (Exception e) {
+            handleException(e, "rosters for series", seriesId);
+        }
+    }
+
+    private void fetchAndStoreRostersForMatch(int matchId) {
+        try {
+            waitIfNecessary();
+            String rostersData = apiClient.getMatchRosters(matchId);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            // Log the raw JSON response for debugging
+            System.out.println("Raw JSON response for match " + matchId + " rosters: " + rostersData);
+
+            List<PostRoster> postRosters = parseJsonToPostRosterList(rostersData);
+            List<Roster> rosters = postRosters.stream()
+                    .map(this::convertToThriftRoster)
+                    .collect(Collectors.toList());
+
+            // Store rosters in Rama
+            for (Roster roster : rosters) {
+                rosterDepot.appendAsync(roster).join();
+            }
+
+        } catch (Exception e) {
+            handleException(e, "rosters for match", matchId);
         }
     }
 
@@ -1922,6 +1969,31 @@ public class ApolloApiManager {
         return matches;
     }
 
+    private List<PostRoster> parseJsonToPostRosterList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostRoster> rosterList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                rosterList.add(objectMapper.treeToValue(node, PostRoster.class));
+            }
+        } else if (rootNode.isObject()) {
+            rosterList.add(objectMapper.treeToValue(rootNode, PostRoster.class));
+        } else {
+            System.err.println("Unexpected Roster JSON structure: " + jsonData);
+            throw new IllegalArgumentException("Unexpected JSON structure for rosters");
+        }
+
+        return rosterList;
+    }
+
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
@@ -1974,6 +2046,18 @@ public class ApolloApiManager {
         return match;
     }
 
+    private Roster convertToThriftRoster(PostRoster postRoster) {
+        Roster roster = new Roster();
+        roster.setId(postRoster.id);
+        roster.setTeamId(postRoster.team.id);
+        roster.setLineUpId(postRoster.lineUp.id);
+        roster.setPlayerIds(postRoster.lineUp.players.stream()
+                .map(player -> player.id)
+                .collect(Collectors.toList()));
+        roster.setGameId(postRoster.game.id);
+        return roster;
+    }
+
     // Utility method to handle Instant to epoch milliseconds conversion
     private long toEpochMilli(Instant instant) {
         return instant != null ? instant.toEpochMilli() : 0;
@@ -1981,88 +2065,121 @@ public class ApolloApiManager {
 
     // eSports getters
 
-    public CompletableFuture<Series> getSeries(int seriesId) {
-        return getSeriesFromSeriesId.invokeAsync(seriesId);
-    }
-
-    public CompletableFuture<Match> getMatch(int matchId) {
-        return getMatchFromMatchId.invokeAsync(matchId);
-    }
-
-    public CompletableFuture<List<Series>> getSeriesSchedule(long startTime, long endTime) {
-        return getSeriesSchedule.invokeAsync(startTime, endTime)
-                .thenApply(result -> {
-                    List<Series> seriesList = new ArrayList<>();
-
-                    for (Object entry : result.entrySet()) {
-                        Map.Entry mapEntry = (Map.Entry) entry;
-                        Map<Integer, Series> innerMap = (Map<Integer, Series>) mapEntry.getValue();
-                        seriesList.addAll(innerMap.values());
+    public CompletableFuture<GetSeries> getSeries(int seriesId) {
+        return getSeriesFromSeriesId.invokeAsync(seriesId)
+                .thenCompose(series -> {
+                    if (series == null) {
+                        return CompletableFuture.completedFuture(null);
                     }
+                    // Extract roster IDs from participants
+                    List<Integer> rosterIds = series.getParticipants().stream()
+                            .map(Participant::getRosterId)
+                            .distinct()
+                            .collect(Collectors.toList());
 
-                    return seriesList;
+                    // Batch fetch rosters
+                    return getRosters(rosterIds).thenApply(rosterMap -> {
+                        // Construct GetSeries object with roster data
+                        return new GetSeries(series, rosterMap);
+                    });
                 });
     }
 
-    public CompletableFuture<List<Series>> getWeekSchedule(long timestamp) {
+    public CompletableFuture<GetMatch> getMatch(int matchId) {
+        return getMatchFromMatchId.invokeAsync(matchId)
+                .thenCompose(match -> {
+                    if (match == null) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+                    // Extract roster IDs from participants
+                    List<Integer> rosterIds = match.getParticipants().stream()
+                            .map(Participant::getRosterId)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    // Batch fetch rosters
+                    return getRosters(rosterIds).thenApply(rosterMap -> {
+                        // Construct GetMatch object with roster data
+                        return new GetMatch(match, rosterMap);
+                    });
+                });
+    }
+
+    private CompletableFuture<Map<Integer, Roster>> getRosters(List<Integer> rosterIds) {
+        if (rosterIds == null || rosterIds.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptyMap());
+        }
+
+        // Create a list of futures, one for each roster ID
+        List<CompletableFuture<Roster>> rosterFutures = rosterIds.stream()
+                .map(id -> getRosterFromRosterId.invokeAsync(id))
+                .collect(Collectors.toList());
+
+        // Combine all futures into a single future that completes when all lookups are
+        // done
+        return CompletableFuture.allOf(rosterFutures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> rosterFutures.stream()
+                        .map(CompletableFuture::join)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toMap(Roster::getId, roster -> roster)));
+    }
+
+    public CompletableFuture<List<GetSeries>> getSeriesSchedule(long startTime, long endTime) {
+        return getSeriesSchedule.invokeAsync(startTime, endTime)
+                .thenCompose(result -> {
+                    List<Series> seriesList = new ArrayList<>();
+
+                    for (Object entry : result.entrySet()) {
+                        Map.Entry<Long, Map<Integer, Series>> mapEntry = (Map.Entry<Long, Map<Integer, Series>>) entry;
+                        Map<Integer, Series> innerMap = mapEntry.getValue();
+                        seriesList.addAll(innerMap.values());
+                    }
+
+                    // Extract all unique roster IDs from all series
+                    List<Integer> rosterIds = seriesList.stream()
+                            .flatMap(series -> series.getParticipants().stream())
+                            .map(Participant::getRosterId)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    // Batch fetch rosters
+                    return getRosters(rosterIds).thenApply(rosterMap -> {
+                        // Create a list of GetSeries with roster data
+                        return seriesList.stream()
+                                .map(series -> new GetSeries(series, rosterMap))
+                                .collect(Collectors.toList());
+                    });
+                });
+    }
+
+    public CompletableFuture<List<GetSeries>> getWeekSchedule(long timestamp) {
         long startOfWeek = ApolloHelpers.getStartOfWeek(timestamp);
         long endOfWeek = ApolloHelpers.getEndOfWeek(timestamp);
         return getSeriesSchedule(startOfWeek, endOfWeek);
     }
 
-    public CompletableFuture<List<Match>> getMatchesForSeries(int seriesId) {
+    public CompletableFuture<List<GetMatch>> getMatchesForSeries(int seriesId) {
         return getMatchesFromSeriesId.invokeAsync(seriesId)
-                .thenApply(matches -> {
+                .thenCompose(matches -> {
                     if (matches == null || matches.isEmpty()) {
-                        return Collections.emptyList();
+                        return CompletableFuture.completedFuture(Collections.emptyList());
                     }
-                    return matches;
+
+                    // Extract all unique roster IDs from all matches
+                    List<Integer> rosterIds = matches.stream()
+                            .flatMap(match -> match.getParticipants().stream())
+                            .map(Participant::getRosterId)
+                            .distinct()
+                            .collect(Collectors.toList());
+
+                    // Batch fetch rosters
+                    return getRosters(rosterIds).thenApply(rosterMap -> {
+                        // Create a list of GetMatch with roster data
+                        return matches.stream()
+                                .map(match -> new GetMatch(match, rosterMap))
+                                .collect(Collectors.toList());
+                    });
                 });
-    }
-
-    // OAuth
-
-    public CompletableFuture<Application> postApplication(PostApplication params) {
-        Application newApp = new Application(
-                ApolloHelpers.randomString(16), // client_id
-                ApolloHelpers.generateSecureRandomString(32), // client_secret
-                params.client_name,
-                params.redirect_uris,
-                params.scopes);
-
-        return applicationDepot
-                .appendAsync(newApp)
-                .thenApply(v -> newApp);
-    }
-
-    public CompletableFuture<Application> getApplication(String clientId) {
-        return getApplicationFromClientId.invokeAsync(clientId);
-    }
-
-    static {
-        if (System.getenv("AWS_EXECUTION_ENV") != null) {
-            System.out.println("Running on EC2, using default credentials provider chain");
-            credentialsProvider = DefaultCredentialsProvider.create();
-        } else {
-            System.out.println("Local development, loading from .env file");
-            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
-            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
-
-            if (accessKeyId == null || secretAccessKey == null) {
-                throw new IllegalStateException("AWS credentials not found in .env file");
-            }
-
-            credentialsProvider = StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
-        }
-    }
-
-    public static AwsCredentialsProvider getAwsCredentialsProvider() {
-        return credentialsProvider;
-    }
-
-    public static Region getAwsRegion() {
-        return Region.US_EAST_2; // TODO: Make configurable if needed
     }
 
     // eSports Helpers
@@ -2178,6 +2295,62 @@ public class ApolloApiManager {
         }
     }
 
+    private void waitIfNecessary() throws InterruptedException {
+        while (true) {
+            int remaining = remainingRequests.get();
+            long reset = resetTime.get();
+            long now = Instant.now().toEpochMilli();
+
+            if (remaining > 0 || now >= reset) {
+                break;
+            }
+
+            long sleepTime = Math.max(0, reset - now);
+            System.out.println("Rate limit reached. Waiting for " + sleepTime + "ms");
+            Thread.sleep(sleepTime);
+        }
+    }
+
+    private void updateRateLimitInfo(Map<String, String> headers) {
+        headers.forEach((key, value) -> {
+            if (value != null) {
+                switch (key.toLowerCase()) {
+                    case "x-ratelimit-remaining":
+                        remainingRequests.set(Integer.parseInt(value));
+                        break;
+                    case "x-ratelimit-reset":
+                        resetTime.set(Instant.now().toEpochMilli() + Long.parseLong(value));
+                        break;
+                    case "x-ratelimit-limit":
+                        rateLimit.set(Integer.parseInt(value));
+                        break;
+                    case "x-ratelimit-burst":
+                        burstLimit.set(Integer.parseInt(value));
+                        break;
+                }
+            }
+        });
+    }
+
+    private void handleException(Exception e, String context, int identifier) {
+        System.err.println("Error fetching " + context + " " + identifier + ": " + e.getMessage());
+        if (e instanceof IOException) {
+            IOException ioException = (IOException) e;
+            if (ioException.getMessage().contains("429")) { // Assuming 429 is mentioned in the error message
+                System.out.println("Rate limit hit. Retrying after 1000ms");
+                try {
+                    Thread.sleep(1000); // Wait for 1 second before retrying
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            } else {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new RuntimeException(e);
+        }
+    }
+
     // Spaces
 
     public CompletableFuture<ItemStats> getSpaceStats(String space) {
@@ -2248,61 +2421,49 @@ public class ApolloApiManager {
                 offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 
-    // Initial eSports Data Fetching
+    // OAuth
 
-    private void waitIfNecessary() throws InterruptedException {
-        while (true) {
-            int remaining = remainingRequests.get();
-            long reset = resetTime.get();
-            long now = Instant.now().toEpochMilli();
+    public CompletableFuture<Application> postApplication(PostApplication params) {
+        Application newApp = new Application(
+                ApolloHelpers.randomString(16), // client_id
+                ApolloHelpers.generateSecureRandomString(32), // client_secret
+                params.client_name,
+                params.redirect_uris,
+                params.scopes);
 
-            if (remaining > 0 || now >= reset) {
-                break;
-            }
-
-            long sleepTime = Math.max(0, reset - now);
-            System.out.println("Rate limit reached. Waiting for " + sleepTime + "ms");
-            Thread.sleep(sleepTime);
-        }
+        return applicationDepot
+                .appendAsync(newApp)
+                .thenApply(v -> newApp);
     }
 
-    private void updateRateLimitInfo(Map<String, String> headers) {
-        headers.forEach((key, value) -> {
-            if (value != null) {
-                switch (key.toLowerCase()) {
-                    case "x-ratelimit-remaining":
-                        remainingRequests.set(Integer.parseInt(value));
-                        break;
-                    case "x-ratelimit-reset":
-                        resetTime.set(Instant.now().toEpochMilli() + Long.parseLong(value));
-                        break;
-                    case "x-ratelimit-limit":
-                        rateLimit.set(Integer.parseInt(value));
-                        break;
-                    case "x-ratelimit-burst":
-                        burstLimit.set(Integer.parseInt(value));
-                        break;
-                }
-            }
-        });
+    public CompletableFuture<Application> getApplication(String clientId) {
+        return getApplicationFromClientId.invokeAsync(clientId);
     }
 
-    private void handleException(Exception e, String context, int identifier) {
-        System.err.println("Error fetching " + context + " " + identifier + ": " + e.getMessage());
-        if (e instanceof IOException) {
-            IOException ioException = (IOException) e;
-            if (ioException.getMessage().contains("429")) { // Assuming 429 is mentioned in the error message
-                System.out.println("Rate limit hit. Retrying after 1000ms");
-                try {
-                    Thread.sleep(1000); // Wait for 1 second before retrying
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
-            } else {
-                throw new RuntimeException(e);
-            }
+    static {
+        if (System.getenv("AWS_EXECUTION_ENV") != null) {
+            System.out.println("Running on EC2, using default credentials provider chain");
+            credentialsProvider = DefaultCredentialsProvider.create();
         } else {
-            throw new RuntimeException(e);
+            System.out.println("Local development, loading from .env file");
+            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+
+            if (accessKeyId == null || secretAccessKey == null) {
+                throw new IllegalStateException("AWS credentials not found in .env file");
+            }
+
+            credentialsProvider = StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
         }
     }
+
+    public static AwsCredentialsProvider getAwsCredentialsProvider() {
+        return credentialsProvider;
+    }
+
+    public static Region getAwsRegion() {
+        return Region.US_EAST_2; // TODO: Make configurable if needed
+    }
+
 }

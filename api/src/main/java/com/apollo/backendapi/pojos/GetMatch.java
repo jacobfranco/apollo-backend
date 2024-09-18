@@ -1,8 +1,11 @@
 package com.apollo.backendapi.pojos;
 
 import com.apollo.backend.data.Match;
+import com.apollo.backend.data.Roster;
+
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GetMatch {
@@ -17,7 +20,7 @@ public class GetMatch {
     public GetCoverage coverage;
     public long resourceVersion;
 
-    public GetMatch(Match match) {
+    public GetMatch(Match match, Map<Integer, Roster> rosterMap) {
         this.id = match.getId();
         this.map = new GetMapInfo(match.getMapId());
         this.lifecycle = match.getLifecycle();
@@ -25,7 +28,9 @@ public class GetMatch {
         this.series = new GetSeriesInfo(match.getSeriesId());
         this.deletedAt = match.isSetDeletedAt() ? Instant.ofEpochMilli(match.getDeletedAt()) : null;
         this.game = new GetGameInfo(match.getGameId());
-        this.participants = match.getParticipants().stream().map(GetParticipant::new).collect(Collectors.toList());
+        this.participants = match.getParticipants().stream()
+                .map(participant -> new GetParticipant(participant, rosterMap))
+                .collect(Collectors.toList());
         this.coverage = match.isSetCoverage() ? new GetCoverage(match.getCoverage()) : null;
         this.resourceVersion = match.getResourceVersion();
     }

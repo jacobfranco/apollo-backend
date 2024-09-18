@@ -797,6 +797,14 @@ struct Match {
     10: i64 resourceVersion
 }
 
+struct Roster {
+    1: i32 id
+    2: i32 teamId
+    3: i32 lineUpId
+    4: list<i32> playerIds
+    5: i32 gameId
+}
+
 
 struct Application {
   1: required string client_id

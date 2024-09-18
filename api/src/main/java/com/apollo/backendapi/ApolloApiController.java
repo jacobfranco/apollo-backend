@@ -1954,10 +1954,7 @@ public class ApolloApiController {
     @GetMapping("/api/lolseries/{id}")
     public Mono<GetSeries> getLolSeries(@PathVariable("id") int seriesId) {
         return Mono.fromFuture(manager.getSeries(seriesId))
-                // If no account is found, return an HTTP 404 error
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                // Convert the retrieved account information into the GetAccount DTO format
-                .map(GetSeries::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @GetMapping("/api/lolseries/schedule")
@@ -1968,7 +1965,6 @@ public class ApolloApiController {
         long startMillis = (long) (startTime * 1000);
         long endMillis = (long) (endTime * 1000);
         return Mono.fromFuture(manager.getSeriesSchedule(startMillis, endMillis))
-                .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
                 .doOnError(e -> logger.error("Error fetching series schedule: ", e))
                 .onErrorResume(e -> {
                     logger.error("Error processing series schedule request", e);
@@ -1983,7 +1979,6 @@ public class ApolloApiController {
         logger.info("Fetching week schedule for timestamp: {}", timestamp);
         long timeMillis = (timestamp != null) ? (long) (timestamp * 1000) : System.currentTimeMillis();
         return Mono.fromFuture(manager.getWeekSchedule(timeMillis))
-                .map(seriesList -> seriesList.stream().map(GetSeries::new).toList())
                 .doOnError(e -> logger.error("Error fetching week schedule: ", e))
                 .onErrorResume(e -> {
                     logger.error("Error processing week schedule request", e);
@@ -2003,15 +1998,18 @@ public class ApolloApiController {
     @GetMapping("/api/lolmatches/{id}")
     public Mono<GetMatch> getLolMatch(@PathVariable("id") int matchId) {
         return Mono.fromFuture(manager.getMatch(matchId))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .map(GetMatch::new);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @GetMapping("/api/lolmatches/series/{seriesId}")
     public Mono<List<GetMatch>> getLolMatchesForSeries(@PathVariable("seriesId") int seriesId) {
         return Mono.fromFuture(manager.getMatchesForSeries(seriesId))
-                .map(matchList -> matchList.stream().map(GetMatch::new).collect(Collectors.toList()));
-
+                .doOnError(e -> logger.error("Error fetching matches for series: ", e))
+                .onErrorResume(e -> {
+                    logger.error("Error processing matches for series request", e);
+                    return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Error fetching matches for series", e));
+                });
     }
 
 }

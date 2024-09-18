@@ -1,8 +1,10 @@
 package com.apollo.backendapi.pojos;
 
+import com.apollo.backend.data.Roster;
 import com.apollo.backend.data.Series;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GetSeries {
@@ -34,7 +36,7 @@ public class GetSeries {
     public Instant updatedAt;
 
     // Constructor to convert Series (Thrift) to GetSeries
-    public GetSeries(Series series) {
+    public GetSeries(Series series, Map<Integer, Roster> rosterMap) {
         this.id = series.getId();
         this.title = series.getTitle();
         this.start = Instant.ofEpochMilli(series.getStart());
@@ -48,7 +50,9 @@ public class GetSeries {
         this.streamed = series.isStreamed();
         this.bracketPosition = series.isSetBracketPosition() ? new GetBracketPosition(series.getBracketPosition())
                 : null;
-        this.participants = series.getParticipants().stream().map(GetParticipant::new).collect(Collectors.toList());
+        this.participants = series.getParticipants().stream()
+                .map(participant -> new GetParticipant(participant, rosterMap))
+                .collect(Collectors.toList());
         this.tournament = new GetTournamentInfo(series.getTournamentId());
         this.substage = new GetSubstageInfo(series.getSubstageId());
         this.game = new GetGameInfo(series.getGameId());

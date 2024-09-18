@@ -33,20 +33,25 @@ public class ESports implements RamaModule {
                 stream.source("*matchDepot").out("*match")
                                 .macro(ApolloHelpers.extractFields("*match", "*id", "*seriesId"))
                                 .each(Ops.PRINTLN, "Ingesting Match:", "*id", "SeriesId:", "*seriesId")
-                                .localTransform("$$matchIdToMatch",
-                                                Path.key("*id").termVal("*match"))
+                                .localTransform("$$matchIdToMatch", Path.key("*id").termVal("*match"))
                                 .each(Ops.PRINTLN, "Match added to $$matchIdToMatch:", "*id", "->", "*match")
                                 .hashPartition("*seriesId")
-                                .localSelect("$$seriesIdToMatches", Path.key("*seriesId"))
-                                .out("*existingMatches")
-                                .ifTrue(
-                                                new Expr(Ops.IS_NULL, "*existingMatches"),
-                                                Block.each(Ops.TUPLE, "*match").out("*updatedMatches"),
-                                                Block.each(ApolloHelpers::appendMatch, "*existingMatches", "*match")
-                                                                .out("*updatedMatches"))
-                                .localTransform("$$seriesIdToMatches",
-                                                Path.key("*seriesId").termVal("*updatedMatches"))
+                                .compoundAgg("$$seriesIdToMatches",
+                                                CompoundAgg.map("*seriesId", Agg.list("*match")))
                                 .each(Ops.PRINTLN, "Match added to $$seriesIdToMatches:", "*seriesId", "*match");
+
+        }
+
+        private static void declareRosterIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("rosterIngestion");
+
+                stream.pstate("$$rosterIdToRoster", PState.mapSchema(Integer.class, Roster.class));
+
+                stream.source("*rosterDepot").out("*roster")
+                                .macro(ApolloHelpers.extractFields("*roster", "*id"))
+                                .each(Ops.PRINTLN, "Ingesting Roster:", "*id")
+                                .localTransform("$$rosterIdToRoster", Path.key("*id").termVal("*roster"))
+                                .each(Ops.PRINTLN, "Roster added to $$rosterIdToRoster:", "*id", "*roster");
         }
 
         private void declareQueries(Topologies topologies) {
@@ -85,14 +90,26 @@ public class ESports implements RamaModule {
                                                 Block.each(Ops.IDENTITY, "*matches").out("*result"))
                                 .each(Ops.PRINTLN, "Retrieved matches for series:", "*seriesId", "Result:", "*result")
                                 .originPartition();
+
+                topologies.query("getRosterFromRosterId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$rosterIdToRoster", Path.key("*id"))
+                                .out("*roster")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*roster"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*roster").out("*result"))
+                                .originPartition();
+
         }
 
         @Override
         public void define(Setup setup, Topologies topologies) {
                 setup.declareDepot("*seriesDepot", Depot.hashBy(ApolloHelpers.ExtractSeriesId.class));
                 setup.declareDepot("*matchDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
+                setup.declareDepot("*rosterDepot", Depot.hashBy(ApolloHelpers.ExtractRosterId.class));
                 declareSeriesIngestionTopology(topologies);
                 declareMatchIngestionTopology(topologies);
+                declareRosterIngestionTopology(topologies);
                 declareQueries(topologies);
         }
 }

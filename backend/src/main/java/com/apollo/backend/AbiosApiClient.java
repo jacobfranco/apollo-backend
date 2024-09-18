@@ -32,6 +32,14 @@ public class AbiosApiClient {
         return makeRequest(endpoint, filter, order, skip, take);
     }
 
+    public String getMatchRosters(int matchId) throws IOException, InterruptedException {
+        return makeRequest("matches/" + matchId + "/rosters", null, null, 0, 50);
+    }
+
+    public String getSeriesRosters(int seriesId) throws IOException, InterruptedException {
+        return makeRequest("series/" + seriesId + "/rosters", null, null, 0, 50);
+    }
+
     private String makeRequest(String endpoint, String filter, String order, int skip, int take)
             throws IOException, InterruptedException {
         StringBuilder queryParams = new StringBuilder("?");
