@@ -236,6 +236,8 @@ public class ApolloApiApplication {
         public void fetchESportsData() {
                 System.out.println("Application context loaded. Fetching eSports data...");
                 if (ApolloApiController.manager != null) {
+                        ApolloApiController.manager.fetchAllActiveLolTeams();
+                        ApolloApiController.manager.fetchAllActiveLolPlayers();
                         // ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
                         // ApolloApiConfig.LOL_SEASON_END);
                         ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,

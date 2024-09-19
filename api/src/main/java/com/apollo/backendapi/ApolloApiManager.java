@@ -12,6 +12,7 @@ import java.security.NoSuchProviderException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
@@ -36,7 +37,6 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
 
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
@@ -58,6 +58,10 @@ public class ApolloApiManager {
     private static final AwsCredentialsProvider credentialsProvider;
 
     private final AbiosApiClient apiClient;
+
+    private Map<Integer, Player> playerCache = new ConcurrentHashMap<>();
+    private Map<Integer, Team> teamCache = new ConcurrentHashMap<>();
+    private Map<Integer, Roster> rosterCache = new ConcurrentHashMap<>();
 
     // Abios Rate Limit Constants
     private final AtomicInteger remainingRequests = new AtomicInteger(Integer.MAX_VALUE);
@@ -191,6 +195,8 @@ public class ApolloApiManager {
     private final Depot seriesDepot;
     private final Depot matchDepot;
     private final Depot rosterDepot;
+    private final Depot teamDepot;
+    private final Depot playerDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
@@ -198,6 +204,8 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Match> getMatchFromMatchId;
     private final QueryTopologyClient<List<Match>> getMatchesFromSeriesId;
     private final QueryTopologyClient<Roster> getRosterFromRosterId;
+    private final QueryTopologyClient<Team> getTeamFromTeamId;
+    private final QueryTopologyClient<Player> getPlayerFromPlayerId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -319,6 +327,8 @@ public class ApolloApiManager {
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
         matchDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchDepot");
         rosterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*rosterDepot");
+        teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
+        playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
@@ -326,6 +336,8 @@ public class ApolloApiManager {
         getMatchFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchFromMatchId");
         getMatchesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchesFromSeriesId");
         getRosterFromRosterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getRosterFromRosterId");
+        getTeamFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getTeamFromTeamId");
+        getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
 
     }
 
@@ -1796,13 +1808,21 @@ public class ApolloApiManager {
 
     // eSports
 
+    public void fetchAllActiveLolPlayers() {
+        String filter = String.format("active=1,game.id=2");
+        fetchAndStorePlayers(filter, "id-asc", 0, 50);
+    }
+
+    public void fetchAllActiveLolTeams() {
+        String filter = String.format("active=1,game.id=2");
+        fetchAndStoreTeams(filter, "id-asc", 0, 50);
+    }
+
     public void fetchAllLolSeries(LocalDate startDate, LocalDate endDate) {
         String startDateString = startDate.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-        String endDateString = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_INSTANT);
+        String endDateString = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
         String filter = String.format("game.id=2,start>=%s,start<=%s", startDateString, endDateString);
         fetchAndStoreSeries(filter, "start-asc", 0, 50);
-
     }
 
     private void fetchAndStoreSeries(String filter, String order, int skip, int take) {
@@ -1831,37 +1851,20 @@ public class ApolloApiManager {
     }
 
     private void fetchAndStoreMatchesForSeries(int seriesId) {
-        int skip = 0;
-        int take = 50;
-        boolean hasMore = true;
+        try {
+            waitIfNecessary();
+            String matchesData = apiClient.getMatchesForSeries(seriesId, null, "start-asc", 0, 50);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
-        while (hasMore) {
-            try {
-                waitIfNecessary();
-                String matchesData = apiClient.getMatchesForSeries(seriesId, null, "start-asc", skip, take);
-                updateRateLimitInfo(apiClient.getLastResponseHeaders());
+            List<PostMatch> postMatches = parseJsonToPostMatchList(matchesData);
 
-                List<PostMatch> postMatches = parseJsonToPostMatchList(matchesData);
-
-                if (postMatches.isEmpty()) {
-                    hasMore = false;
-                } else {
-                    for (PostMatch postMatch : postMatches) {
-                        Match match = convertToThriftMatch(postMatch);
-                        matchDepot.appendAsync(match).join();
-                        fetchAndStoreRostersForMatch(match.getId());
-                    }
-
-                    if (postMatches.size() < take) {
-                        hasMore = false;
-                    } else {
-                        skip += take;
-                    }
-                }
-            } catch (Exception e) {
-                handleException(e, "matches for series", seriesId);
-                hasMore = false;
+            for (PostMatch postMatch : postMatches) {
+                Match match = convertToThriftMatch(postMatch);
+                matchDepot.appendAsync(match).join();
+                fetchAndStoreRostersForMatch(match.getId());
             }
+        } catch (Exception e) {
+            handleException(e, "matches for series", seriesId);
         }
     }
 
@@ -1871,19 +1874,10 @@ public class ApolloApiManager {
             String rostersData = apiClient.getSeriesRosters(seriesId);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
-            // Log the raw JSON response for debugging
-            System.out.println("Raw JSON response for series " + seriesId + " rosters: " + rostersData);
-
             List<PostRoster> postRosters = parseJsonToPostRosterList(rostersData);
-            List<Roster> rosters = postRosters.stream()
-                    .map(this::convertToThriftRoster)
-                    .collect(Collectors.toList());
-
-            // Store rosters in Rama
-            for (Roster roster : rosters) {
-                rosterDepot.appendAsync(roster).join();
+            for (PostRoster postRoster : postRosters) {
+                storeRoster(postRoster);
             }
-
         } catch (Exception e) {
             handleException(e, "rosters for series", seriesId);
         }
@@ -1895,21 +1889,68 @@ public class ApolloApiManager {
             String rostersData = apiClient.getMatchRosters(matchId);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
-            // Log the raw JSON response for debugging
-            System.out.println("Raw JSON response for match " + matchId + " rosters: " + rostersData);
-
             List<PostRoster> postRosters = parseJsonToPostRosterList(rostersData);
-            List<Roster> rosters = postRosters.stream()
-                    .map(this::convertToThriftRoster)
-                    .collect(Collectors.toList());
-
-            // Store rosters in Rama
-            for (Roster roster : rosters) {
-                rosterDepot.appendAsync(roster).join();
+            for (PostRoster postRoster : postRosters) {
+                storeRoster(postRoster);
             }
-
         } catch (Exception e) {
             handleException(e, "rosters for match", matchId);
+        }
+    }
+
+    private void storeRoster(PostRoster postRoster) {
+        Roster roster = rosterCache.computeIfAbsent(postRoster.id, id -> {
+            Roster newRoster = convertToThriftRoster(postRoster);
+            rosterDepot.appendAsync(newRoster).join();
+            return newRoster;
+        });
+    }
+
+    private void fetchAndStoreTeams(String filter, String order, int skip, int take) {
+        try {
+            waitIfNecessary();
+            String teamsData = apiClient.getTeams(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostTeam> postTeams = parseJsonToPostTeamList(teamsData);
+
+            for (PostTeam postTeam : postTeams) {
+                Team team = convertToThriftTeam(postTeam);
+                teamDepot.appendAsync(team).join();
+                teamCache.put(team.getId(), team);
+            }
+
+            if (postTeams.size() == take) {
+                fetchAndStoreTeams(filter, order, skip + take, take);
+            } else {
+                System.out.println("All active teams have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "teams batch", skip);
+        }
+    }
+
+    private void fetchAndStorePlayers(String filter, String order, int skip, int take) {
+        try {
+            waitIfNecessary();
+            String playersData = apiClient.getPlayers(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostPlayer> postPlayers = parseJsonToPostPlayerList(playersData);
+
+            for (PostPlayer postPlayer : postPlayers) {
+                Player player = convertToThriftPlayer(postPlayer);
+                playerDepot.appendAsync(player).join();
+                playerCache.put(player.getId(), player);
+            }
+
+            if (postPlayers.size() == take) {
+                fetchAndStorePlayers(filter, order, skip + take, take);
+            } else {
+                System.out.println("All active players have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "players batch", skip);
         }
     }
 
@@ -1994,6 +2035,78 @@ public class ApolloApiManager {
         return rosterList;
     }
 
+    private PostPlayer parseJsonToPostPlayer(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        return objectMapper.treeToValue(rootNode, PostPlayer.class);
+    }
+
+    private PostTeam parseJsonToPostTeam(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        return objectMapper.treeToValue(rootNode, PostTeam.class);
+    }
+
+    private List<PostPlayer> parseJsonToPostPlayerList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostPlayer> playerList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                playerList.add(objectMapper.treeToValue(node, PostPlayer.class));
+            }
+        } else if (rootNode.isObject()) {
+            playerList.add(objectMapper.treeToValue(rootNode, PostPlayer.class));
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure for players");
+        }
+
+        return playerList;
+    }
+
+    private List<PostTeam> parseJsonToPostTeamList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostTeam> teamList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                teamList.add(objectMapper.treeToValue(node, PostTeam.class));
+            }
+        } else if (rootNode.isObject()) {
+            teamList.add(objectMapper.treeToValue(rootNode, PostTeam.class));
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure for teams");
+        }
+
+        return teamList;
+    }
+
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
@@ -2049,13 +2162,93 @@ public class ApolloApiManager {
     private Roster convertToThriftRoster(PostRoster postRoster) {
         Roster roster = new Roster();
         roster.setId(postRoster.id);
-        roster.setTeamId(postRoster.team.id);
-        roster.setLineUpId(postRoster.lineUp.id);
-        roster.setPlayerIds(postRoster.lineUp.players.stream()
-                .map(player -> player.id)
-                .collect(Collectors.toList()));
-        roster.setGameId(postRoster.game.id);
+        roster.setTeamId(postRoster.team != null ? postRoster.team.id : 0);
+        if (postRoster.lineUp != null && postRoster.lineUp.players != null) {
+            roster.setPlayerIds(postRoster.lineUp.players.stream()
+                    .map(p -> p.id)
+                    .collect(Collectors.toList()));
+        } else {
+            roster.setPlayerIds(Collections.emptyList());
+        }
+        roster.setGameId(postRoster.game != null ? postRoster.game.id : 0);
         return roster;
+    }
+
+    private Team convertToThriftTeam(PostTeam postTeam) {
+        Team team = new Team();
+        team.setId(postTeam.id);
+        team.setName(postTeam.name);
+        team.setAbbreviation(postTeam.abbreviation);
+        team.setAlsoKnownAs(postTeam.alsoKnownAs);
+        team.setDeletedAt(postTeam.deletedAt != null ? postTeam.deletedAt.toEpochMilli() : 0);
+        team.setActive(postTeam.active);
+        team.setImages(convertImages(postTeam.images));
+        team.setRegion(convertRegion(postTeam.region));
+        team.setSocialMediaAccounts(convertSocialMediaAccounts(postTeam.socialMediaAccounts));
+        team.setStandingRoster(convertStandingRoster(postTeam.standingRoster));
+        team.setGameId(postTeam.game != null ? postTeam.game.id : 0);
+        team.setOrganizationId(postTeam.organization != null ? postTeam.organization.id : 0);
+        team.setResourceVersion(postTeam.resourceVersion);
+        return team;
+    }
+
+    private Player convertToThriftPlayer(PostPlayer postPlayer) {
+        Player player = new Player();
+        player.setId(postPlayer.id);
+        player.setFirstName(postPlayer.firstName);
+        player.setLastName(postPlayer.lastName);
+        player.setNickName(postPlayer.nickName);
+        player.setAlsoKnownAs(postPlayer.alsoKnownAs);
+        player.setAge(convertAge(postPlayer.age));
+        player.setDeletedAt(postPlayer.deletedAt != null ? postPlayer.deletedAt.toEpochMilli() : 0);
+        player.setActive(postPlayer.active);
+        player.setImages(convertImages(postPlayer.images));
+        player.setRegion(convertRegion(postPlayer.region));
+        player.setGameId(postPlayer.game != null ? postPlayer.game.id : 0);
+        player.setRaceId(postPlayer.race != null ? postPlayer.race.id : 0);
+        player.setRoleId(postPlayer.role != null ? postPlayer.role.id : 0);
+        player.setTeamIds(convertTeamIds(postPlayer.teams));
+        player.setSocialMediaAccounts(convertSocialMediaAccounts(postPlayer.socialMediaAccounts));
+        player.setResourceVersion(postPlayer.resourceVersion);
+        return player;
+    }
+
+    private Player fetchAndConvertToThriftPlayer(PostPlayerInfo playerInfo) {
+        return playerCache.computeIfAbsent(playerInfo.id, id -> {
+            PostPlayer postPlayer = fetchFullPlayerData(id);
+            return postPlayer != null ? convertToThriftPlayer(postPlayer) : null;
+        });
+    }
+
+    private Team fetchAndConvertToThriftTeam(PostTeamInfo teamInfo) {
+        return teamCache.computeIfAbsent(teamInfo.id, id -> {
+            PostTeam postTeam = fetchFullTeamData(id);
+            return postTeam != null ? convertToThriftTeam(postTeam) : null;
+        });
+    }
+
+    private PostPlayer fetchFullPlayerData(int playerId) {
+        try {
+            waitIfNecessary();
+            String playerData = apiClient.getPlayer(playerId);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+            return parseJsonToPostPlayer(playerData);
+        } catch (Exception e) {
+            System.out.println("Error fetching player data for ID: " + playerId);
+            return null;
+        }
+    }
+
+    private PostTeam fetchFullTeamData(int teamId) {
+        try {
+            waitIfNecessary();
+            String teamData = apiClient.getTeam(teamId);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+            return parseJsonToPostTeam(teamData);
+        } catch (Exception e) {
+            System.out.println("Error fetching team data for ID: " + teamId);
+            return null;
+        }
     }
 
     // Utility method to handle Instant to epoch milliseconds conversion
@@ -2064,24 +2257,24 @@ public class ApolloApiManager {
     }
 
     // eSports getters
-
     public CompletableFuture<GetSeries> getSeries(int seriesId) {
         return getSeriesFromSeriesId.invokeAsync(seriesId)
                 .thenCompose(series -> {
                     if (series == null) {
                         return CompletableFuture.completedFuture(null);
                     }
-                    // Extract roster IDs from participants
-                    List<Integer> rosterIds = series.getParticipants().stream()
-                            .map(Participant::getRosterId)
-                            .distinct()
+                    List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants().stream()
+                            .map(this::fetchFullParticipantData)
                             .collect(Collectors.toList());
 
-                    // Batch fetch rosters
-                    return getRosters(rosterIds).thenApply(rosterMap -> {
-                        // Construct GetSeries object with roster data
-                        return new GetSeries(series, rosterMap);
-                    });
+                    return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> {
+                                GetSeries getSeries = new GetSeries(series);
+                                getSeries.participants = participantFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .collect(Collectors.toList());
+                                return getSeries;
+                            });
                 });
     }
 
@@ -2091,17 +2284,18 @@ public class ApolloApiManager {
                     if (match == null) {
                         return CompletableFuture.completedFuture(null);
                     }
-                    // Extract roster IDs from participants
-                    List<Integer> rosterIds = match.getParticipants().stream()
-                            .map(Participant::getRosterId)
-                            .distinct()
+                    List<CompletableFuture<GetParticipant>> participantFutures = match.getParticipants().stream()
+                            .map(this::fetchFullParticipantData)
                             .collect(Collectors.toList());
 
-                    // Batch fetch rosters
-                    return getRosters(rosterIds).thenApply(rosterMap -> {
-                        // Construct GetMatch object with roster data
-                        return new GetMatch(match, rosterMap);
-                    });
+                    return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> {
+                                GetMatch getMatch = new GetMatch(match);
+                                getMatch.participants = participantFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .collect(Collectors.toList());
+                                return getMatch;
+                            });
                 });
     }
 
@@ -2124,6 +2318,16 @@ public class ApolloApiManager {
                         .collect(Collectors.toMap(Roster::getId, roster -> roster)));
     }
 
+    public CompletableFuture<GetTeam> getTeam(int teamId) {
+        return getTeamFromTeamId.invokeAsync(teamId)
+                .thenApply(team -> team != null ? new GetTeam(team) : null);
+    }
+
+    public CompletableFuture<GetPlayer> getPlayer(int playerId) {
+        return getPlayerFromPlayerId.invokeAsync(playerId)
+                .thenApply(player -> player != null ? new GetPlayer(player) : null);
+    }
+
     public CompletableFuture<List<GetSeries>> getSeriesSchedule(long startTime, long endTime) {
         return getSeriesSchedule.invokeAsync(startTime, endTime)
                 .thenCompose(result -> {
@@ -2138,7 +2342,7 @@ public class ApolloApiManager {
                     // Extract all unique roster IDs from all series
                     List<Integer> rosterIds = seriesList.stream()
                             .flatMap(series -> series.getParticipants().stream())
-                            .map(Participant::getRosterId)
+                            .map(participant -> participant.getRoster().getId())
                             .distinct()
                             .collect(Collectors.toList());
 
@@ -2146,7 +2350,7 @@ public class ApolloApiManager {
                     return getRosters(rosterIds).thenApply(rosterMap -> {
                         // Create a list of GetSeries with roster data
                         return seriesList.stream()
-                                .map(series -> new GetSeries(series, rosterMap))
+                                .map(series -> new GetSeries(series))
                                 .collect(Collectors.toList());
                     });
                 });
@@ -2168,7 +2372,7 @@ public class ApolloApiManager {
                     // Extract all unique roster IDs from all matches
                     List<Integer> rosterIds = matches.stream()
                             .flatMap(match -> match.getParticipants().stream())
-                            .map(Participant::getRosterId)
+                            .map(participant -> participant.getRoster().getId())
                             .distinct()
                             .collect(Collectors.toList());
 
@@ -2176,9 +2380,36 @@ public class ApolloApiManager {
                     return getRosters(rosterIds).thenApply(rosterMap -> {
                         // Create a list of GetMatch with roster data
                         return matches.stream()
-                                .map(match -> new GetMatch(match, rosterMap))
+                                .map(match -> new GetMatch(match))
                                 .collect(Collectors.toList());
                     });
+                });
+    }
+
+    private CompletableFuture<GetParticipant> fetchFullParticipantData(Participant participant) {
+        return getRosterFromRosterId.invokeAsync(participant.getRoster().getId())
+                .thenCompose(roster -> {
+                    if (roster == null) {
+                        return CompletableFuture.completedFuture(new GetParticipant(participant));
+                    }
+                    GetParticipant getParticipant = new GetParticipant(participant);
+
+                    CompletableFuture<GetTeam> teamFuture = getTeam(roster.getTeamId());
+                    List<CompletableFuture<GetPlayer>> playerFutures = roster.getPlayerIds().stream()
+                            .map(this::getPlayer)
+                            .collect(Collectors.toList());
+
+                    return CompletableFuture.allOf(
+                            CompletableFuture.allOf(playerFutures.toArray(new CompletableFuture[0])),
+                            teamFuture)
+                            .thenApply(v -> {
+                                getParticipant.roster.team = teamFuture.join();
+                                getParticipant.roster.players = playerFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toList());
+                                return getParticipant;
+                            });
                 });
     }
 
@@ -2200,7 +2431,7 @@ public class ApolloApiManager {
         participant.setSeed(p.seed);
         participant.setScore(p.score);
         participant.setForfeit(p.forfeit);
-        participant.setRosterId(p.roster != null ? p.roster.id : 0);
+        participant.setRoster(convertToThriftRoster(p.roster));
         participant.setWinner(p.winner);
         participant.setStats(convertParticipantStats(p.stats));
         return participant;
@@ -2287,6 +2518,100 @@ public class ApolloApiManager {
             return null;
         }
         return new CoverageStatus(cs.expectation, cs.fact);
+    }
+
+    private List<Image> convertImages(List<PostImage> postImages) {
+        if (postImages == null)
+            return new ArrayList<>();
+        List<Image> images = new ArrayList<>();
+        for (PostImage postImage : postImages) {
+            Image image = new Image();
+            image.setId(postImage.id);
+            image.setType(postImage.type);
+            image.setUrl(postImage.url);
+            image.setThumbnail(postImage.thumbnail);
+            image.setFallback(postImage.fallback);
+            images.add(image);
+        }
+        return images;
+    }
+
+    private Region convertRegion(PostRegion postRegion) {
+        if (postRegion == null)
+            return null;
+        Region region = new Region();
+        region.setId(postRegion.id);
+        region.setName(postRegion.name);
+        region.setAbbreviation(postRegion.abbreviation);
+        region.setCountry(convertCountry(postRegion.country));
+        return region;
+    }
+
+    private Country convertCountry(PostCountry postCountry) {
+        if (postCountry == null)
+            return null;
+        Country country = new Country();
+        country.setId(postCountry.id);
+        country.setName(postCountry.name);
+        country.setAbbreviation(postCountry.abbreviation);
+        country.setImages(convertImages(postCountry.images));
+        return country;
+    }
+
+    private List<SocialMediaAccount> convertSocialMediaAccounts(List<PostSocialMediaAccount> postAccounts) {
+        if (postAccounts == null)
+            return new ArrayList<>();
+        List<SocialMediaAccount> accounts = new ArrayList<>();
+        for (PostSocialMediaAccount postAccount : postAccounts) {
+            SocialMediaAccount account = new SocialMediaAccount();
+            account.setHandle(postAccount.handle);
+            account.setUrl(postAccount.url);
+            account.setPlatform(convertPlatform(postAccount.platform));
+            accounts.add(account);
+        }
+        return accounts;
+    }
+
+    private Platform convertPlatform(PostPlatform postPlatform) {
+        if (postPlatform == null)
+            return null;
+        Platform platform = new Platform();
+        platform.setId(postPlatform.id);
+        platform.setName(postPlatform.name);
+        platform.setSlug(postPlatform.slug);
+        return platform;
+    }
+
+    private StandingRoster convertStandingRoster(PostStandingRoster postStandingRoster) {
+        if (postStandingRoster == null)
+            return null;
+        StandingRoster standingRoster = new StandingRoster();
+        standingRoster.setId(postStandingRoster.id);
+        standingRoster.setFrom(postStandingRoster.from != null ? postStandingRoster.from.toEpochMilli() : 0);
+        standingRoster.setTo(postStandingRoster.to != null ? postStandingRoster.to.toEpochMilli() : 0);
+        standingRoster.setRosterId(postStandingRoster.roster != null ? postStandingRoster.roster.id : 0);
+        standingRoster
+                .setDeletedAt(postStandingRoster.deletedAt != null ? postStandingRoster.deletedAt.toEpochMilli() : 0);
+        return standingRoster;
+    }
+
+    private Age convertAge(PostPlayer.PostAge postAge) {
+        if (postAge == null)
+            return null;
+        Age age = new Age();
+        age.setPrecision(postAge.precision);
+        age.setYears(postAge.years);
+        return age;
+    }
+
+    private List<Integer> convertTeamIds(List<PostPlayer.PostTeamInfo> postTeams) {
+        if (postTeams == null)
+            return new ArrayList<>();
+        List<Integer> teamIds = new ArrayList<>();
+        for (PostPlayer.PostTeamInfo postTeam : postTeams) {
+            teamIds.add(postTeam.id);
+        }
+        return teamIds;
     }
 
     public class ApiException extends Exception {
@@ -2462,8 +2787,8 @@ public class ApolloApiManager {
         return credentialsProvider;
     }
 
-    public static Region getAwsRegion() {
-        return Region.US_EAST_2; // TODO: Make configurable if needed
+    public static software.amazon.awssdk.regions.Region getAwsRegion() {
+        return software.amazon.awssdk.regions.Region.US_EAST_2; // TODO: Make configurable if needed
     }
 
 }

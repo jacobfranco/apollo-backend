@@ -49,9 +49,27 @@ public class ESports implements RamaModule {
 
                 stream.source("*rosterDepot").out("*roster")
                                 .macro(ApolloHelpers.extractFields("*roster", "*id"))
-                                .each(Ops.PRINTLN, "Ingesting Roster:", "*id")
-                                .localTransform("$$rosterIdToRoster", Path.key("*id").termVal("*roster"))
-                                .each(Ops.PRINTLN, "Roster added to $$rosterIdToRoster:", "*id", "*roster");
+                                .localTransform("$$rosterIdToRoster", Path.key("*id").termVal("*roster"));
+        }
+
+        private static void declareTeamIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("teamIngestion");
+
+                stream.pstate("$$teamIdToTeam", PState.mapSchema(Integer.class, Team.class));
+
+                stream.source("*teamDepot").out("*team")
+                                .macro(ApolloHelpers.extractFields("*team", "*id"))
+                                .localTransform("$$teamIdToTeam", Path.key("*id").termVal("*team"));
+        }
+
+        private static void declarePlayerIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("playerIngestion");
+
+                stream.pstate("$$playerIdToPlayer", PState.mapSchema(Integer.class, Player.class));
+
+                stream.source("*playerDepot").out("*player")
+                                .macro(ApolloHelpers.extractFields("*player", "*id"))
+                                .localTransform("$$playerIdToPlayer", Path.key("*id").termVal("*player"));
         }
 
         private void declareQueries(Topologies topologies) {
@@ -100,6 +118,24 @@ public class ESports implements RamaModule {
                                                 Block.each(Ops.IDENTITY, "*roster").out("*result"))
                                 .originPartition();
 
+                topologies.query("getTeamFromTeamId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$teamIdToTeam", Path.key("*id"))
+                                .out("*team")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*team"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*team").out("*result"))
+                                .originPartition();
+
+                topologies.query("getPlayerFromPlayerId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$playerIdToPlayer", Path.key("*id"))
+                                .out("*player")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*player"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*player").out("*result"))
+                                .originPartition();
+
         }
 
         @Override
@@ -107,9 +143,13 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*seriesDepot", Depot.hashBy(ApolloHelpers.ExtractSeriesId.class));
                 setup.declareDepot("*matchDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
                 setup.declareDepot("*rosterDepot", Depot.hashBy(ApolloHelpers.ExtractRosterId.class));
+                setup.declareDepot("*teamDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
+                setup.declareDepot("*playerDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 declareSeriesIngestionTopology(topologies);
                 declareMatchIngestionTopology(topologies);
                 declareRosterIngestionTopology(topologies);
+                declareTeamIngestionTopology(topologies);
+                declarePlayerIngestionTopology(topologies);
                 declareQueries(topologies);
         }
 }

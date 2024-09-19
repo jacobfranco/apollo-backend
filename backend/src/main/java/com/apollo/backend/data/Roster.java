@@ -12,16 +12,14 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField TEAM_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("teamId", org.apache.thrift.protocol.TType.I32, (short)2);
-  private static final org.apache.thrift.protocol.TField LINE_UP_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("lineUpId", org.apache.thrift.protocol.TType.I32, (short)3);
-  private static final org.apache.thrift.protocol.TField PLAYER_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("playerIds", org.apache.thrift.protocol.TType.LIST, (short)4);
-  private static final org.apache.thrift.protocol.TField GAME_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("gameId", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField PLAYER_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("playerIds", org.apache.thrift.protocol.TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField GAME_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("gameId", org.apache.thrift.protocol.TType.I32, (short)4);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new RosterStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new RosterTupleSchemeFactory();
 
   public int id; // required
   public int teamId; // required
-  public int lineUpId; // required
   public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> playerIds; // required
   public int gameId; // required
 
@@ -29,9 +27,8 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ID((short)1, "id"),
     TEAM_ID((short)2, "teamId"),
-    LINE_UP_ID((short)3, "lineUpId"),
-    PLAYER_IDS((short)4, "playerIds"),
-    GAME_ID((short)5, "gameId");
+    PLAYER_IDS((short)3, "playerIds"),
+    GAME_ID((short)4, "gameId");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -51,11 +48,9 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
           return ID;
         case 2: // TEAM_ID
           return TEAM_ID;
-        case 3: // LINE_UP_ID
-          return LINE_UP_ID;
-        case 4: // PLAYER_IDS
+        case 3: // PLAYER_IDS
           return PLAYER_IDS;
-        case 5: // GAME_ID
+        case 4: // GAME_ID
           return GAME_ID;
         default:
           return null;
@@ -102,8 +97,7 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private static final int __TEAMID_ISSET_ID = 1;
-  private static final int __LINEUPID_ISSET_ID = 2;
-  private static final int __GAMEID_ISSET_ID = 3;
+  private static final int __GAMEID_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -111,8 +105,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.TEAM_ID, new org.apache.thrift.meta_data.FieldMetaData("teamId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.LINE_UP_ID, new org.apache.thrift.meta_data.FieldMetaData("lineUpId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.PLAYER_IDS, new org.apache.thrift.meta_data.FieldMetaData("playerIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
@@ -129,7 +121,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
   public Roster(
     int id,
     int teamId,
-    int lineUpId,
     java.util.List<java.lang.Integer> playerIds,
     int gameId)
   {
@@ -138,8 +129,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     setIdIsSet(true);
     this.teamId = teamId;
     setTeamIdIsSet(true);
-    this.lineUpId = lineUpId;
-    setLineUpIdIsSet(true);
     this.playerIds = playerIds;
     this.gameId = gameId;
     setGameIdIsSet(true);
@@ -152,7 +141,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     __isset_bitfield = other.__isset_bitfield;
     this.id = other.id;
     this.teamId = other.teamId;
-    this.lineUpId = other.lineUpId;
     if (other.isSetPlayerIds()) {
       java.util.List<java.lang.Integer> __this__playerIds = new java.util.ArrayList<java.lang.Integer>(other.playerIds);
       this.playerIds = __this__playerIds;
@@ -171,8 +159,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     this.id = 0;
     setTeamIdIsSet(false);
     this.teamId = 0;
-    setLineUpIdIsSet(false);
-    this.lineUpId = 0;
     this.playerIds = null;
     setGameIdIsSet(false);
     this.gameId = 0;
@@ -222,29 +208,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
 
   public void setTeamIdIsSet(boolean value) {
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TEAMID_ISSET_ID, value);
-  }
-
-  public int getLineUpId() {
-    return this.lineUpId;
-  }
-
-  public Roster setLineUpId(int lineUpId) {
-    this.lineUpId = lineUpId;
-    setLineUpIdIsSet(true);
-    return this;
-  }
-
-  public void unsetLineUpId() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LINEUPID_ISSET_ID);
-  }
-
-  /** Returns true if field lineUpId is set (has been assigned a value) and false otherwise */
-  public boolean isSetLineUpId() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LINEUPID_ISSET_ID);
-  }
-
-  public void setLineUpIdIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LINEUPID_ISSET_ID, value);
   }
 
   public int getPlayerIdsSize() {
@@ -330,14 +293,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
       }
       break;
 
-    case LINE_UP_ID:
-      if (value == null) {
-        unsetLineUpId();
-      } else {
-        setLineUpId((java.lang.Integer)value);
-      }
-      break;
-
     case PLAYER_IDS:
       if (value == null) {
         unsetPlayerIds();
@@ -367,9 +322,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     case TEAM_ID:
       return getTeamId();
 
-    case LINE_UP_ID:
-      return getLineUpId();
-
     case PLAYER_IDS:
       return getPlayerIds();
 
@@ -392,8 +344,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
       return isSetId();
     case TEAM_ID:
       return isSetTeamId();
-    case LINE_UP_ID:
-      return isSetLineUpId();
     case PLAYER_IDS:
       return isSetPlayerIds();
     case GAME_ID:
@@ -433,15 +383,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
         return false;
     }
 
-    boolean this_present_lineUpId = true;
-    boolean that_present_lineUpId = true;
-    if (this_present_lineUpId || that_present_lineUpId) {
-      if (!(this_present_lineUpId && that_present_lineUpId))
-        return false;
-      if (this.lineUpId != that.lineUpId)
-        return false;
-    }
-
     boolean this_present_playerIds = true && this.isSetPlayerIds();
     boolean that_present_playerIds = true && that.isSetPlayerIds();
     if (this_present_playerIds || that_present_playerIds) {
@@ -470,8 +411,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     hashCode = hashCode * 8191 + id;
 
     hashCode = hashCode * 8191 + teamId;
-
-    hashCode = hashCode * 8191 + lineUpId;
 
     hashCode = hashCode * 8191 + ((isSetPlayerIds()) ? 131071 : 524287);
     if (isSetPlayerIds())
@@ -506,16 +445,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     }
     if (isSetTeamId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.teamId, other.teamId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetLineUpId(), other.isSetLineUpId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetLineUpId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.lineUpId, other.lineUpId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -570,10 +499,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     if (!first) sb.append(", ");
     sb.append("teamId:");
     sb.append(this.teamId);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("lineUpId:");
-    sb.append(this.lineUpId);
     first = false;
     if (!first) sb.append(", ");
     sb.append("playerIds:");
@@ -650,15 +575,7 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // LINE_UP_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.lineUpId = iprot.readI32();
-              struct.setLineUpIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 4: // PLAYER_IDS
+          case 3: // PLAYER_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list320 = iprot.readListBegin();
@@ -676,7 +593,7 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // GAME_ID
+          case 4: // GAME_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.gameId = iprot.readI32();
               struct.setGameIdIsSet(true);
@@ -705,9 +622,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(TEAM_ID_FIELD_DESC);
       oprot.writeI32(struct.teamId);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(LINE_UP_ID_FIELD_DESC);
-      oprot.writeI32(struct.lineUpId);
       oprot.writeFieldEnd();
       if (struct.playerIds != null) {
         oprot.writeFieldBegin(PLAYER_IDS_FIELD_DESC);
@@ -749,24 +663,18 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
       if (struct.isSetTeamId()) {
         optionals.set(1);
       }
-      if (struct.isSetLineUpId()) {
+      if (struct.isSetPlayerIds()) {
         optionals.set(2);
       }
-      if (struct.isSetPlayerIds()) {
+      if (struct.isSetGameId()) {
         optionals.set(3);
       }
-      if (struct.isSetGameId()) {
-        optionals.set(4);
-      }
-      oprot.writeBitSet(optionals, 5);
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
       if (struct.isSetTeamId()) {
         oprot.writeI32(struct.teamId);
-      }
-      if (struct.isSetLineUpId()) {
-        oprot.writeI32(struct.lineUpId);
       }
       if (struct.isSetPlayerIds()) {
         {
@@ -785,7 +693,7 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Roster struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -795,10 +703,6 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
         struct.setTeamIdIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.lineUpId = iprot.readI32();
-        struct.setLineUpIdIsSet(true);
-      }
-      if (incoming.get(3)) {
         {
           org.apache.thrift.protocol.TList _list325 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
           struct.playerIds = new java.util.ArrayList<java.lang.Integer>(_list325.size);
@@ -811,7 +715,7 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
         }
         struct.setPlayerIdsIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(3)) {
         struct.gameId = iprot.readI32();
         struct.setGameIdIsSet(true);
       }

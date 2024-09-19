@@ -103,6 +103,18 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractTeamId extends ExtractField {
+    public ExtractTeamId() {
+      super("id");
+    }
+  }
+
+  public static class ExtractPlayerId extends ExtractField {
+    public ExtractPlayerId() {
+      super("id");
+    }
+  }
+
   public static class ExtractClientId extends ExtractField {
     public ExtractClientId() {
       super("client_id");

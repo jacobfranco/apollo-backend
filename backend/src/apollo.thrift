@@ -695,15 +695,6 @@ struct ParticipantStats {
     2: optional i32 placement
 }
 
-struct Participant {
-    1: i32 seed
-    2: i32 score
-    3: bool forfeit
-    4: i32 rosterId
-    5: bool winner
-    6: optional ParticipantStats stats
-}
-
 struct Caster {
     1: bool primary
     2: i32 casterId
@@ -797,12 +788,103 @@ struct Match {
     10: i64 resourceVersion
 }
 
+// Player + Team new/modified objects
 struct Roster {
     1: i32 id
     2: i32 teamId
-    3: i32 lineUpId
-    4: list<i32> playerIds
-    5: i32 gameId
+    3: list<i32> playerIds
+    4: i32 gameId
+}
+
+struct Participant {
+    1: i32 seed
+    2: i32 score
+    3: bool forfeit
+    4: Roster roster
+    5: bool winner
+    6: optional ParticipantStats stats
+}
+
+struct Team {
+    1: i32 id
+    2: string name
+    3: string abbreviation
+    4: list<string> alsoKnownAs
+    5: optional i64 deletedAt
+    6: bool active
+    7: list<Image> images
+    8: Region region
+    9: list<SocialMediaAccount> socialMediaAccounts
+    10: optional StandingRoster standingRoster
+    11: i32 gameId
+    12: optional i32 organizationId
+    13: i64 resourceVersion
+}
+
+struct Player {
+    1: i32 id
+    2: string firstName
+    3: string lastName
+    4: string nickName
+    5: list<string> alsoKnownAs
+    6: optional Age age
+    7: optional i64 deletedAt
+    8: bool active
+    9: list<Image> images
+    10: Region region
+    11: i32 gameId
+    12: optional i32 raceId
+    13: optional i32 roleId
+    14: list<i32> teamIds
+    15: list<SocialMediaAccount> socialMediaAccounts
+    16: i64 resourceVersion
+}
+
+struct Image {
+    1: i32 id
+    2: string type
+    3: string url
+    4: string thumbnail
+    5: bool fallback
+}
+
+struct Region {
+    1: i32 id
+    2: string name
+    3: string abbreviation
+    4: Country country
+}
+
+struct Country {
+    1: i32 id
+    2: string name
+    3: string abbreviation
+    4: list<Image> images
+}
+
+struct SocialMediaAccount {
+    1: string handle
+    2: string url
+    3: Platform platform
+}
+
+struct Platform {
+    1: i32 id
+    2: string name
+    3: string slug
+}
+
+struct StandingRoster {
+    1: i32 id
+    2: i64 from
+    3: optional i64 to
+    4: i32 rosterId
+    5: optional i64 deletedAt
+}
+
+struct Age {
+    1: string precision
+    2: i32 years
 }
 
 
