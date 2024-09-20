@@ -813,7 +813,7 @@ struct Team {
     5: optional i64 deletedAt
     6: bool active
     7: list<Image> images
-    8: Region region
+    8: optional Region region
     9: list<SocialMediaAccount> socialMediaAccounts
     10: optional StandingRoster standingRoster
     11: i32 gameId

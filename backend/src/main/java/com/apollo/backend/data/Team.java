@@ -34,7 +34,7 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
   public long deletedAt; // optional
   public boolean active; // required
   public @org.apache.thrift.annotation.Nullable java.util.List<Image> images; // required
-  public @org.apache.thrift.annotation.Nullable Region region; // required
+  public @org.apache.thrift.annotation.Nullable Region region; // optional
   public @org.apache.thrift.annotation.Nullable java.util.List<SocialMediaAccount> socialMediaAccounts; // required
   public @org.apache.thrift.annotation.Nullable StandingRoster standingRoster; // optional
   public int gameId; // required
@@ -147,7 +147,7 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
   private static final int __ORGANIZATIONID_ISSET_ID = 4;
   private static final int __RESOURCEVERSION_ISSET_ID = 5;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DELETED_AT,_Fields.STANDING_ROSTER,_Fields.ORGANIZATION_ID};
+  private static final _Fields optionals[] = {_Fields.DELETED_AT,_Fields.REGION,_Fields.STANDING_ROSTER,_Fields.ORGANIZATION_ID};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -167,7 +167,7 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
     tmpMap.put(_Fields.IMAGES, new org.apache.thrift.meta_data.FieldMetaData("images", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Image.class))));
-    tmpMap.put(_Fields.REGION, new org.apache.thrift.meta_data.FieldMetaData("region", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.REGION, new org.apache.thrift.meta_data.FieldMetaData("region", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Region.class)));
     tmpMap.put(_Fields.SOCIAL_MEDIA_ACCOUNTS, new org.apache.thrift.meta_data.FieldMetaData("socialMediaAccounts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
@@ -194,7 +194,6 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
     java.util.List<java.lang.String> alsoKnownAs,
     boolean active,
     java.util.List<Image> images,
-    Region region,
     java.util.List<SocialMediaAccount> socialMediaAccounts,
     int gameId,
     long resourceVersion)
@@ -208,7 +207,6 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
     this.active = active;
     setActiveIsSet(true);
     this.images = images;
-    this.region = region;
     this.socialMediaAccounts = socialMediaAccounts;
     this.gameId = gameId;
     setGameIdIsSet(true);
@@ -1234,14 +1232,16 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
       sb.append(this.images);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("region:");
-    if (this.region == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.region);
+    if (isSetRegion()) {
+      if (!first) sb.append(", ");
+      sb.append("region:");
+      if (this.region == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.region);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("socialMediaAccounts:");
     if (this.socialMediaAccounts == null) {
@@ -1527,9 +1527,11 @@ public class Team implements org.apache.thrift.TBase<Team, Team._Fields>, java.i
         oprot.writeFieldEnd();
       }
       if (struct.region != null) {
-        oprot.writeFieldBegin(REGION_FIELD_DESC);
-        struct.region.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetRegion()) {
+          oprot.writeFieldBegin(REGION_FIELD_DESC);
+          struct.region.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.socialMediaAccounts != null) {
         oprot.writeFieldBegin(SOCIAL_MEDIA_ACCOUNTS_FIELD_DESC);

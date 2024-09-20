@@ -28,7 +28,7 @@ public class GetTeam {
         this.deletedAt = team.isSetDeletedAt() ? Instant.ofEpochMilli(team.getDeletedAt()) : null;
         this.active = team.isActive();
         this.images = team.getImages().stream().map(GetImage::new).collect(Collectors.toList());
-        this.region = new GetRegion(team.getRegion());
+        this.region = team.isSetRegion() ? new GetRegion(team.getRegion()) : null;
         this.socialMediaAccounts = team.getSocialMediaAccounts().stream().map(GetSocialMediaAccount::new)
                 .collect(Collectors.toList());
         this.standingRoster = team.isSetStandingRoster() ? new GetStandingRoster(team.getStandingRoster()) : null;

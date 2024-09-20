@@ -32,13 +32,10 @@ public class ESports implements RamaModule {
 
                 stream.source("*matchDepot").out("*match")
                                 .macro(ApolloHelpers.extractFields("*match", "*id", "*seriesId"))
-                                .each(Ops.PRINTLN, "Ingesting Match:", "*id", "SeriesId:", "*seriesId")
                                 .localTransform("$$matchIdToMatch", Path.key("*id").termVal("*match"))
-                                .each(Ops.PRINTLN, "Match added to $$matchIdToMatch:", "*id", "->", "*match")
                                 .hashPartition("*seriesId")
                                 .compoundAgg("$$seriesIdToMatches",
-                                                CompoundAgg.map("*seriesId", Agg.list("*match")))
-                                .each(Ops.PRINTLN, "Match added to $$seriesIdToMatches:", "*seriesId", "*match");
+                                                CompoundAgg.map("*seriesId", Agg.list("*match")));
 
         }
 
@@ -98,15 +95,12 @@ public class ESports implements RamaModule {
                                 .originPartition();
 
                 topologies.query("getMatchesFromSeriesId", "*seriesId").out("*result")
-                                .each(Ops.PRINTLN, "Getting matches from series id: ", "*seriesId")
                                 .hashPartition("*seriesId")
                                 .localSelect("$$seriesIdToMatches", Path.key("*seriesId"))
                                 .out("*matches")
-                                .each(Ops.PRINTLN, "Matches found for series:", "*seriesId", "Matches:", "*matches")
                                 .ifTrue(new Expr(Ops.IS_NULL, "*matches"),
                                                 Block.each(() -> null).out("*result"),
                                                 Block.each(Ops.IDENTITY, "*matches").out("*result"))
-                                .each(Ops.PRINTLN, "Retrieved matches for series:", "*seriesId", "Result:", "*result")
                                 .originPartition();
 
                 topologies.query("getRosterFromRosterId", "*id").out("*result")

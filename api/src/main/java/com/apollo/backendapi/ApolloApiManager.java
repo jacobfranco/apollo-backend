@@ -2332,27 +2332,34 @@ public class ApolloApiManager {
         return getSeriesSchedule.invokeAsync(startTime, endTime)
                 .thenCompose(result -> {
                     List<Series> seriesList = new ArrayList<>();
-
                     for (Object entry : result.entrySet()) {
                         Map.Entry<Long, Map<Integer, Series>> mapEntry = (Map.Entry<Long, Map<Integer, Series>>) entry;
                         Map<Integer, Series> innerMap = mapEntry.getValue();
                         seriesList.addAll(innerMap.values());
                     }
 
-                    // Extract all unique roster IDs from all series
-                    List<Integer> rosterIds = seriesList.stream()
-                            .flatMap(series -> series.getParticipants().stream())
-                            .map(participant -> participant.getRoster().getId())
-                            .distinct()
+                    List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
+                            .map(series -> {
+                                List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
+                                        .stream()
+                                        .map(this::fetchFullParticipantData)
+                                        .collect(Collectors.toList());
+
+                                return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                                        .thenApply(v -> {
+                                            GetSeries getSeries = new GetSeries(series);
+                                            getSeries.participants = participantFutures.stream()
+                                                    .map(CompletableFuture::join)
+                                                    .collect(Collectors.toList());
+                                            return getSeries;
+                                        });
+                            })
                             .collect(Collectors.toList());
 
-                    // Batch fetch rosters
-                    return getRosters(rosterIds).thenApply(rosterMap -> {
-                        // Create a list of GetSeries with roster data
-                        return seriesList.stream()
-                                .map(series -> new GetSeries(series))
-                                .collect(Collectors.toList());
-                    });
+                    return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> futuresList.stream()
+                                    .map(CompletableFuture::join)
+                                    .collect(Collectors.toList()));
                 });
     }
 
@@ -2369,20 +2376,28 @@ public class ApolloApiManager {
                         return CompletableFuture.completedFuture(Collections.emptyList());
                     }
 
-                    // Extract all unique roster IDs from all matches
-                    List<Integer> rosterIds = matches.stream()
-                            .flatMap(match -> match.getParticipants().stream())
-                            .map(participant -> participant.getRoster().getId())
-                            .distinct()
+                    List<CompletableFuture<GetMatch>> matchFutures = matches.stream()
+                            .map(match -> {
+                                List<CompletableFuture<GetParticipant>> participantFutures = match.getParticipants()
+                                        .stream()
+                                        .map(this::fetchFullParticipantData)
+                                        .collect(Collectors.toList());
+
+                                return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                                        .thenApply(v -> {
+                                            GetMatch getMatch = new GetMatch(match);
+                                            getMatch.participants = participantFutures.stream()
+                                                    .map(CompletableFuture::join)
+                                                    .collect(Collectors.toList());
+                                            return getMatch;
+                                        });
+                            })
                             .collect(Collectors.toList());
 
-                    // Batch fetch rosters
-                    return getRosters(rosterIds).thenApply(rosterMap -> {
-                        // Create a list of GetMatch with roster data
-                        return matches.stream()
-                                .map(match -> new GetMatch(match))
-                                .collect(Collectors.toList());
-                    });
+                    return CompletableFuture.allOf(matchFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> matchFutures.stream()
+                                    .map(CompletableFuture::join)
+                                    .collect(Collectors.toList()));
                 });
     }
 
