@@ -2012,4 +2012,30 @@ public class ApolloApiController {
                 });
     }
 
+    /*
+     * League of Legends Team Endpoints
+     * ======================================
+     * - GET /api/lolteams/{id}
+     * ======================================
+     */
+
+    @GetMapping("/lolteams/{id}")
+    public Mono<GetTeam> getLolTeam(@PathVariable("id") int teamId) {
+        return Mono.fromFuture(manager.getTeam(teamId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
+    }
+
+    /*
+     * League of Legends Player Endpoints
+     * ======================================
+     * - GET /api/lolplayers/{id}
+     * ======================================
+     */
+
+    @GetMapping("/lolplayers/{id}")
+    public Mono<GetPlayer> getLolPlayer(@PathVariable("id") int playerId) {
+        return Mono.fromFuture(manager.getPlayer(playerId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found")));
+    }
+
 }
