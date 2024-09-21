@@ -77,6 +77,16 @@ public class ESports implements RamaModule {
                                 .localTransform("$$lolMatchIdToSummary", Path.key("*id").termVal("*summary"));
         }
 
+        private static void declareAssetIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("assetIngestion");
+
+                stream.pstate("$$assetIdToAsset", PState.mapSchema(Integer.class, Asset.class));
+
+                stream.source("*assetDepot").out("*asset")
+                                .macro(ApolloHelpers.extractFields("*asset", "*id"))
+                                .localTransform("$$assetIdToAsset", Path.key("*id").termVal("*asset"));
+        }
+
         private void declareQueries(Topologies topologies) {
                 topologies.query("getSeriesFromSeriesId", "*id").out("*result")
                                 .hashPartition("*id")
@@ -147,6 +157,15 @@ public class ESports implements RamaModule {
                                                 Block.each(Ops.IDENTITY, "*summary").out("*result"))
                                 .originPartition();
 
+                topologies.query("getAssetFromAssetId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$assetIdToAsset", Path.key("*id"))
+                                .out("*asset")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*asset"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*asset").out("*result"))
+                                .originPartition();
+
         }
 
         @Override
@@ -157,12 +176,14 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*teamDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
                 setup.declareDepot("*playerDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
+                setup.declareDepot("*assetDepot", Depot.hashBy(ApolloHelpers.ExtractAssetId.class));
                 declareSeriesIngestionTopology(topologies);
                 declareMatchIngestionTopology(topologies);
                 declareRosterIngestionTopology(topologies);
                 declareTeamIngestionTopology(topologies);
                 declarePlayerIngestionTopology(topologies);
                 declareLolMatchSummaryIngestionTopology(topologies);
+                declareAssetIngestionTopology(topologies);
                 declareQueries(topologies);
         }
 }

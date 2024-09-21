@@ -240,6 +240,7 @@ public class ApolloApiApplication {
                         ApolloApiController.manager.fetchAllActiveLolPlayers();
                         // ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
                         // ApolloApiConfig.LOL_SEASON_END);
+                        ApolloApiController.manager.fetchAllLolAssets();
                         ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,
                                         ApolloApiConfig.LOL_END_TEST);
                 } else {

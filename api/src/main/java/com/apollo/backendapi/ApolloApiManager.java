@@ -198,6 +198,7 @@ public class ApolloApiManager {
     private final Depot teamDepot;
     private final Depot playerDepot;
     private final Depot lolMatchSummaryDepot;
+    private final Depot assetDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
@@ -208,6 +209,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Team> getTeamFromTeamId;
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
+    private final QueryTopologyClient<Asset> getAssetFromAssetId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -332,6 +334,7 @@ public class ApolloApiManager {
         teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
         playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
         lolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolMatchSummaryDepot");
+        assetDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*assetDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
@@ -342,6 +345,7 @@ public class ApolloApiManager {
         getTeamFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getTeamFromTeamId");
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
+        getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
 
     }
 
@@ -1822,6 +1826,11 @@ public class ApolloApiManager {
         fetchAndStoreTeams(filter, "id-asc", 0, 50);
     }
 
+    public void fetchAllLolAssets() {
+        String filter = "game.id=2";
+        fetchAndStoreAssets(filter, "id-asc", 0, 50);
+    }
+
     public void fetchAllLolSeries(LocalDate startDate, LocalDate endDate) {
         String startDateString = startDate.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
         String endDateString = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
@@ -1970,9 +1979,6 @@ public class ApolloApiManager {
             String summaryData = apiClient.getMatchSummary(matchId);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
-            // Log the raw JSON for debugging
-            System.out.println("Raw JSON for match " + matchId + ": " + summaryData);
-
             PostLolMatchSummary postLolSummary = parseJsonToPostLolMatchSummary(summaryData);
             if (postLolSummary != null) {
                 LolMatchSummary lolSummary = convertToThriftLolMatchSummary(postLolSummary);
@@ -1982,6 +1988,29 @@ public class ApolloApiManager {
             }
         } catch (Exception e) {
             handleException(e, "LoL match summary", matchId);
+        }
+    }
+
+    private void fetchAndStoreAssets(String filter, String order, int skip, int take) {
+        try {
+            waitIfNecessary();
+            String assetsData = apiClient.getAssets(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostAsset> postAssets = parseJsonToPostAssetList(assetsData);
+
+            for (PostAsset postAsset : postAssets) {
+                Asset asset = convertToThriftAsset(postAsset);
+                assetDepot.appendAsync(asset).join();
+            }
+
+            if (postAssets.size() == take) {
+                fetchAndStoreAssets(filter, order, skip + take, take);
+            } else {
+                System.out.println("All assets have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "assets batch", skip);
         }
     }
 
@@ -2161,6 +2190,30 @@ public class ApolloApiManager {
         }
     }
 
+    private List<PostAsset> parseJsonToPostAssetList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostAsset> assetList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                assetList.add(objectMapper.treeToValue(node, PostAsset.class));
+            }
+        } else if (rootNode.isObject()) {
+            assetList.add(objectMapper.treeToValue(rootNode, PostAsset.class));
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure for assets");
+        }
+
+        return assetList;
+    }
+
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
@@ -2279,6 +2332,18 @@ public class ApolloApiManager {
         summary.setMatch(convertToThriftLolMatch(postSummary.match));
 
         return summary;
+    }
+
+    private Asset convertToThriftAsset(PostAsset postAsset) {
+        Asset asset = new Asset();
+        asset.setId(postAsset.id);
+        asset.setName(postAsset.name);
+        asset.setGame(convertToThriftGame(postAsset.game));
+        asset.setCategory(postAsset.category);
+        asset.setSubcategory(postAsset.subcategory);
+        asset.setExternalId(postAsset.external_id);
+        asset.setImages(convertImages(postAsset.images));
+        return asset;
     }
 
     // Utility method to handle Instant to epoch milliseconds conversion
@@ -2461,6 +2526,11 @@ public class ApolloApiManager {
     public CompletableFuture<GetLolMatchSummary> getLolMatchSummary(int matchId) {
         return getLolMatchSummaryFromMatchId.invokeAsync(matchId)
                 .thenApply(summary -> summary != null ? new GetLolMatchSummary(summary) : null);
+    }
+
+    public CompletableFuture<Asset> getAsset(int assetId) {
+        return getAssetFromAssetId.invokeAsync(assetId)
+                .thenApply(asset -> asset != null ? asset : null);
     }
 
     // eSports Helpers
@@ -2977,6 +3047,17 @@ public class ApolloApiManager {
         timeline.setEnd(postTimeline.end.toString());
         timeline.setClock(convertToThriftLolMatchClock(postTimeline.clock));
         return timeline;
+    }
+
+    private Game convertToThriftGame(PostGame postGame) {
+        if (postGame == null)
+            return null;
+        Game game = new Game();
+        game.setId(postGame.id);
+        game.setName(postGame.name);
+        game.setShortName(postGame.shortName);
+        game.setSlug(postGame.slug);
+        return game;
     }
 
     public class ApiException extends Exception {

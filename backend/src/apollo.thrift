@@ -1131,6 +1131,24 @@ struct LolMatchTimeline {
     4: LolMatchClock clock
 }
 
+struct Asset {
+    1: i32 id
+    2: string name
+    3: Game game
+    4: string category
+    5: string subcategory
+    6: string externalId
+    7: list<Image> images
+}
+
+struct Game {
+    1: i32 id
+    2: string name
+    3: string shortName
+    4: string slug
+}
+
+
 
 
 

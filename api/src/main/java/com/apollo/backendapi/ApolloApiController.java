@@ -2051,4 +2051,18 @@ public class ApolloApiController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
+    /*
+     * Lol Assets Endpoints
+     * ======================================
+     * - GET /api/lolassets/{id}/
+     * ======================================
+     */
+
+    @GetMapping("/api/lolassets/{id}")
+    public Mono<GetAsset> getLolAsset(@PathVariable("id") int assetId) {
+        return Mono.fromFuture(manager.getAsset(assetId))
+                .map(asset -> new GetAsset(asset))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found")));
+    }
+
 }

@@ -60,6 +60,10 @@ public class AbiosApiClient {
         return makeRequest("matches/" + matchId + "/live/cv/summary", null, null, 0, 1);
     }
 
+    public String getAssets(String filter, String order, int skip, int take) throws IOException, InterruptedException {
+        return makeRequest("assets", filter, order, skip, take);
+    }
+
     private String makeRequest(String endpoint, String filter, String order, int skip, int take)
             throws IOException, InterruptedException {
         StringBuilder queryParams = new StringBuilder("?");
