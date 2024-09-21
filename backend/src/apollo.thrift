@@ -682,7 +682,33 @@ struct RemoveFollowSuggestion {
   2: required AccountId targetId;
 }
 
-// ESports stuff 
+struct Application {
+  1: required string client_id
+  2: required string client_secret
+  3: required string name
+  4: required string redirect_uri
+  5: required string scopes
+}
+
+struct SpaceFanout {
+  1: required AccountId authorId;
+  2: required StatusId statusId;
+  3: required string space;
+}
+
+struct FollowSpace {
+  1: required AccountId accountId;
+  2: required string token;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveFollowSpace {
+  1: required AccountId accountId;
+  2: required string token;
+  3: required Timestamp timestamp;
+}
+
+// ESports 
 
 struct BracketPosition {
     1: string part
@@ -788,7 +814,6 @@ struct Match {
     10: i64 resourceVersion
 }
 
-// Player + Team new/modified objects
 struct Roster {
     1: i32 id
     2: i32 teamId
@@ -887,32 +912,228 @@ struct Age {
     2: i32 years
 }
 
+// Match summary additions
 
-struct Application {
-  1: required string client_id
-  2: required string client_secret
-  3: required string name
-  4: required string redirect_uri
-  5: required string scopes
+struct LolMatchSummary {
+  1: i32 id
+  2: LolTeams teams
+  3: LolPits pits
+  4: i64 latestEventsChannelIndex
+  5: i64 latestStatesChannelIndex
+  6: string timestamp
+  7: LolMatch match
 }
 
-struct SpaceFanout {
-  1: required AccountId authorId;
-  2: required StatusId statusId;
-  3: required string space;
+struct LolTeams {
+    1: LolTeamSummary home
+    2: LolTeamSummary away
 }
 
-struct FollowSpace {
-  1: required AccountId accountId;
-  2: required string token;
-  3: required Timestamp timestamp;
+struct LolTeamSummary {
+    1: LolRoster roster
+    2: i32 score
+    3: bool isWinner
+    4: i32 goldEarned
+    5: i32 turretsDestroyed
+    6: i32 inhibitorsDestroyed
+    7: LolFaction faction
+    8: LolStructures structures
+    9: LolCreeps creeps
+    10: list<LolPlayerSummary> players
 }
 
-struct RemoveFollowSpace {
-  1: required AccountId accountId;
-  2: required string token;
-  3: required Timestamp timestamp;
+struct LolRoster {
+    1: i32 id
 }
+
+struct LolFaction {
+    1: i32 id
+}
+
+struct LolStructures {
+    1: LolTurrets turrets
+    2: LolInhibitors inhibitors
+}
+
+struct LolTurrets {
+    1: LolTurret topOuter
+    2: LolTurret topInner
+    3: LolTurret topInhibitor
+    4: LolTurret topNexus
+    5: LolTurret midOuter
+    6: LolTurret midInner
+    7: LolTurret midInhibitor
+    8: LolTurret botOuter
+    9: LolTurret botInner
+    10: LolTurret botInhibitor
+    11: LolTurret botNexus
+}
+
+struct LolTurret {
+    1: bool standing
+}
+
+struct LolInhibitors {
+    1: LolInhibitor top
+    2: LolInhibitor mid
+    3: LolInhibitor bot
+}
+
+struct LolInhibitor {
+    1: bool standing
+    2: optional LolMatchClock respawnTime
+}
+
+struct LolCreeps {
+    1: LolOverallCreeps overall
+    2: LolNeutralCreeps neutrals
+}
+
+struct LolOverallCreeps {
+    1: LolCreepKills kills
+}
+
+struct LolCreepKills {
+    1: i32 total
+}
+
+struct LolNeutralCreeps {
+    1: LolNeutralCreepKills kills
+}
+
+struct LolNeutralCreepKills {
+    1: list<LolEliteCreepKills> perEliteType
+}
+
+struct LolEliteCreepKills {
+    1: LolElite elite
+    2: i32 total
+}
+
+struct LolElite {
+    1: i32 id
+}
+
+struct LolPlayerSummary {
+    1: i32 id
+    2: i32 uiIndex
+    3: LolChampion champion
+    4: LolKills kills
+    5: LolAssists assists
+    6: LolDeaths deaths
+    7: LolRevives revives
+    8: optional list<LolMultiKill> multiKills
+    9: list<i32> killStreaks
+    10: LolItems items
+    11: list<LolSummonerSpell> summonerSpells
+    12: LolCreeps creeps
+    13: optional LolKeystone keystone
+    14: optional LolPosition position
+}
+
+struct LolChampion {
+    1: i32 id
+}
+
+struct LolKills {
+    1: i32 total
+    2: LolSpecialKills special
+}
+
+struct LolSpecialKills {
+    1: i32 firstBlood
+}
+
+struct LolAssists {
+    1: i32 total
+}
+
+struct LolDeaths {
+    1: i32 total
+}
+
+struct LolRevives {
+    1: LolFriendlyRevives friendly
+}
+
+struct LolFriendlyRevives {
+    1: LolReviveCount given
+    2: LolReviveCount taken
+}
+
+struct LolReviveCount {
+    1: i32 total
+}
+
+struct LolMultiKill {
+    1: i32 nrKills
+    2: i32 count
+}
+
+struct LolItems {
+    1: list<LolItem> inventory
+    2: list<LolItem> trinketSlot
+}
+
+struct LolItem {
+    1: i32 id
+    2: i32 slot
+}
+
+struct LolSummonerSpell {
+    1: i32 id
+    2: i32 slot
+}
+
+struct LolKeystone {
+    1: i32 id
+}
+
+struct LolPosition {
+    1: double x
+    2: double y
+    // Note: normalized_coordinate and in_game_coordinate are not included
+    // Add if needed 
+}
+
+struct LolPits {
+    1: LolPit dragonPit
+    2: LolPit baronPit
+}
+
+struct LolPit {
+    1: LolNpc npc
+    2: string npcStatus
+    3: optional LolMatchClock emptySinceTime
+    4: optional LolMatchClock spawnTime
+}
+
+struct LolNpc {
+    1: i32 id
+}
+
+struct LolMatch {
+    1: i32 id
+    2: string patch
+    3: string phase
+    4: LolMatchClock clock
+    5: LolMatchTimeline timeline
+}
+
+struct LolMatchClock {
+    1: i32 milliseconds
+}
+
+struct LolMatchTimeline {
+    1: string phase
+    2: string start
+    3: string end
+    4: LolMatchClock clock
+}
+
+
+
+
 
 
 

@@ -197,6 +197,7 @@ public class ApolloApiManager {
     private final Depot rosterDepot;
     private final Depot teamDepot;
     private final Depot playerDepot;
+    private final Depot lolMatchSummaryDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
@@ -206,6 +207,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Roster> getRosterFromRosterId;
     private final QueryTopologyClient<Team> getTeamFromTeamId;
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
+    private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -329,6 +331,7 @@ public class ApolloApiManager {
         rosterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*rosterDepot");
         teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
         playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
+        lolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolMatchSummaryDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
@@ -338,6 +341,7 @@ public class ApolloApiManager {
         getRosterFromRosterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getRosterFromRosterId");
         getTeamFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getTeamFromTeamId");
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
+        getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
 
     }
 
@@ -1857,11 +1861,17 @@ public class ApolloApiManager {
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostMatch> postMatches = parseJsonToPostMatchList(matchesData);
-
             for (PostMatch postMatch : postMatches) {
                 Match match = convertToThriftMatch(postMatch);
                 matchDepot.appendAsync(match).join();
                 fetchAndStoreRostersForMatch(match.getId());
+
+                // Check coverage before fetching match summary
+                if (isCoverageAvailable(match)) {
+                    fetchAndStoreLolMatchSummary(match.getId());
+                } else {
+                    System.out.println("Match " + match.getId() + " summary is not available. Skipping summary fetch.");
+                }
             }
         } catch (Exception e) {
             handleException(e, "matches for series", seriesId);
@@ -1951,6 +1961,27 @@ public class ApolloApiManager {
             }
         } catch (Exception e) {
             handleException(e, "players batch", skip);
+        }
+    }
+
+    public void fetchAndStoreLolMatchSummary(int matchId) {
+        try {
+            waitIfNecessary();
+            String summaryData = apiClient.getMatchSummary(matchId);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            // Log the raw JSON for debugging
+            System.out.println("Raw JSON for match " + matchId + ": " + summaryData);
+
+            PostLolMatchSummary postLolSummary = parseJsonToPostLolMatchSummary(summaryData);
+            if (postLolSummary != null) {
+                LolMatchSummary lolSummary = convertToThriftLolMatchSummary(postLolSummary);
+                lolMatchSummaryDepot.appendAsync(lolSummary).join();
+            } else {
+                System.out.println("Failed to parse match summary for match " + matchId);
+            }
+        } catch (Exception e) {
+            handleException(e, "LoL match summary", matchId);
         }
     }
 
@@ -2107,6 +2138,29 @@ public class ApolloApiManager {
         return teamList;
     }
 
+    private PostLolMatchSummary parseJsonToPostLolMatchSummary(String jsonData) {
+        try {
+            JsonNode rootNode = objectMapper.readTree(jsonData);
+
+            if (rootNode.has("error_type")) {
+                String errorType = rootNode.get("error_type").asText();
+                String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+                throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+            }
+
+            // Check if the JSON structure matches what we expect
+            if (!rootNode.has("teams") || !rootNode.has("pits") || !rootNode.has("match")) {
+                System.err.println("Unexpected LoL match summary JSON structure: " + jsonData);
+                return null;
+            }
+
+            return objectMapper.treeToValue(rootNode, PostLolMatchSummary.class);
+        } catch (Exception e) {
+            System.err.println("Error parsing LoL match summary: " + e.getMessage());
+            return null;
+        }
+    }
+
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
@@ -2213,42 +2267,18 @@ public class ApolloApiManager {
         return player;
     }
 
-    private Player fetchAndConvertToThriftPlayer(PostPlayerInfo playerInfo) {
-        return playerCache.computeIfAbsent(playerInfo.id, id -> {
-            PostPlayer postPlayer = fetchFullPlayerData(id);
-            return postPlayer != null ? convertToThriftPlayer(postPlayer) : null;
-        });
-    }
+    private LolMatchSummary convertToThriftLolMatchSummary(PostLolMatchSummary postSummary) {
+        LolMatchSummary summary = new LolMatchSummary();
 
-    private Team fetchAndConvertToThriftTeam(PostTeamInfo teamInfo) {
-        return teamCache.computeIfAbsent(teamInfo.id, id -> {
-            PostTeam postTeam = fetchFullTeamData(id);
-            return postTeam != null ? convertToThriftTeam(postTeam) : null;
-        });
-    }
+        summary.setId(postSummary.match.id);
+        summary.setTeams(convertToThriftLolTeams(postSummary.teams));
+        summary.setPits(convertToThriftLolPits(postSummary.pits));
+        summary.setLatestEventsChannelIndex(postSummary.latest_events_channel_index);
+        summary.setLatestStatesChannelIndex(postSummary.latest_states_channel_index);
+        summary.setTimestamp(postSummary.timestamp.toString());
+        summary.setMatch(convertToThriftLolMatch(postSummary.match));
 
-    private PostPlayer fetchFullPlayerData(int playerId) {
-        try {
-            waitIfNecessary();
-            String playerData = apiClient.getPlayer(playerId);
-            updateRateLimitInfo(apiClient.getLastResponseHeaders());
-            return parseJsonToPostPlayer(playerData);
-        } catch (Exception e) {
-            System.out.println("Error fetching player data for ID: " + playerId);
-            return null;
-        }
-    }
-
-    private PostTeam fetchFullTeamData(int teamId) {
-        try {
-            waitIfNecessary();
-            String teamData = apiClient.getTeam(teamId);
-            updateRateLimitInfo(apiClient.getLastResponseHeaders());
-            return parseJsonToPostTeam(teamData);
-        } catch (Exception e) {
-            System.out.println("Error fetching team data for ID: " + teamId);
-            return null;
-        }
+        return summary;
     }
 
     // Utility method to handle Instant to epoch milliseconds conversion
@@ -2426,6 +2456,11 @@ public class ApolloApiManager {
                                 return getParticipant;
                             });
                 });
+    }
+
+    public CompletableFuture<GetLolMatchSummary> getLolMatchSummary(int matchId) {
+        return getLolMatchSummaryFromMatchId.invokeAsync(matchId)
+                .thenApply(summary -> summary != null ? new GetLolMatchSummary(summary) : null);
     }
 
     // eSports Helpers
@@ -2610,7 +2645,7 @@ public class ApolloApiManager {
         return standingRoster;
     }
 
-    private Age convertAge(PostPlayer.PostAge postAge) {
+    private Age convertAge(PostAge postAge) {
         if (postAge == null)
             return null;
         Age age = new Age();
@@ -2619,14 +2654,329 @@ public class ApolloApiManager {
         return age;
     }
 
-    private List<Integer> convertTeamIds(List<PostPlayer.PostTeamInfo> postTeams) {
+    private List<Integer> convertTeamIds(List<PostTeamInfo> postTeams) {
         if (postTeams == null)
             return new ArrayList<>();
         List<Integer> teamIds = new ArrayList<>();
-        for (PostPlayer.PostTeamInfo postTeam : postTeams) {
+        for (PostTeamInfo postTeam : postTeams) {
             teamIds.add(postTeam.id);
         }
         return teamIds;
+    }
+
+    private LolTeams convertToThriftLolTeams(PostLolTeams postTeams) {
+        LolTeams teams = new LolTeams();
+        teams.setHome(convertToThriftLolTeamSummary(postTeams.home));
+        teams.setAway(convertToThriftLolTeamSummary(postTeams.away));
+        return teams;
+    }
+
+    private LolTeamSummary convertToThriftLolTeamSummary(PostLolTeamSummary postTeam) {
+        LolTeamSummary team = new LolTeamSummary();
+        team.setRoster(convertToThriftLolRoster(postTeam.roster));
+        team.setScore(postTeam.score);
+        team.setIsWinner(postTeam.is_winner);
+        team.setGoldEarned(postTeam.gold_earned);
+        team.setTurretsDestroyed(postTeam.turrets_destroyed);
+        team.setInhibitorsDestroyed(postTeam.inhibitors_destroyed);
+        team.setFaction(convertToThriftLolFaction(postTeam.faction));
+        team.setStructures(convertToThriftLolStructures(postTeam.structures));
+        team.setCreeps(convertToThriftLolCreeps(postTeam.creeps));
+        team.setPlayers(postTeam.players.stream()
+                .map(this::convertToThriftLolPlayerSummary)
+                .collect(Collectors.toList()));
+        return team;
+    }
+
+    private LolRoster convertToThriftLolRoster(PostLolRoster postRoster) {
+        LolRoster roster = new LolRoster();
+        roster.setId(postRoster.id);
+        return roster;
+    }
+
+    private LolFaction convertToThriftLolFaction(PostLolFaction postFaction) {
+        LolFaction faction = new LolFaction();
+        faction.setId(postFaction.id);
+        return faction;
+    }
+
+    private LolStructures convertToThriftLolStructures(PostLolStructures postStructures) {
+        LolStructures structures = new LolStructures();
+        structures.setTurrets(convertToThriftLolTurrets(postStructures.turrets));
+        structures.setInhibitors(convertToThriftLolInhibitors(postStructures.inhibitors));
+        return structures;
+    }
+
+    private LolTurrets convertToThriftLolTurrets(PostLolTurrets postTurrets) {
+        LolTurrets turrets = new LolTurrets();
+        turrets.setTopOuter(convertToThriftLolTurret(postTurrets.top_outer));
+        turrets.setTopInner(convertToThriftLolTurret(postTurrets.top_inner));
+        turrets.setTopInhibitor(convertToThriftLolTurret(postTurrets.top_inhibitor));
+        turrets.setTopNexus(convertToThriftLolTurret(postTurrets.top_nexus));
+        turrets.setMidOuter(convertToThriftLolTurret(postTurrets.mid_outer));
+        turrets.setMidInner(convertToThriftLolTurret(postTurrets.mid_inner));
+        turrets.setMidInhibitor(convertToThriftLolTurret(postTurrets.mid_inhibitor));
+        turrets.setBotOuter(convertToThriftLolTurret(postTurrets.bot_outer));
+        turrets.setBotInner(convertToThriftLolTurret(postTurrets.bot_inner));
+        turrets.setBotInhibitor(convertToThriftLolTurret(postTurrets.bot_inhibitor));
+        turrets.setBotNexus(convertToThriftLolTurret(postTurrets.bot_nexus));
+        return turrets;
+    }
+
+    private LolTurret convertToThriftLolTurret(PostLolTurret postTurret) {
+        LolTurret turret = new LolTurret();
+        turret.setStanding(postTurret.standing);
+        return turret;
+    }
+
+    private LolInhibitors convertToThriftLolInhibitors(PostLolInhibitors postInhibitors) {
+        LolInhibitors inhibitors = new LolInhibitors();
+        inhibitors.setTop(convertToThriftLolInhibitor(postInhibitors.top));
+        inhibitors.setMid(convertToThriftLolInhibitor(postInhibitors.mid));
+        inhibitors.setBot(convertToThriftLolInhibitor(postInhibitors.bot));
+        return inhibitors;
+    }
+
+    private LolInhibitor convertToThriftLolInhibitor(PostLolInhibitor postInhibitor) {
+        LolInhibitor inhibitor = new LolInhibitor();
+        inhibitor.setStanding(postInhibitor.standing);
+        if (postInhibitor.respawn_time != null) {
+            inhibitor.setRespawnTime(convertToThriftLolMatchClock(postInhibitor.respawn_time));
+        }
+        return inhibitor;
+    }
+
+    private LolCreeps convertToThriftLolCreeps(PostLolCreeps postCreeps) {
+        LolCreeps creeps = new LolCreeps();
+        creeps.setOverall(convertToThriftLolOverallCreeps(postCreeps.overall));
+        creeps.setNeutrals(convertToThriftLolNeutralCreeps(postCreeps.neutrals));
+        return creeps;
+    }
+
+    private LolOverallCreeps convertToThriftLolOverallCreeps(PostLolOverallCreeps postOverallCreeps) {
+        LolOverallCreeps overallCreeps = new LolOverallCreeps();
+        overallCreeps.setKills(convertToThriftLolCreepKills(postOverallCreeps.kills));
+        return overallCreeps;
+    }
+
+    private LolCreepKills convertToThriftLolCreepKills(PostLolCreepKills postCreepKills) {
+        LolCreepKills creepKills = new LolCreepKills();
+        creepKills.setTotal(postCreepKills.total);
+        return creepKills;
+    }
+
+    private LolNeutralCreeps convertToThriftLolNeutralCreeps(PostLolNeutralCreeps postNeutralCreeps) {
+        LolNeutralCreeps neutralCreeps = new LolNeutralCreeps();
+        neutralCreeps.setKills(convertToThriftLolNeutralCreepKills(postNeutralCreeps.kills));
+        return neutralCreeps;
+    }
+
+    private LolNeutralCreepKills convertToThriftLolNeutralCreepKills(PostLolNeutralCreepKills postNeutralCreepKills) {
+        LolNeutralCreepKills neutralCreepKills = new LolNeutralCreepKills();
+        if (postNeutralCreepKills != null && postNeutralCreepKills.per_elite_type != null) {
+            neutralCreepKills.setPerEliteType(postNeutralCreepKills.per_elite_type.stream()
+                    .map(this::convertToThriftLolEliteCreepKills)
+                    .collect(Collectors.toList()));
+        } else {
+            neutralCreepKills.setPerEliteType(new ArrayList<>()); // Set an empty list if null
+        }
+        return neutralCreepKills;
+    }
+
+    private LolEliteCreepKills convertToThriftLolEliteCreepKills(PostLolEliteCreepKills postEliteCreepKills) {
+        LolEliteCreepKills eliteCreepKills = new LolEliteCreepKills();
+        eliteCreepKills.setElite(convertToThriftLolElite(postEliteCreepKills.elite));
+        eliteCreepKills.setTotal(postEliteCreepKills.total);
+        return eliteCreepKills;
+    }
+
+    private LolElite convertToThriftLolElite(PostLolElite postElite) {
+        LolElite elite = new LolElite();
+        elite.setId(postElite.id);
+        return elite;
+    }
+
+    private LolPlayerSummary convertToThriftLolPlayerSummary(PostLolPlayerSummary postPlayer) {
+        LolPlayerSummary player = new LolPlayerSummary();
+        player.setId(postPlayer.id);
+        player.setUiIndex(postPlayer.ui_index);
+        player.setChampion(convertToThriftLolChampion(postPlayer.champion));
+        player.setKills(convertToThriftLolKills(postPlayer.kills));
+        player.setAssists(convertToThriftLolAssists(postPlayer.assists));
+        player.setDeaths(convertToThriftLolDeaths(postPlayer.deaths));
+        player.setRevives(convertToThriftLolRevives(postPlayer.revives));
+        if (postPlayer.multi_kills != null) {
+            player.setMultiKills(postPlayer.multi_kills.stream()
+                    .map(this::convertToThriftLolMultiKill)
+                    .collect(Collectors.toList()));
+        }
+        player.setKillStreaks(postPlayer.kill_streaks);
+        player.setItems(convertToThriftLolItems(postPlayer.items));
+        if (postPlayer.summoner_spells != null) {
+            player.setSummonerSpells(postPlayer.summoner_spells.stream()
+                    .map(this::convertToThriftLolSummonerSpell)
+                    .collect(Collectors.toList()));
+        }
+        player.setCreeps(convertToThriftLolCreeps(postPlayer.creeps));
+        if (postPlayer.keystone != null) {
+            player.setKeystone(convertToThriftLolKeystone(postPlayer.keystone));
+        }
+        if (postPlayer.position != null) {
+            player.setPosition(convertToThriftLolPosition(postPlayer.position));
+        }
+        return player;
+    }
+
+    private LolChampion convertToThriftLolChampion(PostLolChampion postChampion) {
+        LolChampion champion = new LolChampion();
+        champion.setId(postChampion.id);
+        return champion;
+    }
+
+    private LolKills convertToThriftLolKills(PostLolKills postKills) {
+        LolKills kills = new LolKills();
+        kills.setTotal(postKills.total);
+        kills.setSpecial(convertToThriftLolSpecialKills(postKills.special));
+        return kills;
+    }
+
+    private LolSpecialKills convertToThriftLolSpecialKills(PostLolSpecialKills postSpecialKills) {
+        LolSpecialKills specialKills = new LolSpecialKills();
+        specialKills.setFirstBlood(postSpecialKills.first_blood);
+        return specialKills;
+    }
+
+    private LolAssists convertToThriftLolAssists(PostLolAssists postAssists) {
+        LolAssists assists = new LolAssists();
+        assists.setTotal(postAssists.total);
+        return assists;
+    }
+
+    private LolDeaths convertToThriftLolDeaths(PostLolDeaths postDeaths) {
+        LolDeaths deaths = new LolDeaths();
+        deaths.setTotal(postDeaths.total);
+        return deaths;
+    }
+
+    private LolRevives convertToThriftLolRevives(PostLolRevives postRevives) {
+        LolRevives revives = new LolRevives();
+        revives.setFriendly(convertToThriftLolFriendlyRevives(postRevives.friendly));
+        return revives;
+    }
+
+    private LolFriendlyRevives convertToThriftLolFriendlyRevives(PostLolFriendlyRevives postFriendlyRevives) {
+        LolFriendlyRevives friendlyRevives = new LolFriendlyRevives();
+        friendlyRevives.setGiven(convertToThriftLolReviveCount(postFriendlyRevives.given));
+        friendlyRevives.setTaken(convertToThriftLolReviveCount(postFriendlyRevives.taken));
+        return friendlyRevives;
+    }
+
+    private LolReviveCount convertToThriftLolReviveCount(PostLolReviveCount postReviveCount) {
+        LolReviveCount reviveCount = new LolReviveCount();
+        reviveCount.setTotal(postReviveCount.total);
+        return reviveCount;
+    }
+
+    private LolMultiKill convertToThriftLolMultiKill(PostLolMultiKill postMultiKill) {
+        LolMultiKill multiKill = new LolMultiKill();
+        multiKill.setNrKills(postMultiKill.nr_kills);
+        multiKill.setCount(postMultiKill.count);
+        return multiKill;
+    }
+
+    private LolItems convertToThriftLolItems(PostLolItems postItems) {
+        LolItems items = new LolItems();
+        if (postItems.inventory != null) {
+            items.setInventory(postItems.inventory.stream()
+                    .map(this::convertToThriftLolItem)
+                    .collect(Collectors.toList()));
+        }
+        if (postItems.trinket_slot != null) {
+            items.setTrinketSlot(postItems.trinket_slot.stream()
+                    .map(this::convertToThriftLolItem)
+                    .collect(Collectors.toList()));
+        }
+        return items;
+    }
+
+    private LolItem convertToThriftLolItem(PostLolItem postItem) {
+        LolItem item = new LolItem();
+        item.setId(postItem.id);
+        item.setSlot(postItem.slot);
+        return item;
+    }
+
+    private LolSummonerSpell convertToThriftLolSummonerSpell(PostLolSummonerSpell postSpell) {
+        LolSummonerSpell spell = new LolSummonerSpell();
+        spell.setId(postSpell.id);
+        spell.setSlot(postSpell.slot);
+        return spell;
+    }
+
+    private LolKeystone convertToThriftLolKeystone(PostLolKeystone postKeystone) {
+        LolKeystone keystone = new LolKeystone();
+        keystone.setId(postKeystone.id);
+        return keystone;
+    }
+
+    private LolPosition convertToThriftLolPosition(PostLolPosition postPosition) {
+        LolPosition position = new LolPosition();
+        position.setX(postPosition.x);
+        position.setY(postPosition.y);
+        // Note: normalized_coordinate and in_game_coordinate are not handled here
+        // You may need to add these if they're part of your Thrift structure
+        return position;
+    }
+
+    private LolPits convertToThriftLolPits(PostLolPits postPits) {
+        LolPits pits = new LolPits();
+        pits.setDragonPit(convertToThriftLolPit(postPits.dragon_pit));
+        pits.setBaronPit(convertToThriftLolPit(postPits.baron_pit));
+        return pits;
+    }
+
+    private LolPit convertToThriftLolPit(PostLolPit postPit) {
+        LolPit pit = new LolPit();
+        pit.setNpc(convertToThriftLolNpc(postPit.npc));
+        pit.setNpcStatus(postPit.npc_status);
+        if (postPit.empty_since_time != null) {
+            pit.setEmptySinceTime(convertToThriftLolMatchClock(postPit.empty_since_time));
+        }
+        if (postPit.spawn_time != null) {
+            pit.setSpawnTime(convertToThriftLolMatchClock(postPit.spawn_time));
+        }
+        return pit;
+    }
+
+    private LolNpc convertToThriftLolNpc(PostLolNpc postNpc) {
+        LolNpc npc = new LolNpc();
+        npc.setId(postNpc.id);
+        return npc;
+    }
+
+    private LolMatch convertToThriftLolMatch(PostLolMatch postMatch) {
+        LolMatch match = new LolMatch();
+        match.setId(postMatch.id);
+        match.setPatch(postMatch.patch);
+        match.setPhase(postMatch.phase);
+        match.setClock(convertToThriftLolMatchClock(postMatch.clock));
+        match.setTimeline(convertToThriftLolMatchTimeline(postMatch.timeline));
+        return match;
+    }
+
+    private LolMatchClock convertToThriftLolMatchClock(PostLolMatchClock postClock) {
+        LolMatchClock clock = new LolMatchClock();
+        clock.setMilliseconds(postClock.milliseconds);
+        return clock;
+    }
+
+    private LolMatchTimeline convertToThriftLolMatchTimeline(PostLolMatchTimeline postTimeline) {
+        LolMatchTimeline timeline = new LolMatchTimeline();
+        timeline.setPhase(postTimeline.phase);
+        timeline.setStart(postTimeline.start.toString());
+        timeline.setEnd(postTimeline.end.toString());
+        timeline.setClock(convertToThriftLolMatchClock(postTimeline.clock));
+        return timeline;
     }
 
     public class ApiException extends Exception {
@@ -2689,6 +3039,24 @@ public class ApolloApiManager {
         } else {
             throw new RuntimeException(e);
         }
+    }
+
+    // Fetching summary helper - TOOD: Maybe need to change
+    private boolean isCoverageAvailable(Match match) {
+        // Check if the match is over, as this is when coverage should be available
+        if (!"over".equals(match.getLifecycle())) {
+            return false;
+        }
+
+        Coverage coverage = match.getCoverage();
+        if (coverage != null && coverage.getData() != null && coverage.getData().getLive() != null) {
+            CoverageType liveCoverage = coverage.getData().getLive();
+            CoverageStatus cvStatus = liveCoverage.getCv();
+            if (cvStatus != null) {
+                return "available".equals(cvStatus.getExpectation()) && "available".equals(cvStatus.getFact());
+            }
+        }
+        return false;
     }
 
     // Spaces

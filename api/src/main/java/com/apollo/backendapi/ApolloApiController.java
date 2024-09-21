@@ -2038,4 +2038,17 @@ public class ApolloApiController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found")));
     }
 
+    /*
+     * Lol Match Summary Endpoints
+     * ======================================
+     * - GET /api/lolmatches/{id}/summary
+     * ======================================
+     */
+
+    @GetMapping("/api/lolmatches/{id}/summary")
+    public Mono<GetLolMatchSummary> getLolMatchSummary(@PathVariable("id") int matchId) {
+        return Mono.fromFuture(manager.getLolMatchSummary(matchId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
 }

@@ -30,25 +30,4 @@ public class PostPlayer {
     public List<PostSocialMediaAccount> socialMediaAccounts;
     @JsonProperty("resource_version")
     public long resourceVersion;
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PostAge {
-        public String precision;
-        public int years;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PostRace {
-        public int id;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PostRole {
-        public int id;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PostTeamInfo {
-        public int id;
-    }
 }

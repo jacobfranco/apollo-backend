@@ -70,7 +70,7 @@ public class PostSeries {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant updatedAt;
 
-    // Getter methods
+    // Getter methods TODO: Maybe we can take this out
     public List<Integer> getChainIds() {
         return chain.stream().map(c -> c.id).collect(Collectors.toList());
     }

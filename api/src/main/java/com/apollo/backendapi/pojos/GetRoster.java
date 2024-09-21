@@ -1,7 +1,6 @@
 package com.apollo.backendapi.pojos;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import com.apollo.backend.data.Roster;
 
 public class GetRoster {
