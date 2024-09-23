@@ -1,6 +1,7 @@
 package com.apollo.backendapi.pojos;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import com.apollo.backend.data.LolTeamSummary;
 
@@ -16,7 +17,7 @@ public class GetLolTeamSummary {
     public GetLolCreeps creeps;
     public List<GetLolPlayerSummary> players;
 
-    public GetLolTeamSummary(LolTeamSummary teamSummary) {
+    public GetLolTeamSummary(LolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
         this.roster = new GetLolRoster(teamSummary.getRoster());
         this.score = teamSummary.getScore();
         this.isWinner = teamSummary.isIsWinner();
@@ -25,9 +26,9 @@ public class GetLolTeamSummary {
         this.inhibitorsDestroyed = teamSummary.getInhibitorsDestroyed();
         this.faction = new GetLolFaction(teamSummary.getFaction());
         this.structures = new GetLolStructures(teamSummary.getStructures());
-        this.creeps = new GetLolCreeps(teamSummary.getCreeps());
+        this.creeps = new GetLolCreeps(teamSummary.getCreeps(), assetMap);
         this.players = teamSummary.getPlayers().stream()
-                .map(GetLolPlayerSummary::new)
+                .map(player -> new GetLolPlayerSummary(player, assetMap))
                 .collect(Collectors.toList());
     }
 }

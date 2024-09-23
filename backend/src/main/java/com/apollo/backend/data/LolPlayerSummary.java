@@ -1520,14 +1520,14 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           case 8: // MULTI_KILLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list408 = iprot.readListBegin();
-                struct.multiKills = new java.util.ArrayList<LolMultiKill>(_list408.size);
-                @org.apache.thrift.annotation.Nullable LolMultiKill _elem409;
-                for (int _i410 = 0; _i410 < _list408.size; ++_i410)
+                org.apache.thrift.protocol.TList _list416 = iprot.readListBegin();
+                struct.multiKills = new java.util.ArrayList<LolMultiKill>(_list416.size);
+                @org.apache.thrift.annotation.Nullable LolMultiKill _elem417;
+                for (int _i418 = 0; _i418 < _list416.size; ++_i418)
                 {
-                  _elem409 = new LolMultiKill();
-                  _elem409.read(iprot);
-                  struct.multiKills.add(_elem409);
+                  _elem417 = new LolMultiKill();
+                  _elem417.read(iprot);
+                  struct.multiKills.add(_elem417);
                 }
                 iprot.readListEnd();
               }
@@ -1539,13 +1539,13 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           case 9: // KILL_STREAKS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list411 = iprot.readListBegin();
-                struct.killStreaks = new java.util.ArrayList<java.lang.Integer>(_list411.size);
-                int _elem412;
-                for (int _i413 = 0; _i413 < _list411.size; ++_i413)
+                org.apache.thrift.protocol.TList _list419 = iprot.readListBegin();
+                struct.killStreaks = new java.util.ArrayList<java.lang.Integer>(_list419.size);
+                int _elem420;
+                for (int _i421 = 0; _i421 < _list419.size; ++_i421)
                 {
-                  _elem412 = iprot.readI32();
-                  struct.killStreaks.add(_elem412);
+                  _elem420 = iprot.readI32();
+                  struct.killStreaks.add(_elem420);
                 }
                 iprot.readListEnd();
               }
@@ -1566,14 +1566,14 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           case 11: // SUMMONER_SPELLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list414 = iprot.readListBegin();
-                struct.summonerSpells = new java.util.ArrayList<LolSummonerSpell>(_list414.size);
-                @org.apache.thrift.annotation.Nullable LolSummonerSpell _elem415;
-                for (int _i416 = 0; _i416 < _list414.size; ++_i416)
+                org.apache.thrift.protocol.TList _list422 = iprot.readListBegin();
+                struct.summonerSpells = new java.util.ArrayList<LolSummonerSpell>(_list422.size);
+                @org.apache.thrift.annotation.Nullable LolSummonerSpell _elem423;
+                for (int _i424 = 0; _i424 < _list422.size; ++_i424)
                 {
-                  _elem415 = new LolSummonerSpell();
-                  _elem415.read(iprot);
-                  struct.summonerSpells.add(_elem415);
+                  _elem423 = new LolSummonerSpell();
+                  _elem423.read(iprot);
+                  struct.summonerSpells.add(_elem423);
                 }
                 iprot.readListEnd();
               }
@@ -1661,9 +1661,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           oprot.writeFieldBegin(MULTI_KILLS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.multiKills.size()));
-            for (LolMultiKill _iter417 : struct.multiKills)
+            for (LolMultiKill _iter425 : struct.multiKills)
             {
-              _iter417.write(oprot);
+              _iter425.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1674,9 +1674,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         oprot.writeFieldBegin(KILL_STREAKS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.killStreaks.size()));
-          for (int _iter418 : struct.killStreaks)
+          for (int _iter426 : struct.killStreaks)
           {
-            oprot.writeI32(_iter418);
+            oprot.writeI32(_iter426);
           }
           oprot.writeListEnd();
         }
@@ -1691,9 +1691,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         oprot.writeFieldBegin(SUMMONER_SPELLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.summonerSpells.size()));
-          for (LolSummonerSpell _iter419 : struct.summonerSpells)
+          for (LolSummonerSpell _iter427 : struct.summonerSpells)
           {
-            _iter419.write(oprot);
+            _iter427.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1804,18 +1804,18 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetMultiKills()) {
         {
           oprot.writeI32(struct.multiKills.size());
-          for (LolMultiKill _iter420 : struct.multiKills)
+          for (LolMultiKill _iter428 : struct.multiKills)
           {
-            _iter420.write(oprot);
+            _iter428.write(oprot);
           }
         }
       }
       if (struct.isSetKillStreaks()) {
         {
           oprot.writeI32(struct.killStreaks.size());
-          for (int _iter421 : struct.killStreaks)
+          for (int _iter429 : struct.killStreaks)
           {
-            oprot.writeI32(_iter421);
+            oprot.writeI32(_iter429);
           }
         }
       }
@@ -1825,9 +1825,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetSummonerSpells()) {
         {
           oprot.writeI32(struct.summonerSpells.size());
-          for (LolSummonerSpell _iter422 : struct.summonerSpells)
+          for (LolSummonerSpell _iter430 : struct.summonerSpells)
           {
-            _iter422.write(oprot);
+            _iter430.write(oprot);
           }
         }
       }
@@ -1881,27 +1881,27 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list423 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.multiKills = new java.util.ArrayList<LolMultiKill>(_list423.size);
-          @org.apache.thrift.annotation.Nullable LolMultiKill _elem424;
-          for (int _i425 = 0; _i425 < _list423.size; ++_i425)
+          org.apache.thrift.protocol.TList _list431 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.multiKills = new java.util.ArrayList<LolMultiKill>(_list431.size);
+          @org.apache.thrift.annotation.Nullable LolMultiKill _elem432;
+          for (int _i433 = 0; _i433 < _list431.size; ++_i433)
           {
-            _elem424 = new LolMultiKill();
-            _elem424.read(iprot);
-            struct.multiKills.add(_elem424);
+            _elem432 = new LolMultiKill();
+            _elem432.read(iprot);
+            struct.multiKills.add(_elem432);
           }
         }
         struct.setMultiKillsIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TList _list426 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.killStreaks = new java.util.ArrayList<java.lang.Integer>(_list426.size);
-          int _elem427;
-          for (int _i428 = 0; _i428 < _list426.size; ++_i428)
+          org.apache.thrift.protocol.TList _list434 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.killStreaks = new java.util.ArrayList<java.lang.Integer>(_list434.size);
+          int _elem435;
+          for (int _i436 = 0; _i436 < _list434.size; ++_i436)
           {
-            _elem427 = iprot.readI32();
-            struct.killStreaks.add(_elem427);
+            _elem435 = iprot.readI32();
+            struct.killStreaks.add(_elem435);
           }
         }
         struct.setKillStreaksIsSet(true);
@@ -1913,14 +1913,14 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       if (incoming.get(10)) {
         {
-          org.apache.thrift.protocol.TList _list429 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.summonerSpells = new java.util.ArrayList<LolSummonerSpell>(_list429.size);
-          @org.apache.thrift.annotation.Nullable LolSummonerSpell _elem430;
-          for (int _i431 = 0; _i431 < _list429.size; ++_i431)
+          org.apache.thrift.protocol.TList _list437 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.summonerSpells = new java.util.ArrayList<LolSummonerSpell>(_list437.size);
+          @org.apache.thrift.annotation.Nullable LolSummonerSpell _elem438;
+          for (int _i439 = 0; _i439 < _list437.size; ++_i439)
           {
-            _elem430 = new LolSummonerSpell();
-            _elem430.read(iprot);
-            struct.summonerSpells.add(_elem430);
+            _elem438 = new LolSummonerSpell();
+            _elem438.read(iprot);
+            struct.summonerSpells.add(_elem438);
           }
         }
         struct.setSummonerSpellsIsSet(true);

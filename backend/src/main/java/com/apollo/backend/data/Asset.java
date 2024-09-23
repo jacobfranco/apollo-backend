@@ -877,14 +877,14 @@ public class Asset implements org.apache.thrift.TBase<Asset, Asset._Fields>, jav
           case 7: // IMAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list448 = iprot.readListBegin();
-                struct.images = new java.util.ArrayList<Image>(_list448.size);
-                @org.apache.thrift.annotation.Nullable Image _elem449;
-                for (int _i450 = 0; _i450 < _list448.size; ++_i450)
+                org.apache.thrift.protocol.TList _list456 = iprot.readListBegin();
+                struct.images = new java.util.ArrayList<Image>(_list456.size);
+                @org.apache.thrift.annotation.Nullable Image _elem457;
+                for (int _i458 = 0; _i458 < _list456.size; ++_i458)
                 {
-                  _elem449 = new Image();
-                  _elem449.read(iprot);
-                  struct.images.add(_elem449);
+                  _elem457 = new Image();
+                  _elem457.read(iprot);
+                  struct.images.add(_elem457);
                 }
                 iprot.readListEnd();
               }
@@ -941,9 +941,9 @@ public class Asset implements org.apache.thrift.TBase<Asset, Asset._Fields>, jav
         oprot.writeFieldBegin(IMAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.images.size()));
-          for (Image _iter451 : struct.images)
+          for (Image _iter459 : struct.images)
           {
-            _iter451.write(oprot);
+            _iter459.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1011,9 +1011,9 @@ public class Asset implements org.apache.thrift.TBase<Asset, Asset._Fields>, jav
       if (struct.isSetImages()) {
         {
           oprot.writeI32(struct.images.size());
-          for (Image _iter452 : struct.images)
+          for (Image _iter460 : struct.images)
           {
-            _iter452.write(oprot);
+            _iter460.write(oprot);
           }
         }
       }
@@ -1050,14 +1050,14 @@ public class Asset implements org.apache.thrift.TBase<Asset, Asset._Fields>, jav
       }
       if (incoming.get(6)) {
         {
-          org.apache.thrift.protocol.TList _list453 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.images = new java.util.ArrayList<Image>(_list453.size);
-          @org.apache.thrift.annotation.Nullable Image _elem454;
-          for (int _i455 = 0; _i455 < _list453.size; ++_i455)
+          org.apache.thrift.protocol.TList _list461 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.images = new java.util.ArrayList<Image>(_list461.size);
+          @org.apache.thrift.annotation.Nullable Image _elem462;
+          for (int _i463 = 0; _i463 < _list461.size; ++_i463)
           {
-            _elem454 = new Image();
-            _elem454.read(iprot);
-            struct.images.add(_elem454);
+            _elem462 = new Image();
+            _elem462.read(iprot);
+            struct.images.add(_elem462);
           }
         }
         struct.setImagesIsSet(true);

@@ -5,20 +5,15 @@ import com.google.common.collect.Lists;
 import clojure.lang.PersistentVector;
 
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
-import org.apache.http.client.HttpResponseException;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,7 +21,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -210,6 +204,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<Asset> getAssetFromAssetId;
+    private final QueryTopologyClient<Set<Integer>> getAssetIdsFromMatchId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -346,6 +341,7 @@ public class ApolloApiManager {
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
         getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
+        getAssetIdsFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetIdsFromMatchId");
 
     }
 
@@ -2331,6 +2327,10 @@ public class ApolloApiManager {
         summary.setTimestamp(postSummary.timestamp.toString());
         summary.setMatch(convertToThriftLolMatch(postSummary.match));
 
+        Set<Integer> assetIds = new HashSet<>();
+        collectAssetIds(postSummary, assetIds);
+        summary.setAssetIds(assetIds);
+
         return summary;
     }
 
@@ -2524,8 +2524,43 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<GetLolMatchSummary> getLolMatchSummary(int matchId) {
-        return getLolMatchSummaryFromMatchId.invokeAsync(matchId)
-                .thenApply(summary -> summary != null ? new GetLolMatchSummary(summary) : null);
+
+        long startTime = System.currentTimeMillis();
+        System.out.println("Starting getLolMatchSummary for matchId: " + matchId);
+
+        CompletableFuture<LolMatchSummary> summaryFuture = getLolMatchSummaryFromMatchId.invokeAsync(matchId)
+                .thenApply(summary -> {
+                    System.out.println("Summary fetched in " + (System.currentTimeMillis() - startTime) + "ms");
+                    return summary;
+                });
+
+        CompletableFuture<Set<Integer>> assetIdsFuture = getAssetIdsFromMatchId.invokeAsync(matchId)
+                .thenApply(assetIds -> {
+                    System.out.println("Asset IDs fetched in " + (System.currentTimeMillis() - startTime) + "ms");
+                    return assetIds;
+                });
+
+        return CompletableFuture.allOf(summaryFuture, assetIdsFuture)
+                .thenCompose(v -> {
+                    LolMatchSummary summary = summaryFuture.join();
+                    Set<Integer> assetIds = assetIdsFuture.join();
+
+                    if (summary == null) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
+                            .map(this::getAsset)
+                            .collect(Collectors.toList());
+
+                    return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(x -> {
+                                Map<Integer, GetAsset> assetMap = assetFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .collect(Collectors.toMap(Asset::getId, GetAsset::new));
+                                return new GetLolMatchSummary(summary, assetMap);
+                            });
+                });
     }
 
     public CompletableFuture<Asset> getAsset(int assetId) {
@@ -3060,6 +3095,94 @@ public class ApolloApiManager {
         return game;
     }
 
+    // Fetching summary helper - TOOD: Maybe need to change
+    private boolean isCoverageAvailable(Match match) {
+        // Check if the match is over, as this is when coverage should be available
+        if (!"over".equals(match.getLifecycle())) {
+            return false;
+        }
+
+        Coverage coverage = match.getCoverage();
+        if (coverage != null && coverage.getData() != null && coverage.getData().getLive() != null) {
+            CoverageType liveCoverage = coverage.getData().getLive();
+            CoverageStatus cvStatus = liveCoverage.getCv();
+            if (cvStatus != null) {
+                return "available".equals(cvStatus.getExpectation()) && "available".equals(cvStatus.getFact());
+            }
+        }
+        return false;
+    }
+
+    private void collectAssetIds(PostLolMatchSummary summary, Set<Integer> assetIds) {
+        if (summary == null || summary.teams == null) {
+            return;
+        }
+
+        for (PostLolTeamSummary team : Arrays.asList(summary.teams.home, summary.teams.away)) {
+            if (team == null || team.players == null) {
+                continue;
+            }
+
+            for (PostLolPlayerSummary player : team.players) {
+                if (player == null) {
+                    continue;
+                }
+
+                if (player.champion != null) {
+                    assetIds.add(player.champion.id);
+                }
+
+                if (player.keystone != null) {
+                    assetIds.add(player.keystone.id);
+                }
+
+                if (player.items != null) {
+                    if (player.items.inventory != null) {
+                        for (PostLolItem item : player.items.inventory) {
+                            if (item != null) {
+                                assetIds.add(item.id);
+                            }
+                        }
+                    }
+
+                    if (player.items.trinket_slot != null) {
+                        for (PostLolItem item : player.items.trinket_slot) {
+                            if (item != null) {
+                                assetIds.add(item.id);
+                            }
+                        }
+                    }
+                }
+
+                if (player.summoner_spells != null) {
+                    for (PostLolSummonerSpell spell : player.summoner_spells) {
+                        if (spell != null) {
+                            assetIds.add(spell.id);
+                        }
+                    }
+                }
+            }
+
+            if (team.creeps != null && team.creeps.neutrals != null &&
+                    team.creeps.neutrals.kills != null && team.creeps.neutrals.kills.per_elite_type != null) {
+                for (PostLolEliteCreepKills eliteKills : team.creeps.neutrals.kills.per_elite_type) {
+                    if (eliteKills != null && eliteKills.elite != null) {
+                        assetIds.add(eliteKills.elite.id);
+                    }
+                }
+            }
+        }
+
+        if (summary.pits != null) {
+            if (summary.pits.dragon_pit != null && summary.pits.dragon_pit.npc != null) {
+                assetIds.add(summary.pits.dragon_pit.npc.id);
+            }
+            if (summary.pits.baron_pit != null && summary.pits.baron_pit.npc != null) {
+                assetIds.add(summary.pits.baron_pit.npc.id);
+            }
+        }
+    }
+
     public class ApiException extends Exception {
         public ApiException(String message) {
             super(message);
@@ -3120,24 +3243,6 @@ public class ApolloApiManager {
         } else {
             throw new RuntimeException(e);
         }
-    }
-
-    // Fetching summary helper - TOOD: Maybe need to change
-    private boolean isCoverageAvailable(Match match) {
-        // Check if the match is over, as this is when coverage should be available
-        if (!"over".equals(match.getLifecycle())) {
-            return false;
-        }
-
-        Coverage coverage = match.getCoverage();
-        if (coverage != null && coverage.getData() != null && coverage.getData().getLive() != null) {
-            CoverageType liveCoverage = coverage.getData().getLive();
-            CoverageStatus cvStatus = liveCoverage.getCv();
-            if (cvStatus != null) {
-                return "available".equals(cvStatus.getExpectation()) && "available".equals(cvStatus.getFact());
-            }
-        }
-        return false;
     }
 
     // Spaces

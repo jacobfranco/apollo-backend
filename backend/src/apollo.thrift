@@ -922,6 +922,7 @@ struct LolMatchSummary {
   5: i64 latestStatesChannelIndex
   6: string timestamp
   7: LolMatch match
+  8: set<i32> assetIds
 }
 
 struct LolTeams {

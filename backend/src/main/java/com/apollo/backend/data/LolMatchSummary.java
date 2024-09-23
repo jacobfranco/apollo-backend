@@ -17,6 +17,7 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
   private static final org.apache.thrift.protocol.TField LATEST_STATES_CHANNEL_INDEX_FIELD_DESC = new org.apache.thrift.protocol.TField("latestStatesChannelIndex", org.apache.thrift.protocol.TType.I64, (short)5);
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField MATCH_FIELD_DESC = new org.apache.thrift.protocol.TField("match", org.apache.thrift.protocol.TType.STRUCT, (short)7);
+  private static final org.apache.thrift.protocol.TField ASSET_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("assetIds", org.apache.thrift.protocol.TType.SET, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolMatchSummaryStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolMatchSummaryTupleSchemeFactory();
@@ -28,6 +29,7 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
   public long latestStatesChannelIndex; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String timestamp; // required
   public @org.apache.thrift.annotation.Nullable LolMatch match; // required
+  public @org.apache.thrift.annotation.Nullable java.util.Set<java.lang.Integer> assetIds; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -37,7 +39,8 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     LATEST_EVENTS_CHANNEL_INDEX((short)4, "latestEventsChannelIndex"),
     LATEST_STATES_CHANNEL_INDEX((short)5, "latestStatesChannelIndex"),
     TIMESTAMP((short)6, "timestamp"),
-    MATCH((short)7, "match");
+    MATCH((short)7, "match"),
+    ASSET_IDS((short)8, "assetIds");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -67,6 +70,8 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
           return TIMESTAMP;
         case 7: // MATCH
           return MATCH;
+        case 8: // ASSET_IDS
+          return ASSET_IDS;
         default:
           return null;
       }
@@ -131,6 +136,9 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.MATCH, new org.apache.thrift.meta_data.FieldMetaData("match", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolMatch.class)));
+    tmpMap.put(_Fields.ASSET_IDS, new org.apache.thrift.meta_data.FieldMetaData("assetIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolMatchSummary.class, metaDataMap);
   }
@@ -145,7 +153,8 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     long latestEventsChannelIndex,
     long latestStatesChannelIndex,
     java.lang.String timestamp,
-    LolMatch match)
+    LolMatch match,
+    java.util.Set<java.lang.Integer> assetIds)
   {
     this();
     this.id = id;
@@ -158,6 +167,7 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     setLatestStatesChannelIndexIsSet(true);
     this.timestamp = timestamp;
     this.match = match;
+    this.assetIds = assetIds;
   }
 
   /**
@@ -180,6 +190,10 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     if (other.isSetMatch()) {
       this.match = new LolMatch(other.match);
     }
+    if (other.isSetAssetIds()) {
+      java.util.Set<java.lang.Integer> __this__assetIds = new java.util.HashSet<java.lang.Integer>(other.assetIds);
+      this.assetIds = __this__assetIds;
+    }
   }
 
   @Override
@@ -199,6 +213,7 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     this.latestStatesChannelIndex = 0;
     this.timestamp = null;
     this.match = null;
+    this.assetIds = null;
   }
 
   public int getId() {
@@ -370,6 +385,47 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     }
   }
 
+  public int getAssetIdsSize() {
+    return (this.assetIds == null) ? 0 : this.assetIds.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<java.lang.Integer> getAssetIdsIterator() {
+    return (this.assetIds == null) ? null : this.assetIds.iterator();
+  }
+
+  public void addToAssetIds(int elem) {
+    if (this.assetIds == null) {
+      this.assetIds = new java.util.HashSet<java.lang.Integer>();
+    }
+    this.assetIds.add(elem);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Set<java.lang.Integer> getAssetIds() {
+    return this.assetIds;
+  }
+
+  public LolMatchSummary setAssetIds(@org.apache.thrift.annotation.Nullable java.util.Set<java.lang.Integer> assetIds) {
+    this.assetIds = assetIds;
+    return this;
+  }
+
+  public void unsetAssetIds() {
+    this.assetIds = null;
+  }
+
+  /** Returns true if field assetIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetAssetIds() {
+    return this.assetIds != null;
+  }
+
+  public void setAssetIdsIsSet(boolean value) {
+    if (!value) {
+      this.assetIds = null;
+    }
+  }
+
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -429,6 +485,14 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       }
       break;
 
+    case ASSET_IDS:
+      if (value == null) {
+        unsetAssetIds();
+      } else {
+        setAssetIds((java.util.Set<java.lang.Integer>)value);
+      }
+      break;
+
     }
   }
 
@@ -457,6 +521,9 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     case MATCH:
       return getMatch();
 
+    case ASSET_IDS:
+      return getAssetIds();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -483,6 +550,8 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       return isSetTimestamp();
     case MATCH:
       return isSetMatch();
+    case ASSET_IDS:
+      return isSetAssetIds();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -563,6 +632,15 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
         return false;
     }
 
+    boolean this_present_assetIds = true && this.isSetAssetIds();
+    boolean that_present_assetIds = true && that.isSetAssetIds();
+    if (this_present_assetIds || that_present_assetIds) {
+      if (!(this_present_assetIds && that_present_assetIds))
+        return false;
+      if (!this.assetIds.equals(that.assetIds))
+        return false;
+    }
+
     return true;
   }
 
@@ -591,6 +669,10 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     hashCode = hashCode * 8191 + ((isSetMatch()) ? 131071 : 524287);
     if (isSetMatch())
       hashCode = hashCode * 8191 + match.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetAssetIds()) ? 131071 : 524287);
+    if (isSetAssetIds())
+      hashCode = hashCode * 8191 + assetIds.hashCode();
 
     return hashCode;
   }
@@ -673,6 +755,16 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetAssetIds(), other.isSetAssetIds());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAssetIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.assetIds, other.assetIds);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -738,6 +830,14 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       sb.append("null");
     } else {
       sb.append(this.match);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("assetIds:");
+    if (this.assetIds == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.assetIds);
     }
     first = false;
     sb.append(")");
@@ -855,6 +955,24 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // ASSET_IDS
+            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+              {
+                org.apache.thrift.protocol.TSet _set392 = iprot.readSetBegin();
+                struct.assetIds = new java.util.HashSet<java.lang.Integer>(2*_set392.size);
+                int _elem393;
+                for (int _i394 = 0; _i394 < _set392.size; ++_i394)
+                {
+                  _elem393 = iprot.readI32();
+                  struct.assetIds.add(_elem393);
+                }
+                iprot.readSetEnd();
+              }
+              struct.setAssetIdsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -900,6 +1018,18 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
         struct.match.write(oprot);
         oprot.writeFieldEnd();
       }
+      if (struct.assetIds != null) {
+        oprot.writeFieldBegin(ASSET_IDS_FIELD_DESC);
+        {
+          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I32, struct.assetIds.size()));
+          for (int _iter395 : struct.assetIds)
+          {
+            oprot.writeI32(_iter395);
+          }
+          oprot.writeSetEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -940,7 +1070,10 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       if (struct.isSetMatch()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetAssetIds()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
@@ -962,12 +1095,21 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       if (struct.isSetMatch()) {
         struct.match.write(oprot);
       }
+      if (struct.isSetAssetIds()) {
+        {
+          oprot.writeI32(struct.assetIds.size());
+          for (int _iter396 : struct.assetIds)
+          {
+            oprot.writeI32(_iter396);
+          }
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LolMatchSummary struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(7);
+      java.util.BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -998,6 +1140,19 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
         struct.match = new LolMatch();
         struct.match.read(iprot);
         struct.setMatchIsSet(true);
+      }
+      if (incoming.get(7)) {
+        {
+          org.apache.thrift.protocol.TSet _set397 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
+          struct.assetIds = new java.util.HashSet<java.lang.Integer>(2*_set397.size);
+          int _elem398;
+          for (int _i399 = 0; _i399 < _set397.size; ++_i399)
+          {
+            _elem398 = iprot.readI32();
+            struct.assetIds.add(_elem398);
+          }
+        }
+        struct.setAssetIdsIsSet(true);
       }
     }
   }

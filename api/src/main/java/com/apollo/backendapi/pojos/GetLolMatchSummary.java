@@ -1,6 +1,8 @@
 package com.apollo.backendapi.pojos;
 
 import java.time.Instant;
+import java.util.Map;
+
 import com.apollo.backend.data.LolMatchSummary;
 
 public class GetLolMatchSummary {
@@ -12,10 +14,10 @@ public class GetLolMatchSummary {
     public Instant timestamp;
     public GetLolMatch match;
 
-    public GetLolMatchSummary(LolMatchSummary summary) {
+    public GetLolMatchSummary(LolMatchSummary summary, Map<Integer, GetAsset> assetMap) {
         this.id = summary.getId();
-        this.teams = new GetLolTeams(summary.getTeams());
-        this.pits = new GetLolPits(summary.getPits());
+        this.teams = new GetLolTeams(summary.getTeams(), assetMap);
+        this.pits = new GetLolPits(summary.getPits(), assetMap);
         this.latestEventsChannelIndex = summary.getLatestEventsChannelIndex();
         this.latestStatesChannelIndex = summary.getLatestStatesChannelIndex();
         this.timestamp = Instant.parse(summary.getTimestamp());

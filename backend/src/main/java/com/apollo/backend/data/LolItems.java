@@ -439,14 +439,14 @@ public class LolItems implements org.apache.thrift.TBase<LolItems, LolItems._Fie
           case 1: // INVENTORY
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list432 = iprot.readListBegin();
-                struct.inventory = new java.util.ArrayList<LolItem>(_list432.size);
-                @org.apache.thrift.annotation.Nullable LolItem _elem433;
-                for (int _i434 = 0; _i434 < _list432.size; ++_i434)
+                org.apache.thrift.protocol.TList _list440 = iprot.readListBegin();
+                struct.inventory = new java.util.ArrayList<LolItem>(_list440.size);
+                @org.apache.thrift.annotation.Nullable LolItem _elem441;
+                for (int _i442 = 0; _i442 < _list440.size; ++_i442)
                 {
-                  _elem433 = new LolItem();
-                  _elem433.read(iprot);
-                  struct.inventory.add(_elem433);
+                  _elem441 = new LolItem();
+                  _elem441.read(iprot);
+                  struct.inventory.add(_elem441);
                 }
                 iprot.readListEnd();
               }
@@ -458,14 +458,14 @@ public class LolItems implements org.apache.thrift.TBase<LolItems, LolItems._Fie
           case 2: // TRINKET_SLOT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list435 = iprot.readListBegin();
-                struct.trinketSlot = new java.util.ArrayList<LolItem>(_list435.size);
-                @org.apache.thrift.annotation.Nullable LolItem _elem436;
-                for (int _i437 = 0; _i437 < _list435.size; ++_i437)
+                org.apache.thrift.protocol.TList _list443 = iprot.readListBegin();
+                struct.trinketSlot = new java.util.ArrayList<LolItem>(_list443.size);
+                @org.apache.thrift.annotation.Nullable LolItem _elem444;
+                for (int _i445 = 0; _i445 < _list443.size; ++_i445)
                 {
-                  _elem436 = new LolItem();
-                  _elem436.read(iprot);
-                  struct.trinketSlot.add(_elem436);
+                  _elem444 = new LolItem();
+                  _elem444.read(iprot);
+                  struct.trinketSlot.add(_elem444);
                 }
                 iprot.readListEnd();
               }
@@ -494,9 +494,9 @@ public class LolItems implements org.apache.thrift.TBase<LolItems, LolItems._Fie
         oprot.writeFieldBegin(INVENTORY_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.inventory.size()));
-          for (LolItem _iter438 : struct.inventory)
+          for (LolItem _iter446 : struct.inventory)
           {
-            _iter438.write(oprot);
+            _iter446.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -506,9 +506,9 @@ public class LolItems implements org.apache.thrift.TBase<LolItems, LolItems._Fie
         oprot.writeFieldBegin(TRINKET_SLOT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.trinketSlot.size()));
-          for (LolItem _iter439 : struct.trinketSlot)
+          for (LolItem _iter447 : struct.trinketSlot)
           {
-            _iter439.write(oprot);
+            _iter447.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -543,18 +543,18 @@ public class LolItems implements org.apache.thrift.TBase<LolItems, LolItems._Fie
       if (struct.isSetInventory()) {
         {
           oprot.writeI32(struct.inventory.size());
-          for (LolItem _iter440 : struct.inventory)
+          for (LolItem _iter448 : struct.inventory)
           {
-            _iter440.write(oprot);
+            _iter448.write(oprot);
           }
         }
       }
       if (struct.isSetTrinketSlot()) {
         {
           oprot.writeI32(struct.trinketSlot.size());
-          for (LolItem _iter441 : struct.trinketSlot)
+          for (LolItem _iter449 : struct.trinketSlot)
           {
-            _iter441.write(oprot);
+            _iter449.write(oprot);
           }
         }
       }
@@ -566,28 +566,28 @@ public class LolItems implements org.apache.thrift.TBase<LolItems, LolItems._Fie
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list442 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.inventory = new java.util.ArrayList<LolItem>(_list442.size);
-          @org.apache.thrift.annotation.Nullable LolItem _elem443;
-          for (int _i444 = 0; _i444 < _list442.size; ++_i444)
+          org.apache.thrift.protocol.TList _list450 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.inventory = new java.util.ArrayList<LolItem>(_list450.size);
+          @org.apache.thrift.annotation.Nullable LolItem _elem451;
+          for (int _i452 = 0; _i452 < _list450.size; ++_i452)
           {
-            _elem443 = new LolItem();
-            _elem443.read(iprot);
-            struct.inventory.add(_elem443);
+            _elem451 = new LolItem();
+            _elem451.read(iprot);
+            struct.inventory.add(_elem451);
           }
         }
         struct.setInventoryIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list445 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.trinketSlot = new java.util.ArrayList<LolItem>(_list445.size);
-          @org.apache.thrift.annotation.Nullable LolItem _elem446;
-          for (int _i447 = 0; _i447 < _list445.size; ++_i447)
+          org.apache.thrift.protocol.TList _list453 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.trinketSlot = new java.util.ArrayList<LolItem>(_list453.size);
+          @org.apache.thrift.annotation.Nullable LolItem _elem454;
+          for (int _i455 = 0; _i455 < _list453.size; ++_i455)
           {
-            _elem446 = new LolItem();
-            _elem446.read(iprot);
-            struct.trinketSlot.add(_elem446);
+            _elem454 = new LolItem();
+            _elem454.read(iprot);
+            struct.trinketSlot.add(_elem454);
           }
         }
         struct.setTrinketSlotIsSet(true);

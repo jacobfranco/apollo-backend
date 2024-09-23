@@ -72,9 +72,12 @@ public class ESports implements RamaModule {
         private static void declareLolMatchSummaryIngestionTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("lolMatchSummaryIngestion");
                 stream.pstate("$$lolMatchIdToSummary", PState.mapSchema(Integer.class, LolMatchSummary.class));
+                stream.pstate("$$lolMatchIdToAssetIds",
+                                PState.mapSchema(Integer.class, PState.setSchema(Integer.class)));
                 stream.source("*lolMatchSummaryDepot").out("*summary")
-                                .macro(ApolloHelpers.extractFields("*summary", "*id"))
-                                .localTransform("$$lolMatchIdToSummary", Path.key("*id").termVal("*summary"));
+                                .macro(ApolloHelpers.extractFields("*summary", "*id", "*assetIds"))
+                                .localTransform("$$lolMatchIdToSummary", Path.key("*id").termVal("*summary"))
+                                .localTransform("$$lolMatchIdToAssetIds", Path.key("*id").termVal("*assetIds"));
         }
 
         private static void declareAssetIngestionTopology(Topologies topologies) {
@@ -164,6 +167,15 @@ public class ESports implements RamaModule {
                                 .ifTrue(new Expr(Ops.IS_NULL, "*asset"),
                                                 Block.each(() -> null).out("*result"),
                                                 Block.each(Ops.IDENTITY, "*asset").out("*result"))
+                                .originPartition();
+
+                topologies.query("getAssetIdsFromMatchId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$lolMatchIdToAssetIds", Path.key("*id"))
+                                .out("*assetIds")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*assetIds"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*assetIds").out("*result"))
                                 .originPartition();
 
         }

@@ -1,13 +1,15 @@
 package com.apollo.backendapi.pojos;
 
+import java.util.Map;
+
 import com.apollo.backend.data.LolItem;
 
 public class GetLolItem {
-    public int id;
+    public GetAsset item;
     public int slot;
 
-    public GetLolItem(LolItem item) {
-        this.id = item.getId();
-        this.slot = item.getSlot();
+    public GetLolItem(LolItem itemSlot, Map<Integer, GetAsset> assetMap) {
+        this.item = assetMap.get(itemSlot.getId());
+        this.slot = itemSlot.getSlot();
     }
 }

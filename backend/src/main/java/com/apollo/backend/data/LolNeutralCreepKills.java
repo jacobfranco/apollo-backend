@@ -336,14 +336,14 @@ public class LolNeutralCreepKills implements org.apache.thrift.TBase<LolNeutralC
           case 1: // PER_ELITE_TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list400 = iprot.readListBegin();
-                struct.perEliteType = new java.util.ArrayList<LolEliteCreepKills>(_list400.size);
-                @org.apache.thrift.annotation.Nullable LolEliteCreepKills _elem401;
-                for (int _i402 = 0; _i402 < _list400.size; ++_i402)
+                org.apache.thrift.protocol.TList _list408 = iprot.readListBegin();
+                struct.perEliteType = new java.util.ArrayList<LolEliteCreepKills>(_list408.size);
+                @org.apache.thrift.annotation.Nullable LolEliteCreepKills _elem409;
+                for (int _i410 = 0; _i410 < _list408.size; ++_i410)
                 {
-                  _elem401 = new LolEliteCreepKills();
-                  _elem401.read(iprot);
-                  struct.perEliteType.add(_elem401);
+                  _elem409 = new LolEliteCreepKills();
+                  _elem409.read(iprot);
+                  struct.perEliteType.add(_elem409);
                 }
                 iprot.readListEnd();
               }
@@ -372,9 +372,9 @@ public class LolNeutralCreepKills implements org.apache.thrift.TBase<LolNeutralC
         oprot.writeFieldBegin(PER_ELITE_TYPE_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.perEliteType.size()));
-          for (LolEliteCreepKills _iter403 : struct.perEliteType)
+          for (LolEliteCreepKills _iter411 : struct.perEliteType)
           {
-            _iter403.write(oprot);
+            _iter411.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -406,9 +406,9 @@ public class LolNeutralCreepKills implements org.apache.thrift.TBase<LolNeutralC
       if (struct.isSetPerEliteType()) {
         {
           oprot.writeI32(struct.perEliteType.size());
-          for (LolEliteCreepKills _iter404 : struct.perEliteType)
+          for (LolEliteCreepKills _iter412 : struct.perEliteType)
           {
-            _iter404.write(oprot);
+            _iter412.write(oprot);
           }
         }
       }
@@ -420,14 +420,14 @@ public class LolNeutralCreepKills implements org.apache.thrift.TBase<LolNeutralC
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list405 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.perEliteType = new java.util.ArrayList<LolEliteCreepKills>(_list405.size);
-          @org.apache.thrift.annotation.Nullable LolEliteCreepKills _elem406;
-          for (int _i407 = 0; _i407 < _list405.size; ++_i407)
+          org.apache.thrift.protocol.TList _list413 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.perEliteType = new java.util.ArrayList<LolEliteCreepKills>(_list413.size);
+          @org.apache.thrift.annotation.Nullable LolEliteCreepKills _elem414;
+          for (int _i415 = 0; _i415 < _list413.size; ++_i415)
           {
-            _elem406 = new LolEliteCreepKills();
-            _elem406.read(iprot);
-            struct.perEliteType.add(_elem406);
+            _elem414 = new LolEliteCreepKills();
+            _elem414.read(iprot);
+            struct.perEliteType.add(_elem414);
           }
         }
         struct.setPerEliteTypeIsSet(true);
