@@ -22,6 +22,8 @@ public class GetPlayer {
     public List<Integer> teamIds;
     public List<GetSocialMediaAccount> socialMediaAccounts;
     public long resourceVersion;
+    public GetLolPlayerSummary lolStats;
+    public GetPlayerMatchStats matchStats;
 
     public GetPlayer(Player player) {
         this.id = player.getId();

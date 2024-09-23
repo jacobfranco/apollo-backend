@@ -14,6 +14,8 @@ public class GetLolMatchSummary {
     public Instant timestamp;
     public GetLolMatch match;
 
+    private Map<Integer, GetAsset> assetMap;
+
     public GetLolMatchSummary(LolMatchSummary summary, Map<Integer, GetAsset> assetMap) {
         this.id = summary.getId();
         this.teams = new GetLolTeams(summary.getTeams(), assetMap);
@@ -22,5 +24,10 @@ public class GetLolMatchSummary {
         this.latestStatesChannelIndex = summary.getLatestStatesChannelIndex();
         this.timestamp = Instant.parse(summary.getTimestamp());
         this.match = new GetLolMatch(summary.getMatch());
+        this.assetMap = assetMap;
+    }
+
+    public Map<Integer, GetAsset> getAssetMap() {
+        return assetMap;
     }
 }

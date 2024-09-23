@@ -1914,7 +1914,7 @@ public class ApolloApiManager {
     }
 
     private void storeRoster(PostRoster postRoster) {
-        Roster roster = rosterCache.computeIfAbsent(postRoster.id, id -> {
+        rosterCache.computeIfAbsent(postRoster.id, id -> {
             Roster newRoster = convertToThriftRoster(postRoster);
             rosterDepot.appendAsync(newRoster).join();
             return newRoster;
@@ -2089,30 +2089,6 @@ public class ApolloApiManager {
         }
 
         return rosterList;
-    }
-
-    private PostPlayer parseJsonToPostPlayer(String jsonData) throws Exception {
-        JsonNode rootNode = objectMapper.readTree(jsonData);
-
-        if (rootNode.has("error_type")) {
-            String errorType = rootNode.get("error_type").asText();
-            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
-            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
-        }
-
-        return objectMapper.treeToValue(rootNode, PostPlayer.class);
-    }
-
-    private PostTeam parseJsonToPostTeam(String jsonData) throws Exception {
-        JsonNode rootNode = objectMapper.readTree(jsonData);
-
-        if (rootNode.has("error_type")) {
-            String errorType = rootNode.get("error_type").asText();
-            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
-            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
-        }
-
-        return objectMapper.treeToValue(rootNode, PostTeam.class);
     }
 
     private List<PostPlayer> parseJsonToPostPlayerList(String jsonData) throws Exception {
@@ -2383,34 +2359,31 @@ public class ApolloApiManager {
                             .map(this::fetchFullParticipantData)
                             .collect(Collectors.toList());
 
-                    return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                    // Fetch LolMatchSummary if it's a League of Legends match
+                    final CompletableFuture<GetLolMatchSummary> lolSummaryFuture = (match.getGameId() == 2)
+                            ? getLolMatchSummary(match.getId())
+                            : CompletableFuture.completedFuture(null);
+
+                    CompletableFuture<Void> allParticipantsFuture = CompletableFuture.allOf(
+                            participantFutures.toArray(new CompletableFuture[0]));
+
+                    return CompletableFuture.allOf(allParticipantsFuture, lolSummaryFuture)
                             .thenApply(v -> {
                                 GetMatch getMatch = new GetMatch(match);
                                 getMatch.participants = participantFutures.stream()
                                         .map(CompletableFuture::join)
                                         .collect(Collectors.toList());
+
+                                // Integrate LolMatchSummary data
+                                GetLolMatchSummary lolSummary = lolSummaryFuture.join();
+                                if (lolSummary != null) {
+                                    // Enrich participants with stats from the match summary
+                                    mergeStatsIntoParticipants(getMatch.participants, lolSummary);
+                                }
+
                                 return getMatch;
                             });
                 });
-    }
-
-    private CompletableFuture<Map<Integer, Roster>> getRosters(List<Integer> rosterIds) {
-        if (rosterIds == null || rosterIds.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptyMap());
-        }
-
-        // Create a list of futures, one for each roster ID
-        List<CompletableFuture<Roster>> rosterFutures = rosterIds.stream()
-                .map(id -> getRosterFromRosterId.invokeAsync(id))
-                .collect(Collectors.toList());
-
-        // Combine all futures into a single future that completes when all lookups are
-        // done
-        return CompletableFuture.allOf(rosterFutures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> rosterFutures.stream()
-                        .map(CompletableFuture::join)
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toMap(Roster::getId, roster -> roster)));
     }
 
     public CompletableFuture<GetTeam> getTeam(int teamId) {
@@ -2521,6 +2494,41 @@ public class ApolloApiManager {
                                 return getParticipant;
                             });
                 });
+    }
+
+    private void mergeStatsIntoParticipants(List<GetParticipant> participants, GetLolMatchSummary lolSummary) {
+        // Map roster IDs to participants for easy access
+        Map<Integer, GetParticipant> rosterIdToParticipant = participants.stream()
+                .collect(Collectors.toMap(p -> p.roster.id, p -> p));
+
+        // Map asset IDs to assets
+        Map<Integer, GetAsset> assetMap = lolSummary.getAssetMap();
+
+        // Process home and away teams
+        processTeamSummary(lolSummary.teams.home, rosterIdToParticipant, assetMap);
+        processTeamSummary(lolSummary.teams.away, rosterIdToParticipant, assetMap);
+    }
+
+    private void processTeamSummary(GetLolTeamSummary teamSummary, Map<Integer, GetParticipant> rosterIdToParticipant,
+            Map<Integer, GetAsset> assetMap) {
+        int rosterId = teamSummary.roster.id;
+        GetParticipant participant = rosterIdToParticipant.get(rosterId);
+        if (participant != null && participant.roster != null && participant.roster.team != null) {
+            // Enrich team with match stats
+            participant.roster.team.matchStats = new GetTeamMatchStats(teamSummary);
+
+            // Map player IDs to GetPlayer for easy access
+            Map<Integer, GetPlayer> playerIdToPlayer = participant.roster.players.stream()
+                    .collect(Collectors.toMap(p -> p.id, p -> p));
+
+            // Enrich players with match stats
+            for (GetLolPlayerSummary playerSummary : teamSummary.players) {
+                GetPlayer player = playerIdToPlayer.get(playerSummary.id);
+                if (player != null) {
+                    player.matchStats = new GetPlayerMatchStats(playerSummary, assetMap);
+                }
+            }
+        }
     }
 
     public CompletableFuture<GetLolMatchSummary> getLolMatchSummary(int matchId) {

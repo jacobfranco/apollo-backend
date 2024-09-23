@@ -19,6 +19,7 @@ public class GetTeam {
     public int gameId;
     public Integer organizationId;
     public long resourceVersion;
+    public GetTeamMatchStats matchStats;
 
     public GetTeam(Team team) {
         this.id = team.getId();
