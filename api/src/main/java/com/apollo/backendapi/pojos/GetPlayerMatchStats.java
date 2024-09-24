@@ -7,11 +7,11 @@ public class GetPlayerMatchStats {
     public int kills;
     public int deaths;
     public int assists;
+    public int totalCreepScore;
+    public int neutralCreepScore;
     public GetAsset champion;
     public List<GetLolItem> items;
-    // Other stats...
 
-    // Update the constructor to accept GetLolPlayerSummary
     public GetPlayerMatchStats(GetLolPlayerSummary playerSummary, Map<Integer, GetAsset> assetMap) {
         this.kills = playerSummary.kills.total;
         this.deaths = playerSummary.deaths.total;
@@ -19,6 +19,22 @@ public class GetPlayerMatchStats {
 
         this.champion = playerSummary.champion;
         this.items = playerSummary.items.inventory;
-        // Map other stats as needed...
+        if (playerSummary.creeps != null && playerSummary.creeps.overall != null
+                && playerSummary.creeps.overall.kills != null) {
+            this.totalCreepScore = playerSummary.creeps.overall.kills.total;
+        } else {
+            this.totalCreepScore = 0;
+        }
+
+        // Extract neutral creep score (optional)
+        if (playerSummary.creeps != null && playerSummary.creeps.neutrals != null
+                && playerSummary.creeps.neutrals.kills != null
+                && playerSummary.creeps.neutrals.kills.perEliteType != null) {
+            this.neutralCreepScore = playerSummary.creeps.neutrals.kills.perEliteType.stream()
+                    .mapToInt(perElite -> perElite.total)
+                    .sum();
+        } else {
+            this.neutralCreepScore = 0;
+        }
     }
 }
