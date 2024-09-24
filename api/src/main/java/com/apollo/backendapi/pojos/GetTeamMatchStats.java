@@ -1,7 +1,5 @@
 package com.apollo.backendapi.pojos;
 
-import com.apollo.backend.data.LolTeamSummary;
-
 public class GetTeamMatchStats {
     public int score;
     public boolean isWinner;

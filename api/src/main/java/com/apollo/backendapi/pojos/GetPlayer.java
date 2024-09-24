@@ -18,7 +18,7 @@ public class GetPlayer {
     public GetRegion region;
     public int gameId;
     public Integer raceId;
-    public Integer roleId;
+    public String role;
     public List<Integer> teamIds;
     public List<GetSocialMediaAccount> socialMediaAccounts;
     public long resourceVersion;
@@ -38,10 +38,32 @@ public class GetPlayer {
         this.region = new GetRegion(player.getRegion());
         this.gameId = player.getGameId();
         this.raceId = player.isSetRaceId() ? player.getRaceId() : null;
-        this.roleId = player.isSetRoleId() ? player.getRoleId() : null;
+        this.role = mapRoleIdToRoleName(player.isSetRoleId() ? player.getRoleId() : null);
         this.teamIds = player.getTeamIds();
         this.socialMediaAccounts = player.getSocialMediaAccounts().stream().map(GetSocialMediaAccount::new)
                 .collect(Collectors.toList());
         this.resourceVersion = player.getResourceVersion();
+    }
+
+    // Map roleId to role name
+    private String mapRoleIdToRoleName(Integer roleId) {
+        if (roleId == null) {
+            return "unknown";
+        }
+
+        switch (roleId) {
+            case 1:
+                return "top";
+            case 2:
+                return "jungle";
+            case 3:
+                return "mid";
+            case 4:
+                return "bot";
+            case 5:
+                return "support";
+            default:
+                return "unassigned";
+        }
     }
 }
