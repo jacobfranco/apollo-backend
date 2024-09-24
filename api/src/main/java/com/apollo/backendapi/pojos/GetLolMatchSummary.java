@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Map;
 
 import com.apollo.backend.data.LolMatchSummary;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class GetLolMatchSummary {
     public int id;
@@ -14,6 +15,7 @@ public class GetLolMatchSummary {
     public Instant timestamp;
     public GetLolMatch match;
 
+    @JsonIgnore
     private Map<Integer, GetAsset> assetMap;
 
     public GetLolMatchSummary(LolMatchSummary summary, Map<Integer, GetAsset> assetMap) {
