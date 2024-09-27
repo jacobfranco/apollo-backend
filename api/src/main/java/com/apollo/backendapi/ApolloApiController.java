@@ -2016,9 +2016,9 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/lolteams/{id}")
+    @GetMapping("/api/lolteams/{id}")
     public Mono<GetTeam> getLolTeam(@PathVariable("id") int teamId) {
-        return Mono.fromFuture(manager.getTeam(teamId))
+        return Mono.fromFuture(manager.getTeamWithLolStats(teamId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
     }
 
@@ -2029,9 +2029,9 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/lolplayers/{id}")
+    @GetMapping("/api/lolplayers/{id}")
     public Mono<GetPlayer> getLolPlayer(@PathVariable("id") int playerId) {
-        return Mono.fromFuture(manager.getPlayer(playerId))
+        return Mono.fromFuture(manager.getPlayerWithLolStats(playerId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found")));
     }
 

@@ -1,8 +1,12 @@
 package com.apollo.backendapi.pojos;
 
+import com.apollo.backend.data.LolTeamSummary;
 import com.apollo.backend.data.Team;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GetTeam {
@@ -20,6 +24,10 @@ public class GetTeam {
     public Integer organizationId;
     public long resourceVersion;
     public GetTeamMatchStats matchStats;
+    public List<GetLolTeamSummary> lolSeasonStats;
+
+    @JsonIgnore
+    public Map<Integer, GetAsset> assetMap;
 
     public GetTeam(Team team) {
         this.id = team.getId();
@@ -36,5 +44,13 @@ public class GetTeam {
         this.gameId = team.getGameId();
         this.organizationId = team.isSetOrganizationId() ? team.getOrganizationId() : null;
         this.resourceVersion = team.getResourceVersion();
+    }
+
+    public GetTeam(Team team, List<LolTeamSummary> lolSeasonStats, Map<Integer, GetAsset> assetMap) {
+        this(team);
+        this.lolSeasonStats = lolSeasonStats.stream()
+                .map(stat -> new GetLolTeamSummary(stat, assetMap))
+                .collect(Collectors.toList());
+        this.assetMap = assetMap;
     }
 }

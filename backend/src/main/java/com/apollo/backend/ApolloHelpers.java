@@ -23,6 +23,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import java.security.SecureRandom;
@@ -109,6 +110,12 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractLolTeamId extends ExtractField {
+    public ExtractLolTeamId() {
+      super("teamId");
+    }
+  }
+
   public static class ExtractPlayerId extends ExtractField {
     public ExtractPlayerId() {
       super("id");
@@ -124,6 +131,18 @@ public class ApolloHelpers {
   public static class ExtractClientId extends ExtractField {
     public ExtractClientId() {
       super("client_id");
+    }
+  }
+
+  public static class ExtractGame extends ExtractField {
+    public ExtractGame() {
+      super("game");
+    }
+  }
+
+  public static class ExtractGameId extends ExtractField {
+    public ExtractGameId() {
+      super("id");
     }
   }
 
@@ -152,12 +171,21 @@ public class ApolloHelpers {
   public static Block extractFields(Object from, String... fieldVars) {
     Block.Impl ret = Block.create();
     for (String f : fieldVars) {
-      String name;
-      if (Helpers.isGeneratedVar(f))
-        name = Helpers.getGeneratedVarPrefix(f);
-      else
-        name = f.substring(1);
-      ret = ret.each(new ExtractField(name), from).out(f);
+      String[] parts = f.substring(1).split("\\.");
+      Object currentFrom = from;
+      if (parts.length == 1) {
+        // Handle single-level fields
+        String name = Helpers.isGeneratedVar(f) ? Helpers.getGeneratedVarPrefix(f) : parts[0];
+        ret = ret.each(new ExtractField(name), currentFrom).out(f);
+      } else {
+        // Handle nested fields
+        for (int i = 0; i < parts.length; i++) {
+          String name = parts[i];
+          String generatedVar = "*" + String.join("_", Arrays.copyOfRange(parts, 0, i + 1));
+          ret = ret.each(new ExtractField(name), currentFrom).out(generatedVar);
+          currentFrom = generatedVar;
+        }
+      }
     }
     return ret;
   }

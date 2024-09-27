@@ -941,6 +941,7 @@ struct LolTeamSummary {
     8: LolStructures structures
     9: LolCreeps creeps
     10: list<LolPlayerSummary> players
+    11: optional i32 teamId
 }
 
 struct LolRoster {

@@ -192,6 +192,8 @@ public class ApolloApiManager {
     private final Depot teamDepot;
     private final Depot playerDepot;
     private final Depot lolMatchSummaryDepot;
+    private final Depot lolPlayerSeasonStatsDepot;
+    private final Depot lolTeamSeasonStatsDepot;
     private final Depot assetDepot;
 
     // ESports Queries
@@ -205,6 +207,9 @@ public class ApolloApiManager {
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<Asset> getAssetFromAssetId;
     private final QueryTopologyClient<Set<Integer>> getAssetIdsFromMatchId;
+    private final QueryTopologyClient<Set<Asset>> getAssetsFromGameId;
+    private final QueryTopologyClient<List<LolPlayerSummary>> getLolPlayerSeasonStatsFromPlayerId;
+    private final QueryTopologyClient<List<LolTeamSummary>> getLolTeamSeasonStatsFromTeamId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -329,6 +334,8 @@ public class ApolloApiManager {
         teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
         playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
         lolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolMatchSummaryDepot");
+        lolPlayerSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolPlayerSeasonStatsDepot");
+        lolTeamSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolTeamSeasonStatsDepot");
         assetDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*assetDepot");
 
         // ESports Queries
@@ -342,6 +349,10 @@ public class ApolloApiManager {
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
         getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
         getAssetIdsFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetIdsFromMatchId");
+        getAssetsFromGameId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetsFromGameId");
+        getLolPlayerSeasonStatsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
+                "getLolPlayerSeasonStatsFromPlayerId");
+        getLolTeamSeasonStatsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolTeamSeasonStatsFromTeamId");
 
     }
 
@@ -1873,7 +1884,8 @@ public class ApolloApiManager {
 
                 // Check coverage before fetching match summary
                 if (isCoverageAvailable(match)) {
-                    fetchAndStoreLolMatchSummary(match.getId());
+                    fetchAndStoreLolMatchSummary(match.getId()); // TODO: Will need to make this conditional when
+                                                                 // implementing other games
                 } else {
                     System.out.println("Match " + match.getId() + " summary is not available. Skipping summary fetch.");
                 }
@@ -1974,17 +1986,48 @@ public class ApolloApiManager {
             waitIfNecessary();
             String summaryData = apiClient.getMatchSummary(matchId);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
-
             PostLolMatchSummary postLolSummary = parseJsonToPostLolMatchSummary(summaryData);
             if (postLolSummary != null) {
                 LolMatchSummary lolSummary = convertToThriftLolMatchSummary(postLolSummary);
                 lolMatchSummaryDepot.appendAsync(lolSummary).join();
+
+                // Process and store player stats
+                for (LolPlayerSummary playerSummary : lolSummary.getTeams().getHome().getPlayers()) {
+                    lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
+                }
+                for (LolPlayerSummary playerSummary : lolSummary.getTeams().getAway().getPlayers()) {
+                    lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
+                }
+
+                // Process and store team stats
+                CompletableFuture<Void> homeTeamFuture = storeTeamSummary(lolSummary.getTeams().getHome());
+                CompletableFuture<Void> awayTeamFuture = storeTeamSummary(lolSummary.getTeams().getAway());
+
+                CompletableFuture.allOf(homeTeamFuture, awayTeamFuture).join();
             } else {
                 System.out.println("Failed to parse match summary for match " + matchId);
             }
         } catch (Exception e) {
             handleException(e, "LoL match summary", matchId);
         }
+    }
+
+    private CompletableFuture<Void> storeTeamSummary(LolTeamSummary teamSummary) {
+        return getTeamIdFromRosterId(teamSummary.getRoster().getId())
+                .thenCompose(teamId -> {
+                    if (teamId != null) {
+                        teamSummary.setTeamId(teamId);
+                        return lolTeamSeasonStatsDepot.appendAsync(teamSummary);
+                    } else {
+                        System.out.println("Failed to fetch team ID for rosterId: " + teamSummary.getRoster().getId());
+                        return CompletableFuture.completedFuture(null);
+                    }
+                });
+    }
+
+    private CompletableFuture<Integer> getTeamIdFromRosterId(int rosterId) {
+        return getRosterFromRosterId.invokeAsync(rosterId)
+                .thenApply(roster -> roster != null ? roster.getTeamId() : null);
     }
 
     private void fetchAndStoreAssets(String filter, String order, int skip, int take) {
@@ -2396,6 +2439,45 @@ public class ApolloApiManager {
                 .thenApply(player -> player != null ? new GetPlayer(player) : null);
     }
 
+    public CompletableFuture<GetPlayer> getPlayerWithLolStats(int playerId) {
+        CompletableFuture<Player> playerFuture = getPlayerFromPlayerId.invokeAsync(playerId);
+        CompletableFuture<List<LolPlayerSummary>> statsFuture = getLolPlayerSeasonStatsFromPlayerId
+                .invokeAsync(playerId);
+        CompletableFuture<Map<Integer, GetAsset>> assetMapFuture = getAssetsByGameId(2);
+
+        return CompletableFuture.allOf(playerFuture, statsFuture, assetMapFuture)
+                .thenApply(v -> {
+                    Player player = playerFuture.join();
+                    List<LolPlayerSummary> seasonStats = statsFuture.join();
+                    Map<Integer, GetAsset> assetMap = assetMapFuture.join();
+
+                    if (player == null) {
+                        return null;
+                    }
+
+                    return new GetPlayer(player, seasonStats, assetMap);
+                });
+    }
+
+    public CompletableFuture<GetTeam> getTeamWithLolStats(int teamId) {
+        CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId);
+        CompletableFuture<List<LolTeamSummary>> statsFuture = getLolTeamSeasonStatsFromTeamId.invokeAsync(teamId);
+        CompletableFuture<Map<Integer, GetAsset>> assetMapFuture = getAssetsByGameId(2);
+
+        return CompletableFuture.allOf(teamFuture, statsFuture, assetMapFuture)
+                .thenApply(v -> {
+                    Team team = teamFuture.join();
+                    List<LolTeamSummary> seasonStats = statsFuture.join();
+                    Map<Integer, GetAsset> assetMap = assetMapFuture.join();
+
+                    if (team == null) {
+                        return null;
+                    }
+
+                    return new GetTeam(team, seasonStats, assetMap);
+                });
+    }
+
     public CompletableFuture<List<GetSeries>> getSeriesSchedule(long startTime, long endTime) {
         return getSeriesSchedule.invokeAsync(startTime, endTime)
                 .thenCompose(result -> {
@@ -2574,6 +2656,22 @@ public class ApolloApiManager {
     public CompletableFuture<Asset> getAsset(int assetId) {
         return getAssetFromAssetId.invokeAsync(assetId)
                 .thenApply(asset -> asset != null ? asset : null);
+    }
+
+    private CompletableFuture<Map<Integer, GetAsset>> getAssetsByGameId(int gameId) {
+        return getAssetsFromGameId.invokeAsync(gameId)
+                .thenApply(assets -> {
+                    if (assets == null)
+                        return Collections.emptyMap();
+
+                    return assets.stream()
+                            .collect(Collectors.toMap(
+                                    Asset::getId,
+                                    GetAsset::new,
+                                    (existing, replacement) -> existing // In case of duplicate keys, keep the existing
+                                                                        // one
+                    ));
+                });
     }
 
     // eSports Helpers

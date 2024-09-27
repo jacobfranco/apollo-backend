@@ -1,8 +1,12 @@
 package com.apollo.backendapi.pojos;
 
+import com.apollo.backend.data.LolPlayerSummary;
 import com.apollo.backend.data.Player;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GetPlayer {
@@ -24,6 +28,10 @@ public class GetPlayer {
     public long resourceVersion;
     public GetLolPlayerSummary lolStats;
     public GetPlayerMatchStats matchStats;
+    public List<GetLolPlayerSummary> lolSeasonStats;
+
+    @JsonIgnore
+    public Map<Integer, GetAsset> assetMap;
 
     public GetPlayer(Player player) {
         this.id = player.getId();
@@ -43,6 +51,14 @@ public class GetPlayer {
         this.socialMediaAccounts = player.getSocialMediaAccounts().stream().map(GetSocialMediaAccount::new)
                 .collect(Collectors.toList());
         this.resourceVersion = player.getResourceVersion();
+    }
+
+    public GetPlayer(Player player, List<LolPlayerSummary> lolSeasonStats, Map<Integer, GetAsset> assetMap) {
+        this(player);
+        this.lolSeasonStats = lolSeasonStats.stream()
+                .map(stat -> new GetLolPlayerSummary(stat, assetMap))
+                .collect(Collectors.toList());
+        this.assetMap = assetMap;
     }
 
     // Map roleId to role name
