@@ -9,10 +9,8 @@ import java.time.Instant;
 public class PostLolMatchTimeline {
     public String phase;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant start;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant end;
 
     public PostLolMatchClock clock;

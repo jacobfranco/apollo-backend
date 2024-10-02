@@ -14,6 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -21,8 +24,11 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -195,6 +201,7 @@ public class ApolloApiManager {
     private final Depot lolPlayerSeasonStatsDepot;
     private final Depot lolTeamSeasonStatsDepot;
     private final Depot assetDepot;
+    private final Depot liveLolMatchSummaryDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
@@ -210,13 +217,23 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Set<Asset>> getAssetsFromGameId;
     private final QueryTopologyClient<List<LolPlayerSummary>> getLolPlayerSeasonStatsFromPlayerId;
     private final QueryTopologyClient<List<LolTeamSummary>> getLolTeamSeasonStatsFromTeamId;
+    private final QueryTopologyClient<LiveLolMatchSummary> getLiveLolMatchSummaryFromMatchId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
         this.apiClient = new AbiosApiClient(ABIOS_SECRET);
 
-        this.objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule());
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
+        // Create a module and register the custom deserializer
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(Instant.class, new CustomInstantDeserializer());
+
+        // Register JavaTimeModule and the custom module
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.registerModule(module);
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
@@ -337,6 +354,7 @@ public class ApolloApiManager {
         lolPlayerSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolPlayerSeasonStatsDepot");
         lolTeamSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolTeamSeasonStatsDepot");
         assetDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*assetDepot");
+        liveLolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*liveLolMatchSummaryDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
@@ -353,6 +371,8 @@ public class ApolloApiManager {
         getLolPlayerSeasonStatsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
                 "getLolPlayerSeasonStatsFromPlayerId");
         getLolTeamSeasonStatsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolTeamSeasonStatsFromTeamId");
+        getLiveLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
+                "getLiveLolMatchSummaryFromMatchId");
 
     }
 
@@ -651,7 +671,8 @@ public class ApolloApiManager {
 
     public CompletableFuture<Void> cancelScheduledStatus(StatusPointer statusPointer) {
         return scheduledStatusDepot.appendAsync(
-                new RemoveStatus(statusPointer.authorId, statusPointer.statusId, Instant.now().toEpochMilli()));
+                new RemoveStatus(statusPointer.authorId, statusPointer.statusId, Instant.now().toEpochMilli()))
+                .thenApply(result -> null);
     }
 
     public CompletableFuture<SimpleEntry<AccountWithId, AccountWithId>> getAccountWithIdPair(long firstAccountId,
@@ -1548,7 +1569,8 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<Void> deleteFilter(Long accountId, Long filterId) {
-        return filterDepot.appendAsync(new RemoveFilter(filterId, accountId, System.currentTimeMillis()));
+        return filterDepot.appendAsync(new RemoveFilter(filterId, accountId, System.currentTimeMillis()))
+                .thenApply(result -> null);
     }
 
     public CompletableFuture<AttachmentWithId> postAttachment(AttachmentWithId attachment) {
@@ -1762,6 +1784,12 @@ public class ApolloApiManager {
 
         @Override
         public void close() throws IOException {
+        }
+
+        @Override
+        public Status status() {
+            // TODO Auto-generated method stub
+            throw new UnsupportedOperationException("Unimplemented method 'status'");
         }
     }
 
@@ -2017,7 +2045,9 @@ public class ApolloApiManager {
                 .thenCompose(teamId -> {
                     if (teamId != null) {
                         teamSummary.setTeamId(teamId);
-                        return lolTeamSeasonStatsDepot.appendAsync(teamSummary);
+                        return lolTeamSeasonStatsDepot.appendAsync(teamSummary)
+                                .thenApply(result -> null); // Convert CompletableFuture<Map<String,Object>> to
+                                                            // CompletableFuture<Void>
                     } else {
                         System.out.println("Failed to fetch team ID for rosterId: " + teamSummary.getRoster().getId());
                         return CompletableFuture.completedFuture(null);
@@ -3011,7 +3041,10 @@ public class ApolloApiManager {
         LolPlayerSummary player = new LolPlayerSummary();
         player.setId(postPlayer.id);
         player.setUiIndex(postPlayer.ui_index);
-        player.setChampion(convertToThriftLolChampion(postPlayer.champion));
+        LolChampion champion = convertToThriftLolChampion(postPlayer.champion);
+        if (champion != null) {
+            player.setChampion(champion);
+        }
         player.setKills(convertToThriftLolKills(postPlayer.kills));
         player.setAssists(convertToThriftLolAssists(postPlayer.assists));
         player.setDeaths(convertToThriftLolDeaths(postPlayer.deaths));
@@ -3039,6 +3072,9 @@ public class ApolloApiManager {
     }
 
     private LolChampion convertToThriftLolChampion(PostLolChampion postChampion) {
+        if (postChampion == null || postChampion.id == null) {
+            return null; // Return null if postChampion or its id is null
+        }
         LolChampion champion = new LolChampion();
         champion.setId(postChampion.id);
         return champion;
@@ -3464,6 +3500,213 @@ public class ApolloApiManager {
 
     public static software.amazon.awssdk.regions.Region getAwsRegion() {
         return software.amazon.awssdk.regions.Region.US_EAST_2; // TODO: Make configurable if needed
+    }
+
+    // Hermes stuff
+    // Method to handle incoming messages from the WebSocket
+    public void handleIncomingMessage(String message) {
+        try {
+            JsonNode rootNode = objectMapper.readTree(message);
+
+            // Determine the channel from the message
+            String channel = rootNode.get("channel").asText();
+
+            switch (channel) {
+                case "match_updates":
+                    processMatchUpdate(rootNode);
+                    break;
+                case "lol_live_cv_states":
+                    processLiveLolMatchSummary(rootNode);
+                    break;
+                case "lol_live_cv_events":
+                    processLiveLolMatchEvent(rootNode);
+                    break;
+                default:
+                    System.out.println("Received message for unhandled channel: " + channel);
+            }
+        } catch (Exception e) {
+            System.err.println("Error processing incoming message: " + e.getMessage());
+        }
+    }
+
+    // Method to process match updates
+    public void processMatchUpdate(JsonNode rootNode) {
+        try {
+            // Deserialize the entire root node into PostMatchUpdate
+            PostMatchUpdate matchUpdate = objectMapper.treeToValue(rootNode, PostMatchUpdate.class);
+
+            // Extract the PostMatch object
+            PostMatch postMatch = matchUpdate.match;
+
+            // Convert to Thrift Match object
+            Match match = convertToThriftMatch(postMatch);
+
+            // Store or update the match in Rama
+            matchDepot.appendAsync(match).join();
+
+            // Additional processing if necessary
+        } catch (Exception e) {
+            System.err.println("Error processing match update: " + e.getMessage());
+        }
+    }
+
+    // Method to process live LoL match summaries
+    public void processLiveLolMatchSummary(JsonNode rootNode) {
+        try {
+            // Deserialize the entire root node into PostLiveLolMatchSummary
+            PostLiveLolMatchSummary liveSummary = objectMapper.treeToValue(rootNode, PostLiveLolMatchSummary.class);
+
+            // Convert to Thrift LiveLolMatchSummary object
+            LiveLolMatchSummary thriftLiveSummary = convertToThriftLiveLolMatchSummary(liveSummary);
+
+            // Store or update the live match summary in Rama
+            liveLolMatchSummaryDepot.appendAsync(thriftLiveSummary).join();
+        } catch (Exception e) {
+            System.err.println("Error processing live LoL match summary: " + e.getMessage());
+        }
+    }
+
+    // In ApolloApiManager.java
+
+    public void processLiveLolMatchEvent(JsonNode rootNode) {
+        try {
+            // TODO: Implement the logic to process live LoL match events
+            // For now, you can leave this method empty or add a simple log statement
+            System.out.println("Received live LoL match event.");
+        } catch (Exception e) {
+            System.err.println("Error processing live LoL match event: " + e.getMessage());
+        }
+    }
+
+    // Conversion method from PostLiveLolMatchSummary to LiveLolMatchSummary (Thrift
+    // object)
+    // Conversion method from PostLiveLolMatchSummary to LiveLolMatchSummary (Thrift
+    // object)
+    private LiveLolMatchSummary convertToThriftLiveLolMatchSummary(PostLiveLolMatchSummary liveSummary) {
+        LiveLolMatchSummary thriftSummary = new LiveLolMatchSummary();
+        thriftSummary.setChannel(liveSummary.channel);
+        thriftSummary.setUuid(liveSummary.uuid);
+        thriftSummary.setCreated(liveSummary.created.toString());
+
+        // Convert payload
+        thriftSummary.setPayload(convertToThriftLiveLolMatchPayload(liveSummary.payload));
+
+        // Flatten matchId for easy access
+        thriftSummary.setMatchId(liveSummary.payload.match.id);
+
+        return thriftSummary;
+    }
+
+    private LiveLolMatchPayload convertToThriftLiveLolMatchPayload(PostLiveLolPayload payload) {
+        LiveLolMatchPayload thriftPayload = new LiveLolMatchPayload();
+        thriftPayload.setIndex(payload.index);
+        thriftPayload.setTimestamp(payload.timestamp.toString());
+        thriftPayload.setMatch(convertToThriftLolMatch(payload.match)); // Reuse existing method
+        thriftPayload.setEventType(payload.eventType);
+        thriftPayload.setEventData(convertToThriftLolMatchSummary(payload.eventData)); // Reuse existing method
+
+        return thriftPayload;
+    }
+
+    // Method to start the WebSocket connection
+    public void startWebSocketConnection() {
+        List<String> channels = Arrays.asList("match_updates", "lol_live_cv_states", "lol_live_cv_events");
+        Map<String, String> filters = new HashMap<>();
+        filters.put("game", "2"); // Game ID for League of Legends
+        String queue = "liveDataQueue";
+
+        apiClient.connectToWebSocket(channels, filters, queue);
+    }
+
+    // File: ApolloApiManager.java
+
+    public CompletableFuture<GetLiveMatch> getLiveMatch(int matchId) {
+        return getMatchFromMatchId.invokeAsync(matchId)
+                .thenCompose(match -> {
+                    if (match == null) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    // Fetch participant data concurrently
+                    List<CompletableFuture<GetParticipant>> participantFutures = match.getParticipants().stream()
+                            .map(this::fetchFullParticipantData)
+                            .collect(Collectors.toList());
+
+                    // Fetch LolMatchSummary specifically for live LoL matches
+                    final CompletableFuture<GetLolMatchSummary> lolSummaryFuture = getLiveLolMatchSummary(matchId);
+
+                    // Combine all futures into a single array
+                    CompletableFuture<?>[] allFuturesArray = Stream.concat(
+                            participantFutures.stream(),
+                            Stream.of(lolSummaryFuture)).toArray(CompletableFuture[]::new);
+
+                    // Await completion of all participant data and match summary
+                    CompletableFuture<Void> allFutures = CompletableFuture.allOf(allFuturesArray);
+
+                    return allFutures.thenApply(v -> {
+                        GetLiveMatch getLiveMatch = new GetLiveMatch(match);
+                        getLiveMatch.participants = participantFutures.stream()
+                                .map(CompletableFuture::join)
+                                .collect(Collectors.toList());
+
+                        // Integrate LolMatchSummary data
+                        GetLolMatchSummary lolSummary = lolSummaryFuture.join();
+                        if (lolSummary != null) {
+                            // Enrich participants with stats from the match summary
+                            mergeStatsIntoParticipants(getLiveMatch.participants, lolSummary);
+                        }
+
+                        return getLiveMatch;
+                    });
+                });
+    }
+
+    public CompletableFuture<GetLolMatchSummary> getLiveLolMatchSummary(int matchId) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("Starting getLiveLolMatchSummary for matchId: " + matchId);
+
+        // Fetch the live match summary
+        CompletableFuture<LolMatchSummary> summaryFuture = getLolMatchSummaryFromMatchId.invokeAsync(matchId)
+                .thenApply(summary -> {
+                    System.out.println("Summary fetched in " + (System.currentTimeMillis() - startTime) + "ms");
+                    return summary;
+                });
+
+        // Fetch asset IDs related to the match
+        CompletableFuture<Set<Integer>> assetIdsFuture = getAssetIdsFromMatchId.invokeAsync(matchId)
+                .thenApply(assetIds -> {
+                    System.out.println("Asset IDs fetched in " + (System.currentTimeMillis() - startTime) + "ms");
+                    return assetIds;
+                });
+
+        // Combine summary and asset IDs
+        return CompletableFuture.allOf(summaryFuture, assetIdsFuture)
+                .thenCompose(v -> {
+                    LolMatchSummary summary = summaryFuture.join();
+                    Set<Integer> assetIds = assetIdsFuture.join();
+
+                    if (summary == null) {
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    // Fetch assets concurrently
+                    List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
+                            .map(this::getAsset)
+                            .collect(Collectors.toList());
+
+                    // Combine all asset futures into a single array
+                    CompletableFuture<?>[] allAssetFuturesArray = assetFutures.toArray(new CompletableFuture[0]);
+
+                    CompletableFuture<Void> allAssetFutures = CompletableFuture.allOf(allAssetFuturesArray);
+
+                    return allAssetFutures.thenApply(x -> {
+                        Map<Integer, GetAsset> assetMap = assetFutures.stream()
+                                .map(CompletableFuture::join)
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toMap(Asset::getId, GetAsset::new));
+                        return new GetLolMatchSummary(summary, assetMap);
+                    });
+                });
     }
 
 }

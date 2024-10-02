@@ -115,6 +115,20 @@ public class ESports implements RamaModule {
                                                 CompoundAgg.map("*game_id", Agg.set("*asset")));
         }
 
+        private static void declareLiveLolMatchSummaryIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("liveLolMatchSummaryIngestion");
+
+                // Define PState map schema with matchId as the key and LiveLolMatchSummary as
+                // the value
+                stream.pstate("$$liveLolMatchIdToSummary", PState.mapSchema(Integer.class, LiveLolMatchSummary.class));
+
+                // Source from the liveLolMatchSummaryDepot
+                stream.source("*liveLolMatchSummaryDepot").out("*liveSummary")
+                                .macro(ApolloHelpers.extractFields("*liveSummary", "*matchId"))
+                                .localTransform("$$liveLolMatchIdToSummary",
+                                                Path.key("*matchId").termVal("*liveSummary"));
+        }
+
         private void declareQueries(Topologies topologies) {
                 topologies.query("getSeriesFromSeriesId", "*id").out("*result")
                                 .hashPartition("*id")
@@ -230,6 +244,15 @@ public class ESports implements RamaModule {
                                                 Block.each(Ops.IDENTITY, "*assets").out("*result"))
                                 .originPartition();
 
+                topologies.query("getLiveLolMatchSummaryFromMatchId", "*matchId").out("*result")
+                                .hashPartition("*matchId")
+                                .localSelect("$$liveLolMatchIdToSummary", Path.key("*matchId"))
+                                .out("*liveSummary")
+                                .ifTrue(new Expr(Ops.IS_NULL, "*liveSummary"),
+                                                Block.each(() -> null).out("*result"),
+                                                Block.each(Ops.IDENTITY, "*liveSummary").out("*result"))
+                                .originPartition();
+
         }
 
         @Override
@@ -243,6 +266,7 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*assetDepot", Depot.hashBy(ApolloHelpers.ExtractAssetId.class));
                 setup.declareDepot("*lolPlayerSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolTeamSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractLolTeamId.class));
+                setup.declareDepot("*liveLolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
                 declareSeriesIngestionTopology(topologies);
                 declareMatchIngestionTopology(topologies);
                 declareRosterIngestionTopology(topologies);
@@ -252,6 +276,7 @@ public class ESports implements RamaModule {
                 declareAssetIngestionTopology(topologies);
                 declareLolPlayerSeasonStatsIngestionTopology(topologies);
                 declareLolTeamSeasonStatsIngestionTopology(topologies);
+                declareLiveLolMatchSummaryIngestionTopology(topologies);
                 declareQueries(topologies);
         }
 }

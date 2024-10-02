@@ -912,8 +912,6 @@ struct Age {
     2: i32 years
 }
 
-// Match summary additions
-
 struct LolMatchSummary {
   1: i32 id
   2: LolTeams teams
@@ -1019,7 +1017,7 @@ struct LolElite {
 struct LolPlayerSummary {
     1: i32 id
     2: i32 uiIndex
-    3: LolChampion champion
+    3: optional LolChampion champion
     4: LolKills kills
     5: LolAssists assists
     6: LolDeaths deaths
@@ -1149,6 +1147,24 @@ struct Game {
     3: string shortName
     4: string slug
 }
+
+struct LiveLolMatchPayload {
+    1: i32 index,
+    2: string timestamp,
+    3: LolMatch match, 
+    4: string eventType,
+    5: LolMatchSummary eventData, 
+}
+
+
+struct LiveLolMatchSummary {
+    1: string channel,
+    2: string uuid,
+    3: string created,
+    4: LiveLolMatchPayload payload,
+    5: i32 matchId, 
+}
+
 
 
 
