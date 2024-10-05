@@ -1,9 +1,6 @@
 package com.apollo.backendapi.pojos;
 
-import com.apollo.backendapi.CustomInstantDeserializer;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.Instant;
 

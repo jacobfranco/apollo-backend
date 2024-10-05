@@ -48,9 +48,14 @@ import com.rpl.rama.cluster.ClusterManagerBase;
 import com.rpl.rama.ops.Ops;
 import com.rpl.rama.diffs.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ApolloApiManager {
 
     private ObjectMapper objectMapper;
+
+    private static final Logger logger = LogManager.getLogger(ApolloApiManager.class);
 
     // Load environment variables for Abios
     private static final Dotenv dotenv = Dotenv.load();
@@ -2368,13 +2373,34 @@ public class ApolloApiManager {
     private LolMatchSummary convertToThriftLolMatchSummary(PostLolMatchSummary postSummary) {
         LolMatchSummary summary = new LolMatchSummary();
 
-        summary.setId(postSummary.match.id);
-        summary.setTeams(convertToThriftLolTeams(postSummary.teams));
-        summary.setPits(convertToThriftLolPits(postSummary.pits));
-        summary.setLatestEventsChannelIndex(postSummary.latest_events_channel_index);
-        summary.setLatestStatesChannelIndex(postSummary.latest_states_channel_index);
-        summary.setTimestamp(postSummary.timestamp.toString());
-        summary.setMatch(convertToThriftLolMatch(postSummary.match));
+        if (postSummary == null) {
+            System.err.println("Error: postSummary is null");
+            return summary;
+        }
+
+        // Check if match is non-null before accessing its fields
+        if (postSummary.match != null) {
+            summary.setId(postSummary.match.id);
+            summary.setMatch(convertToThriftLolMatch(postSummary.match));
+        } else {
+            summary.setMatch(null);
+        }
+
+        // Null checks for other fields
+        summary.setTeams(postSummary.teams != null ? convertToThriftLolTeams(postSummary.teams) : null);
+        summary.setPits(postSummary.pits != null ? convertToThriftLolPits(postSummary.pits) : null);
+
+        // Directly assign long values, ensuring they're non-negative
+        summary.setLatestEventsChannelIndex(Math.max(postSummary.latest_events_channel_index, 0L));
+        summary.setLatestStatesChannelIndex(Math.max(postSummary.latest_states_channel_index, 0L));
+
+        // Handle null timestamp
+        if (postSummary.timestamp != null) {
+            summary.setTimestamp(postSummary.timestamp.toString());
+        } else {
+            summary.setTimestamp(""); // or use a default value, or current time
+            System.err.println("Warning: postSummary.timestamp is null");
+        }
 
         Set<Integer> assetIds = new HashSet<>();
         collectAssetIds(postSummary, assetIds);
@@ -3221,7 +3247,11 @@ public class ApolloApiManager {
         LolMatchTimeline timeline = new LolMatchTimeline();
         timeline.setPhase(postTimeline.phase);
         timeline.setStart(postTimeline.start.toString());
-        timeline.setEnd(postTimeline.end.toString());
+        if (postTimeline.end != null) {
+            timeline.setEnd(postTimeline.end.toString());
+        } else {
+            timeline.setEnd(null);
+        }
         timeline.setClock(convertToThriftLolMatchClock(postTimeline.clock));
         return timeline;
     }
@@ -3503,7 +3533,25 @@ public class ApolloApiManager {
     }
 
     // Hermes stuff
-    // Method to handle incoming messages from the WebSocket
+
+    // Method to start the WebSocket connection
+    public void startWebSocketConnection() {
+        List<String> channels = Arrays.asList(
+                "series_updates",
+                "match_updates",
+                "player_updates",
+                "team_updates",
+                "lol_live_cv_states",
+                "lol_live_cv_events");
+        Map<String, String> filters = new HashMap<>();
+        filters.put("game", "2"); // Game ID for League of Legends
+        String queue = "liveDataQueue";
+
+        apiClient.connectToWebSocket(channels, filters, queue);
+    }
+
+    // In ApolloApiManager.java
+
     public void handleIncomingMessage(String message) {
         try {
             JsonNode rootNode = objectMapper.readTree(message);
@@ -3511,19 +3559,26 @@ public class ApolloApiManager {
             // Determine the channel from the message
             String channel = rootNode.get("channel").asText();
 
-            switch (channel) {
-                case "match_updates":
-                    processMatchUpdate(rootNode);
-                    break;
-                case "lol_live_cv_states":
-                    processLiveLolMatchSummary(rootNode);
-                    break;
-                case "lol_live_cv_events":
-                    processLiveLolMatchEvent(rootNode);
-                    break;
-                default:
-                    System.out.println("Received message for unhandled channel: " + channel);
-            }
+            // Print the channel and message content
+            logger.info(
+                    "Received message from channel: " + channel + " Message Content: " + rootNode.toPrettyString());
+
+            // Process messages based on the channel
+            /*
+             * switch (channel) {
+             * case "match_updates":
+             * processMatchUpdate(rootNode);
+             * break;
+             * case "lol_live_cv_states":
+             * processLiveLolMatchSummary(rootNode);
+             * break;
+             * case "lol_live_cv_events":
+             * processLiveLolMatchEvent(rootNode);
+             * break;
+             * default:
+             * logger.warn("Received message for unhandled channel: " + channel);
+             * }
+             */
         } catch (Exception e) {
             System.err.println("Error processing incoming message: " + e.getMessage());
         }
@@ -3535,8 +3590,20 @@ public class ApolloApiManager {
             // Deserialize the entire root node into PostMatchUpdate
             PostMatchUpdate matchUpdate = objectMapper.treeToValue(rootNode, PostMatchUpdate.class);
 
+            // Check if matchUpdate is null
+            if (matchUpdate == null) {
+                System.err.println("Error: matchUpdate is null after deserialization");
+                return;
+            }
+
             // Extract the PostMatch object
             PostMatch postMatch = matchUpdate.match;
+
+            // Check if postMatch is null
+            if (postMatch == null) {
+                System.err.println("Error: postMatch is null in the matchUpdate object");
+                return;
+            }
 
             // Convert to Thrift Match object
             Match match = convertToThriftMatch(postMatch);
@@ -3547,6 +3614,7 @@ public class ApolloApiManager {
             // Additional processing if necessary
         } catch (Exception e) {
             System.err.println("Error processing match update: " + e.getMessage());
+            e.printStackTrace(); // Print stack trace for more detailed error information
         }
     }
 
@@ -3580,8 +3648,6 @@ public class ApolloApiManager {
 
     // Conversion method from PostLiveLolMatchSummary to LiveLolMatchSummary (Thrift
     // object)
-    // Conversion method from PostLiveLolMatchSummary to LiveLolMatchSummary (Thrift
-    // object)
     private LiveLolMatchSummary convertToThriftLiveLolMatchSummary(PostLiveLolMatchSummary liveSummary) {
         LiveLolMatchSummary thriftSummary = new LiveLolMatchSummary();
         thriftSummary.setChannel(liveSummary.channel);
@@ -3608,17 +3674,7 @@ public class ApolloApiManager {
         return thriftPayload;
     }
 
-    // Method to start the WebSocket connection
-    public void startWebSocketConnection() {
-        List<String> channels = Arrays.asList("match_updates", "lol_live_cv_states", "lol_live_cv_events");
-        Map<String, String> filters = new HashMap<>();
-        filters.put("game", "2"); // Game ID for League of Legends
-        String queue = "liveDataQueue";
-
-        apiClient.connectToWebSocket(channels, filters, queue);
-    }
-
-    // File: ApolloApiManager.java
+    // Getters
 
     public CompletableFuture<GetLiveMatch> getLiveMatch(int matchId) {
         return getMatchFromMatchId.invokeAsync(matchId)

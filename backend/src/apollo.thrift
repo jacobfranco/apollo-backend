@@ -913,7 +913,7 @@ struct Age {
 }
 
 struct LolMatchSummary {
-  1: i32 id
+  1: optional i32 id
   2: LolTeams teams
   3: LolPits pits
   4: i64 latestEventsChannelIndex

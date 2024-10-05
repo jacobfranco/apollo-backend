@@ -30,7 +30,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
 
   public int id; // required
   public int uiIndex; // required
-  public @org.apache.thrift.annotation.Nullable LolChampion champion; // required
+  public @org.apache.thrift.annotation.Nullable LolChampion champion; // optional
   public @org.apache.thrift.annotation.Nullable LolKills kills; // required
   public @org.apache.thrift.annotation.Nullable LolAssists assists; // required
   public @org.apache.thrift.annotation.Nullable LolDeaths deaths; // required
@@ -148,7 +148,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   private static final int __ID_ISSET_ID = 0;
   private static final int __UIINDEX_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.MULTI_KILLS,_Fields.KEYSTONE,_Fields.POSITION};
+  private static final _Fields optionals[] = {_Fields.CHAMPION,_Fields.MULTI_KILLS,_Fields.KEYSTONE,_Fields.POSITION};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -156,7 +156,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.UI_INDEX, new org.apache.thrift.meta_data.FieldMetaData("uiIndex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.CHAMPION, new org.apache.thrift.meta_data.FieldMetaData("champion", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CHAMPION, new org.apache.thrift.meta_data.FieldMetaData("champion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolChampion.class)));
     tmpMap.put(_Fields.KILLS, new org.apache.thrift.meta_data.FieldMetaData("kills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolKills.class)));
@@ -193,7 +193,6 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   public LolPlayerSummary(
     int id,
     int uiIndex,
-    LolChampion champion,
     LolKills kills,
     LolAssists assists,
     LolDeaths deaths,
@@ -208,7 +207,6 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     setIdIsSet(true);
     this.uiIndex = uiIndex;
     setUiIndexIsSet(true);
-    this.champion = champion;
     this.kills = kills;
     this.assists = assists;
     this.deaths = deaths;
@@ -1280,14 +1278,16 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     sb.append("uiIndex:");
     sb.append(this.uiIndex);
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("champion:");
-    if (this.champion == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.champion);
+    if (isSetChampion()) {
+      if (!first) sb.append(", ");
+      sb.append("champion:");
+      if (this.champion == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.champion);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("kills:");
     if (this.kills == null) {
@@ -1632,9 +1632,11 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       oprot.writeI32(struct.uiIndex);
       oprot.writeFieldEnd();
       if (struct.champion != null) {
-        oprot.writeFieldBegin(CHAMPION_FIELD_DESC);
-        struct.champion.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetChampion()) {
+          oprot.writeFieldBegin(CHAMPION_FIELD_DESC);
+          struct.champion.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.kills != null) {
         oprot.writeFieldBegin(KILLS_FIELD_DESC);

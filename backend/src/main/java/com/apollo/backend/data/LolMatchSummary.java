@@ -22,7 +22,7 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolMatchSummaryStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolMatchSummaryTupleSchemeFactory();
 
-  public int id; // required
+  public int id; // optional
   public @org.apache.thrift.annotation.Nullable LolTeams teams; // required
   public @org.apache.thrift.annotation.Nullable LolPits pits; // required
   public long latestEventsChannelIndex; // required
@@ -119,10 +119,11 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
   private static final int __LATESTEVENTSCHANNELINDEX_ISSET_ID = 1;
   private static final int __LATESTSTATESCHANNELINDEX_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.ID};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.TEAMS, new org.apache.thrift.meta_data.FieldMetaData("teams", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolTeams.class)));
@@ -147,7 +148,6 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
   }
 
   public LolMatchSummary(
-    int id,
     LolTeams teams,
     LolPits pits,
     long latestEventsChannelIndex,
@@ -157,8 +157,6 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     java.util.Set<java.lang.Integer> assetIds)
   {
     this();
-    this.id = id;
-    setIdIsSet(true);
     this.teams = teams;
     this.pits = pits;
     this.latestEventsChannelIndex = latestEventsChannelIndex;
@@ -569,8 +567,8 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     if (this == that)
       return true;
 
-    boolean this_present_id = true;
-    boolean that_present_id = true;
+    boolean this_present_id = true && this.isSetId();
+    boolean that_present_id = true && that.isSetId();
     if (this_present_id || that_present_id) {
       if (!(this_present_id && that_present_id))
         return false;
@@ -648,7 +646,9 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + id;
+    hashCode = hashCode * 8191 + ((isSetId()) ? 131071 : 524287);
+    if (isSetId())
+      hashCode = hashCode * 8191 + id;
 
     hashCode = hashCode * 8191 + ((isSetTeams()) ? 131071 : 524287);
     if (isSetTeams())
@@ -789,9 +789,11 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
     java.lang.StringBuilder sb = new java.lang.StringBuilder("LolMatchSummary(");
     boolean first = true;
 
-    sb.append("id:");
-    sb.append(this.id);
-    first = false;
+    if (isSetId()) {
+      sb.append("id:");
+      sb.append(this.id);
+      first = false;
+    }
     if (!first) sb.append(", ");
     sb.append("teams:");
     if (this.teams == null) {
@@ -989,9 +991,11 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(ID_FIELD_DESC);
-      oprot.writeI32(struct.id);
-      oprot.writeFieldEnd();
+      if (struct.isSetId()) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        oprot.writeI32(struct.id);
+        oprot.writeFieldEnd();
+      }
       if (struct.teams != null) {
         oprot.writeFieldBegin(TEAMS_FIELD_DESC);
         struct.teams.write(oprot);
