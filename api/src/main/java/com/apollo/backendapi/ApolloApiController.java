@@ -2063,16 +2063,6 @@ public class ApolloApiController {
     }
 
     // Hermes endpoints:
-    @PostMapping("/api/start-websocket")
-    public ResponseEntity<String> startWebSocket() {
-        try {
-            manager.startWebSocketConnection();
-            return ResponseEntity.ok("WebSocket connection started.");
-        } catch (Exception e) {
-            System.err.println("Error starting WebSocket connection: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to start WebSocket.");
-        }
-    }
 
     // Endpoint to get live LoL match summary by match ID
     @GetMapping("/api/live/lol/match/{matchId}")

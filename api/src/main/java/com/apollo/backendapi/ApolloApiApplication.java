@@ -233,7 +233,7 @@ public class ApolloApiApplication {
         }
 
         @PostConstruct
-        public void fetchESportsData() {
+        public void initializeESportsData() {
                 System.out.println("Application context loaded. Fetching eSports data...");
                 if (ApolloApiController.manager != null) {
                         ApolloApiController.manager.fetchAllActiveLolTeams();
@@ -243,6 +243,15 @@ public class ApolloApiApplication {
                         ApolloApiController.manager.fetchAllLolAssets();
                         ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,
                                         ApolloApiConfig.LOL_END_TEST);
+
+                        // Start WebSocket connection after data fetching
+                        try {
+                                ApolloApiController.manager.startWebSocketConnection();
+                                System.out.println("WebSocket connection started successfully.");
+                        } catch (Exception e) {
+                                System.err.println("Error starting WebSocket connection: " + e.getMessage());
+                                // Optionally, implement retry logic or alerting mechanisms here
+                        }
                 } else {
                         System.err.println("ApolloApiController.manager is null. Unable to fetch eSports data.");
                 }
