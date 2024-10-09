@@ -1947,13 +1947,6 @@ public class ApolloApiController {
      * ======================================
      */
 
-    // Map a GET request to retrieve a specific series by its ID
-    @GetMapping("/api/lolseries/{id}")
-    public Mono<GetSeries> getLolSeries(@PathVariable("id") int seriesId) {
-        return Mono.fromFuture(manager.getSeries(seriesId))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
-    }
-
     @GetMapping("/api/lolseries/schedule")
     public Mono<List<GetSeries>> getLolSeriesSchedule(
             @RequestParam double startTime,

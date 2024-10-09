@@ -6,6 +6,9 @@ import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
 import com.rpl.rama.*;
 import com.rpl.rama.diffs.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.*;
 import org.springframework.core.Ordered;
 import org.springframework.http.*;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 public class ApolloApiStreamingConfig {
     private static final String SEC_WEBSOCKET_PROTOCOL_HEADER = "Sec-WebSocket-Protocol";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Logger logger = LogManager.getLogger(ApolloApiStreamingConfig.class);
 
     public static class StreamState {
         WebSocketSession session;
@@ -88,6 +92,17 @@ public class ApolloApiStreamingConfig {
         }
     }
 
+    // **New Serialization Method for GetLiveMatch**
+    private static String serializeEvent(GetLiveMatch getLiveMatch, String stream) {
+        try {
+            String liveMatchStr = OBJECT_MAPPER.writeValueAsString(getLiveMatch);
+            GetStreamEvent event = new GetStreamEvent(stream, "liveMatch", liveMatchStr);
+            return OBJECT_MAPPER.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
     public static void sendStatusPointer(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
             Long accountId, StatusPointer statusPointer) {
         // direct streams return a "conversation" event
@@ -134,6 +149,20 @@ public class ApolloApiStreamingConfig {
                     if (eventStr != null)
                         sink.next(session.textMessage(eventStr));
                 });
+    }
+
+    // **New Method to Send Live Match Updates**
+    public static void sendLiveMatch(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
+            GetLiveMatch getLiveMatch) {
+        String eventStr = serializeEvent(getLiveMatch, stream);
+        if (eventStr != null) {
+            // Log the serialized event before sending
+            logger.info("Sending liveMatch event to session {}: {}", session.getId(), eventStr);
+
+            sink.next(session.textMessage(eventStr));
+        } else {
+            logger.warn("Failed to serialize GetLiveMatch for session {}", session.getId());
+        }
     }
 
     // caches of the latest query results of each global timeline
@@ -202,9 +231,16 @@ public class ApolloApiStreamingConfig {
                         return;
                     String stream = params.get("stream").get(0);
 
+                    // TODO: Change this so that its uniform i.e. get rid of local/remote
+                    // Idk how it works so figure it out
                     if ("public".equals(stream) || "public:local".equals(stream) || "public:remote".equals(stream)) {
                         SESSION_ID_TO_STATE.put(wsSessionId,
                                 new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+                    } else if ("live-match".equals(stream)) { // **Handle "live-match" Stream**
+                        // No specific proxies needed for live-match
+                        SESSION_ID_TO_STATE.put(wsSessionId,
+                                new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+                        // **Note:** Live match summaries will be pushed manually via ApolloApiManager
                     } else {
                         ProxyState.Callback<SortedMap> statusCallback = (SortedMap newVal, Diff diff,
                                 SortedMap oldVal) -> {

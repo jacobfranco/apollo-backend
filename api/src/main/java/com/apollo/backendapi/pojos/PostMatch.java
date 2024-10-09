@@ -15,7 +15,6 @@ public class PostMatch {
     public int order;
     public PostSeriesInfo series;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant deletedAt;
 
     public PostGameInfo game;

@@ -65,6 +65,8 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 ItemStats.class,
                 KeyValuePair.class,
                 LikeStatus.class,
+                LiveLolMatchPayload.class,
+                LiveLolMatchSummary.class,
                 LolAssists.class,
                 LolChampion.class,
                 LolCreepKills.class,

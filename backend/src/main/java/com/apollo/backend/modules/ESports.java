@@ -4,7 +4,6 @@ import com.rpl.rama.*;
 import com.rpl.rama.module.*;
 import com.rpl.rama.ops.*;
 import com.apollo.backend.ApolloHelpers;
-import com.apollo.backend.ApolloHelpers.ExtractGameId;
 import com.apollo.backend.data.*;
 
 public class ESports implements RamaModule {
@@ -12,14 +11,12 @@ public class ESports implements RamaModule {
         private static void declareSeriesIngestionTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("seriesIngestion");
 
-                stream.pstate("$$seriesIdToSeries", PState.mapSchema(Integer.class, Series.class));
                 stream.pstate("$$startTimeToSeries",
                                 PState.mapSchema(Long.class, PState.mapSchema(Integer.class, Series.class)));
 
                 stream.source("*seriesDepot").out("*series")
                                 .macro(ApolloHelpers.extractFields("*series", "*id", "*start"))
-                                .localTransform("$$seriesIdToSeries",
-                                                Path.key("*id").termVal("*series"))
+                                .hashPartition("*id")
                                 .localTransform("$$startTimeToSeries",
                                                 Path.key("*start").key("*id").termVal("*series"));
         }
@@ -130,129 +127,72 @@ public class ESports implements RamaModule {
         }
 
         private void declareQueries(Topologies topologies) {
-                topologies.query("getSeriesFromSeriesId", "*id").out("*result")
-                                .hashPartition("*id")
-                                .localSelect("$$seriesIdToSeries", Path.key("*id"))
-                                .out("*series")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*series"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*series").out("*result"))
-                                .originPartition();
-
-                topologies.query("getSeriesSchedule", "*startTime", "*endTime").out("*result")
-                                .hashPartition("*startTime")
+                topologies.query("getSeriesFromStartTime", "*startTime", "*endTime").out("*result")
+                                .allPartition()
                                 .localSelect("$$startTimeToSeries", Path.sortedMapRange("*startTime", "*endTime"))
-                                .out("*result")
-                                .originPartition();
+                                .out("*seriesMap")
+                                .originPartition()
+                                .agg(Agg.mergeMap("*seriesMap")).out("*result");
 
                 topologies.query("getMatchFromMatchId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$matchIdToMatch", Path.key("*id"))
-                                .out("*match")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*match"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*match").out("*result"))
+                                .localSelect("$$matchIdToMatch", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getMatchesFromSeriesId", "*seriesId").out("*result")
                                 .hashPartition("*seriesId")
-                                .localSelect("$$seriesIdToMatches", Path.key("*seriesId"))
-                                .out("*matches")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*matches"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*matches").out("*result"))
+                                .localSelect("$$seriesIdToMatches", Path.key("*seriesId")).out("*result")
                                 .originPartition();
 
                 topologies.query("getRosterFromRosterId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$rosterIdToRoster", Path.key("*id"))
-                                .out("*roster")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*roster"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*roster").out("*result"))
+                                .localSelect("$$rosterIdToRoster", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getTeamFromTeamId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$teamIdToTeam", Path.key("*id"))
-                                .out("*team")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*team"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*team").out("*result"))
+                                .localSelect("$$teamIdToTeam", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getPlayerFromPlayerId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$playerIdToPlayer", Path.key("*id"))
-                                .out("*player")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*player"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*player").out("*result"))
+                                .localSelect("$$playerIdToPlayer", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getLolMatchSummaryFromMatchId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$lolMatchIdToSummary", Path.key("*id"))
-                                .out("*summary")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*summary"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*summary").out("*result"))
+                                .localSelect("$$lolMatchIdToSummary", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getLolPlayerSeasonStatsFromPlayerId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$playerIdToLolSeasonStats", Path.key("*id"))
-                                .out("*stats")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*stats"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*stats").out("*result"))
+                                .localSelect("$$playerIdToLolSeasonStats", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getLolTeamSeasonStatsFromTeamId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$teamIdToLolSeasonStats", Path.key("*id"))
-                                .out("*stats")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*stats"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*stats").out("*result"))
+                                .localSelect("$$teamIdToLolSeasonStats", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getAssetFromAssetId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$assetIdToAsset", Path.key("*id"))
-                                .out("*asset")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*asset"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*asset").out("*result"))
+                                .localSelect("$$assetIdToAsset", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getAssetIdsFromMatchId", "*id").out("*result")
                                 .hashPartition("*id")
-                                .localSelect("$$lolMatchIdToAssetIds", Path.key("*id"))
-                                .out("*assetIds")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*assetIds"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*assetIds").out("*result"))
+                                .localSelect("$$lolMatchIdToAssetIds", Path.key("*id")).out("*result")
                                 .originPartition();
 
                 topologies.query("getAssetsFromGameId", "*gameId").out("*result")
                                 .hashPartition("*gameId")
-                                .localSelect("$$gameIdToAssets", Path.key("*gameId"))
-                                .out("*assets")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*assets"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*assets").out("*result"))
+                                .localSelect("$$gameIdToAssets", Path.key("*gameId")).out("*result")
                                 .originPartition();
 
                 topologies.query("getLiveLolMatchSummaryFromMatchId", "*matchId").out("*result")
                                 .hashPartition("*matchId")
-                                .localSelect("$$liveLolMatchIdToSummary", Path.key("*matchId"))
-                                .out("*liveSummary")
-                                .ifTrue(new Expr(Ops.IS_NULL, "*liveSummary"),
-                                                Block.each(() -> null).out("*result"),
-                                                Block.each(Ops.IDENTITY, "*liveSummary").out("*result"))
+                                .localSelect("$$liveLolMatchIdToSummary", Path.key("*matchId")).out("*result")
                                 .originPartition();
-
         }
 
         @Override
@@ -266,7 +206,7 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*assetDepot", Depot.hashBy(ApolloHelpers.ExtractAssetId.class));
                 setup.declareDepot("*lolPlayerSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolTeamSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractLolTeamId.class));
-                setup.declareDepot("*liveLolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
+                setup.declareDepot("*liveLolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractLiveMatchId.class));
                 declareSeriesIngestionTopology(topologies);
                 declareMatchIngestionTopology(topologies);
                 declareRosterIngestionTopology(topologies);

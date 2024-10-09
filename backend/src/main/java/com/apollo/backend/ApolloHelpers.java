@@ -19,6 +19,7 @@ import java.net.URISyntaxException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -92,9 +93,21 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractStartTime extends ExtractField {
+    public ExtractStartTime() {
+      super("start");
+    }
+  }
+
   public static class ExtractMatchId extends ExtractField {
     public ExtractMatchId() {
       super("id");
+    }
+  }
+
+  public static class ExtractLiveMatchId extends ExtractField {
+    public ExtractLiveMatchId() {
+      super("matchId");
     }
   }
 
@@ -642,12 +655,6 @@ public class ApolloHelpers {
   }
 
   // ESports Helpers
-  public static List<Series> sortSeriesByStartTime(Map<Long, Map<Integer, Series>> filteredSeries) {
-    return filteredSeries.entrySet().stream()
-        .sorted(Map.Entry.comparingByKey()) // Sort by start time (key of outer map)
-        .flatMap(entry -> entry.getValue().values().stream())
-        .collect(Collectors.toList());
-  }
 
   public static long getStartOfWeek(long timestampMillis) {
     Instant instant = Instant.ofEpochMilli(timestampMillis);
@@ -657,7 +664,10 @@ public class ApolloHelpers {
   }
 
   public static long getEndOfWeek(long timestampMillis) {
-    return getStartOfWeek(timestampMillis) + 7 * 24 * 60 * 60 * 1000 - 1;
+    Instant instant = Instant.ofEpochMilli(timestampMillis);
+    LocalDate date = instant.atZone(ZoneOffset.UTC).toLocalDate();
+    LocalDate endOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+    return endOfWeek.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant().toEpochMilli();
   }
 
   public static String generateSecureRandomString(int length) {

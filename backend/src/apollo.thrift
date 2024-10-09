@@ -1102,7 +1102,7 @@ struct LolPits {
 }
 
 struct LolPit {
-    1: LolNpc npc
+    1: optional LolNpc npc
     2: string npcStatus
     3: optional LolMatchClock emptySinceTime
     4: optional LolMatchClock spawnTime

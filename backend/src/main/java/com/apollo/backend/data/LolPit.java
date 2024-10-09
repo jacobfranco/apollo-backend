@@ -18,7 +18,7 @@ public class LolPit implements org.apache.thrift.TBase<LolPit, LolPit._Fields>, 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolPitStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolPitTupleSchemeFactory();
 
-  public @org.apache.thrift.annotation.Nullable LolNpc npc; // required
+  public @org.apache.thrift.annotation.Nullable LolNpc npc; // optional
   public @org.apache.thrift.annotation.Nullable java.lang.String npcStatus; // required
   public @org.apache.thrift.annotation.Nullable LolMatchClock emptySinceTime; // optional
   public @org.apache.thrift.annotation.Nullable LolMatchClock spawnTime; // optional
@@ -95,11 +95,11 @@ public class LolPit implements org.apache.thrift.TBase<LolPit, LolPit._Fields>, 
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.EMPTY_SINCE_TIME,_Fields.SPAWN_TIME};
+  private static final _Fields optionals[] = {_Fields.NPC,_Fields.EMPTY_SINCE_TIME,_Fields.SPAWN_TIME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.NPC, new org.apache.thrift.meta_data.FieldMetaData("npc", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.NPC, new org.apache.thrift.meta_data.FieldMetaData("npc", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolNpc.class)));
     tmpMap.put(_Fields.NPC_STATUS, new org.apache.thrift.meta_data.FieldMetaData("npcStatus", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -115,11 +115,9 @@ public class LolPit implements org.apache.thrift.TBase<LolPit, LolPit._Fields>, 
   }
 
   public LolPit(
-    LolNpc npc,
     java.lang.String npcStatus)
   {
     this();
-    this.npc = npc;
     this.npcStatus = npcStatus;
   }
 
@@ -479,13 +477,15 @@ public class LolPit implements org.apache.thrift.TBase<LolPit, LolPit._Fields>, 
     java.lang.StringBuilder sb = new java.lang.StringBuilder("LolPit(");
     boolean first = true;
 
-    sb.append("npc:");
-    if (this.npc == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.npc);
+    if (isSetNpc()) {
+      sb.append("npc:");
+      if (this.npc == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.npc);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("npcStatus:");
     if (this.npcStatus == null) {
@@ -620,9 +620,11 @@ public class LolPit implements org.apache.thrift.TBase<LolPit, LolPit._Fields>, 
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.npc != null) {
-        oprot.writeFieldBegin(NPC_FIELD_DESC);
-        struct.npc.write(oprot);
-        oprot.writeFieldEnd();
+        if (struct.isSetNpc()) {
+          oprot.writeFieldBegin(NPC_FIELD_DESC);
+          struct.npc.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.npcStatus != null) {
         oprot.writeFieldBegin(NPC_STATUS_FIELD_DESC);

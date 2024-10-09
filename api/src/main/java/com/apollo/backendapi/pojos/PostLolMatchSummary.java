@@ -13,7 +13,6 @@ public class PostLolMatchSummary {
     public long latest_events_channel_index;
     public long latest_states_channel_index;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
     public Instant timestamp;
 
     public PostLolMatch match;

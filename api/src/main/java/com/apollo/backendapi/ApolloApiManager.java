@@ -2,6 +2,7 @@ package com.apollo.backendapi;
 
 import com.google.common.collect.Lists;
 
+import clojure.lang.PersistentHashMap;
 import clojure.lang.PersistentVector;
 
 import java.io.*;
@@ -24,6 +25,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap.SimpleEntry;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -209,8 +211,7 @@ public class ApolloApiManager {
     private final Depot liveLolMatchSummaryDepot;
 
     // ESports Queries
-    private final QueryTopologyClient<Series> getSeriesFromSeriesId;
-    private final QueryTopologyClient<VectorBackedSortedMap> getSeriesSchedule;
+    private final QueryTopologyClient<Map> getSeriesFromStartTime;
     private final QueryTopologyClient<Match> getMatchFromMatchId;
     private final QueryTopologyClient<List<Match>> getMatchesFromSeriesId;
     private final QueryTopologyClient<Roster> getRosterFromRosterId;
@@ -232,13 +233,7 @@ public class ApolloApiManager {
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
-        // Create a module and register the custom deserializer
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(Instant.class, new CustomInstantDeserializer());
-
-        // Register JavaTimeModule and the custom module
         this.objectMapper.registerModule(new JavaTimeModule());
-        this.objectMapper.registerModule(module);
 
         // Core Depots
         accountDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*accountDepot");
@@ -362,8 +357,7 @@ public class ApolloApiManager {
         liveLolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*liveLolMatchSummaryDepot");
 
         // ESports Queries
-        getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
-        getSeriesSchedule = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesSchedule");
+        getSeriesFromStartTime = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromStartTime");
         getMatchFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchFromMatchId");
         getMatchesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchesFromSeriesId");
         getRosterFromRosterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getRosterFromRosterId");
@@ -1882,6 +1876,7 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String seriesData = apiClient.getSeries(filter, order, skip, take);
+            logger.info("API Response: " + seriesData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
@@ -2427,27 +2422,6 @@ public class ApolloApiManager {
     }
 
     // eSports getters
-    public CompletableFuture<GetSeries> getSeries(int seriesId) {
-        return getSeriesFromSeriesId.invokeAsync(seriesId)
-                .thenCompose(series -> {
-                    if (series == null) {
-                        return CompletableFuture.completedFuture(null);
-                    }
-                    List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants().stream()
-                            .map(this::fetchFullParticipantData)
-                            .collect(Collectors.toList());
-
-                    return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
-                            .thenApply(v -> {
-                                GetSeries getSeries = new GetSeries(series);
-                                getSeries.participants = participantFutures.stream()
-                                        .map(CompletableFuture::join)
-                                        .collect(Collectors.toList());
-                                return getSeries;
-                            });
-                });
-    }
-
     public CompletableFuture<GetMatch> getMatch(int matchId) {
         return getMatchFromMatchId.invokeAsync(matchId)
                 .thenCompose(match -> {
@@ -2535,38 +2509,46 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<List<GetSeries>> getSeriesSchedule(long startTime, long endTime) {
-        return getSeriesSchedule.invokeAsync(startTime, endTime)
+        return getSeriesFromStartTime.invokeAsync(startTime, endTime)
                 .thenCompose(result -> {
+                    // result is a Map<Long, Map<Integer, Series>> after aggregation
+                    Map<Long, Map<Integer, Series>> aggregatedResult = (Map<Long, Map<Integer, Series>>) result;
+                    TreeMap<Long, Map<Integer, Series>> sortedResult = new TreeMap<>(aggregatedResult);
+
+                    // Collect Series objects in order
                     List<Series> seriesList = new ArrayList<>();
-                    for (Object entry : result.entrySet()) {
-                        Map.Entry<Long, Map<Integer, Series>> mapEntry = (Map.Entry<Long, Map<Integer, Series>>) entry;
-                        Map<Integer, Series> innerMap = mapEntry.getValue();
+                    for (Map<Integer, Series> innerMap : sortedResult.values()) {
                         seriesList.addAll(innerMap.values());
                     }
 
-                    List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
-                            .map(series -> {
-                                List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
-                                        .stream()
-                                        .map(this::fetchFullParticipantData)
-                                        .collect(Collectors.toList());
+                    // Process participants and assemble GetSeries objects
+                    return processSeriesList(seriesList);
+                });
+    }
 
-                                return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
-                                        .thenApply(v -> {
-                                            GetSeries getSeries = new GetSeries(series);
-                                            getSeries.participants = participantFutures.stream()
-                                                    .map(CompletableFuture::join)
-                                                    .collect(Collectors.toList());
-                                            return getSeries;
-                                        });
-                            })
+    private CompletableFuture<List<GetSeries>> processSeriesList(List<Series> seriesList) {
+        List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
+                .map(series -> {
+                    List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
+                            .stream()
+                            .map(this::fetchFullParticipantData)
                             .collect(Collectors.toList());
 
-                    return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]))
-                            .thenApply(v -> futuresList.stream()
-                                    .map(CompletableFuture::join)
-                                    .collect(Collectors.toList()));
-                });
+                    return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> {
+                                GetSeries getSeries = new GetSeries(series);
+                                getSeries.participants = participantFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .collect(Collectors.toList());
+                                return getSeries;
+                            });
+                })
+                .collect(Collectors.toList());
+
+        return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futuresList.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList()));
     }
 
     public CompletableFuture<List<GetSeries>> getWeekSchedule(long timestamp) {
@@ -3222,6 +3204,10 @@ public class ApolloApiManager {
     }
 
     private LolNpc convertToThriftLolNpc(PostLolNpc postNpc) {
+        if (postNpc == null) {
+            return null;
+        }
+
         LolNpc npc = new LolNpc();
         npc.setId(postNpc.id);
         return npc;
@@ -3550,7 +3536,15 @@ public class ApolloApiManager {
         apiClient.connectToWebSocket(channels, filters, queue);
     }
 
-    // In ApolloApiManager.java
+    public void broadcastLiveMatchSummary(GetLiveMatch getLiveMatch) {
+        String stream = "live-match"; // Ensure consistency with streaming config
+        // Broadcast to all sessions subscribed to "live-match"
+        ApolloApiStreamingConfig.SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
+            if ("live-match".equals(streamState.stream)) {
+                ApolloApiStreamingConfig.sendLiveMatch(streamState.session, streamState.sink, stream, getLiveMatch);
+            }
+        });
+    }
 
     public void handleIncomingMessage(String message) {
         try {
@@ -3559,28 +3553,26 @@ public class ApolloApiManager {
             // Determine the channel from the message
             String channel = rootNode.get("channel").asText();
 
-            // Print the channel and message content
-            logger.info(
-                    "Received message from channel: " + channel + " Message Content: " + rootNode.toPrettyString());
+            // Log received message
+            // logger.info("Received message from channel: {} Message Content: {}", channel,
+            // rootNode.toPrettyString());
 
             // Process messages based on the channel
-            /*
-             * switch (channel) {
-             * case "match_updates":
-             * processMatchUpdate(rootNode);
-             * break;
-             * case "lol_live_cv_states":
-             * processLiveLolMatchSummary(rootNode);
-             * break;
-             * case "lol_live_cv_events":
-             * processLiveLolMatchEvent(rootNode);
-             * break;
-             * default:
-             * logger.warn("Received message for unhandled channel: " + channel);
-             * }
-             */
+            switch (channel) {
+                case "match_updates":
+                    processMatchUpdate(rootNode);
+                    break;
+                case "lol_live_cv_states":
+                    processLiveLolMatchSummary(rootNode);
+                    break;
+                case "lol_live_cv_events":
+                    processLiveLolMatchEvent(rootNode);
+                    break;
+                default:
+                    logger.warn("Received message for unhandled channel: {}", channel);
+            }
         } catch (Exception e) {
-            System.err.println("Error processing incoming message: " + e.getMessage());
+            logger.error("Error processing incoming message", e);
         }
     }
 
@@ -3629,12 +3621,24 @@ public class ApolloApiManager {
 
             // Store or update the live match summary in Rama
             liveLolMatchSummaryDepot.appendAsync(thriftLiveSummary).join();
+
+            // After storing, retrieve the enriched GetLiveMatch object
+            CompletableFuture<GetLiveMatch> liveMatchFuture = getLiveMatch(thriftLiveSummary.getMatchId());
+
+            liveMatchFuture.thenAccept(getLiveMatch -> {
+                if (getLiveMatch != null) {
+                    // **Broadcast the live match update**
+                    broadcastLiveMatchSummary(getLiveMatch);
+                    logger.info("Broadcasted live match update for matchId: {}", getLiveMatch.id);
+                } else {
+                    logger.warn("No live match found for matchId: {}", thriftLiveSummary.getMatchId());
+                }
+            });
+
         } catch (Exception e) {
-            System.err.println("Error processing live LoL match summary: " + e.getMessage());
+            logger.error("Error processing live LoL match summary", e);
         }
     }
-
-    // In ApolloApiManager.java
 
     public void processLiveLolMatchEvent(JsonNode rootNode) {
         try {
@@ -3667,19 +3671,22 @@ public class ApolloApiManager {
         LiveLolMatchPayload thriftPayload = new LiveLolMatchPayload();
         thriftPayload.setIndex(payload.index);
         thriftPayload.setTimestamp(payload.timestamp.toString());
-        thriftPayload.setMatch(convertToThriftLolMatch(payload.match)); // Reuse existing method
+        thriftPayload.setMatch(convertToThriftLolMatch(payload.match));
         thriftPayload.setEventType(payload.eventType);
-        thriftPayload.setEventData(convertToThriftLolMatchSummary(payload.eventData)); // Reuse existing method
+        thriftPayload.setEventData(convertToThriftLolMatchSummary(payload.eventData));
 
         return thriftPayload;
     }
 
     // Getters
 
+    // Inside your class
+
     public CompletableFuture<GetLiveMatch> getLiveMatch(int matchId) {
         return getMatchFromMatchId.invokeAsync(matchId)
                 .thenCompose(match -> {
                     if (match == null) {
+                        logger.warn("No match found for matchId: {}", matchId);
                         return CompletableFuture.completedFuture(null);
                     }
 
@@ -3712,8 +3719,21 @@ public class ApolloApiManager {
                             mergeStatsIntoParticipants(getLiveMatch.participants, lolSummary);
                         }
 
+                        // Log the transformed GetLiveMatch object
+                        try {
+                            String getLiveMatchJson = objectMapper.writeValueAsString(getLiveMatch);
+                            logger.debug("Transformed GetLiveMatch for matchId {}: {}", matchId, getLiveMatchJson);
+                        } catch (JsonProcessingException e) {
+                            logger.error("Failed to serialize GetLiveMatch object for matchId {}: {}", matchId,
+                                    e.getMessage());
+                        }
+
                         return getLiveMatch;
                     });
+                })
+                .exceptionally(ex -> {
+                    logger.error("Error in getLiveMatch for matchId {}: {}", matchId, ex.getMessage());
+                    return null;
                 });
     }
 
