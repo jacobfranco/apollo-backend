@@ -2393,8 +2393,7 @@ public class ApolloApiManager {
         if (postSummary.timestamp != null) {
             summary.setTimestamp(postSummary.timestamp.toString());
         } else {
-            summary.setTimestamp(""); // or use a default value, or current time
-            System.err.println("Warning: postSummary.timestamp is null");
+            summary.setTimestamp(String.valueOf(System.currentTimeMillis()));
         }
 
         Set<Integer> assetIds = new HashSet<>();
@@ -3537,10 +3536,10 @@ public class ApolloApiManager {
     }
 
     public void broadcastLiveMatchSummary(GetLiveMatch getLiveMatch) {
-        String stream = "live-match"; // Ensure consistency with streaming config
-        // Broadcast to all sessions subscribed to "live-match"
+        String stream = "live-match/" + getLiveMatch.id;
+        // Broadcast to all sessions subscribed to "live-match/{matchId}"
         ApolloApiStreamingConfig.SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
-            if ("live-match".equals(streamState.stream)) {
+            if (stream.equals(streamState.stream)) { // Match exact stream identifier
                 ApolloApiStreamingConfig.sendLiveMatch(streamState.session, streamState.sink, stream, getLiveMatch);
             }
         });

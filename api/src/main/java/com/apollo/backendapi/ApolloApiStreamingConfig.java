@@ -99,6 +99,8 @@ public class ApolloApiStreamingConfig {
             GetStreamEvent event = new GetStreamEvent(stream, "liveMatch", liveMatchStr);
             return OBJECT_MAPPER.writeValueAsString(event);
         } catch (JsonProcessingException e) {
+            logger.error("Error serializing GetLiveMatch for matchId {}: {}",
+                    getLiveMatch.id, e.getMessage(), e);
             return null;
         }
     }
@@ -236,7 +238,7 @@ public class ApolloApiStreamingConfig {
                     if ("public".equals(stream) || "public:local".equals(stream) || "public:remote".equals(stream)) {
                         SESSION_ID_TO_STATE.put(wsSessionId,
                                 new StreamState(session, accountId, sink, stream, new ArrayList<>()));
-                    } else if ("live-match".equals(stream)) { // **Handle "live-match" Stream**
+                    } else if (stream.startsWith("live-match")) { // **Handle "live-match" Stream**
                         // No specific proxies needed for live-match
                         SESSION_ID_TO_STATE.put(wsSessionId,
                                 new StreamState(session, accountId, sink, stream, new ArrayList<>()));

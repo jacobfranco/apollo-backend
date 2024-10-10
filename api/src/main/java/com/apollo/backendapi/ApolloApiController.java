@@ -1938,6 +1938,14 @@ public class ApolloApiController {
         return Mono.just(new ArrayList<>());
     }
 
+    // General Endpoints
+
+    @GetMapping("/api/teams/{id}")
+    public Mono<GetTeam> getTeam(@PathVariable("id") int teamId) {
+        return Mono.fromFuture(manager.getTeam(teamId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
+    }
+
     /*
      * League of Legends Series Endpoints
      * ======================================
@@ -2010,7 +2018,7 @@ public class ApolloApiController {
      */
 
     @GetMapping("/api/lolteams/{id}")
-    public Mono<GetTeam> getLolTeam(@PathVariable("id") int teamId) {
+    public Mono<GetTeam> getLolTeamWithStats(@PathVariable("id") int teamId) {
         return Mono.fromFuture(manager.getTeamWithLolStats(teamId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
     }
@@ -2053,25 +2061,6 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.getAsset(assetId))
                 .map(asset -> new GetAsset(asset))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found")));
-    }
-
-    // Hermes endpoints:
-
-    // Endpoint to get live LoL match summary by match ID
-    @GetMapping("/api/live/lol/match/{matchId}")
-    public ResponseEntity<GetLiveMatch> getLiveMatch(@PathVariable int matchId) {
-        try {
-            CompletableFuture<GetLiveMatch> future = manager.getLiveMatch(matchId);
-            GetLiveMatch liveMatch = future.get();
-            if (liveMatch != null) {
-                return ResponseEntity.ok(liveMatch);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            System.err.println("Error fetching live match summary: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
     }
 
 }
