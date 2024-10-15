@@ -7,15 +7,15 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fields>, java.io.Serializable, Cloneable, Comparable<Platform> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Platform");
+public class SocialMediaPlatform implements org.apache.thrift.TBase<SocialMediaPlatform, SocialMediaPlatform._Fields>, java.io.Serializable, Cloneable, Comparable<SocialMediaPlatform> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SocialMediaPlatform");
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField SLUG_FIELD_DESC = new org.apache.thrift.protocol.TField("slug", org.apache.thrift.protocol.TType.STRING, (short)3);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new PlatformStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new PlatformTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SocialMediaPlatformStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SocialMediaPlatformTupleSchemeFactory();
 
   public int id; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String name; // required
@@ -102,13 +102,13 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     tmpMap.put(_Fields.SLUG, new org.apache.thrift.meta_data.FieldMetaData("slug", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Platform.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SocialMediaPlatform.class, metaDataMap);
   }
 
-  public Platform() {
+  public SocialMediaPlatform() {
   }
 
-  public Platform(
+  public SocialMediaPlatform(
     int id,
     java.lang.String name,
     java.lang.String slug)
@@ -123,7 +123,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Platform(Platform other) {
+  public SocialMediaPlatform(SocialMediaPlatform other) {
     __isset_bitfield = other.__isset_bitfield;
     this.id = other.id;
     if (other.isSetName()) {
@@ -135,8 +135,8 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
   }
 
   @Override
-  public Platform deepCopy() {
-    return new Platform(this);
+  public SocialMediaPlatform deepCopy() {
+    return new SocialMediaPlatform(this);
   }
 
   @Override
@@ -151,7 +151,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     return this.id;
   }
 
-  public Platform setId(int id) {
+  public SocialMediaPlatform setId(int id) {
     this.id = id;
     setIdIsSet(true);
     return this;
@@ -175,7 +175,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     return this.name;
   }
 
-  public Platform setName(@org.apache.thrift.annotation.Nullable java.lang.String name) {
+  public SocialMediaPlatform setName(@org.apache.thrift.annotation.Nullable java.lang.String name) {
     this.name = name;
     return this;
   }
@@ -200,7 +200,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     return this.slug;
   }
 
-  public Platform setSlug(@org.apache.thrift.annotation.Nullable java.lang.String slug) {
+  public SocialMediaPlatform setSlug(@org.apache.thrift.annotation.Nullable java.lang.String slug) {
     this.slug = slug;
     return this;
   }
@@ -287,12 +287,12 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Platform)
-      return this.equals((Platform)that);
+    if (that instanceof SocialMediaPlatform)
+      return this.equals((SocialMediaPlatform)that);
     return false;
   }
 
-  public boolean equals(Platform that) {
+  public boolean equals(SocialMediaPlatform that) {
     if (that == null)
       return false;
     if (this == that)
@@ -346,7 +346,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
   }
 
   @Override
-  public int compareTo(Platform other) {
+  public int compareTo(SocialMediaPlatform other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -404,7 +404,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Platform(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("SocialMediaPlatform(");
     boolean first = true;
 
     sb.append("id:");
@@ -453,17 +453,17 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     }
   }
 
-  private static class PlatformStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SocialMediaPlatformStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public PlatformStandardScheme getScheme() {
-      return new PlatformStandardScheme();
+    public SocialMediaPlatformStandardScheme getScheme() {
+      return new SocialMediaPlatformStandardScheme();
     }
   }
 
-  private static class PlatformStandardScheme extends org.apache.thrift.scheme.StandardScheme<Platform> {
+  private static class SocialMediaPlatformStandardScheme extends org.apache.thrift.scheme.StandardScheme<SocialMediaPlatform> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Platform struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, SocialMediaPlatform struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -509,7 +509,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Platform struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, SocialMediaPlatform struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -532,17 +532,17 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
 
   }
 
-  private static class PlatformTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class SocialMediaPlatformTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public PlatformTupleScheme getScheme() {
-      return new PlatformTupleScheme();
+    public SocialMediaPlatformTupleScheme getScheme() {
+      return new SocialMediaPlatformTupleScheme();
     }
   }
 
-  private static class PlatformTupleScheme extends org.apache.thrift.scheme.TupleScheme<Platform> {
+  private static class SocialMediaPlatformTupleScheme extends org.apache.thrift.scheme.TupleScheme<SocialMediaPlatform> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Platform struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, SocialMediaPlatform struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetId()) {
@@ -567,7 +567,7 @@ public class Platform implements org.apache.thrift.TBase<Platform, Platform._Fie
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Platform struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, SocialMediaPlatform struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {

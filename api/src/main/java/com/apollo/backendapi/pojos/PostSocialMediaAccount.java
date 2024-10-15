@@ -6,5 +6,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class PostSocialMediaAccount {
     public String handle;
     public String url;
-    public PostPlatform platform;
+    public PostSocialMediaPlatform platform;
 }

@@ -2,6 +2,8 @@ package com.apollo.backendapi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
 import com.rpl.rama.*;
@@ -34,7 +36,10 @@ import java.util.stream.Collectors;
 @Configuration
 public class ApolloApiStreamingConfig {
     private static final String SEC_WEBSOCKET_PROTOCOL_HEADER = "Sec-WebSocket-Protocol";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
     private static final Logger logger = LogManager.getLogger(ApolloApiStreamingConfig.class);
 
     public static class StreamState {

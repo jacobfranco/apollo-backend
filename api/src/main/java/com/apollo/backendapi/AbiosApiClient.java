@@ -76,6 +76,20 @@ public class AbiosApiClient {
         return makeRequest("assets", filter, order, skip, take);
     }
 
+    public String getTournaments(String filter, String order, int skip, int take)
+            throws IOException, InterruptedException {
+        return makeRequest("tournaments", filter, order, skip, take);
+    }
+
+    public String getSubstages(String filter, String order, int skip, int take)
+            throws IOException, InterruptedException {
+        return makeRequest("substages", filter, order, skip, take);
+    }
+
+    public String getCasters(String filter, String order, int skip, int take) throws IOException, InterruptedException {
+        return makeRequest("casters", filter, order, skip, take);
+    }
+
     private String makeRequest(String endpoint, String filter, String order, int skip, int take)
             throws IOException, InterruptedException {
         StringBuilder queryParams = new StringBuilder("?");

@@ -722,8 +722,14 @@ struct ParticipantStats {
 }
 
 struct Caster {
-    1: bool primary
-    2: i32 casterId
+    1: i32 id,
+    2: string displayName,
+    3: string username,
+    4: i32 gameId,
+    5: optional i64 deletedAt,
+    6: StreamingPlatform platform,
+    7: Stream stream,
+    8: Region region
 }
 
 struct Broadcast {
@@ -890,10 +896,10 @@ struct Country {
 struct SocialMediaAccount {
     1: string handle
     2: string url
-    3: Platform platform
+    3: SocialMediaPlatform platform
 }
 
-struct Platform {
+struct SocialMediaPlatform {
     1: i32 id
     2: string name
     3: string slug
@@ -1165,8 +1171,155 @@ struct LiveLolMatchSummary {
     5: i32 matchId, 
 }
 
+struct Tournament {
+    1: i32 id,
+    2: string title,
+    3: string shortTitle,
+    4: i32 tier,
+    5: TournamentCopy copy,
+    6: TournamentLinks links,
+    7: i64 start,
+    8: i64 end,
+    9: i32 gameId,
+    10: StringPrizePool stringPrizePool,
+    11: TournamentLocation location,
+    12: optional i64 deletedAt,
+    13: list<Image> images,
+    14: list<i32> stageIds,
+    15: list<Caster> casters,
+    16: list<Broadcaster> broadcasters,
+    17: TournamentDefaults defaults,
+    18: Coverage coverage,
+    19: i32 resourceVersion
+}
 
+struct TournamentCopy {
+    1: string generalDescription,
+    2: string shortDescription,
+    3: string formatDescription
+}
 
+struct TournamentLinks {
+    1: string website,
+    2: string wiki
+}
+
+struct StringPrizePool {
+    1: string total,
+    2: string first,
+    3: string second,
+    4: string third
+}
+
+struct TournamentLocation {
+    1: Host host,
+    2: list<Participant> participants
+}
+
+struct Host {
+    1: i32 id,
+    2: string name,
+    3: string abbreviation,
+    4: Country country
+}
+
+struct Substage {
+    1: i32 id,
+    2: i32 stageId,
+    3: string title,
+    4: i32 tier,
+    5: i32 type,
+    6: string phase,
+    7: Format defaultSeriesFormat,
+    8: i32 gameId,
+    9: i32 tournamentId,
+    10: i32 order,
+    11: list<i32> rosterIds,
+    12: i64 start,
+    13: optional i64 deletedAt,
+    14: list<Standing> standings,
+    15: SubstageRules rules,
+    16: SubstageDefaults defaults,
+    17: SubstageFormat format,
+    18: Coverage coverage,
+    19: i32 resourceVersion
+}
+
+struct TournamentDefaults {
+    1: GameVersion gameVersion
+}
+
+struct Format {
+    1: i32 bestOf
+}
+
+struct StreamingPlatform {
+    1: i32 id,
+    2: string name,
+    3: string color,
+    4: list<Image> images
+}
+
+struct Stream {
+    1: i32 id,
+    2: string username,
+    3: string displayName,
+    4: string statusText,
+    5: i32 viewerCount,
+    6: bool online,
+    7: i64 lastOnline,
+    8: list<Image> images,
+    9: StreamingPlatform platform
+}
+
+struct SubstageRules {
+    1: AdvanceRule advance,
+    2: DescendRule descend,
+    3: PointsRule points
+}
+
+struct AdvanceRule {
+    1: i32 number,
+    2: optional i32 substageId
+}
+
+struct DescendRule {
+    1: i32 number,
+    2: optional i32 substageId
+}
+
+struct PointsRule {
+    1: i32 win,
+    2: i32 draw,
+    3: i32 loss,
+    4: string scope
+}
+
+struct SubstageDefaults {
+    1: GameVersion gameVersion,
+    2: Format seriesFormat,
+}
+
+struct SubstageFormat {
+    1: PointsRule points,
+    2: list<Movement> movements
+}
+
+struct Standing {
+    1: i32 rosterId,
+    2: i32 points,
+    3: i32 wins,
+    4: i32 draws,
+    5: i32 losses,
+    6: i32 matchDiff,
+    7: i32 scoreDiff
+}
+
+struct Movement {
+    1: i32 position,
+    2: i32 substageId,
+    3: string type
+}
 
 
 

@@ -11,8 +11,6 @@ import com.rpl.rama.Helpers;
 import com.rpl.rama.ops.*;
 import com.strobel.decompiler.languages.Language;
 
-import rpl.shaded.scala.compat.Platform;
-
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -137,6 +135,24 @@ public class ApolloHelpers {
 
   public static class ExtractAssetId extends ExtractField {
     public ExtractAssetId() {
+      super("id");
+    }
+  }
+
+  public static class ExtractTournamentId extends ExtractField {
+    public ExtractTournamentId() {
+      super("id");
+    }
+  }
+
+  public static class ExtractSubstageId extends ExtractField {
+    public ExtractSubstageId() {
+      super("id");
+    }
+  }
+
+  public static class ExtractCasterId extends ExtractField {
+    public ExtractCasterId() {
       super("id");
     }
   }

@@ -19,7 +19,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
 
   public @org.apache.thrift.annotation.Nullable java.lang.String handle; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String url; // required
-  public @org.apache.thrift.annotation.Nullable Platform platform; // required
+  public @org.apache.thrift.annotation.Nullable SocialMediaPlatform platform; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -98,7 +98,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
     tmpMap.put(_Fields.URL, new org.apache.thrift.meta_data.FieldMetaData("url", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PLATFORM, new org.apache.thrift.meta_data.FieldMetaData("platform", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Platform.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SocialMediaPlatform.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SocialMediaAccount.class, metaDataMap);
   }
@@ -109,7 +109,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
   public SocialMediaAccount(
     java.lang.String handle,
     java.lang.String url,
-    Platform platform)
+    SocialMediaPlatform platform)
   {
     this();
     this.handle = handle;
@@ -128,7 +128,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
       this.url = other.url;
     }
     if (other.isSetPlatform()) {
-      this.platform = new Platform(other.platform);
+      this.platform = new SocialMediaPlatform(other.platform);
     }
   }
 
@@ -195,11 +195,11 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
   }
 
   @org.apache.thrift.annotation.Nullable
-  public Platform getPlatform() {
+  public SocialMediaPlatform getPlatform() {
     return this.platform;
   }
 
-  public SocialMediaAccount setPlatform(@org.apache.thrift.annotation.Nullable Platform platform) {
+  public SocialMediaAccount setPlatform(@org.apache.thrift.annotation.Nullable SocialMediaPlatform platform) {
     this.platform = platform;
     return this;
   }
@@ -242,7 +242,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
       if (value == null) {
         unsetPlatform();
       } else {
-        setPlatform((Platform)value);
+        setPlatform((SocialMediaPlatform)value);
       }
       break;
 
@@ -497,7 +497,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
             break;
           case 3: // PLATFORM
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.platform = new Platform();
+              struct.platform = new SocialMediaPlatform();
               struct.platform.read(iprot);
               struct.setPlatformIsSet(true);
             } else { 
@@ -588,7 +588,7 @@ public class SocialMediaAccount implements org.apache.thrift.TBase<SocialMediaAc
         struct.setUrlIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.platform = new Platform();
+        struct.platform = new SocialMediaPlatform();
         struct.platform.read(iprot);
         struct.setPlatformIsSet(true);
       }

@@ -67,6 +67,36 @@ public class ESports implements RamaModule {
                                 .localTransform("$$playerIdToPlayer", Path.key("*id").termVal("*player"));
         }
 
+        private static void declareTournamentIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("tournamentIngestion");
+
+                stream.pstate("$$tournamentIdToTournament", PState.mapSchema(Integer.class, Tournament.class));
+
+                stream.source("*tournamentDepot").out("*tournament")
+                                .macro(ApolloHelpers.extractFields("*tournament", "*id"))
+                                .localTransform("$$tournamentIdToTournament", Path.key("*id").termVal("*tournament"));
+        }
+
+        private static void declareSubstageIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("substageIngestion");
+
+                stream.pstate("$$substageIdToSubstage", PState.mapSchema(Integer.class, Substage.class));
+
+                stream.source("*substageDepot").out("*substage")
+                                .macro(ApolloHelpers.extractFields("*substage", "*id"))
+                                .localTransform("$$substageIdToSubstage", Path.key("*id").termVal("*substage"));
+        }
+
+        private static void declareCasterIngestionTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("casterIngestion");
+
+                stream.pstate("$$casterIdToCaster", PState.mapSchema(Integer.class, Caster.class));
+
+                stream.source("*casterDepot").out("*caster")
+                                .macro(ApolloHelpers.extractFields("*caster", "*id"))
+                                .localTransform("$$casterIdToCaster", Path.key("*id").termVal("*caster"));
+        }
+
         private static void declareLolMatchSummaryIngestionTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("lolMatchSummaryIngestion");
                 stream.pstate("$$lolMatchIdToSummary", PState.mapSchema(Integer.class, LolMatchSummary.class));
@@ -179,6 +209,21 @@ public class ESports implements RamaModule {
                                 .localSelect("$$assetIdToAsset", Path.key("*id")).out("*result")
                                 .originPartition();
 
+                topologies.query("getTournamentFromTournamentId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$tournamentIdToTournament", Path.key("*id")).out("*result")
+                                .originPartition();
+
+                topologies.query("getSubstageFromSubstageId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$substageIdToSubstage", Path.key("*id")).out("*result")
+                                .originPartition();
+
+                topologies.query("getCasterFromCasterId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$casterIdToCaster", Path.key("*id")).out("*result")
+                                .originPartition();
+
                 topologies.query("getAssetIdsFromMatchId", "*id").out("*result")
                                 .hashPartition("*id")
                                 .localSelect("$$lolMatchIdToAssetIds", Path.key("*id")).out("*result")
@@ -204,6 +249,9 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*playerDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
                 setup.declareDepot("*assetDepot", Depot.hashBy(ApolloHelpers.ExtractAssetId.class));
+                setup.declareDepot("*tournamentDepot", Depot.hashBy(ApolloHelpers.ExtractTournamentId.class));
+                setup.declareDepot("*substageDepot", Depot.hashBy(ApolloHelpers.ExtractSubstageId.class));
+                setup.declareDepot("*casterDepot", Depot.hashBy(ApolloHelpers.ExtractCasterId.class));
                 setup.declareDepot("*lolPlayerSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolTeamSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractLolTeamId.class));
                 setup.declareDepot("*liveLolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractLiveMatchId.class));
@@ -214,6 +262,9 @@ public class ESports implements RamaModule {
                 declarePlayerIngestionTopology(topologies);
                 declareLolMatchSummaryIngestionTopology(topologies);
                 declareAssetIngestionTopology(topologies);
+                declareTournamentIngestionTopology(topologies);
+                declareSubstageIngestionTopology(topologies);
+                declareCasterIngestionTopology(topologies);
                 declareLolPlayerSeasonStatsIngestionTopology(topologies);
                 declareLolTeamSeasonStatsIngestionTopology(topologies);
                 declareLiveLolMatchSummaryIngestionTopology(topologies);

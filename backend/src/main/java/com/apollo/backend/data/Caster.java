@@ -10,19 +10,37 @@ package com.apollo.backend.data;
 public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, java.io.Serializable, Cloneable, Comparable<Caster> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Caster");
 
-  private static final org.apache.thrift.protocol.TField PRIMARY_FIELD_DESC = new org.apache.thrift.protocol.TField("primary", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField CASTER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("casterId", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField DISPLAY_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("displayName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField USERNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("username", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField GAME_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("gameId", org.apache.thrift.protocol.TType.I32, (short)4);
+  private static final org.apache.thrift.protocol.TField DELETED_AT_FIELD_DESC = new org.apache.thrift.protocol.TField("deletedAt", org.apache.thrift.protocol.TType.I64, (short)5);
+  private static final org.apache.thrift.protocol.TField PLATFORM_FIELD_DESC = new org.apache.thrift.protocol.TField("platform", org.apache.thrift.protocol.TType.STRUCT, (short)6);
+  private static final org.apache.thrift.protocol.TField STREAM_FIELD_DESC = new org.apache.thrift.protocol.TField("stream", org.apache.thrift.protocol.TType.STRUCT, (short)7);
+  private static final org.apache.thrift.protocol.TField REGION_FIELD_DESC = new org.apache.thrift.protocol.TField("region", org.apache.thrift.protocol.TType.STRUCT, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CasterStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CasterTupleSchemeFactory();
 
-  public boolean primary; // required
-  public int casterId; // required
+  public int id; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String displayName; // required
+  public @org.apache.thrift.annotation.Nullable java.lang.String username; // required
+  public int gameId; // required
+  public long deletedAt; // optional
+  public @org.apache.thrift.annotation.Nullable StreamingPlatform platform; // required
+  public @org.apache.thrift.annotation.Nullable Stream stream; // required
+  public @org.apache.thrift.annotation.Nullable Region region; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    PRIMARY((short)1, "primary"),
-    CASTER_ID((short)2, "casterId");
+    ID((short)1, "id"),
+    DISPLAY_NAME((short)2, "displayName"),
+    USERNAME((short)3, "username"),
+    GAME_ID((short)4, "gameId"),
+    DELETED_AT((short)5, "deletedAt"),
+    PLATFORM((short)6, "platform"),
+    STREAM((short)7, "stream"),
+    REGION((short)8, "region");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -38,10 +56,22 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // PRIMARY
-          return PRIMARY;
-        case 2: // CASTER_ID
-          return CASTER_ID;
+        case 1: // ID
+          return ID;
+        case 2: // DISPLAY_NAME
+          return DISPLAY_NAME;
+        case 3: // USERNAME
+          return USERNAME;
+        case 4: // GAME_ID
+          return GAME_ID;
+        case 5: // DELETED_AT
+          return DELETED_AT;
+        case 6: // PLATFORM
+          return PLATFORM;
+        case 7: // STREAM
+          return STREAM;
+        case 8: // REGION
+          return REGION;
         default:
           return null;
       }
@@ -85,16 +115,30 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   }
 
   // isset id assignments
-  private static final int __PRIMARY_ISSET_ID = 0;
-  private static final int __CASTERID_ISSET_ID = 1;
+  private static final int __ID_ISSET_ID = 0;
+  private static final int __GAMEID_ISSET_ID = 1;
+  private static final int __DELETEDAT_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.DELETED_AT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.PRIMARY, new org.apache.thrift.meta_data.FieldMetaData("primary", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.CASTER_ID, new org.apache.thrift.meta_data.FieldMetaData("casterId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.DISPLAY_NAME, new org.apache.thrift.meta_data.FieldMetaData("displayName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.USERNAME, new org.apache.thrift.meta_data.FieldMetaData("username", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.GAME_ID, new org.apache.thrift.meta_data.FieldMetaData("gameId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.DELETED_AT, new org.apache.thrift.meta_data.FieldMetaData("deletedAt", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.PLATFORM, new org.apache.thrift.meta_data.FieldMetaData("platform", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StreamingPlatform.class)));
+    tmpMap.put(_Fields.STREAM, new org.apache.thrift.meta_data.FieldMetaData("stream", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Stream.class)));
+    tmpMap.put(_Fields.REGION, new org.apache.thrift.meta_data.FieldMetaData("region", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Region.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Caster.class, metaDataMap);
   }
@@ -103,14 +147,24 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   }
 
   public Caster(
-    boolean primary,
-    int casterId)
+    int id,
+    java.lang.String displayName,
+    java.lang.String username,
+    int gameId,
+    StreamingPlatform platform,
+    Stream stream,
+    Region region)
   {
     this();
-    this.primary = primary;
-    setPrimaryIsSet(true);
-    this.casterId = casterId;
-    setCasterIdIsSet(true);
+    this.id = id;
+    setIdIsSet(true);
+    this.displayName = displayName;
+    this.username = username;
+    this.gameId = gameId;
+    setGameIdIsSet(true);
+    this.platform = platform;
+    this.stream = stream;
+    this.region = region;
   }
 
   /**
@@ -118,8 +172,24 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
    */
   public Caster(Caster other) {
     __isset_bitfield = other.__isset_bitfield;
-    this.primary = other.primary;
-    this.casterId = other.casterId;
+    this.id = other.id;
+    if (other.isSetDisplayName()) {
+      this.displayName = other.displayName;
+    }
+    if (other.isSetUsername()) {
+      this.username = other.username;
+    }
+    this.gameId = other.gameId;
+    this.deletedAt = other.deletedAt;
+    if (other.isSetPlatform()) {
+      this.platform = new StreamingPlatform(other.platform);
+    }
+    if (other.isSetStream()) {
+      this.stream = new Stream(other.stream);
+    }
+    if (other.isSetRegion()) {
+      this.region = new Region(other.region);
+    }
   }
 
   @Override
@@ -129,74 +199,277 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
 
   @Override
   public void clear() {
-    setPrimaryIsSet(false);
-    this.primary = false;
-    setCasterIdIsSet(false);
-    this.casterId = 0;
+    setIdIsSet(false);
+    this.id = 0;
+    this.displayName = null;
+    this.username = null;
+    setGameIdIsSet(false);
+    this.gameId = 0;
+    setDeletedAtIsSet(false);
+    this.deletedAt = 0;
+    this.platform = null;
+    this.stream = null;
+    this.region = null;
   }
 
-  public boolean isPrimary() {
-    return this.primary;
+  public int getId() {
+    return this.id;
   }
 
-  public Caster setPrimary(boolean primary) {
-    this.primary = primary;
-    setPrimaryIsSet(true);
+  public Caster setId(int id) {
+    this.id = id;
+    setIdIsSet(true);
     return this;
   }
 
-  public void unsetPrimary() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __PRIMARY_ISSET_ID);
+  public void unsetId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
   }
 
-  /** Returns true if field primary is set (has been assigned a value) and false otherwise */
-  public boolean isSetPrimary() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __PRIMARY_ISSET_ID);
+  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  public boolean isSetId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
   }
 
-  public void setPrimaryIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __PRIMARY_ISSET_ID, value);
+  public void setIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
   }
 
-  public int getCasterId() {
-    return this.casterId;
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getDisplayName() {
+    return this.displayName;
   }
 
-  public Caster setCasterId(int casterId) {
-    this.casterId = casterId;
-    setCasterIdIsSet(true);
+  public Caster setDisplayName(@org.apache.thrift.annotation.Nullable java.lang.String displayName) {
+    this.displayName = displayName;
     return this;
   }
 
-  public void unsetCasterId() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CASTERID_ISSET_ID);
+  public void unsetDisplayName() {
+    this.displayName = null;
   }
 
-  /** Returns true if field casterId is set (has been assigned a value) and false otherwise */
-  public boolean isSetCasterId() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CASTERID_ISSET_ID);
+  /** Returns true if field displayName is set (has been assigned a value) and false otherwise */
+  public boolean isSetDisplayName() {
+    return this.displayName != null;
   }
 
-  public void setCasterIdIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CASTERID_ISSET_ID, value);
+  public void setDisplayNameIsSet(boolean value) {
+    if (!value) {
+      this.displayName = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getUsername() {
+    return this.username;
+  }
+
+  public Caster setUsername(@org.apache.thrift.annotation.Nullable java.lang.String username) {
+    this.username = username;
+    return this;
+  }
+
+  public void unsetUsername() {
+    this.username = null;
+  }
+
+  /** Returns true if field username is set (has been assigned a value) and false otherwise */
+  public boolean isSetUsername() {
+    return this.username != null;
+  }
+
+  public void setUsernameIsSet(boolean value) {
+    if (!value) {
+      this.username = null;
+    }
+  }
+
+  public int getGameId() {
+    return this.gameId;
+  }
+
+  public Caster setGameId(int gameId) {
+    this.gameId = gameId;
+    setGameIdIsSet(true);
+    return this;
+  }
+
+  public void unsetGameId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __GAMEID_ISSET_ID);
+  }
+
+  /** Returns true if field gameId is set (has been assigned a value) and false otherwise */
+  public boolean isSetGameId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __GAMEID_ISSET_ID);
+  }
+
+  public void setGameIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __GAMEID_ISSET_ID, value);
+  }
+
+  public long getDeletedAt() {
+    return this.deletedAt;
+  }
+
+  public Caster setDeletedAt(long deletedAt) {
+    this.deletedAt = deletedAt;
+    setDeletedAtIsSet(true);
+    return this;
+  }
+
+  public void unsetDeletedAt() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __DELETEDAT_ISSET_ID);
+  }
+
+  /** Returns true if field deletedAt is set (has been assigned a value) and false otherwise */
+  public boolean isSetDeletedAt() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __DELETEDAT_ISSET_ID);
+  }
+
+  public void setDeletedAtIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DELETEDAT_ISSET_ID, value);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public StreamingPlatform getPlatform() {
+    return this.platform;
+  }
+
+  public Caster setPlatform(@org.apache.thrift.annotation.Nullable StreamingPlatform platform) {
+    this.platform = platform;
+    return this;
+  }
+
+  public void unsetPlatform() {
+    this.platform = null;
+  }
+
+  /** Returns true if field platform is set (has been assigned a value) and false otherwise */
+  public boolean isSetPlatform() {
+    return this.platform != null;
+  }
+
+  public void setPlatformIsSet(boolean value) {
+    if (!value) {
+      this.platform = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public Stream getStream() {
+    return this.stream;
+  }
+
+  public Caster setStream(@org.apache.thrift.annotation.Nullable Stream stream) {
+    this.stream = stream;
+    return this;
+  }
+
+  public void unsetStream() {
+    this.stream = null;
+  }
+
+  /** Returns true if field stream is set (has been assigned a value) and false otherwise */
+  public boolean isSetStream() {
+    return this.stream != null;
+  }
+
+  public void setStreamIsSet(boolean value) {
+    if (!value) {
+      this.stream = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public Region getRegion() {
+    return this.region;
+  }
+
+  public Caster setRegion(@org.apache.thrift.annotation.Nullable Region region) {
+    this.region = region;
+    return this;
+  }
+
+  public void unsetRegion() {
+    this.region = null;
+  }
+
+  /** Returns true if field region is set (has been assigned a value) and false otherwise */
+  public boolean isSetRegion() {
+    return this.region != null;
+  }
+
+  public void setRegionIsSet(boolean value) {
+    if (!value) {
+      this.region = null;
+    }
   }
 
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case PRIMARY:
+    case ID:
       if (value == null) {
-        unsetPrimary();
+        unsetId();
       } else {
-        setPrimary((java.lang.Boolean)value);
+        setId((java.lang.Integer)value);
       }
       break;
 
-    case CASTER_ID:
+    case DISPLAY_NAME:
       if (value == null) {
-        unsetCasterId();
+        unsetDisplayName();
       } else {
-        setCasterId((java.lang.Integer)value);
+        setDisplayName((java.lang.String)value);
+      }
+      break;
+
+    case USERNAME:
+      if (value == null) {
+        unsetUsername();
+      } else {
+        setUsername((java.lang.String)value);
+      }
+      break;
+
+    case GAME_ID:
+      if (value == null) {
+        unsetGameId();
+      } else {
+        setGameId((java.lang.Integer)value);
+      }
+      break;
+
+    case DELETED_AT:
+      if (value == null) {
+        unsetDeletedAt();
+      } else {
+        setDeletedAt((java.lang.Long)value);
+      }
+      break;
+
+    case PLATFORM:
+      if (value == null) {
+        unsetPlatform();
+      } else {
+        setPlatform((StreamingPlatform)value);
+      }
+      break;
+
+    case STREAM:
+      if (value == null) {
+        unsetStream();
+      } else {
+        setStream((Stream)value);
+      }
+      break;
+
+    case REGION:
+      if (value == null) {
+        unsetRegion();
+      } else {
+        setRegion((Region)value);
       }
       break;
 
@@ -207,11 +480,29 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   @Override
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case PRIMARY:
-      return isPrimary();
+    case ID:
+      return getId();
 
-    case CASTER_ID:
-      return getCasterId();
+    case DISPLAY_NAME:
+      return getDisplayName();
+
+    case USERNAME:
+      return getUsername();
+
+    case GAME_ID:
+      return getGameId();
+
+    case DELETED_AT:
+      return getDeletedAt();
+
+    case PLATFORM:
+      return getPlatform();
+
+    case STREAM:
+      return getStream();
+
+    case REGION:
+      return getRegion();
 
     }
     throw new java.lang.IllegalStateException();
@@ -225,10 +516,22 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     }
 
     switch (field) {
-    case PRIMARY:
-      return isSetPrimary();
-    case CASTER_ID:
-      return isSetCasterId();
+    case ID:
+      return isSetId();
+    case DISPLAY_NAME:
+      return isSetDisplayName();
+    case USERNAME:
+      return isSetUsername();
+    case GAME_ID:
+      return isSetGameId();
+    case DELETED_AT:
+      return isSetDeletedAt();
+    case PLATFORM:
+      return isSetPlatform();
+    case STREAM:
+      return isSetStream();
+    case REGION:
+      return isSetRegion();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -246,21 +549,75 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     if (this == that)
       return true;
 
-    boolean this_present_primary = true;
-    boolean that_present_primary = true;
-    if (this_present_primary || that_present_primary) {
-      if (!(this_present_primary && that_present_primary))
+    boolean this_present_id = true;
+    boolean that_present_id = true;
+    if (this_present_id || that_present_id) {
+      if (!(this_present_id && that_present_id))
         return false;
-      if (this.primary != that.primary)
+      if (this.id != that.id)
         return false;
     }
 
-    boolean this_present_casterId = true;
-    boolean that_present_casterId = true;
-    if (this_present_casterId || that_present_casterId) {
-      if (!(this_present_casterId && that_present_casterId))
+    boolean this_present_displayName = true && this.isSetDisplayName();
+    boolean that_present_displayName = true && that.isSetDisplayName();
+    if (this_present_displayName || that_present_displayName) {
+      if (!(this_present_displayName && that_present_displayName))
         return false;
-      if (this.casterId != that.casterId)
+      if (!this.displayName.equals(that.displayName))
+        return false;
+    }
+
+    boolean this_present_username = true && this.isSetUsername();
+    boolean that_present_username = true && that.isSetUsername();
+    if (this_present_username || that_present_username) {
+      if (!(this_present_username && that_present_username))
+        return false;
+      if (!this.username.equals(that.username))
+        return false;
+    }
+
+    boolean this_present_gameId = true;
+    boolean that_present_gameId = true;
+    if (this_present_gameId || that_present_gameId) {
+      if (!(this_present_gameId && that_present_gameId))
+        return false;
+      if (this.gameId != that.gameId)
+        return false;
+    }
+
+    boolean this_present_deletedAt = true && this.isSetDeletedAt();
+    boolean that_present_deletedAt = true && that.isSetDeletedAt();
+    if (this_present_deletedAt || that_present_deletedAt) {
+      if (!(this_present_deletedAt && that_present_deletedAt))
+        return false;
+      if (this.deletedAt != that.deletedAt)
+        return false;
+    }
+
+    boolean this_present_platform = true && this.isSetPlatform();
+    boolean that_present_platform = true && that.isSetPlatform();
+    if (this_present_platform || that_present_platform) {
+      if (!(this_present_platform && that_present_platform))
+        return false;
+      if (!this.platform.equals(that.platform))
+        return false;
+    }
+
+    boolean this_present_stream = true && this.isSetStream();
+    boolean that_present_stream = true && that.isSetStream();
+    if (this_present_stream || that_present_stream) {
+      if (!(this_present_stream && that_present_stream))
+        return false;
+      if (!this.stream.equals(that.stream))
+        return false;
+    }
+
+    boolean this_present_region = true && this.isSetRegion();
+    boolean that_present_region = true && that.isSetRegion();
+    if (this_present_region || that_present_region) {
+      if (!(this_present_region && that_present_region))
+        return false;
+      if (!this.region.equals(that.region))
         return false;
     }
 
@@ -271,9 +628,33 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   public int hashCode() {
     int hashCode = 1;
 
-    hashCode = hashCode * 8191 + ((primary) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + id;
 
-    hashCode = hashCode * 8191 + casterId;
+    hashCode = hashCode * 8191 + ((isSetDisplayName()) ? 131071 : 524287);
+    if (isSetDisplayName())
+      hashCode = hashCode * 8191 + displayName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetUsername()) ? 131071 : 524287);
+    if (isSetUsername())
+      hashCode = hashCode * 8191 + username.hashCode();
+
+    hashCode = hashCode * 8191 + gameId;
+
+    hashCode = hashCode * 8191 + ((isSetDeletedAt()) ? 131071 : 524287);
+    if (isSetDeletedAt())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(deletedAt);
+
+    hashCode = hashCode * 8191 + ((isSetPlatform()) ? 131071 : 524287);
+    if (isSetPlatform())
+      hashCode = hashCode * 8191 + platform.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetStream()) ? 131071 : 524287);
+    if (isSetStream())
+      hashCode = hashCode * 8191 + stream.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetRegion()) ? 131071 : 524287);
+    if (isSetRegion())
+      hashCode = hashCode * 8191 + region.hashCode();
 
     return hashCode;
   }
@@ -286,22 +667,82 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
 
     int lastComparison = 0;
 
-    lastComparison = java.lang.Boolean.compare(isSetPrimary(), other.isSetPrimary());
+    lastComparison = java.lang.Boolean.compare(isSetId(), other.isSetId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPrimary()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.primary, other.primary);
+    if (isSetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetCasterId(), other.isSetCasterId());
+    lastComparison = java.lang.Boolean.compare(isSetDisplayName(), other.isSetDisplayName());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCasterId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.casterId, other.casterId);
+    if (isSetDisplayName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.displayName, other.displayName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetUsername(), other.isSetUsername());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUsername()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.username, other.username);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetGameId(), other.isSetGameId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGameId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.gameId, other.gameId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetDeletedAt(), other.isSetDeletedAt());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDeletedAt()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.deletedAt, other.deletedAt);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetPlatform(), other.isSetPlatform());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPlatform()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.platform, other.platform);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetStream(), other.isSetStream());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStream()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.stream, other.stream);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetRegion(), other.isSetRegion());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRegion()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.region, other.region);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -330,12 +771,58 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     java.lang.StringBuilder sb = new java.lang.StringBuilder("Caster(");
     boolean first = true;
 
-    sb.append("primary:");
-    sb.append(this.primary);
+    sb.append("id:");
+    sb.append(this.id);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("casterId:");
-    sb.append(this.casterId);
+    sb.append("displayName:");
+    if (this.displayName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.displayName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("username:");
+    if (this.username == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.username);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("gameId:");
+    sb.append(this.gameId);
+    first = false;
+    if (isSetDeletedAt()) {
+      if (!first) sb.append(", ");
+      sb.append("deletedAt:");
+      sb.append(this.deletedAt);
+      first = false;
+    }
+    if (!first) sb.append(", ");
+    sb.append("platform:");
+    if (this.platform == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.platform);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("stream:");
+    if (this.stream == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.stream);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("region:");
+    if (this.region == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.region);
+    }
     first = false;
     sb.append(")");
     return sb.toString();
@@ -344,6 +831,15 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
+    if (platform != null) {
+      platform.validate();
+    }
+    if (stream != null) {
+      stream.validate();
+    }
+    if (region != null) {
+      region.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -384,18 +880,69 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
           break;
         }
         switch (schemeField.id) {
-          case 1: // PRIMARY
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.primary = iprot.readBool();
-              struct.setPrimaryIsSet(true);
+          case 1: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.id = iprot.readI32();
+              struct.setIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // CASTER_ID
+          case 2: // DISPLAY_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.displayName = iprot.readString();
+              struct.setDisplayNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // USERNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.username = iprot.readString();
+              struct.setUsernameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // GAME_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.casterId = iprot.readI32();
-              struct.setCasterIdIsSet(true);
+              struct.gameId = iprot.readI32();
+              struct.setGameIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // DELETED_AT
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.deletedAt = iprot.readI64();
+              struct.setDeletedAtIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // PLATFORM
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.platform = new StreamingPlatform();
+              struct.platform.read(iprot);
+              struct.setPlatformIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 7: // STREAM
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.stream = new Stream();
+              struct.stream.read(iprot);
+              struct.setStreamIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 8: // REGION
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.region = new Region();
+              struct.region.read(iprot);
+              struct.setRegionIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -416,12 +963,42 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(PRIMARY_FIELD_DESC);
-      oprot.writeBool(struct.primary);
+      oprot.writeFieldBegin(ID_FIELD_DESC);
+      oprot.writeI32(struct.id);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(CASTER_ID_FIELD_DESC);
-      oprot.writeI32(struct.casterId);
+      if (struct.displayName != null) {
+        oprot.writeFieldBegin(DISPLAY_NAME_FIELD_DESC);
+        oprot.writeString(struct.displayName);
+        oprot.writeFieldEnd();
+      }
+      if (struct.username != null) {
+        oprot.writeFieldBegin(USERNAME_FIELD_DESC);
+        oprot.writeString(struct.username);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(GAME_ID_FIELD_DESC);
+      oprot.writeI32(struct.gameId);
       oprot.writeFieldEnd();
+      if (struct.isSetDeletedAt()) {
+        oprot.writeFieldBegin(DELETED_AT_FIELD_DESC);
+        oprot.writeI64(struct.deletedAt);
+        oprot.writeFieldEnd();
+      }
+      if (struct.platform != null) {
+        oprot.writeFieldBegin(PLATFORM_FIELD_DESC);
+        struct.platform.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (struct.stream != null) {
+        oprot.writeFieldBegin(STREAM_FIELD_DESC);
+        struct.stream.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (struct.region != null) {
+        oprot.writeFieldBegin(REGION_FIELD_DESC);
+        struct.region.write(oprot);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -441,32 +1018,95 @@ public class Caster implements org.apache.thrift.TBase<Caster, Caster._Fields>, 
     public void write(org.apache.thrift.protocol.TProtocol prot, Caster struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetPrimary()) {
+      if (struct.isSetId()) {
         optionals.set(0);
       }
-      if (struct.isSetCasterId()) {
+      if (struct.isSetDisplayName()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
-      if (struct.isSetPrimary()) {
-        oprot.writeBool(struct.primary);
+      if (struct.isSetUsername()) {
+        optionals.set(2);
       }
-      if (struct.isSetCasterId()) {
-        oprot.writeI32(struct.casterId);
+      if (struct.isSetGameId()) {
+        optionals.set(3);
+      }
+      if (struct.isSetDeletedAt()) {
+        optionals.set(4);
+      }
+      if (struct.isSetPlatform()) {
+        optionals.set(5);
+      }
+      if (struct.isSetStream()) {
+        optionals.set(6);
+      }
+      if (struct.isSetRegion()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetId()) {
+        oprot.writeI32(struct.id);
+      }
+      if (struct.isSetDisplayName()) {
+        oprot.writeString(struct.displayName);
+      }
+      if (struct.isSetUsername()) {
+        oprot.writeString(struct.username);
+      }
+      if (struct.isSetGameId()) {
+        oprot.writeI32(struct.gameId);
+      }
+      if (struct.isSetDeletedAt()) {
+        oprot.writeI64(struct.deletedAt);
+      }
+      if (struct.isSetPlatform()) {
+        struct.platform.write(oprot);
+      }
+      if (struct.isSetStream()) {
+        struct.stream.write(oprot);
+      }
+      if (struct.isSetRegion()) {
+        struct.region.write(oprot);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Caster struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
-        struct.primary = iprot.readBool();
-        struct.setPrimaryIsSet(true);
+        struct.id = iprot.readI32();
+        struct.setIdIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.casterId = iprot.readI32();
-        struct.setCasterIdIsSet(true);
+        struct.displayName = iprot.readString();
+        struct.setDisplayNameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.username = iprot.readString();
+        struct.setUsernameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.gameId = iprot.readI32();
+        struct.setGameIdIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.deletedAt = iprot.readI64();
+        struct.setDeletedAtIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.platform = new StreamingPlatform();
+        struct.platform.read(iprot);
+        struct.setPlatformIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.stream = new Stream();
+        struct.stream.read(iprot);
+        struct.setStreamIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.region = new Region();
+        struct.region.read(iprot);
+        struct.setRegionIsSet(true);
       }
     }
   }

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Component;
+import org.threeten.extra.PeriodDuration;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -66,8 +67,6 @@ public class ApolloApiManager {
 
     private final AbiosApiClient apiClient;
 
-    private Map<Integer, Player> playerCache = new ConcurrentHashMap<>();
-    private Map<Integer, Team> teamCache = new ConcurrentHashMap<>();
     private Map<Integer, Roster> rosterCache = new ConcurrentHashMap<>();
 
     // Abios Rate Limit Constants
@@ -209,6 +208,9 @@ public class ApolloApiManager {
     private final Depot lolTeamSeasonStatsDepot;
     private final Depot assetDepot;
     private final Depot liveLolMatchSummaryDepot;
+    private final Depot tournamentDepot;
+    private final Depot substageDepot;
+    private final Depot casterDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Map> getSeriesFromStartTime;
@@ -223,7 +225,9 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Set<Asset>> getAssetsFromGameId;
     private final QueryTopologyClient<List<LolPlayerSummary>> getLolPlayerSeasonStatsFromPlayerId;
     private final QueryTopologyClient<List<LolTeamSummary>> getLolTeamSeasonStatsFromTeamId;
-    private final QueryTopologyClient<LiveLolMatchSummary> getLiveLolMatchSummaryFromMatchId;
+    private final QueryTopologyClient<Tournament> getTournamentFromTournamentId;
+    private final QueryTopologyClient<Substage> getSubstageFromSubstageId;
+    private final QueryTopologyClient<Caster> getCasterFromCasterId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -355,6 +359,9 @@ public class ApolloApiManager {
         lolTeamSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolTeamSeasonStatsDepot");
         assetDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*assetDepot");
         liveLolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*liveLolMatchSummaryDepot");
+        tournamentDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*tournamentDepot");
+        substageDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*substageDepot");
+        casterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*casterDepot");
 
         // ESports Queries
         getSeriesFromStartTime = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromStartTime");
@@ -370,8 +377,9 @@ public class ApolloApiManager {
         getLolPlayerSeasonStatsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
                 "getLolPlayerSeasonStatsFromPlayerId");
         getLolTeamSeasonStatsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolTeamSeasonStatsFromTeamId");
-        getLiveLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
-                "getLiveLolMatchSummaryFromMatchId");
+        getTournamentFromTournamentId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getTournamentFromTournamentId");
+        getSubstageFromSubstageId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSubstageFromSubstageId");
+        getCasterFromCasterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getCasterFromCasterId");
 
     }
 
@@ -1865,6 +1873,21 @@ public class ApolloApiManager {
         fetchAndStoreAssets(filter, "id-asc", 0, 50);
     }
 
+    public void fetchAllLolTournaments() {
+        String filter = "game.id=2";
+        fetchAndStoreTournaments(filter, "id-asc", 0, 50);
+    }
+
+    public void fetchAllLolSubstages() {
+        String filter = "game.id=2";
+        fetchAndStoreSubstages(filter, "id-asc", 0, 50);
+    }
+
+    public void fetchAllLolCasters() {
+        String filter = "game.id=2";
+        fetchAndStoreCasters(filter, "id-asc", 0, 50);
+    }
+
     public void fetchAllLolSeries(LocalDate startDate, LocalDate endDate) {
         String startDateString = startDate.atStartOfDay(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
         String endDateString = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
@@ -1972,7 +1995,6 @@ public class ApolloApiManager {
             for (PostTeam postTeam : postTeams) {
                 Team team = convertToThriftTeam(postTeam);
                 teamDepot.appendAsync(team).join();
-                teamCache.put(team.getId(), team);
             }
 
             if (postTeams.size() == take) {
@@ -1996,7 +2018,6 @@ public class ApolloApiManager {
             for (PostPlayer postPlayer : postPlayers) {
                 Player player = convertToThriftPlayer(postPlayer);
                 playerDepot.appendAsync(player).join();
-                playerCache.put(player.getId(), player);
             }
 
             if (postPlayers.size() == take) {
@@ -2080,6 +2101,75 @@ public class ApolloApiManager {
             }
         } catch (Exception e) {
             handleException(e, "assets batch", skip);
+        }
+    }
+
+    private void fetchAndStoreTournaments(String filter, String order, int skip, int take) {
+        try {
+            waitIfNecessary();
+            String tournamentsData = apiClient.getTournaments(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostTournament> postTournaments = parseJsonToPostTournamentList(tournamentsData);
+
+            for (PostTournament postTournament : postTournaments) {
+                Tournament tournament = convertToThriftTournament(postTournament);
+                tournamentDepot.appendAsync(tournament).join();
+            }
+
+            if (postTournaments.size() == take) {
+                fetchAndStoreTournaments(filter, order, skip + take, take);
+            } else {
+                System.out.println("All tournaments have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "tournaments batch", skip);
+        }
+    }
+
+    private void fetchAndStoreSubstages(String filter, String order, int skip, int take) {
+        try {
+            waitIfNecessary();
+            String substagesData = apiClient.getSubstages(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostSubstage> postSubstages = parseJsonToPostSubstageList(substagesData);
+
+            for (PostSubstage postSubstage : postSubstages) {
+                Substage substage = convertToThriftSubstage(postSubstage);
+                substageDepot.appendAsync(substage).join();
+            }
+
+            if (postSubstages.size() == take) {
+                fetchAndStoreSubstages(filter, order, skip + take, take);
+            } else {
+                System.out.println("All substages have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "substages batch", skip);
+        }
+    }
+
+    private void fetchAndStoreCasters(String filter, String order, int skip, int take) {
+        try {
+            waitIfNecessary();
+            String castersData = apiClient.getCasters(filter, order, skip, take);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostCaster> postCasters = parseJsonToPostCasterList(castersData);
+
+            for (PostCaster postCaster : postCasters) {
+                Caster caster = convertToThriftCaster(postCaster);
+                casterDepot.appendAsync(caster).join();
+            }
+
+            if (postCasters.size() == take) {
+                fetchAndStoreCasters(filter, order, skip + take, take);
+            } else {
+                System.out.println("All casters have been fetched and stored.");
+            }
+        } catch (Exception e) {
+            handleException(e, "casters batch", skip);
         }
     }
 
@@ -2259,6 +2349,78 @@ public class ApolloApiManager {
         return assetList;
     }
 
+    private List<PostTournament> parseJsonToPostTournamentList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostTournament> tournamentList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                tournamentList.add(objectMapper.treeToValue(node, PostTournament.class));
+            }
+        } else if (rootNode.isObject()) {
+            tournamentList.add(objectMapper.treeToValue(rootNode, PostTournament.class));
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure for tournaments");
+        }
+
+        return tournamentList;
+    }
+
+    private List<PostSubstage> parseJsonToPostSubstageList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostSubstage> substageList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                substageList.add(objectMapper.treeToValue(node, PostSubstage.class));
+            }
+        } else if (rootNode.isObject()) {
+            substageList.add(objectMapper.treeToValue(rootNode, PostSubstage.class));
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure for substages");
+        }
+
+        return substageList;
+    }
+
+    private List<PostCaster> parseJsonToPostCasterList(String jsonData) throws Exception {
+        JsonNode rootNode = objectMapper.readTree(jsonData);
+
+        if (rootNode.has("error_type")) {
+            String errorType = rootNode.get("error_type").asText();
+            String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            throw new ApiException("API Error: " + errorType + " - " + errorMessage);
+        }
+
+        List<PostCaster> casterList = new ArrayList<>();
+
+        if (rootNode.isArray()) {
+            for (JsonNode node : rootNode) {
+                casterList.add(objectMapper.treeToValue(node, PostCaster.class));
+            }
+        } else if (rootNode.isObject()) {
+            casterList.add(objectMapper.treeToValue(rootNode, PostCaster.class));
+        } else {
+            throw new IllegalArgumentException("Unexpected JSON structure for casters");
+        }
+
+        return casterList;
+    }
+
     private Series convertToThriftSeries(PostSeries postSeries) {
         Series series = new Series();
         series.setId(postSeries.id);
@@ -2415,6 +2577,85 @@ public class ApolloApiManager {
         return asset;
     }
 
+    private Tournament convertToThriftTournament(PostTournament postTournament) {
+        Tournament tournament = new Tournament();
+        tournament.setId(postTournament.id);
+        tournament.setTitle(postTournament.title);
+        tournament.setShortTitle(postTournament.shortTitle);
+        tournament.setTier(postTournament.tier);
+        tournament.setCopy(convertTournamentCopy(postTournament.copy));
+        tournament.setLinks(convertTournamentLinks(postTournament.links));
+        tournament.setStart(postTournament.start != null ? postTournament.start.toEpochMilli() : 0);
+        tournament.setEnd(postTournament.end != null ? postTournament.end.toEpochMilli() : 0);
+        tournament.setGameId(postTournament.game != null ? postTournament.game.id : 0);
+        tournament.setStringPrizePool(convertStringPrizePool(postTournament.stringPrizePool));
+        tournament.setLocation(convertTournamentLocation(postTournament.location));
+        tournament.setDeletedAt(postTournament.deletedAt != null ? postTournament.deletedAt.toEpochMilli() : 0);
+        tournament.setImages(convertImages(postTournament.images));
+        tournament.setStageIds(convertStageIds(postTournament.stages));
+        tournament.setCasters(convertTournamentCasters(postTournament.casters));
+        tournament.setBroadcasters(convertTournamentBroadcasters(postTournament.broadcasters));
+        tournament.setDefaults(convertTournamentDefaults(postTournament.defaults));
+        tournament.setCoverage(convertCoverage(postTournament.coverage));
+        tournament.setResourceVersion(postTournament.resourceVersion);
+        return tournament;
+    }
+
+    private Substage convertToThriftSubstage(PostSubstage postSubstage) {
+        Substage substage = new Substage();
+        substage.setId(postSubstage.id);
+        substage.setStageId(postSubstage.stage != null ? postSubstage.stage.id : 0);
+        substage.setTitle(postSubstage.title);
+        substage.setTier(postSubstage.tier);
+        substage.setType(postSubstage.type);
+        substage.setPhase(postSubstage.phase);
+        substage.setDefaultSeriesFormat(convertFormat(postSubstage.defaultSeriesFormat));
+        substage.setGameId(postSubstage.game != null ? postSubstage.game.id : 0);
+        substage.setTournamentId(postSubstage.tournament != null ? postSubstage.tournament.id : 0);
+        substage.setOrder(postSubstage.order);
+        substage.setRosterIds(convertRosterIds(postSubstage.rosters));
+        substage.setStart(postSubstage.start != null ? postSubstage.start.toEpochMilli() : 0);
+        substage.setDeletedAt(postSubstage.deletedAt != null ? postSubstage.deletedAt.toEpochMilli() : 0);
+        substage.setStandings(convertStandings(postSubstage.standings));
+        substage.setRules(convertSubstageRules(postSubstage.rules));
+        substage.setDefaults(convertSubstageDefaults(postSubstage.defaults));
+        substage.setFormat(convertSubstageFormat(postSubstage.format));
+        substage.setCoverage(convertCoverage(postSubstage.coverage));
+        substage.setResourceVersion(postSubstage.resourceVersion);
+        return substage;
+    }
+
+    private Caster convertToThriftCaster(PostCaster postCaster) {
+        Caster caster = new Caster();
+        caster.setId(postCaster.id);
+        caster.setDisplayName(postCaster.displayName);
+        caster.setUsername(postCaster.username);
+        caster.setGameId(postCaster.game != null ? postCaster.game.id : 0);
+        caster.setDeletedAt(postCaster.deletedAt != null ? postCaster.deletedAt.toEpochMilli() : 0);
+        caster.setPlatform(convertStreamingPlatform(postCaster.platform));
+        caster.setStream(convertStream(postCaster.stream));
+        caster.setRegion(convertRegion(postCaster.region));
+        return caster;
+    }
+
+    private List<Integer> convertRosterIds(List<PostRosterInfo> postRosters) {
+        if (postRosters == null) {
+            return null;
+        }
+        return postRosters.stream()
+                .map(rosterInfo -> rosterInfo.id)
+                .collect(Collectors.toList());
+    }
+
+    private Format convertFormat(PostFormat postFormat) {
+        if (postFormat == null) {
+            return null;
+        }
+        Format format = new Format();
+        format.setBestOf(postFormat.bestOf);
+        return format;
+    }
+
     // Utility method to handle Instant to epoch milliseconds conversion
     private long toEpochMilli(Instant instant) {
         return instant != null ? instant.toEpochMilli() : 0;
@@ -2526,28 +2767,79 @@ public class ApolloApiManager {
     }
 
     private CompletableFuture<List<GetSeries>> processSeriesList(List<Series> seriesList) {
-        List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
-                .map(series -> {
-                    List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
-                            .stream()
-                            .map(this::fetchFullParticipantData)
+        // Collect unique tournamentIds, substageIds, and casterIds
+        Set<Integer> tournamentIds = seriesList.stream()
+                .map(Series::getTournamentId)
+                .collect(Collectors.toSet());
+
+        Set<Integer> substageIds = seriesList.stream()
+                .map(Series::getSubstageId)
+                .collect(Collectors.toSet());
+
+        Set<Integer> casterIds = seriesList.stream()
+                .flatMap(series -> series.getCasters().stream())
+                .map(Caster::getId)
+                .collect(Collectors.toSet());
+
+        // Fetch tournaments, substages, and casters
+        CompletableFuture<Map<Integer, Tournament>> tournamentsFuture = fetchTournamentsByIds(tournamentIds);
+        CompletableFuture<Map<Integer, Substage>> substagesFuture = fetchSubstagesByIds(substageIds);
+        CompletableFuture<Map<Integer, Caster>> castersFuture = fetchCastersByIds(casterIds);
+
+        return CompletableFuture.allOf(tournamentsFuture, substagesFuture, castersFuture)
+                .thenCompose(v -> {
+                    Map<Integer, Tournament> tournaments = tournamentsFuture.join();
+                    Map<Integer, Substage> substages = substagesFuture.join();
+                    Map<Integer, Caster> castersMap = castersFuture.join();
+
+                    List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
+                            .map(series -> {
+                                // Fetch and enrich participants
+                                List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
+                                        .stream()
+                                        .map(this::fetchFullParticipantData)
+                                        .collect(Collectors.toList());
+
+                                // Map casters for this series
+                                List<GetCaster> getCasters = series.getCasters().stream()
+                                        .map(caster -> {
+                                            Caster fullCaster = castersMap.get(caster.getId());
+                                            return fullCaster != null ? new GetCaster(fullCaster)
+                                                    : new GetCaster(caster);
+                                        })
+                                        .collect(Collectors.toList());
+
+                                return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
+                                        .thenApply(vv -> {
+                                            GetSeries getSeries = new GetSeries(series);
+
+                                            // Set participants
+                                            getSeries.participants = participantFutures.stream()
+                                                    .map(CompletableFuture::join)
+                                                    .collect(Collectors.toList());
+
+                                            // Set tournament
+                                            Tournament tournament = tournaments.get(series.getTournamentId());
+                                            getSeries.tournament = tournament != null ? new GetTournament(tournament)
+                                                    : null;
+
+                                            // Set substage
+                                            Substage substage = substages.get(series.getSubstageId());
+                                            getSeries.substage = substage != null ? new GetSubstage(substage) : null;
+
+                                            // Set casters
+                                            getSeries.casters = getCasters;
+
+                                            return getSeries;
+                                        });
+                            })
                             .collect(Collectors.toList());
 
-                    return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
-                            .thenApply(v -> {
-                                GetSeries getSeries = new GetSeries(series);
-                                getSeries.participants = participantFutures.stream()
-                                        .map(CompletableFuture::join)
-                                        .collect(Collectors.toList());
-                                return getSeries;
-                            });
-                })
-                .collect(Collectors.toList());
-
-        return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]))
-                .thenApply(v -> futuresList.stream()
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.toList()));
+                    return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]))
+                            .thenApply(vv -> futuresList.stream()
+                                    .map(CompletableFuture::join)
+                                    .collect(Collectors.toList()));
+                });
     }
 
     public CompletableFuture<List<GetSeries>> getWeekSchedule(long timestamp) {
@@ -2711,6 +3003,72 @@ public class ApolloApiManager {
                 });
     }
 
+    private CompletableFuture<Map<Integer, Tournament>> fetchTournamentsByIds(Set<Integer> tournamentIds) {
+        if (tournamentIds.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptyMap());
+        }
+        List<CompletableFuture<Tournament>> futures = tournamentIds.stream()
+                .map(id -> getTournamentFromTournamentId.invokeAsync(id)
+                        .exceptionally(e -> null))
+                .collect(Collectors.toList());
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> {
+                    Map<Integer, Tournament> map = new HashMap<>();
+                    for (CompletableFuture<Tournament> future : futures) {
+                        Tournament tournament = future.join();
+                        if (tournament != null) {
+                            map.put(tournament.getId(), tournament);
+                        }
+                    }
+                    return map;
+                });
+    }
+
+    private CompletableFuture<Map<Integer, Substage>> fetchSubstagesByIds(Set<Integer> substageIds) {
+        if (substageIds.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptyMap());
+        }
+        List<CompletableFuture<Substage>> futures = substageIds.stream()
+                .map(id -> getSubstageFromSubstageId.invokeAsync(id)
+                        .exceptionally(e -> null))
+                .collect(Collectors.toList());
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> {
+                    Map<Integer, Substage> map = new HashMap<>();
+                    for (CompletableFuture<Substage> future : futures) {
+                        Substage substage = future.join();
+                        if (substage != null) {
+                            map.put(substage.getId(), substage);
+                        }
+                    }
+                    return map;
+                });
+    }
+
+    private CompletableFuture<Map<Integer, Caster>> fetchCastersByIds(Set<Integer> casterIds) {
+        if (casterIds.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptyMap());
+        }
+        List<CompletableFuture<Caster>> futures = casterIds.stream()
+                .map(id -> getCasterFromCasterId.invokeAsync(id)
+                        .exceptionally(e -> null))
+                .collect(Collectors.toList());
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> {
+                    Map<Integer, Caster> map = new HashMap<>();
+                    for (CompletableFuture<Caster> future : futures) {
+                        Caster caster = future.join();
+                        if (caster != null) {
+                            map.put(caster.getId(), caster);
+                        }
+                    }
+                    return map;
+                });
+    }
+
     // eSports Helpers
 
     private BracketPosition convertBracketPosition(PostBracketPosition bp) {
@@ -2746,17 +3104,54 @@ public class ApolloApiManager {
     }
 
     private Caster convertCaster(PostCaster c) {
-        return new Caster(c.primary, c.casterId);
+        if (c == null) {
+            return null;
+        }
+
+        Caster caster = new Caster();
+        if (c.id != null) {
+            caster.setId(c.id);
+        }
+        caster.setDisplayName(c.displayName);
+        caster.setUsername(c.username);
+
+        // Safely set gameId
+        if (c.game != null) {
+            caster.setGameId(c.game.id);
+        } else {
+            caster.setGameId(0); // or use an appropriate default
+        }
+
+        // Safely set deletedAt
+        if (c.deletedAt != null) {
+            caster.setDeletedAt(c.deletedAt.toEpochMilli());
+        }
+        // If deletedAt is optional and the setter accepts Long, you can omit the else
+        // block
+
+        caster.setPlatform(convertStreamingPlatform(c.platform));
+        caster.setStream(convertStream(c.stream));
+        caster.setRegion(convertRegion(c.region));
+
+        return caster;
     }
 
     private Broadcaster convertBroadcaster(PostBroadcaster b) {
         Broadcaster broadcaster = new Broadcaster();
+        if (b == null) {
+            return null;
+        }
         broadcaster.setBroadcasterId(b.broadcasterId);
         broadcaster.setBroadcasterName(b.broadcasterName);
         broadcaster.setBroadcasterExternalId(b.broadcasterExternalId);
         broadcaster.setBroadcasterPlatformId(b.broadcasterPlatformId);
         broadcaster.setBroadcasterDefaultLanguageId(b.broadcasterDefaultLanguageId);
-        broadcaster.setBroadcasts(b.broadcasts.stream().map(this::convertBroadcast).collect(Collectors.toList()));
+        if (b.broadcasts == null) {
+            broadcaster.setBroadcasts(null);
+        } else {
+            broadcaster
+                    .setBroadcasts(b.broadcasts.stream().map(this::convertBroadcast).collect(Collectors.toList()));
+        }
         broadcaster.setOfficial(b.official);
         return broadcaster;
     }
@@ -2864,16 +3259,27 @@ public class ApolloApiManager {
             SocialMediaAccount account = new SocialMediaAccount();
             account.setHandle(postAccount.handle);
             account.setUrl(postAccount.url);
-            account.setPlatform(convertPlatform(postAccount.platform));
+            account.setPlatform(convertSocialMediaPlatform(postAccount.platform));
             accounts.add(account);
         }
         return accounts;
     }
 
-    private Platform convertPlatform(PostPlatform postPlatform) {
+    private StreamingPlatform convertStreamingPlatform(PostStreamingPlatform postPlatform) {
         if (postPlatform == null)
             return null;
-        Platform platform = new Platform();
+        StreamingPlatform platform = new StreamingPlatform();
+        platform.setId(postPlatform.id);
+        platform.setName(postPlatform.name);
+        platform.setColor(postPlatform.color);
+        platform.setImages(convertImages(postPlatform.images));
+        return platform;
+    }
+
+    private SocialMediaPlatform convertSocialMediaPlatform(PostSocialMediaPlatform postPlatform) {
+        if (postPlatform == null)
+            return null;
+        SocialMediaPlatform platform = new SocialMediaPlatform();
         platform.setId(postPlatform.id);
         platform.setName(postPlatform.name);
         platform.setSlug(postPlatform.slug);
@@ -3250,6 +3656,235 @@ public class ApolloApiManager {
         game.setShortName(postGame.shortName);
         game.setSlug(postGame.slug);
         return game;
+    }
+
+    private TournamentCopy convertTournamentCopy(PostCopy postCopy) {
+        if (postCopy == null) {
+            return null;
+        }
+        TournamentCopy copy = new TournamentCopy();
+        copy.setGeneralDescription(postCopy.generalDescription);
+        copy.setShortDescription(postCopy.shortDescription);
+        copy.setFormatDescription(postCopy.formatDescription);
+        return copy;
+    }
+
+    private TournamentLinks convertTournamentLinks(PostLinks postLinks) {
+        if (postLinks == null) {
+            return null;
+        }
+        TournamentLinks links = new TournamentLinks();
+        links.setWebsite(postLinks.website);
+        links.setWiki(postLinks.wiki);
+        return links;
+    }
+
+    private StringPrizePool convertStringPrizePool(PostStringPrizePool postPrizePool) {
+        if (postPrizePool == null) {
+            return null;
+        }
+        StringPrizePool prizePool = new StringPrizePool();
+        prizePool.setTotal(postPrizePool.total);
+        prizePool.setFirst(postPrizePool.first);
+        prizePool.setSecond(postPrizePool.second);
+        prizePool.setThird(postPrizePool.third);
+        return prizePool;
+    }
+
+    private TournamentLocation convertTournamentLocation(PostLocation postLocation) {
+        if (postLocation == null) {
+            return null;
+        }
+        TournamentLocation location = new TournamentLocation();
+        location.setHost(convertHost(postLocation.host));
+        location.setParticipants(convertParticipants(postLocation.participants));
+        return location;
+    }
+
+    private Host convertHost(PostHost postHost) {
+        if (postHost == null) {
+            return null;
+        }
+        Host host = new Host();
+        host.setId(postHost.id);
+        host.setName(postHost.name);
+        host.setAbbreviation(postHost.abbreviation);
+        host.setCountry(convertCountry(postHost.country));
+        return host;
+    }
+
+    private List<Integer> convertStageIds(List<PostStage> postStages) {
+        if (postStages == null) {
+            return null;
+        }
+        return postStages.stream()
+                .map(stage -> stage.id)
+                .collect(Collectors.toList());
+    }
+
+    private List<Caster> convertTournamentCasters(List<PostCaster> postCasters) {
+        if (postCasters == null) {
+            return null;
+        }
+        return postCasters.stream()
+                .map(this::convertCaster)
+                .collect(Collectors.toList());
+    }
+
+    private List<Broadcaster> convertTournamentBroadcasters(List<PostBroadcaster> postBroadcasters) {
+        if (postBroadcasters == null) {
+            return null;
+        }
+        return postBroadcasters.stream()
+                .map(this::convertBroadcaster)
+                .collect(Collectors.toList());
+    }
+
+    private TournamentDefaults convertTournamentDefaults(PostTournamentDefaults postDefaults) {
+        if (postDefaults == null) {
+            return null;
+        }
+        TournamentDefaults defaults = new TournamentDefaults();
+        defaults.setGameVersion(convertGameVersion(postDefaults.gameVersion));
+        return defaults;
+    }
+
+    private List<Participant> convertParticipants(List<PostParticipant> postParticipants) {
+        if (postParticipants == null) {
+            return null;
+        }
+        return postParticipants.stream()
+                .map(this::convertParticipant)
+                .collect(Collectors.toList());
+    }
+
+    private List<Standing> convertStandings(List<PostStanding> postStandings) {
+        if (postStandings == null) {
+            return null;
+        }
+        return postStandings.stream()
+                .map(this::convertStanding)
+                .collect(Collectors.toList());
+    }
+
+    private Standing convertStanding(PostStanding postStanding) {
+        if (postStanding == null) {
+            return null;
+        }
+        Standing standing = new Standing();
+        standing.setRosterId(postStanding.roster.id);
+        standing.setPoints(postStanding.points);
+        standing.setWins(postStanding.wins);
+        standing.setDraws(postStanding.draws);
+        standing.setLosses(postStanding.losses);
+        standing.setMatchDiff(postStanding.matchDiff);
+        standing.setScoreDiff(postStanding.scoreDiff);
+        return standing;
+    }
+
+    private SubstageRules convertSubstageRules(PostRules postRules) {
+        if (postRules == null) {
+            return null;
+        }
+        SubstageRules rules = new SubstageRules();
+        rules.setAdvance(convertAdvanceRule(postRules.advance));
+        rules.setDescend(convertDescendRule(postRules.descend));
+        rules.setPoints(convertPointsRule(postRules.points));
+        return rules;
+    }
+
+    private AdvanceRule convertAdvanceRule(PostAdvance postAdvance) {
+        if (postAdvance == null) {
+            return null;
+        }
+        AdvanceRule advance = new AdvanceRule();
+        advance.setNumber(postAdvance.number);
+        if (postAdvance.substage != null) {
+            advance.setSubstageId(postAdvance.substage.id);
+        }
+        return advance;
+    }
+
+    private DescendRule convertDescendRule(PostDescend postDescend) {
+        if (postDescend == null) {
+            return null;
+        }
+        DescendRule descend = new DescendRule();
+        descend.setNumber(postDescend.number);
+        if (postDescend.substage != null) {
+            descend.setSubstageId(postDescend.substage.id);
+        }
+        return descend;
+    }
+
+    private PointsRule convertPointsRule(PostPoints postPoints) {
+        if (postPoints == null) {
+            return null;
+        }
+        PointsRule points = new PointsRule();
+        points.setWin(postPoints.win);
+        points.setDraw(postPoints.draw);
+        points.setLoss(postPoints.loss);
+        points.setScope(postPoints.scope);
+        return points;
+    }
+
+    private SubstageDefaults convertSubstageDefaults(PostSubstageDefaults postDefaults) {
+        if (postDefaults == null) {
+            return null;
+        }
+        SubstageDefaults defaults = new SubstageDefaults();
+        defaults.setGameVersion(convertGameVersion(postDefaults.gameVersion));
+        defaults.setSeriesFormat(convertFormat(postDefaults.seriesFormat));
+        return defaults;
+    }
+
+    private SubstageFormat convertSubstageFormat(PostSubstageFormat postFormat) {
+        if (postFormat == null) {
+            return null;
+        }
+        SubstageFormat format = new SubstageFormat();
+        format.setPoints(convertPointsRule(postFormat.points));
+        format.setMovements(convertMovements(postFormat.movements));
+        return format;
+    }
+
+    private List<Movement> convertMovements(List<PostMovement> postMovements) {
+        if (postMovements == null) {
+            return null;
+        }
+        return postMovements.stream()
+                .map(this::convertMovement)
+                .collect(Collectors.toList());
+    }
+
+    private Movement convertMovement(PostMovement postMovement) {
+        if (postMovement == null) {
+            return null;
+        }
+        Movement movement = new Movement();
+        movement.setPosition(postMovement.position);
+        movement.setSubstageId(postMovement.substage.id);
+        movement.setType(postMovement.type);
+        return movement;
+    }
+
+    // Using our stream instead of java.util.stream
+    private com.apollo.backend.data.Stream convertStream(PostStream postStream) {
+        if (postStream == null) {
+            return null;
+        }
+        com.apollo.backend.data.Stream stream = new com.apollo.backend.data.Stream();
+        stream.setId(postStream.id);
+        stream.setUsername(postStream.username);
+        stream.setDisplayName(postStream.displayName);
+        stream.setStatusText(postStream.statusText);
+        stream.setViewerCount(postStream.viewerCount);
+        stream.setOnline(postStream.online);
+        stream.setLastOnline(postStream.lastOnline != null ? postStream.lastOnline.toEpochMilli() : 0);
+        stream.setImages(convertImages(postStream.images));
+        stream.setPlatform(convertStreamingPlatform(postStream.platform));
+        return stream;
     }
 
     // Fetching summary helper - TOOD: Maybe need to change

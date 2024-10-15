@@ -19,8 +19,8 @@ public class GetSeries {
     public boolean streamed;
     public GetBracketPosition bracketPosition;
     public List<GetParticipant> participants;
-    public GetTournamentInfo tournament;
-    public GetSubstageInfo substage;
+    public GetTournament tournament;
+    public GetSubstage substage;
     public GetGameInfo game;
     public List<Integer> matchIds;
     public List<GetCaster> casters;
@@ -47,15 +47,23 @@ public class GetSeries {
         this.streamed = series.isStreamed();
         this.bracketPosition = series.isSetBracketPosition() ? new GetBracketPosition(series.getBracketPosition())
                 : null;
+
+        // Map participants directly
         this.participants = series.getParticipants().stream()
                 .map(GetParticipant::new)
                 .collect(Collectors.toList());
-        this.tournament = new GetTournamentInfo(series.getTournamentId());
-        this.substage = new GetSubstageInfo(series.getSubstageId());
+
+        // Tournament and Substage will be set after fetching
+        this.tournament = null;
+        this.substage = null;
+
         this.game = new GetGameInfo(series.getGameId());
         this.matchIds = series.getMatchIds();
+
+        // Map casters directly
         this.casters = series.getCasters().stream().map(GetCaster::new).collect(Collectors.toList());
         this.broadcasters = series.getBroadcasters().stream().map(GetBroadcaster::new).collect(Collectors.toList());
+
         this.hasIncidentReport = series.isHasIncidentReport();
         this.coverage = series.isSetCoverage() ? new GetCoverage(series.getCoverage()) : null;
         this.format = series.isSetFormatBestOf() ? new GetFormat(series.getFormatBestOf()) : null;
