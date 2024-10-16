@@ -4419,4 +4419,8 @@ public class ApolloApiManager {
                 });
     }
 
+    public void shutdown() {
+        apiClient.shutdown();
+    }
+
 }

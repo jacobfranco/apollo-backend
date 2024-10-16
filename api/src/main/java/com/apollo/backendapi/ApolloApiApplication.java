@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 // Define the main class and entry point for a Spring Boot application
 @SpringBootApplication
@@ -238,14 +239,14 @@ public class ApolloApiApplication {
                 if (ApolloApiController.manager != null) {
                         ApolloApiController.manager.fetchAllActiveLolTeams();
                         ApolloApiController.manager.fetchAllActiveLolPlayers();
-                        // ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
-                        // ApolloApiConfig.LOL_SEASON_END);
                         ApolloApiController.manager.fetchAllLolTournaments();
                         ApolloApiController.manager.fetchAllLolSubstages();
                         ApolloApiController.manager.fetchAllLolCasters();
                         ApolloApiController.manager.fetchAllLolAssets();
-                        ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,
-                                        ApolloApiConfig.LOL_END_TEST);
+                        // ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,
+                        // ApolloApiConfig.LOL_END_TEST);
+                        ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
+                                        ApolloApiConfig.LOL_SEASON_END);
 
                         // Start WebSocket connection after data fetching
                         try {
