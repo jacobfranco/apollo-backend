@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,21 +17,15 @@ public class AbiosApiClient {
     private static final String WEBSOCKET_URL = "wss://hermes.abiosgaming.com/subscribe";
     private final String apiSecret;
     private final OkHttpClient httpClient;
+    private final OkHttpClient webSocketClient;
     private WebSocket webSocket;
     private Map<String, String> lastResponseHeaders;
     private static final int MAX_RETRIES = 3;
-    private static final long WEBSOCKET_RETRY_DELAY_MS = 5000; // 5 seconds
-    private static final int MAX_WEBSOCKET_RETRIES = 5;
-    private final AtomicBoolean isWebSocketConnecting = new AtomicBoolean(false);
-    private WebSocketListener currentWebSocketListener;
-    private List<String> lastChannels;
-    private Map<String, String> lastFilters;
-    private String lastQueue;
 
     public AbiosApiClient(String apiSecret) {
         this.apiSecret = apiSecret;
         this.lastResponseHeaders = new HashMap<>();
-
+        this.webSocketClient = new OkHttpClient();
         // Configure OkHttp client
         this.httpClient = new OkHttpClient.Builder()
                 .connectionPool(new ConnectionPool(10, 5, TimeUnit.MINUTES))
@@ -137,99 +133,6 @@ public class AbiosApiClient {
         }
     }
 
-    // WebSocket implementation with retry mechanism
-    public void connectToWebSocket(List<String> channels, Map<String, String> filters, String queue) {
-        if (isWebSocketConnecting.get()) {
-            System.out.println("WebSocket connection attempt already in progress");
-            return;
-        }
-
-        this.lastChannels = channels;
-        this.lastFilters = filters;
-        this.lastQueue = queue;
-
-        connectWebSocketWithRetry(0);
-    }
-
-    private void connectWebSocketWithRetry(int retryCount) {
-        if (retryCount >= MAX_WEBSOCKET_RETRIES) {
-            System.err.println("Max WebSocket reconnection attempts reached");
-            return;
-        }
-
-        if (!isWebSocketConnecting.compareAndSet(false, true)) {
-            return;
-        }
-
-        StringBuilder urlBuilder = new StringBuilder(WEBSOCKET_URL);
-        urlBuilder.append("?secret=").append(URLEncoder.encode(apiSecret, StandardCharsets.UTF_8));
-
-        for (String channel : lastChannels) {
-            urlBuilder.append("&channel=").append(URLEncoder.encode(channel, StandardCharsets.UTF_8));
-        }
-
-        if (lastFilters != null && !lastFilters.isEmpty()) {
-            for (Map.Entry<String, String> filterEntry : lastFilters.entrySet()) {
-                urlBuilder.append("&filter=")
-                        .append(URLEncoder.encode(filterEntry.getKey() + "=" + filterEntry.getValue(),
-                                StandardCharsets.UTF_8));
-            }
-        }
-
-        if (lastQueue != null && !lastQueue.isEmpty()) {
-            urlBuilder.append("&queue=").append(URLEncoder.encode(lastQueue, StandardCharsets.UTF_8));
-        }
-
-        Request request = new Request.Builder()
-                .url(urlBuilder.toString())
-                .build();
-
-        currentWebSocketListener = new WebSocketListener() {
-            @Override
-            public void onOpen(WebSocket webSocket, Response response) {
-                System.out.println("WebSocket connection opened");
-                isWebSocketConnecting.set(false);
-            }
-
-            @Override
-            public void onMessage(WebSocket webSocket, String text) {
-                ApolloApiController.manager.handleIncomingMessage(text);
-            }
-
-            @Override
-            public void onClosing(WebSocket webSocket, int code, String reason) {
-                System.out.println("WebSocket closing: " + reason);
-                webSocket.close(1000, null);
-            }
-
-            @Override
-            public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-                System.err.println("WebSocket error: " + t.getMessage());
-                webSocket.cancel();
-                isWebSocketConnecting.set(false);
-
-                // Schedule reconnection attempt
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(WEBSOCKET_RETRY_DELAY_MS);
-                        System.out.println("Attempting WebSocket reconnection (attempt " + (retryCount + 1) + ")");
-                        connectWebSocketWithRetry(retryCount + 1);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }).start();
-            }
-
-            @Override
-            public void onClosed(WebSocket webSocket, int code, String reason) {
-                System.out.println("WebSocket closed: " + reason);
-                isWebSocketConnecting.set(false);
-            }
-        };
-
-        webSocket = httpClient.newWebSocket(request, currentWebSocketListener);
-    }
-
     // All your existing API methods
     public String getSeries(String filter, String order, int skip, int take) throws IOException {
         return makeRequest("series", filter, order, skip, take);
@@ -289,15 +192,65 @@ public class AbiosApiClient {
         return new HashMap<>(lastResponseHeaders);
     }
 
+    // WebSocket implementation with retry mechanism
+    public void connectToWebSocket(List<String> channels, Map<String, String> filters, String queue) {
+        StringBuilder urlBuilder = new StringBuilder(WEBSOCKET_URL);
+        urlBuilder.append("?secret=").append(URLEncoder.encode(apiSecret, StandardCharsets.UTF_8));
+
+        // Add channels to the URL
+        for (String channel : channels) {
+            urlBuilder.append("&channel=").append(URLEncoder.encode(channel, StandardCharsets.UTF_8));
+        }
+
+        // Add filters to the URL
+        if (filters != null && !filters.isEmpty()) {
+            for (Map.Entry<String, String> filterEntry : filters.entrySet()) {
+                String filterKey = filterEntry.getKey();
+                String filterValue = filterEntry.getValue();
+                urlBuilder.append("&filter=")
+                        .append(URLEncoder.encode(filterKey + "=" + filterValue, StandardCharsets.UTF_8));
+            }
+        }
+
+        // Add queue parameter to the URL
+        if (queue != null && !queue.isEmpty()) {
+            urlBuilder.append("&queue=").append(URLEncoder.encode(queue, StandardCharsets.UTF_8));
+        }
+
+        Request request = new Request.Builder()
+                .url(urlBuilder.toString())
+                .build();
+
+        this.webSocket = webSocketClient.newWebSocket(request, new WebSocketListener() {
+            @Override
+            public void onOpen(WebSocket webSocket, Response response) {
+                System.out.println("WebSocket connection opened.");
+            }
+
+            @Override
+            public void onMessage(WebSocket webSocket, String text) {
+                // Pass incoming messages to ApolloApiManager for processing
+                ApolloApiController.manager.handleIncomingMessage(text);
+            }
+
+            @Override
+            public void onClosing(WebSocket webSocket, int code, String reason) {
+                System.out.println("WebSocket closing: " + reason);
+                webSocket.close(1000, null);
+            }
+
+            @Override
+            public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+                System.err.println("WebSocket error: " + t.getMessage());
+                // Reconnection logic can be implemented here if necessary
+            }
+        });
+    }
+
     public void closeWebSocket() {
         if (webSocket != null) {
             webSocket.close(1000, "Closing connection");
         }
     }
 
-    public void shutdown() {
-        closeWebSocket();
-        httpClient.dispatcher().executorService().shutdown();
-        httpClient.connectionPool().evictAll();
-    }
 }
