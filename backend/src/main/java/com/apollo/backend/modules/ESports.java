@@ -100,13 +100,10 @@ public class ESports implements RamaModule {
         private static void declareLolMatchSummaryIngestionTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("lolMatchSummaryIngestion");
                 stream.pstate("$$lolMatchIdToSummary", PState.mapSchema(Integer.class, LolMatchSummary.class));
-                stream.pstate("$$lolMatchIdToAssetIds",
-                                PState.mapSchema(Integer.class, PState.setSchema(Integer.class)));
 
                 stream.source("*lolMatchSummaryDepot").out("*summary")
                                 .macro(ApolloHelpers.extractFields("*summary", "*id", "*assetIds"))
-                                .localTransform("$$lolMatchIdToSummary", Path.key("*id").termVal("*summary"))
-                                .localTransform("$$lolMatchIdToAssetIds", Path.key("*id").termVal("*assetIds"));
+                                .localTransform("$$lolMatchIdToSummary", Path.key("*id").termVal("*summary"));
         }
 
         private static void declareLolPlayerSeasonStatsIngestionTopology(Topologies topologies) {
@@ -133,13 +130,10 @@ public class ESports implements RamaModule {
         private static void declareAssetIngestionTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("assetIngestion");
                 stream.pstate("$$assetIdToAsset", PState.mapSchema(Integer.class, Asset.class));
-                stream.pstate("$$gameIdToAssets", PState.mapSchema(Integer.class, PState.setSchema(Asset.class)));
 
                 stream.source("*assetDepot").out("*asset")
-                                .macro(ApolloHelpers.extractFields("*asset", "*id", "*game.id"))
-                                .localTransform("$$assetIdToAsset", Path.key("*id").termVal("*asset"))
-                                .compoundAgg("$$gameIdToAssets",
-                                                CompoundAgg.map("*game_id", Agg.set("*asset")));
+                                .macro(ApolloHelpers.extractFields("*asset", "*id"))
+                                .localTransform("$$assetIdToAsset", Path.key("*id").termVal("*asset"));
         }
 
         private static void declareLiveLolMatchSummaryIngestionTopology(Topologies topologies) {
@@ -222,16 +216,6 @@ public class ESports implements RamaModule {
                 topologies.query("getCasterFromCasterId", "*id").out("*result")
                                 .hashPartition("*id")
                                 .localSelect("$$casterIdToCaster", Path.key("*id")).out("*result")
-                                .originPartition();
-
-                topologies.query("getAssetIdsFromMatchId", "*id").out("*result")
-                                .hashPartition("*id")
-                                .localSelect("$$lolMatchIdToAssetIds", Path.key("*id")).out("*result")
-                                .originPartition();
-
-                topologies.query("getAssetsFromGameId", "*gameId").out("*result")
-                                .hashPartition("*gameId")
-                                .localSelect("$$gameIdToAssets", Path.key("*gameId")).out("*result")
                                 .originPartition();
 
                 topologies.query("getLiveLolMatchSummaryFromMatchId", "*matchId").out("*result")
