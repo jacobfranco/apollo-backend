@@ -8,8 +8,8 @@ public class GetLolItem {
     public GetAsset item;
     public int slot;
 
-    public GetLolItem(LolItem itemSlot, Map<Integer, GetAsset> assetMap) {
-        this.item = assetMap.get(itemSlot.getId());
-        this.slot = itemSlot.getSlot();
+    public GetLolItem(LolItem item, Map<Integer, GetAsset> assetMap) {
+        this.item = assetMap.get(item.getId());
+        this.slot = item.getSlot();
     }
 }

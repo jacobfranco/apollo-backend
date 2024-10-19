@@ -44,6 +44,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
+import com.apollo.backendapi.ApolloApiManager.QueryResults;
 import com.apollo.backendapi.pojos.*;
 import com.apollo.shared.ApolloSpaces;
 import com.rpl.rama.*;
@@ -221,8 +222,6 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<Asset> getAssetFromAssetId;
-    private final QueryTopologyClient<Set<Integer>> getAssetIdsFromMatchId;
-    private final QueryTopologyClient<Set<Asset>> getAssetsFromGameId;
     private final QueryTopologyClient<List<LolPlayerSummary>> getLolPlayerSeasonStatsFromPlayerId;
     private final QueryTopologyClient<List<LolTeamSummary>> getLolTeamSeasonStatsFromTeamId;
     private final QueryTopologyClient<Tournament> getTournamentFromTournamentId;
@@ -372,8 +371,6 @@ public class ApolloApiManager {
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
         getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
-        getAssetIdsFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetIdsFromMatchId");
-        getAssetsFromGameId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetsFromGameId");
         getLolPlayerSeasonStatsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
                 "getLolPlayerSeasonStatsFromPlayerId");
         getLolTeamSeasonStatsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolTeamSeasonStatsFromTeamId");
@@ -1899,22 +1896,26 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String seriesData = apiClient.getSeries(filter, order, skip, take);
-            logger.info("API Response: " + seriesData);
+            logger.info("fetchAndStoreSeries - API Response: " + seriesData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
+            logger.info(
+                    "fetchAndStoreSeries - Parsed PostSeries List: " + objectMapper.writeValueAsString(postSeriesList));
 
             for (PostSeries postSeries : postSeriesList) {
                 Series series = convertToThriftSeries(postSeries);
+                logger.info("fetchAndStoreSeries - Converted Series: " + objectMapper.writeValueAsString(series));
                 seriesDepot.appendAsync(series).join();
                 fetchAndStoreRostersForSeries(postSeries.id);
                 fetchAndStoreMatchesForSeries(postSeries.id);
             }
 
             if (postSeriesList.size() == take) {
+                logger.info("fetchAndStoreSeries - Fetching next batch with skip: " + (skip + take));
                 fetchAndStoreSeries(filter, order, skip + take, take);
             } else {
-                System.out.println("All series and their matches have been fetched and stored.");
+                logger.info("fetchAndStoreSeries - All series and their matches have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "series batch", skip);
@@ -1925,20 +1926,27 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String matchesData = apiClient.getMatchesForSeries(seriesId, null, "start-asc", 0, 50);
+            logger.info("fetchAndStoreMatchesForSeries - API Response for seriesId " + seriesId + ": " + matchesData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostMatch> postMatches = parseJsonToPostMatchList(matchesData);
+            logger.info("fetchAndStoreMatchesForSeries - Parsed PostMatch List: "
+                    + objectMapper.writeValueAsString(postMatches));
+
             for (PostMatch postMatch : postMatches) {
                 Match match = convertToThriftMatch(postMatch);
+                logger.info(
+                        "fetchAndStoreMatchesForSeries - Converted Match: " + objectMapper.writeValueAsString(match));
                 matchDepot.appendAsync(match).join();
                 fetchAndStoreRostersForMatch(match.getId());
 
-                // Check coverage before fetching match summary
                 if (isCoverageAvailable(match)) {
-                    fetchAndStoreLolMatchSummary(match.getId()); // TODO: Will need to make this conditional when
-                                                                 // implementing other games
+                    logger.info(
+                            "fetchAndStoreMatchesForSeries - Fetching LoL Match Summary for matchId: " + match.getId());
+                    fetchAndStoreLolMatchSummary(match.getId());
                 } else {
-                    System.out.println("Match " + match.getId() + " summary is not available. Skipping summary fetch.");
+                    logger.info("fetchAndStoreMatchesForSeries - Match " + match.getId()
+                            + " summary is not available. Skipping summary fetch.");
                 }
             }
         } catch (Exception e) {
@@ -1950,11 +1958,17 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String rostersData = apiClient.getSeriesRosters(seriesId);
+            logger.info("fetchAndStoreRostersForSeries - API Response for seriesId " + seriesId + ": " + rostersData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostRoster> postRosters = parseJsonToPostRosterList(rostersData);
+            logger.info("fetchAndStoreRostersForSeries - Parsed PostRoster List: "
+                    + objectMapper.writeValueAsString(postRosters));
+
             for (PostRoster postRoster : postRosters) {
                 storeRoster(postRoster);
+                logger.info("fetchAndStoreRostersForSeries - Stored Roster: "
+                        + objectMapper.writeValueAsString(postRoster));
             }
         } catch (Exception e) {
             handleException(e, "rosters for series", seriesId);
@@ -1965,11 +1979,17 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String rostersData = apiClient.getMatchRosters(matchId);
+            logger.info("fetchAndStoreRostersForMatch - API Response for matchId " + matchId + ": " + rostersData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostRoster> postRosters = parseJsonToPostRosterList(rostersData);
+            logger.info("fetchAndStoreRostersForMatch - Parsed PostRoster List: "
+                    + objectMapper.writeValueAsString(postRosters));
+
             for (PostRoster postRoster : postRosters) {
                 storeRoster(postRoster);
+                logger.info(
+                        "fetchAndStoreRostersForMatch - Stored Roster: " + objectMapper.writeValueAsString(postRoster));
             }
         } catch (Exception e) {
             handleException(e, "rosters for match", matchId);
@@ -1977,8 +1997,14 @@ public class ApolloApiManager {
     }
 
     private void storeRoster(PostRoster postRoster) {
+        logger.info("storeRoster - Storing Roster with ID: " + postRoster.id);
         rosterCache.computeIfAbsent(postRoster.id, id -> {
             Roster newRoster = convertToThriftRoster(postRoster);
+            try {
+                logger.info("storeRoster - Converted Roster: " + objectMapper.writeValueAsString(newRoster));
+            } catch (JsonProcessingException e) {
+                logger.error("Json processing exception when converting roster from JSON to Thrift");
+            }
             rosterDepot.appendAsync(newRoster).join();
             return newRoster;
         });
@@ -1988,19 +2014,23 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String teamsData = apiClient.getTeams(filter, order, skip, take);
+            logger.info("fetchAndStoreTeams - API Response: " + teamsData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostTeam> postTeams = parseJsonToPostTeamList(teamsData);
+            logger.info("fetchAndStoreTeams - Parsed PostTeam List: " + objectMapper.writeValueAsString(postTeams));
 
             for (PostTeam postTeam : postTeams) {
                 Team team = convertToThriftTeam(postTeam);
+                logger.info("fetchAndStoreTeams - Converted Team: " + objectMapper.writeValueAsString(team));
                 teamDepot.appendAsync(team).join();
             }
 
             if (postTeams.size() == take) {
+                logger.info("fetchAndStoreTeams - Fetching next batch with skip: " + (skip + take));
                 fetchAndStoreTeams(filter, order, skip + take, take);
             } else {
-                System.out.println("All active teams have been fetched and stored.");
+                logger.info("fetchAndStoreTeams - All active teams have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "teams batch", skip);
@@ -2011,19 +2041,24 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String playersData = apiClient.getPlayers(filter, order, skip, take);
+            logger.info("fetchAndStorePlayers - API Response: " + playersData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostPlayer> postPlayers = parseJsonToPostPlayerList(playersData);
+            logger.info(
+                    "fetchAndStorePlayers - Parsed PostPlayer List: " + objectMapper.writeValueAsString(postPlayers));
 
             for (PostPlayer postPlayer : postPlayers) {
                 Player player = convertToThriftPlayer(postPlayer);
+                logger.info("fetchAndStorePlayers - Converted Player: " + objectMapper.writeValueAsString(player));
                 playerDepot.appendAsync(player).join();
             }
 
             if (postPlayers.size() == take) {
+                logger.info("fetchAndStorePlayers - Fetching next batch with skip: " + (skip + take));
                 fetchAndStorePlayers(filter, order, skip + take, take);
             } else {
-                System.out.println("All active players have been fetched and stored.");
+                logger.info("fetchAndStorePlayers - All active players have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "players batch", skip);
@@ -2034,27 +2069,38 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String summaryData = apiClient.getMatchSummary(matchId);
+            logger.info("fetchAndStoreLolMatchSummary - API Response for matchId " + matchId + ": " + summaryData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
             PostLolMatchSummary postLolSummary = parseJsonToPostLolMatchSummary(summaryData);
             if (postLolSummary != null) {
+                logger.info("fetchAndStoreLolMatchSummary - Parsed PostLolMatchSummary: "
+                        + objectMapper.writeValueAsString(postLolSummary));
                 LolMatchSummary lolSummary = convertToThriftLolMatchSummary(postLolSummary);
+                logger.info("fetchAndStoreLolMatchSummary - Converted LolMatchSummary: "
+                        + objectMapper.writeValueAsString(lolSummary));
                 lolMatchSummaryDepot.appendAsync(lolSummary).join();
 
                 // Process and store player stats
-                for (LolPlayerSummary playerSummary : lolSummary.getTeams().getHome().getPlayers()) {
+                for (LolPlayerSummary playerSummary : lolSummary.teams.getHome().getPlayers()) {
                     lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
+                    logger.info("fetchAndStoreLolMatchSummary - Stored Home Player Summary: "
+                            + objectMapper.writeValueAsString(playerSummary));
                 }
-                for (LolPlayerSummary playerSummary : lolSummary.getTeams().getAway().getPlayers()) {
+                for (LolPlayerSummary playerSummary : lolSummary.teams.getAway().getPlayers()) {
                     lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
+                    logger.info("fetchAndStoreLolMatchSummary - Stored Away Player Summary: "
+                            + objectMapper.writeValueAsString(playerSummary));
                 }
 
                 // Process and store team stats
-                CompletableFuture<Void> homeTeamFuture = storeTeamSummary(lolSummary.getTeams().getHome());
-                CompletableFuture<Void> awayTeamFuture = storeTeamSummary(lolSummary.getTeams().getAway());
+                CompletableFuture<Void> homeTeamFuture = storeTeamSummary(lolSummary.teams.getHome());
+                CompletableFuture<Void> awayTeamFuture = storeTeamSummary(lolSummary.teams.getAway());
 
                 CompletableFuture.allOf(homeTeamFuture, awayTeamFuture).join();
+                logger.info("fetchAndStoreLolMatchSummary - Stored Team Summaries for matchId " + matchId);
             } else {
-                System.out.println("Failed to parse match summary for match " + matchId);
+                logger.warn("fetchAndStoreLolMatchSummary - Failed to parse match summary for match " + matchId);
             }
         } catch (Exception e) {
             handleException(e, "LoL match summary", matchId);
@@ -2062,42 +2108,62 @@ public class ApolloApiManager {
     }
 
     private CompletableFuture<Void> storeTeamSummary(LolTeamSummary teamSummary) {
+        logger.info("storeTeamSummary - Storing team summary for team ID: " + teamSummary.getRoster().getId());
         return getTeamIdFromRosterId(teamSummary.getRoster().getId())
                 .thenCompose(teamId -> {
                     if (teamId != null) {
                         teamSummary.setTeamId(teamId);
+                        logger.info("storeTeamSummary - Team ID set to: " + teamId);
                         return lolTeamSeasonStatsDepot.appendAsync(teamSummary)
-                                .thenApply(result -> null); // Convert CompletableFuture<Map<String,Object>> to
-                                                            // CompletableFuture<Void>
+                                .thenApply(result -> {
+                                    logger.info("storeTeamSummary - Successfully stored team summary for team ID: "
+                                            + teamId);
+                                    return null;
+                                });
                     } else {
-                        System.out.println("Failed to fetch team ID for rosterId: " + teamSummary.getRoster().getId());
+                        logger.warn("storeTeamSummary - Failed to fetch team ID for rosterId: "
+                                + teamSummary.getRoster().getId());
                         return CompletableFuture.completedFuture(null);
                     }
                 });
     }
 
     private CompletableFuture<Integer> getTeamIdFromRosterId(int rosterId) {
+        logger.info("getTeamIdFromRosterId - Fetching team ID from rosterId: " + rosterId);
         return getRosterFromRosterId.invokeAsync(rosterId)
-                .thenApply(roster -> roster != null ? roster.getTeamId() : null);
+                .thenApply(roster -> {
+                    if (roster != null) {
+                        logger.info("getTeamIdFromRosterId - Found team ID: " + roster.getTeamId() + " for rosterId: "
+                                + rosterId);
+                        return roster.getTeamId();
+                    } else {
+                        logger.warn("getTeamIdFromRosterId - No roster found for rosterId: " + rosterId);
+                        return null;
+                    }
+                });
     }
 
     private void fetchAndStoreAssets(String filter, String order, int skip, int take) {
         try {
             waitIfNecessary();
             String assetsData = apiClient.getAssets(filter, order, skip, take);
+            logger.info("fetchAndStoreAssets - API Response: " + assetsData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostAsset> postAssets = parseJsonToPostAssetList(assetsData);
+            logger.info("fetchAndStoreAssets - Parsed PostAsset List: " + objectMapper.writeValueAsString(postAssets));
 
             for (PostAsset postAsset : postAssets) {
                 Asset asset = convertToThriftAsset(postAsset);
+                logger.info("fetchAndStoreAssets - Converted Asset: " + objectMapper.writeValueAsString(asset));
                 assetDepot.appendAsync(asset).join();
             }
 
             if (postAssets.size() == take) {
+                logger.info("fetchAndStoreAssets - Fetching next batch with skip: " + (skip + take));
                 fetchAndStoreAssets(filter, order, skip + take, take);
             } else {
-                System.out.println("All assets have been fetched and stored.");
+                logger.info("fetchAndStoreAssets - All assets have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "assets batch", skip);
@@ -2108,19 +2174,25 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String tournamentsData = apiClient.getTournaments(filter, order, skip, take);
+            logger.info("fetchAndStoreTournaments - API Response: " + tournamentsData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostTournament> postTournaments = parseJsonToPostTournamentList(tournamentsData);
+            logger.info("fetchAndStoreTournaments - Parsed PostTournament List: "
+                    + objectMapper.writeValueAsString(postTournaments));
 
             for (PostTournament postTournament : postTournaments) {
                 Tournament tournament = convertToThriftTournament(postTournament);
+                logger.info("fetchAndStoreTournaments - Converted Tournament: "
+                        + objectMapper.writeValueAsString(tournament));
                 tournamentDepot.appendAsync(tournament).join();
             }
 
             if (postTournaments.size() == take) {
+                logger.info("fetchAndStoreTournaments - Fetching next batch with skip: " + (skip + take));
                 fetchAndStoreTournaments(filter, order, skip + take, take);
             } else {
-                System.out.println("All tournaments have been fetched and stored.");
+                logger.info("fetchAndStoreTournaments - All tournaments have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "tournaments batch", skip);
@@ -2131,19 +2203,25 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String substagesData = apiClient.getSubstages(filter, order, skip, take);
+            logger.info("fetchAndStoreSubstages - API Response: " + substagesData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostSubstage> postSubstages = parseJsonToPostSubstageList(substagesData);
+            logger.info("fetchAndStoreSubstages - Parsed PostSubstage List: "
+                    + objectMapper.writeValueAsString(postSubstages));
 
             for (PostSubstage postSubstage : postSubstages) {
                 Substage substage = convertToThriftSubstage(postSubstage);
+                logger.info(
+                        "fetchAndStoreSubstages - Converted Substage: " + objectMapper.writeValueAsString(substage));
                 substageDepot.appendAsync(substage).join();
             }
 
             if (postSubstages.size() == take) {
+                logger.info("fetchAndStoreSubstages - Fetching next batch with skip: " + (skip + take));
                 fetchAndStoreSubstages(filter, order, skip + take, take);
             } else {
-                System.out.println("All substages have been fetched and stored.");
+                logger.info("fetchAndStoreSubstages - All substages have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "substages batch", skip);
@@ -2154,19 +2232,24 @@ public class ApolloApiManager {
         try {
             waitIfNecessary();
             String castersData = apiClient.getCasters(filter, order, skip, take);
+            logger.info("fetchAndStoreCasters - API Response: " + castersData);
             updateRateLimitInfo(apiClient.getLastResponseHeaders());
 
             List<PostCaster> postCasters = parseJsonToPostCasterList(castersData);
+            logger.info(
+                    "fetchAndStoreCasters - Parsed PostCaster List: " + objectMapper.writeValueAsString(postCasters));
 
             for (PostCaster postCaster : postCasters) {
                 Caster caster = convertToThriftCaster(postCaster);
+                logger.info("fetchAndStoreCasters - Converted Caster: " + objectMapper.writeValueAsString(caster));
                 casterDepot.appendAsync(caster).join();
             }
 
             if (postCasters.size() == take) {
+                logger.info("fetchAndStoreCasters - Fetching next batch with skip: " + (skip + take));
                 fetchAndStoreCasters(filter, order, skip + take, take);
             } else {
-                System.out.println("All casters have been fetched and stored.");
+                logger.info("fetchAndStoreCasters - All casters have been fetched and stored.");
             }
         } catch (Exception e) {
             handleException(e, "casters batch", skip);
@@ -2174,11 +2257,13 @@ public class ApolloApiManager {
     }
 
     private List<PostSeries> parseJsonToPostSeriesList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostSeriesList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostSeriesList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2197,19 +2282,22 @@ public class ApolloApiManager {
                 seriesList.add(objectMapper.treeToValue(rootNode, PostSeries.class));
             }
         } else {
-            System.err.println("Unexpected Series JSON structure: " + jsonData);
+            logger.error("parseJsonToPostSeriesList - Unexpected Series JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for series");
         }
 
+        logger.info("parseJsonToPostSeriesList - Successfully parsed " + seriesList.size() + " PostSeries objects.");
         return seriesList;
     }
 
     private List<PostMatch> parseJsonToPostMatchList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostMatchList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostMatchList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2222,19 +2310,22 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             matches.add(objectMapper.treeToValue(rootNode, PostMatch.class));
         } else {
-            System.err.println("Unexpected Match JSON structure: " + jsonData);
+            logger.warn("parseJsonToPostMatchList - Unexpected Match JSON structure: " + jsonData);
             return Collections.emptyList();
         }
 
+        logger.info("parseJsonToPostMatchList - Successfully parsed " + matches.size() + " PostMatch objects.");
         return matches;
     }
 
     private List<PostRoster> parseJsonToPostRosterList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostRosterList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostRosterList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2247,19 +2338,22 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             rosterList.add(objectMapper.treeToValue(rootNode, PostRoster.class));
         } else {
-            System.err.println("Unexpected Roster JSON structure: " + jsonData);
+            logger.error("parseJsonToPostRosterList - Unexpected Roster JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for rosters");
         }
 
+        logger.info("parseJsonToPostRosterList - Successfully parsed " + rosterList.size() + " PostRoster objects.");
         return rosterList;
     }
 
     private List<PostPlayer> parseJsonToPostPlayerList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostPlayerList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostPlayerList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2272,18 +2366,22 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             playerList.add(objectMapper.treeToValue(rootNode, PostPlayer.class));
         } else {
+            logger.error("parseJsonToPostPlayerList - Unexpected Players JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for players");
         }
 
+        logger.info("parseJsonToPostPlayerList - Successfully parsed " + playerList.size() + " PostPlayer objects.");
         return playerList;
     }
 
     private List<PostTeam> parseJsonToPostTeamList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostTeamList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostTeamList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2296,41 +2394,50 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             teamList.add(objectMapper.treeToValue(rootNode, PostTeam.class));
         } else {
+            logger.error("parseJsonToPostTeamList - Unexpected Teams JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for teams");
         }
 
+        logger.info("parseJsonToPostTeamList - Successfully parsed " + teamList.size() + " PostTeam objects.");
         return teamList;
     }
 
     private PostLolMatchSummary parseJsonToPostLolMatchSummary(String jsonData) {
+        logger.info("parseJsonToPostLolMatchSummary - Parsing JSON data.");
         try {
             JsonNode rootNode = objectMapper.readTree(jsonData);
 
             if (rootNode.has("error_type")) {
                 String errorType = rootNode.get("error_type").asText();
                 String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+                logger.error("parseJsonToPostLolMatchSummary - API Error: " + errorType + " - " + errorMessage);
                 throw new ApiException("API Error: " + errorType + " - " + errorMessage);
             }
 
-            // Check if the JSON structure matches what we expect
             if (!rootNode.has("teams") || !rootNode.has("pits") || !rootNode.has("match")) {
-                System.err.println("Unexpected LoL match summary JSON structure: " + jsonData);
+                logger.warn(
+                        "parseJsonToPostLolMatchSummary - Unexpected LoL match summary JSON structure: " + jsonData);
                 return null;
             }
 
-            return objectMapper.treeToValue(rootNode, PostLolMatchSummary.class);
+            PostLolMatchSummary summary = objectMapper.treeToValue(rootNode, PostLolMatchSummary.class);
+            logger.info("parseJsonToPostLolMatchSummary - Successfully parsed PostLolMatchSummary: "
+                    + objectMapper.writeValueAsString(summary));
+            return summary;
         } catch (Exception e) {
-            System.err.println("Error parsing LoL match summary: " + e.getMessage());
+            logger.error("parseJsonToPostLolMatchSummary - Error parsing LoL match summary: " + e.getMessage());
             return null;
         }
     }
 
     private List<PostAsset> parseJsonToPostAssetList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostAssetList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostAssetList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2343,18 +2450,22 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             assetList.add(objectMapper.treeToValue(rootNode, PostAsset.class));
         } else {
+            logger.error("parseJsonToPostAssetList - Unexpected Assets JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for assets");
         }
 
+        logger.info("parseJsonToPostAssetList - Successfully parsed " + assetList.size() + " PostAsset objects.");
         return assetList;
     }
 
     private List<PostTournament> parseJsonToPostTournamentList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostTournamentList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostTournamentList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2367,18 +2478,23 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             tournamentList.add(objectMapper.treeToValue(rootNode, PostTournament.class));
         } else {
+            logger.error("parseJsonToPostTournamentList - Unexpected Tournaments JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for tournaments");
         }
 
+        logger.info("parseJsonToPostTournamentList - Successfully parsed " + tournamentList.size()
+                + " PostTournament objects.");
         return tournamentList;
     }
 
     private List<PostSubstage> parseJsonToPostSubstageList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostSubstageList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostSubstageList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2391,18 +2507,23 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             substageList.add(objectMapper.treeToValue(rootNode, PostSubstage.class));
         } else {
+            logger.error("parseJsonToPostSubstageList - Unexpected Substages JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for substages");
         }
 
+        logger.info(
+                "parseJsonToPostSubstageList - Successfully parsed " + substageList.size() + " PostSubstage objects.");
         return substageList;
     }
 
     private List<PostCaster> parseJsonToPostCasterList(String jsonData) throws Exception {
+        logger.info("parseJsonToPostCasterList - Parsing JSON data.");
         JsonNode rootNode = objectMapper.readTree(jsonData);
 
         if (rootNode.has("error_type")) {
             String errorType = rootNode.get("error_type").asText();
             String errorMessage = rootNode.has("message") ? rootNode.get("message").asText() : "Unknown error";
+            logger.error("parseJsonToPostCasterList - API Error: " + errorType + " - " + errorMessage);
             throw new ApiException("API Error: " + errorType + " - " + errorMessage);
         }
 
@@ -2415,13 +2536,16 @@ public class ApolloApiManager {
         } else if (rootNode.isObject()) {
             casterList.add(objectMapper.treeToValue(rootNode, PostCaster.class));
         } else {
+            logger.error("parseJsonToPostCasterList - Unexpected Casters JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for casters");
         }
 
+        logger.info("parseJsonToPostCasterList - Successfully parsed " + casterList.size() + " PostCaster objects.");
         return casterList;
     }
 
     private Series convertToThriftSeries(PostSeries postSeries) {
+        logger.info("convertToThriftSeries - Converting PostSeries with ID: " + postSeries.id);
         Series series = new Series();
         series.setId(postSeries.id);
         series.setTitle(postSeries.title);
@@ -2452,10 +2576,18 @@ public class ApolloApiManager {
         series.setResourceVersion(postSeries.resourceVersion);
         series.setCreatedAt(toEpochMilli(postSeries.createdAt));
         series.setUpdatedAt(toEpochMilli(postSeries.updatedAt));
+
+        try {
+            logger.info("convertToThriftSeries - Converted Series: " + objectMapper.writeValueAsString(series));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift series: ", e);
+            e.printStackTrace();
+        }
         return series;
     }
 
     private Match convertToThriftMatch(PostMatch postMatch) {
+        logger.info("convertToThriftMatch - Converting PostMatch with ID: " + postMatch.id);
         Match match = new Match();
         match.setId(postMatch.id);
         match.setMapId(postMatch.getMapId());
@@ -2470,10 +2602,18 @@ public class ApolloApiManager {
                         : Collections.emptyList());
         match.setCoverage(convertCoverage(postMatch.coverage));
         match.setResourceVersion(postMatch.resourceVersion);
+
+        try {
+            logger.info("convertToThriftMatch - Converted Match: " + objectMapper.writeValueAsString(match));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift match: ", e);
+            e.printStackTrace();
+        }
         return match;
     }
 
     private Roster convertToThriftRoster(PostRoster postRoster) {
+        logger.info("convertToThriftRoster - Converting PostRoster with ID: " + postRoster.id);
         Roster roster = new Roster();
         roster.setId(postRoster.id);
         roster.setTeamId(postRoster.team != null ? postRoster.team.id : 0);
@@ -2485,10 +2625,18 @@ public class ApolloApiManager {
             roster.setPlayerIds(Collections.emptyList());
         }
         roster.setGameId(postRoster.game != null ? postRoster.game.id : 0);
+
+        try {
+            logger.info("convertToThriftRoster - Converted Roster: " + objectMapper.writeValueAsString(roster));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift roster: ", e);
+            e.printStackTrace();
+        }
         return roster;
     }
 
     private Team convertToThriftTeam(PostTeam postTeam) {
+        logger.info("convertToThriftTeam - Converting PostTeam with ID: " + postTeam.id);
         Team team = new Team();
         team.setId(postTeam.id);
         team.setName(postTeam.name);
@@ -2503,10 +2651,18 @@ public class ApolloApiManager {
         team.setGameId(postTeam.game != null ? postTeam.game.id : 0);
         team.setOrganizationId(postTeam.organization != null ? postTeam.organization.id : 0);
         team.setResourceVersion(postTeam.resourceVersion);
+
+        try {
+            logger.info("convertToThriftTeam - Converted Team: " + objectMapper.writeValueAsString(team));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift team: ", e);
+            e.printStackTrace();
+        }
         return team;
     }
 
     private Player convertToThriftPlayer(PostPlayer postPlayer) {
+        logger.info("convertToThriftPlayer - Converting PostPlayer with ID: " + postPlayer.id);
         Player player = new Player();
         player.setId(postPlayer.id);
         player.setFirstName(postPlayer.firstName);
@@ -2524,18 +2680,25 @@ public class ApolloApiManager {
         player.setTeamIds(convertTeamIds(postPlayer.teams));
         player.setSocialMediaAccounts(convertSocialMediaAccounts(postPlayer.socialMediaAccounts));
         player.setResourceVersion(postPlayer.resourceVersion);
+
+        try {
+            logger.info("convertToThriftPlayer - Converted Player: " + objectMapper.writeValueAsString(player));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift player: ", e);
+            e.printStackTrace();
+        }
         return player;
     }
 
     private LolMatchSummary convertToThriftLolMatchSummary(PostLolMatchSummary postSummary) {
+        logger.info("convertToThriftLolMatchSummary - Converting PostLolMatchSummary.");
         LolMatchSummary summary = new LolMatchSummary();
 
         if (postSummary == null) {
-            System.err.println("Error: postSummary is null");
+            logger.error("convertToThriftLolMatchSummary - postSummary is null.");
             return summary;
         }
 
-        // Check if match is non-null before accessing its fields
         if (postSummary.match != null) {
             summary.setId(postSummary.match.id);
             summary.setMatch(convertToThriftLolMatch(postSummary.match));
@@ -2543,15 +2706,11 @@ public class ApolloApiManager {
             summary.setMatch(null);
         }
 
-        // Null checks for other fields
         summary.setTeams(postSummary.teams != null ? convertToThriftLolTeams(postSummary.teams) : null);
         summary.setPits(postSummary.pits != null ? convertToThriftLolPits(postSummary.pits) : null);
-
-        // Directly assign long values, ensuring they're non-negative
         summary.setLatestEventsChannelIndex(Math.max(postSummary.latest_events_channel_index, 0L));
         summary.setLatestStatesChannelIndex(Math.max(postSummary.latest_states_channel_index, 0L));
 
-        // Handle null timestamp
         if (postSummary.timestamp != null) {
             summary.setTimestamp(postSummary.timestamp.toString());
         } else {
@@ -2562,10 +2721,18 @@ public class ApolloApiManager {
         collectAssetIds(postSummary, assetIds);
         summary.setAssetIds(assetIds);
 
+        try {
+            logger.info("convertToThriftLolMatchSummary - Converted LolMatchSummary: "
+                    + objectMapper.writeValueAsString(summary));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift lol match summary: ", e);
+            e.printStackTrace();
+        }
         return summary;
     }
 
     private Asset convertToThriftAsset(PostAsset postAsset) {
+        logger.info("convertToThriftAsset - Converting PostAsset with ID: " + postAsset.id);
         Asset asset = new Asset();
         asset.setId(postAsset.id);
         asset.setName(postAsset.name);
@@ -2574,10 +2741,18 @@ public class ApolloApiManager {
         asset.setSubcategory(postAsset.subcategory);
         asset.setExternalId(postAsset.external_id);
         asset.setImages(convertImages(postAsset.images));
+
+        try {
+            logger.info("convertToThriftAsset - Converted Asset: " + objectMapper.writeValueAsString(asset));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift asset: ", e);
+            e.printStackTrace();
+        }
         return asset;
     }
 
     private Tournament convertToThriftTournament(PostTournament postTournament) {
+        logger.info("convertToThriftTournament - Converting PostTournament with ID: " + postTournament.id);
         Tournament tournament = new Tournament();
         tournament.setId(postTournament.id);
         tournament.setTitle(postTournament.title);
@@ -2598,10 +2773,19 @@ public class ApolloApiManager {
         tournament.setDefaults(convertTournamentDefaults(postTournament.defaults));
         tournament.setCoverage(convertCoverage(postTournament.coverage));
         tournament.setResourceVersion(postTournament.resourceVersion);
+
+        try {
+            logger.info(
+                    "convertToThriftTournament - Converted Tournament: " + objectMapper.writeValueAsString(tournament));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift tournament: ", e);
+            e.printStackTrace();
+        }
         return tournament;
     }
 
     private Substage convertToThriftSubstage(PostSubstage postSubstage) {
+        logger.info("convertToThriftSubstage - Converting PostSubstage with ID: " + postSubstage.id);
         Substage substage = new Substage();
         substage.setId(postSubstage.id);
         substage.setStageId(postSubstage.stage != null ? postSubstage.stage.id : 0);
@@ -2622,10 +2806,18 @@ public class ApolloApiManager {
         substage.setFormat(convertSubstageFormat(postSubstage.format));
         substage.setCoverage(convertCoverage(postSubstage.coverage));
         substage.setResourceVersion(postSubstage.resourceVersion);
+
+        try {
+            logger.info("convertToThriftSubstage - Converted Substage: " + objectMapper.writeValueAsString(substage));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift substage: ", e);
+            e.printStackTrace();
+        }
         return substage;
     }
 
     private Caster convertToThriftCaster(PostCaster postCaster) {
+        logger.info("convertToThriftCaster - Converting PostCaster with ID: " + postCaster.id);
         Caster caster = new Caster();
         caster.setId(postCaster.id);
         caster.setDisplayName(postCaster.displayName);
@@ -2635,6 +2827,13 @@ public class ApolloApiManager {
         caster.setPlatform(convertStreamingPlatform(postCaster.platform));
         caster.setStream(convertStream(postCaster.stream));
         caster.setRegion(convertRegion(postCaster.region));
+
+        try {
+            logger.info("convertToThriftCaster - Converted Caster: " + objectMapper.writeValueAsString(caster));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convert to thrift caster: ", e);
+            e.printStackTrace();
+        }
         return caster;
     }
 
@@ -2663,16 +2862,18 @@ public class ApolloApiManager {
 
     // eSports getters
     public CompletableFuture<GetMatch> getMatch(int matchId) {
+        logger.info("getMatch - Fetching match with ID: " + matchId);
         return getMatchFromMatchId.invokeAsync(matchId)
                 .thenCompose(match -> {
                     if (match == null) {
+                        logger.warn("getMatch - No match found with ID: " + matchId);
                         return CompletableFuture.completedFuture(null);
                     }
+
                     List<CompletableFuture<GetParticipant>> participantFutures = match.getParticipants().stream()
                             .map(this::fetchFullParticipantData)
                             .collect(Collectors.toList());
 
-                    // Fetch LolMatchSummary if it's a League of Legends match
                     final CompletableFuture<GetLolMatchSummary> lolSummaryFuture = (match.getGameId() == 2)
                             ? getLolMatchSummary(match.getId())
                             : CompletableFuture.completedFuture(null);
@@ -2687,87 +2888,186 @@ public class ApolloApiManager {
                                         .map(CompletableFuture::join)
                                         .collect(Collectors.toList());
 
-                                // Integrate LolMatchSummary data
                                 GetLolMatchSummary lolSummary = lolSummaryFuture.join();
                                 if (lolSummary != null) {
-                                    // Enrich participants with stats from the match summary
                                     mergeStatsIntoParticipants(getMatch.participants, lolSummary);
+                                    logger.info(
+                                            "getMatch - Merged LoL stats into participants for matchId: " + matchId);
                                 }
 
+                                logger.info("getMatch - Successfully fetched and constructed GetMatch for matchId: "
+                                        + matchId);
                                 return getMatch;
                             });
                 });
     }
 
     public CompletableFuture<GetTeam> getTeam(int teamId) {
+        logger.info("getTeam - Fetching team with ID: " + teamId);
         return getTeamFromTeamId.invokeAsync(teamId)
-                .thenApply(team -> team != null ? new GetTeam(team) : null);
+                .thenApply(team -> {
+                    if (team != null) {
+                        logger.info("getTeam - Successfully fetched team with ID: " + teamId);
+                        return new GetTeam(team);
+                    } else {
+                        logger.warn("getTeam - No team found with ID: " + teamId);
+                        return null;
+                    }
+                });
     }
 
     public CompletableFuture<GetPlayer> getPlayer(int playerId) {
+        logger.info("getPlayer - Fetching player with ID: " + playerId);
         return getPlayerFromPlayerId.invokeAsync(playerId)
-                .thenApply(player -> player != null ? new GetPlayer(player) : null);
+                .thenApply(player -> {
+                    if (player != null) {
+                        logger.info("getPlayer - Successfully fetched player with ID: " + playerId);
+                        return new GetPlayer(player);
+                    } else {
+                        logger.warn("getPlayer - No player found with ID: " + playerId);
+                        return null;
+                    }
+                });
     }
 
     public CompletableFuture<GetPlayer> getPlayerWithLolStats(int playerId) {
+        logger.info("getPlayerWithLolStats - Fetching player with LoL stats for ID: " + playerId);
         CompletableFuture<Player> playerFuture = getPlayerFromPlayerId.invokeAsync(playerId);
         CompletableFuture<List<LolPlayerSummary>> statsFuture = getLolPlayerSeasonStatsFromPlayerId
                 .invokeAsync(playerId);
-        CompletableFuture<Map<Integer, GetAsset>> assetMapFuture = getAssetsByGameId(2);
 
-        return CompletableFuture.allOf(playerFuture, statsFuture, assetMapFuture)
-                .thenApply(v -> {
+        return CompletableFuture.allOf(playerFuture, statsFuture)
+                .thenCompose(v -> {
                     Player player = playerFuture.join();
                     List<LolPlayerSummary> seasonStats = statsFuture.join();
-                    Map<Integer, GetAsset> assetMap = assetMapFuture.join();
 
                     if (player == null) {
-                        return null;
+                        logger.warn("getPlayerWithLolStats - No player found with ID: " + playerId);
+                        return CompletableFuture.completedFuture(null);
                     }
 
-                    return new GetPlayer(player, seasonStats, assetMap);
+                    Set<Integer> assetIds = seasonStats.stream()
+                            .filter(Objects::nonNull)
+                            .map(this::collectPlayerAssetIds)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet());
+
+                    logger.info("getPlayerWithLolStats - Collected asset IDs: " + assetIds);
+
+                    List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
+                            .map(this::getAsset)
+                            .collect(Collectors.toList());
+
+                    return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(x -> {
+                                Map<Integer, GetAsset> assetMap = assetFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toMap(Asset::getId, GetAsset::new));
+
+                                GetPlayer getPlayer = new GetPlayer(player, seasonStats, assetMap);
+                                logger.info("getPlayerWithLolStats - Successfully constructed GetPlayer for ID: "
+                                        + playerId);
+                                return getPlayer;
+                            });
                 });
     }
 
     public CompletableFuture<GetTeam> getTeamWithLolStats(int teamId) {
-        CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId);
-        CompletableFuture<List<LolTeamSummary>> statsFuture = getLolTeamSeasonStatsFromTeamId.invokeAsync(teamId);
-        CompletableFuture<Map<Integer, GetAsset>> assetMapFuture = getAssetsByGameId(2);
+        logger.info("getTeamWithLolStats - Initiating fetch for teamId: {}", teamId);
 
-        return CompletableFuture.allOf(teamFuture, statsFuture, assetMapFuture)
-                .thenApply(v -> {
+        // Asynchronously fetch the team data
+        CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId)
+                .exceptionally(e -> {
+                    logger.error("getTeamWithLolStats - Failed to fetch Team with ID {}: {}", teamId, e.getMessage());
+                    return null;
+                });
+
+        // Asynchronously fetch the team's League of Legends season statistics
+        CompletableFuture<List<LolTeamSummary>> statsFuture = getLolTeamSeasonStatsFromTeamId.invokeAsync(teamId)
+                .exceptionally(e -> {
+                    logger.error("getTeamWithLolStats - Failed to fetch LoL stats for Team ID {}: {}", teamId,
+                            e.getMessage());
+                    return Collections.emptyList();
+                });
+
+        // Wait for both the team data and stats to be fetched
+        return CompletableFuture.allOf(teamFuture, statsFuture)
+                .thenCompose(v -> {
                     Team team = teamFuture.join();
                     List<LolTeamSummary> seasonStats = statsFuture.join();
-                    Map<Integer, GetAsset> assetMap = assetMapFuture.join();
 
                     if (team == null) {
-                        return null;
+                        logger.warn("getTeamWithLolStats - No Team found with ID: {}", teamId);
+                        return CompletableFuture.completedFuture(null);
                     }
 
-                    return new GetTeam(team, seasonStats, assetMap);
+                    logger.info("getTeamWithLolStats - Successfully fetched Team and LoL stats for teamId: {}", teamId);
+
+                    // Extract all unique asset IDs from the season statistics
+                    Set<Integer> assetIds = seasonStats.stream()
+                            .filter(Objects::nonNull)
+                            .map(this::collectTeamAssetIds)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet());
+
+                    logger.debug("getTeamWithLolStats - Collected asset IDs: {}", assetIds);
+
+                    // Asynchronously fetch all assets based on the collected asset IDs
+                    List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
+                            .map(this::getAsset)
+                            .collect(Collectors.toList());
+
+                    // Wait for all asset fetch operations to complete
+                    return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(x -> {
+                                Map<Integer, GetAsset> assetMap = assetFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toMap(Asset::getId, GetAsset::new));
+
+                                logger.debug("getTeamWithLolStats - Fetched {} assets.", assetMap.size());
+
+                                // Create and return a GetTeam object enriched with season stats and assets
+                                GetTeam getTeam = new GetTeam(team, seasonStats, assetMap);
+                                logger.info("getTeamWithLolStats - Successfully constructed GetTeam for teamId: {}",
+                                        teamId);
+                                return getTeam;
+                            })
+                            .exceptionally(e -> {
+                                logger.error("getTeamWithLolStats - Error while constructing GetTeam for teamId {}: {}",
+                                        teamId, e.getMessage());
+                                return null;
+                            });
+                })
+                .exceptionally(e -> {
+                    logger.error("getTeamWithLolStats - Unexpected error for teamId {}: {}", teamId, e.getMessage());
+                    return null;
                 });
     }
 
     public CompletableFuture<List<GetSeries>> getSeriesSchedule(long startTime, long endTime) {
+        logger.info("getSeriesSchedule - Fetching series schedule from " + startTime + " to " + endTime);
         return getSeriesFromStartTime.invokeAsync(startTime, endTime)
                 .thenCompose(result -> {
-                    // result is a Map<Long, Map<Integer, Series>> after aggregation
+                    @SuppressWarnings("unchecked")
                     Map<Long, Map<Integer, Series>> aggregatedResult = (Map<Long, Map<Integer, Series>>) result;
-                    TreeMap<Long, Map<Integer, Series>> sortedResult = new TreeMap<>(aggregatedResult);
 
-                    // Collect Series objects in order
+                    TreeMap<Long, Map<Integer, Series>> sortedResult = new TreeMap<>(aggregatedResult);
+                    logger.info("getSeriesSchedule - Aggregated and sorted series data.");
+
                     List<Series> seriesList = new ArrayList<>();
                     for (Map<Integer, Series> innerMap : sortedResult.values()) {
                         seriesList.addAll(innerMap.values());
                     }
 
-                    // Process participants and assemble GetSeries objects
+                    logger.info("getSeriesSchedule - Total Series fetched: " + seriesList.size());
                     return processSeriesList(seriesList);
                 });
     }
 
     private CompletableFuture<List<GetSeries>> processSeriesList(List<Series> seriesList) {
-        // Collect unique tournamentIds, substageIds, and casterIds
+        logger.info("processSeriesList - Processing list of Series.");
         Set<Integer> tournamentIds = seriesList.stream()
                 .map(Series::getTournamentId)
                 .collect(Collectors.toSet());
@@ -2781,7 +3081,6 @@ public class ApolloApiManager {
                 .map(Caster::getId)
                 .collect(Collectors.toSet());
 
-        // Fetch tournaments, substages, and casters
         CompletableFuture<Map<Integer, Tournament>> tournamentsFuture = fetchTournamentsByIds(tournamentIds);
         CompletableFuture<Map<Integer, Substage>> substagesFuture = fetchSubstagesByIds(substageIds);
         CompletableFuture<Map<Integer, Caster>> castersFuture = fetchCastersByIds(casterIds);
@@ -2794,13 +3093,11 @@ public class ApolloApiManager {
 
                     List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
                             .map(series -> {
-                                // Fetch and enrich participants
                                 List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
                                         .stream()
                                         .map(this::fetchFullParticipantData)
                                         .collect(Collectors.toList());
 
-                                // Map casters for this series
                                 List<GetCaster> getCasters = series.getCasters().stream()
                                         .map(caster -> {
                                             Caster fullCaster = castersMap.get(caster.getId());
@@ -2812,24 +3109,20 @@ public class ApolloApiManager {
                                 return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
                                         .thenApply(vv -> {
                                             GetSeries getSeries = new GetSeries(series);
-
-                                            // Set participants
                                             getSeries.participants = participantFutures.stream()
                                                     .map(CompletableFuture::join)
                                                     .collect(Collectors.toList());
+                                            getSeries.casters = getCasters;
 
-                                            // Set tournament
                                             Tournament tournament = tournaments.get(series.getTournamentId());
                                             getSeries.tournament = tournament != null ? new GetTournament(tournament)
                                                     : null;
 
-                                            // Set substage
                                             Substage substage = substages.get(series.getSubstageId());
                                             getSeries.substage = substage != null ? new GetSubstage(substage) : null;
 
-                                            // Set casters
-                                            getSeries.casters = getCasters;
-
+                                            logger.info("processSeriesList - Enriched GetSeries for series ID: "
+                                                    + series.getId());
                                             return getSeries;
                                         });
                             })
@@ -2843,175 +3136,327 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<List<GetSeries>> getWeekSchedule(long timestamp) {
+        // Calculate the start and end timestamps for the week containing the given
+        // timestamp
         long startOfWeek = ApolloHelpers.getStartOfWeek(timestamp);
         long endOfWeek = ApolloHelpers.getEndOfWeek(timestamp);
+
+        // Fetch the series schedule within the calculated week range
         return getSeriesSchedule(startOfWeek, endOfWeek);
     }
 
     public CompletableFuture<List<GetMatch>> getMatchesForSeries(int seriesId) {
+        logger.info("getMatchesForSeries - Initiating fetch for seriesId: {}", seriesId);
+
+        // Asynchronously fetch all matches associated with the given seriesId
         return getMatchesFromSeriesId.invokeAsync(seriesId)
+                .exceptionally(e -> {
+                    logger.error("getMatchesForSeries - Failed to fetch matches for seriesId {}: {}", seriesId,
+                            e.getMessage());
+                    return Collections.emptyList();
+                })
                 .thenCompose(matches -> {
                     if (matches == null || matches.isEmpty()) {
+                        logger.warn("getMatchesForSeries - No matches found for seriesId: {}", seriesId);
                         return CompletableFuture.completedFuture(Collections.emptyList());
                     }
 
+                    logger.info("getMatchesForSeries - Fetched {} matches for seriesId: {}", matches.size(), seriesId);
+
+                    // For each match, asynchronously fetch and enrich participant data
                     List<CompletableFuture<GetMatch>> matchFutures = matches.stream()
                             .map(match -> {
+                                logger.debug("getMatchesForSeries - Processing matchId: {}", match.getId());
+
+                                // Asynchronously fetch and store LoL match summary if applicable
+                                CompletableFuture<GetLolMatchSummary> lolSummaryFuture = (match.getGameId() == 2)
+                                        ? getLolMatchSummary(match.getId())
+                                        : CompletableFuture.completedFuture(null);
+
+                                // Asynchronously fetch and enrich participant data
                                 List<CompletableFuture<GetParticipant>> participantFutures = match.getParticipants()
                                         .stream()
                                         .map(this::fetchFullParticipantData)
                                         .collect(Collectors.toList());
 
+                                // Wait for all participant data and LoL summary to be fetched
                                 return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
                                         .thenApply(v -> {
                                             GetMatch getMatch = new GetMatch(match);
                                             getMatch.participants = participantFutures.stream()
                                                     .map(CompletableFuture::join)
                                                     .collect(Collectors.toList());
+
+                                            GetLolMatchSummary lolSummary = lolSummaryFuture.join();
+                                            if (lolSummary != null) {
+                                                mergeStatsIntoParticipants(getMatch.participants, lolSummary);
+                                                logger.debug(
+                                                        "getMatchesForSeries - Merged LoL stats into participants for matchId: {}",
+                                                        match.getId());
+                                            }
+
+                                            logger.info(
+                                                    "getMatchesForSeries - Successfully constructed GetMatch for matchId: {}",
+                                                    match.getId());
                                             return getMatch;
+                                        })
+                                        .exceptionally(e -> {
+                                            logger.error("getMatchesForSeries - Error processing matchId {}: {}",
+                                                    match.getId(), e.getMessage());
+                                            return null;
                                         });
                             })
                             .collect(Collectors.toList());
 
+                    // Wait for all match enrichment operations to complete
                     return CompletableFuture.allOf(matchFutures.toArray(new CompletableFuture[0]))
                             .thenApply(v -> matchFutures.stream()
                                     .map(CompletableFuture::join)
-                                    .collect(Collectors.toList()));
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList()))
+                            .exceptionally(e -> {
+                                logger.error(
+                                        "getMatchesForSeries - Error while constructing GetMatch list for seriesId {}: {}",
+                                        seriesId, e.getMessage());
+                                return Collections.emptyList();
+                            });
                 });
     }
 
     private CompletableFuture<GetParticipant> fetchFullParticipantData(Participant participant) {
+        logger.info("fetchFullParticipantData - Fetching full data for participant with rosterId: {}",
+                participant.getRoster().getId());
+
+        // Asynchronously fetch the roster data associated with the participant
         return getRosterFromRosterId.invokeAsync(participant.getRoster().getId())
+                .exceptionally(e -> {
+                    logger.error("fetchFullParticipantData - Failed to fetch Roster for rosterId {}: {}",
+                            participant.getRoster().getId(), e.getMessage());
+                    return null;
+                })
                 .thenCompose(roster -> {
                     if (roster == null) {
+                        logger.warn("fetchFullParticipantData - No Roster found for rosterId: {}",
+                                participant.getRoster().getId());
                         return CompletableFuture.completedFuture(new GetParticipant(participant));
                     }
+
+                    logger.debug("fetchFullParticipantData - Successfully fetched Roster for rosterId: {}",
+                            participant.getRoster().getId());
+
+                    // Create a GetParticipant object from the participant data
                     GetParticipant getParticipant = new GetParticipant(participant);
 
-                    CompletableFuture<GetTeam> teamFuture = getTeam(roster.getTeamId());
+                    // Asynchronously fetch the team associated with the roster
+                    CompletableFuture<GetTeam> teamFuture = getTeam(roster.getTeamId())
+                            .exceptionally(e -> {
+                                logger.error("fetchFullParticipantData - Failed to fetch Team for teamId {}: {}",
+                                        roster.getTeamId(), e.getMessage());
+                                return null;
+                            });
+
+                    // Asynchronously fetch all players associated with the roster
                     List<CompletableFuture<GetPlayer>> playerFutures = roster.getPlayerIds().stream()
                             .map(this::getPlayer)
                             .collect(Collectors.toList());
 
+                    // Wait for all player data and the team data to be fetched
                     return CompletableFuture.allOf(
                             CompletableFuture.allOf(playerFutures.toArray(new CompletableFuture[0])),
                             teamFuture)
                             .thenApply(v -> {
+                                // Set the fetched team data in the GetParticipant object
                                 getParticipant.roster.team = teamFuture.join();
+
+                                if (getParticipant.roster.team != null) {
+                                    logger.debug(
+                                            "fetchFullParticipantData - Enriched GetParticipant with Team data for rosterId: {}",
+                                            roster.getId());
+                                } else {
+                                    logger.warn("fetchFullParticipantData - Team data is null for rosterId: {}",
+                                            roster.getId());
+                                }
+
+                                // Set the list of fetched players in the GetParticipant object
                                 getParticipant.roster.players = playerFutures.stream()
-                                        .map(CompletableFuture::join)
-                                        .filter(Objects::nonNull)
+                                        .map(CompletableFuture::join) // Waits for each future to complete
+                                        .filter(Objects::nonNull) // Exclude any null players
                                         .collect(Collectors.toList());
+
+                                logger.info(
+                                        "fetchFullParticipantData - Successfully enriched GetParticipant for rosterId: {}",
+                                        roster.getId());
                                 return getParticipant;
+                            })
+                            .exceptionally(e -> {
+                                logger.error(
+                                        "fetchFullParticipantData - Error enriching GetParticipant for rosterId {}: {}",
+                                        roster.getId(), e.getMessage());
+                                return new GetParticipant(participant);
                             });
                 });
     }
 
     private void mergeStatsIntoParticipants(List<GetParticipant> participants, GetLolMatchSummary lolSummary) {
-        // Map roster IDs to participants for easy access
+        logger.info("mergeStatsIntoParticipants - Merging LoL stats into participants.");
+
+        // Create a map from roster ID to GetParticipant for quick lookup
         Map<Integer, GetParticipant> rosterIdToParticipant = participants.stream()
                 .collect(Collectors.toMap(p -> p.roster.id, p -> p));
 
-        // Map asset IDs to assets
-        Map<Integer, GetAsset> assetMap = lolSummary.getAssetMap();
+        logger.debug("mergeStatsIntoParticipants - Created rosterId to GetParticipant map with size: {}",
+                rosterIdToParticipant.size());
 
-        // Process home and away teams
-        processTeamSummary(lolSummary.teams.home, rosterIdToParticipant, assetMap);
-        processTeamSummary(lolSummary.teams.away, rosterIdToParticipant, assetMap);
+        // Retrieve the asset map from the match summary
+        Map<Integer, GetAsset> assetMap = lolSummary.getAssetMap();
+        logger.debug("mergeStatsIntoParticipants - Asset map size: {}", assetMap.size());
+
+        // Process statistics for the home and away teams
+        if (lolSummary.teams != null) {
+            if (lolSummary.teams.home != null) {
+                processTeamSummary(lolSummary.teams.home, rosterIdToParticipant, assetMap);
+            }
+            if (lolSummary.teams.away != null) {
+                processTeamSummary(lolSummary.teams.away, rosterIdToParticipant, assetMap);
+            }
+        } else {
+            logger.warn("mergeStatsIntoParticipants - LolMatchSummary does not contain teams data.");
+        }
+
+        logger.info("mergeStatsIntoParticipants - Successfully merged stats into all participants.");
     }
 
     private void processTeamSummary(GetLolTeamSummary teamSummary, Map<Integer, GetParticipant> rosterIdToParticipant,
             Map<Integer, GetAsset> assetMap) {
-        int rosterId = teamSummary.roster.id;
-        GetParticipant participant = rosterIdToParticipant.get(rosterId);
-        if (participant != null && participant.roster != null && participant.roster.team != null) {
-            // Enrich team with match stats
-            participant.roster.team.matchStats = new GetTeamMatchStats(teamSummary);
+        logger.info("processTeamSummary - Processing team summary for rosterId: {}", teamSummary.roster.id);
 
-            // Map player IDs to GetPlayer for easy access
+        int rosterId = teamSummary.roster.id;
+
+        // Retrieve the corresponding GetParticipant object
+        GetParticipant participant = rosterIdToParticipant.get(rosterId);
+
+        if (participant != null && participant.roster != null && participant.roster.team != null) {
+            // Enrich the team with match statistics from the team summary
+            participant.roster.team.matchStats = new GetTeamMatchStats(teamSummary);
+            logger.debug("processTeamSummary - Set matchStats for teamId: {}", participant.roster.team.id);
+
+            // Create a map from player ID to GetPlayer for quick lookup
             Map<Integer, GetPlayer> playerIdToPlayer = participant.roster.players.stream()
                     .collect(Collectors.toMap(p -> p.id, p -> p));
 
-            // Enrich players with match stats
+            // Enrich each player with match statistics and associated assets
             for (GetLolPlayerSummary playerSummary : teamSummary.players) {
                 GetPlayer player = playerIdToPlayer.get(playerSummary.id);
                 if (player != null) {
+                    // Set the match statistics for the player
                     player.matchStats = new GetPlayerMatchStats(playerSummary, assetMap);
+                    logger.debug("processTeamSummary - Set matchStats for playerId: {}", player.id);
+                } else {
+                    logger.warn("processTeamSummary - No GetPlayer found for playerId: {}", playerSummary.id);
                 }
             }
+        } else {
+            logger.warn("processTeamSummary - Participant or team data is incomplete for rosterId: {}", rosterId);
         }
     }
 
     public CompletableFuture<GetLolMatchSummary> getLolMatchSummary(int matchId) {
-
+        logger.info("getLolMatchSummary - Starting fetch for matchId: {}", matchId);
         long startTime = System.currentTimeMillis();
-        System.out.println("Starting getLolMatchSummary for matchId: " + matchId);
 
-        CompletableFuture<LolMatchSummary> summaryFuture = getLolMatchSummaryFromMatchId.invokeAsync(matchId)
-                .thenApply(summary -> {
-                    System.out.println("Summary fetched in " + (System.currentTimeMillis() - startTime) + "ms");
-                    return summary;
-                });
-
-        CompletableFuture<Set<Integer>> assetIdsFuture = getAssetIdsFromMatchId.invokeAsync(matchId)
-                .thenApply(assetIds -> {
-                    System.out.println("Asset IDs fetched in " + (System.currentTimeMillis() - startTime) + "ms");
-                    return assetIds;
-                });
-
-        return CompletableFuture.allOf(summaryFuture, assetIdsFuture)
-                .thenCompose(v -> {
-                    LolMatchSummary summary = summaryFuture.join();
-                    Set<Integer> assetIds = assetIdsFuture.join();
+        // Asynchronously fetch the League of Legends match summary using matchId
+        return getLolMatchSummaryFromMatchId.invokeAsync(matchId)
+                .exceptionally(e -> {
+                    logger.error("getLolMatchSummary - Failed to fetch LoL match summary for matchId {}: {}", matchId,
+                            e.getMessage());
+                    return null;
+                })
+                .thenCompose(summary -> {
+                    long duration = System.currentTimeMillis() - startTime;
+                    logger.info("getLolMatchSummary - Summary fetched in {}ms for matchId: {}", duration, matchId);
 
                     if (summary == null) {
+                        logger.warn("getLolMatchSummary - No summary found for matchId: {}", matchId);
                         return CompletableFuture.completedFuture(null);
                     }
 
+                    logger.debug("getLolMatchSummary - Successfully fetched LoL match summary for matchId: {}",
+                            matchId);
+
+                    // Retrieve all asset IDs from the summary
+                    Set<Integer> assetIds = summary.getAssetIds();
+                    logger.debug("getLolMatchSummary - Collected asset IDs: {}", assetIds);
+
+                    // Asynchronously fetch all assets based on the asset IDs
                     List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
                             .map(this::getAsset)
                             .collect(Collectors.toList());
 
+                    // Wait for all asset fetch operations to complete
                     return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
                             .thenApply(x -> {
                                 Map<Integer, GetAsset> assetMap = assetFutures.stream()
                                         .map(CompletableFuture::join)
+                                        .filter(Objects::nonNull)
                                         .collect(Collectors.toMap(Asset::getId, GetAsset::new));
-                                return new GetLolMatchSummary(summary, assetMap);
+
+                                logger.debug("getLolMatchSummary - Fetched {} assets for matchId: {}", assetMap.size(),
+                                        matchId);
+
+                                // Create and return a GetLolMatchSummary object enriched with assets
+                                GetLolMatchSummary getLolMatchSummary = new GetLolMatchSummary(summary, assetMap);
+                                logger.info(
+                                        "getLolMatchSummary - Successfully constructed GetLolMatchSummary for matchId: {}",
+                                        matchId);
+                                return getLolMatchSummary;
+                            })
+                            .exceptionally(e -> {
+                                logger.error(
+                                        "getLolMatchSummary - Error constructing GetLolMatchSummary for matchId {}: {}",
+                                        matchId, e.getMessage());
+                                return null;
                             });
                 });
     }
 
     public CompletableFuture<Asset> getAsset(int assetId) {
+        logger.info("getAsset - Initiating fetch for assetId: {}", assetId);
+
+        // Asynchronously fetch the asset data using the provided assetId
         return getAssetFromAssetId.invokeAsync(assetId)
-                .thenApply(asset -> asset != null ? asset : null);
-    }
-
-    private CompletableFuture<Map<Integer, GetAsset>> getAssetsByGameId(int gameId) {
-        return getAssetsFromGameId.invokeAsync(gameId)
-                .thenApply(assets -> {
-                    if (assets == null)
-                        return Collections.emptyMap();
-
-                    return assets.stream()
-                            .collect(Collectors.toMap(
-                                    Asset::getId,
-                                    GetAsset::new,
-                                    (existing, replacement) -> existing // In case of duplicate keys, keep the existing
-                                                                        // one
-                    ));
+                .exceptionally(e -> {
+                    logger.error("getAsset - Failed to fetch Asset with ID {}: {}", assetId, e.getMessage());
+                    return null;
+                })
+                .thenApply(asset -> {
+                    if (asset != null) {
+                        logger.debug("getAsset - Successfully fetched Asset: {}", assetId);
+                    } else {
+                        logger.warn("getAsset - No Asset found with ID: {}", assetId);
+                    }
+                    return asset;
                 });
     }
 
     private CompletableFuture<Map<Integer, Tournament>> fetchTournamentsByIds(Set<Integer> tournamentIds) {
         if (tournamentIds.isEmpty()) {
+            logger.info("fetchTournamentsByIds - No tournament IDs provided to fetch.");
             return CompletableFuture.completedFuture(Collections.emptyMap());
         }
+
+        logger.info("fetchTournamentsByIds - Fetching tournaments with IDs: {}", tournamentIds);
+
+        // Asynchronously fetch each tournament based on its ID
         List<CompletableFuture<Tournament>> futures = tournamentIds.stream()
                 .map(id -> getTournamentFromTournamentId.invokeAsync(id)
-                        .exceptionally(e -> null))
+                        .exceptionally(e -> {
+                            logger.error("fetchTournamentsByIds - Failed to fetch Tournament with ID {}: {}", id,
+                                    e.getMessage());
+                            return null;
+                        }))
                 .collect(Collectors.toList());
 
+        // Wait for all tournament fetch operations to complete
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .thenApply(v -> {
                     Map<Integer, Tournament> map = new HashMap<>();
@@ -3019,21 +3464,37 @@ public class ApolloApiManager {
                         Tournament tournament = future.join();
                         if (tournament != null) {
                             map.put(tournament.getId(), tournament);
+                            logger.debug("fetchTournamentsByIds - Fetched Tournament: {}", tournament.getId());
                         }
                     }
+                    logger.info("fetchTournamentsByIds - Successfully fetched {} tournaments.", map.size());
                     return map;
+                })
+                .exceptionally(e -> {
+                    logger.error("fetchTournamentsByIds - Error while fetching tournaments: {}", e.getMessage());
+                    return Collections.emptyMap();
                 });
     }
 
     private CompletableFuture<Map<Integer, Substage>> fetchSubstagesByIds(Set<Integer> substageIds) {
         if (substageIds.isEmpty()) {
+            logger.info("fetchSubstagesByIds - No substage IDs provided to fetch.");
             return CompletableFuture.completedFuture(Collections.emptyMap());
         }
+
+        logger.info("fetchSubstagesByIds - Fetching substages with IDs: {}", substageIds);
+
+        // Asynchronously fetch each substage based on its ID
         List<CompletableFuture<Substage>> futures = substageIds.stream()
                 .map(id -> getSubstageFromSubstageId.invokeAsync(id)
-                        .exceptionally(e -> null))
+                        .exceptionally(e -> {
+                            logger.error("fetchSubstagesByIds - Failed to fetch Substage with ID {}: {}", id,
+                                    e.getMessage());
+                            return null;
+                        }))
                 .collect(Collectors.toList());
 
+        // Wait for all substage fetch operations to complete
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .thenApply(v -> {
                     Map<Integer, Substage> map = new HashMap<>();
@@ -3041,21 +3502,37 @@ public class ApolloApiManager {
                         Substage substage = future.join();
                         if (substage != null) {
                             map.put(substage.getId(), substage);
+                            logger.debug("fetchSubstagesByIds - Fetched Substage: {}", substage.getId());
                         }
                     }
+                    logger.info("fetchSubstagesByIds - Successfully fetched {} substages.", map.size());
                     return map;
+                })
+                .exceptionally(e -> {
+                    logger.error("fetchSubstagesByIds - Error while fetching substages: {}", e.getMessage());
+                    return Collections.emptyMap();
                 });
     }
 
     private CompletableFuture<Map<Integer, Caster>> fetchCastersByIds(Set<Integer> casterIds) {
         if (casterIds.isEmpty()) {
+            logger.info("fetchCastersByIds - No caster IDs provided to fetch.");
             return CompletableFuture.completedFuture(Collections.emptyMap());
         }
+
+        logger.info("fetchCastersByIds - Fetching casters with IDs: {}", casterIds);
+
+        // Asynchronously fetch each caster based on its ID
         List<CompletableFuture<Caster>> futures = casterIds.stream()
                 .map(id -> getCasterFromCasterId.invokeAsync(id)
-                        .exceptionally(e -> null))
+                        .exceptionally(e -> {
+                            logger.error("fetchCastersByIds - Failed to fetch Caster with ID {}: {}", id,
+                                    e.getMessage());
+                            return null;
+                        }))
                 .collect(Collectors.toList());
 
+        // Wait for all caster fetch operations to complete
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .thenApply(v -> {
                     Map<Integer, Caster> map = new HashMap<>();
@@ -3063,9 +3540,15 @@ public class ApolloApiManager {
                         Caster caster = future.join();
                         if (caster != null) {
                             map.put(caster.getId(), caster);
+                            logger.debug("fetchCastersByIds - Fetched Caster: {}", caster.getId());
                         }
                     }
+                    logger.info("fetchCastersByIds - Successfully fetched {} casters.", map.size());
                     return map;
+                })
+                .exceptionally(e -> {
+                    logger.error("fetchCastersByIds - Error while fetching casters: {}", e.getMessage());
+                    return Collections.emptyMap();
                 });
     }
 
@@ -3975,6 +4458,69 @@ public class ApolloApiManager {
         }
     }
 
+    private Set<Integer> collectPlayerAssetIds(LolPlayerSummary player) {
+        Set<Integer> assetIds = new HashSet<>();
+        if (player == null) {
+            return assetIds;
+        }
+
+        // Champion
+        if (player.getChampion() != null) {
+            assetIds.add(player.getChampion().getId());
+        }
+        // Keystone
+        if (player.getKeystone() != null) {
+            assetIds.add(player.getKeystone().getId());
+        }
+        // Items
+        if (player.getItems() != null) {
+            if (player.getItems().getInventory() != null) {
+                player.getItems().getInventory().stream()
+                        .filter(Objects::nonNull)
+                        .forEach(item -> assetIds.add(item.getId()));
+            }
+            if (player.getItems().getTrinketSlot() != null) {
+                player.getItems().getTrinketSlot().stream()
+                        .filter(Objects::nonNull)
+                        .forEach(item -> assetIds.add(item.getId()));
+            }
+        }
+        // Summoner spells
+        if (player.getSummonerSpells() != null) {
+            player.getSummonerSpells().stream()
+                    .filter(Objects::nonNull)
+                    .forEach(spell -> assetIds.add(spell.getId()));
+        }
+        return assetIds;
+    }
+
+    private Set<Integer> collectTeamAssetIds(LolTeamSummary team) {
+        Set<Integer> assetIds = new HashSet<>();
+        if (team == null) {
+            return assetIds;
+        }
+
+        // Collect from all players in the team
+        if (team.getPlayers() != null) {
+            team.getPlayers().stream()
+                    .filter(Objects::nonNull)
+                    .map(this::collectPlayerAssetIds)
+                    .forEach(assetIds::addAll);
+        }
+
+        // Collect from neutral creeps if present
+        if (team.getCreeps() != null &&
+                team.getCreeps().getNeutrals() != null &&
+                team.getCreeps().getNeutrals().getKills() != null &&
+                team.getCreeps().getNeutrals().getKills().getPerEliteType() != null) {
+
+            team.getCreeps().getNeutrals().getKills().getPerEliteType().stream()
+                    .filter(eliteKills -> eliteKills != null && eliteKills.getElite() != null)
+                    .forEach(eliteKills -> assetIds.add(eliteKills.getElite().getId()));
+        }
+        return assetIds;
+    }
+
     public class ApiException extends Exception {
         public ApiException(String message) {
             super(message);
@@ -4375,47 +4921,31 @@ public class ApolloApiManager {
         long startTime = System.currentTimeMillis();
         System.out.println("Starting getLiveLolMatchSummary for matchId: " + matchId);
 
-        // Fetch the live match summary
-        CompletableFuture<LolMatchSummary> summaryFuture = getLolMatchSummaryFromMatchId.invokeAsync(matchId)
-                .thenApply(summary -> {
+        return getLolMatchSummaryFromMatchId.invokeAsync(matchId)
+                .thenCompose(summary -> {
                     System.out.println("Summary fetched in " + (System.currentTimeMillis() - startTime) + "ms");
-                    return summary;
-                });
-
-        // Fetch asset IDs related to the match
-        CompletableFuture<Set<Integer>> assetIdsFuture = getAssetIdsFromMatchId.invokeAsync(matchId)
-                .thenApply(assetIds -> {
-                    System.out.println("Asset IDs fetched in " + (System.currentTimeMillis() - startTime) + "ms");
-                    return assetIds;
-                });
-
-        // Combine summary and asset IDs
-        return CompletableFuture.allOf(summaryFuture, assetIdsFuture)
-                .thenCompose(v -> {
-                    LolMatchSummary summary = summaryFuture.join();
-                    Set<Integer> assetIds = assetIdsFuture.join();
 
                     if (summary == null) {
                         return CompletableFuture.completedFuture(null);
                     }
+
+                    // Use the assetIds from the summary object directly
+                    Set<Integer> assetIds = summary.getAssetIds();
 
                     // Fetch assets concurrently
                     List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
                             .map(this::getAsset)
                             .collect(Collectors.toList());
 
-                    // Combine all asset futures into a single array
-                    CompletableFuture<?>[] allAssetFuturesArray = assetFutures.toArray(new CompletableFuture[0]);
+                    return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(x -> {
+                                Map<Integer, GetAsset> assetMap = assetFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toMap(Asset::getId, GetAsset::new));
 
-                    CompletableFuture<Void> allAssetFutures = CompletableFuture.allOf(allAssetFuturesArray);
-
-                    return allAssetFutures.thenApply(x -> {
-                        Map<Integer, GetAsset> assetMap = assetFutures.stream()
-                                .map(CompletableFuture::join)
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toMap(Asset::getId, GetAsset::new));
-                        return new GetLolMatchSummary(summary, assetMap);
-                    });
+                                return new GetLolMatchSummary(summary, assetMap);
+                            });
                 });
     }
 

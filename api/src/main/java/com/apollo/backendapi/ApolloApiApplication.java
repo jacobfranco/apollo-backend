@@ -243,10 +243,10 @@ public class ApolloApiApplication {
                         ApolloApiController.manager.fetchAllLolSubstages();
                         ApolloApiController.manager.fetchAllLolCasters();
                         ApolloApiController.manager.fetchAllLolAssets();
-                        ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST, ApolloApiConfig.LOL_END_TEST);
-                        /* ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
-                                        ApolloApiConfig.LOL_SEASON_END);
-*/
+                        ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,
+                                        ApolloApiConfig.LOL_END_TEST);
+                        // ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
+                        // ApolloApiConfig.LOL_SEASON_END);
                         // Start WebSocket connection after data fetching
                         try {
                                 ApolloApiController.manager.startWebSocketConnection();
