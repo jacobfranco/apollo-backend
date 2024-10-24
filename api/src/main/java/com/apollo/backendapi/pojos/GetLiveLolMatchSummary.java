@@ -14,7 +14,7 @@ public class GetLiveLolMatchSummary {
     public GetLiveLolMatchSummary(LiveLolMatchSummary thriftSummary, Map<Integer, GetAsset> assetMap) {
         this.channel = thriftSummary.getChannel();
         this.uuid = thriftSummary.getUuid();
-        this.created = Instant.parse(thriftSummary.getCreated());
+        this.created = Instant.ofEpochMilli(thriftSummary.getCreated());
         this.payload = new GetLiveLolMatchPayload(thriftSummary.getPayload(), assetMap);
     }
 }

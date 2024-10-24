@@ -97,7 +97,6 @@ public class ApolloApiStreamingConfig {
         }
     }
 
-    // **New Serialization Method for GetLiveMatch**
     private static String serializeEvent(GetLiveMatch getLiveMatch, String stream) {
         try {
             String liveMatchStr = OBJECT_MAPPER.writeValueAsString(getLiveMatch);
@@ -109,6 +108,28 @@ public class ApolloApiStreamingConfig {
             return null;
         }
     }
+
+    private static String serializeEvent(EditSeries editSeries, String stream) {
+    try {
+        String seriesStr = OBJECT_MAPPER.writeValueAsString(editSeries);
+        GetStreamEvent event = new GetStreamEvent(stream, "series_update", seriesStr);
+        return OBJECT_MAPPER.writeValueAsString(event);
+    } catch (JsonProcessingException e) {
+        logger.error("Error serializing EditSeries: {}", e.getMessage(), e);
+        return null;
+    }
+}
+
+private static String serializeEvent(EditMatch editMatch, String stream) {
+    try {
+        String matchStr = OBJECT_MAPPER.writeValueAsString(editMatch);
+        GetStreamEvent event = new GetStreamEvent(stream, "match_update", matchStr);
+        return OBJECT_MAPPER.writeValueAsString(event);
+    } catch (JsonProcessingException e) {
+        logger.error("Error serializing EditMatch: {}", e.getMessage(), e);
+        return null;
+    }
+}
 
     public static void sendStatusPointer(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
             Long accountId, StatusPointer statusPointer) {
@@ -171,6 +192,31 @@ public class ApolloApiStreamingConfig {
             logger.warn("Failed to serialize GetLiveMatch for session {}", session.getId());
         }
     }
+
+    public static void sendSeriesUpdate(EditSeries editSeries) {
+    String stream = "series_updates"; // Define a stream identifier for series updates
+    String eventStr = serializeEvent(editSeries, stream);
+    if (eventStr != null) {
+        SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
+            if (streamState.stream.equals(stream)) {
+                streamState.sink.next(streamState.session.textMessage(eventStr));
+            }
+        });
+    }
+}
+
+// Method to send match update to subscribed clients
+public static void sendMatchUpdate(EditMatch editMatch) {
+    String stream = "match_updates"; // Define a stream identifier for match updates
+    String eventStr = serializeEvent(editMatch, stream);
+    if (eventStr != null) {
+        SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
+            if (streamState.stream.equals(stream)) {
+                streamState.sink.next(streamState.session.textMessage(eventStr));
+            }
+        });
+    }
+}
 
     // caches of the latest query results of each global timeline
     public static final ConcurrentHashMap<LocalTimeline, ConcurrentSkipListMap<Long, StatusQueryResult>> LOCAL_TIMELINE_TO_INDEX_TO_STATUS = new ConcurrentHashMap() {
@@ -239,16 +285,15 @@ public class ApolloApiStreamingConfig {
                     String stream = params.get("stream").get(0);
 
                     // TODO: Change this so that its uniform i.e. get rid of local/remote
-                    // Idk how it works so figure it out
                     if ("public".equals(stream) || "public:local".equals(stream) || "public:remote".equals(stream)) {
-                        SESSION_ID_TO_STATE.put(wsSessionId,
-                                new StreamState(session, accountId, sink, stream, new ArrayList<>()));
-                    } else if (stream.startsWith("live-match")) { // **Handle "live-match" Stream**
-                        // No specific proxies needed for live-match
-                        SESSION_ID_TO_STATE.put(wsSessionId,
-                                new StreamState(session, accountId, sink, stream, new ArrayList<>()));
-                        // **Note:** Live match summaries will be pushed manually via ApolloApiManager
-                    } else {
+    SESSION_ID_TO_STATE.put(wsSessionId,
+            new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+} else if (stream.startsWith("live-match") || stream.startsWith("series_updates") || stream.startsWith("match_updates")) { 
+    SESSION_ID_TO_STATE.put(wsSessionId,
+            new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+    // **Note:** Live match summaries, series updates, and match updates will be pushed manually via ApolloApiManager
+}
+ else {
                         ProxyState.Callback<SortedMap> statusCallback = (SortedMap newVal, Diff diff,
                                 SortedMap oldVal) -> {
                             StatusPointerDiffProcessor processor = new StatusPointerDiffProcessor();

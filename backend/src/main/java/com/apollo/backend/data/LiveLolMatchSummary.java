@@ -12,7 +12,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
 
   private static final org.apache.thrift.protocol.TField CHANNEL_FIELD_DESC = new org.apache.thrift.protocol.TField("channel", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField CREATED_FIELD_DESC = new org.apache.thrift.protocol.TField("created", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField CREATED_FIELD_DESC = new org.apache.thrift.protocol.TField("created", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField PAYLOAD_FIELD_DESC = new org.apache.thrift.protocol.TField("payload", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField MATCH_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("matchId", org.apache.thrift.protocol.TType.I32, (short)5);
 
@@ -21,7 +21,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
 
   public @org.apache.thrift.annotation.Nullable java.lang.String channel; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String uuid; // required
-  public @org.apache.thrift.annotation.Nullable java.lang.String created; // required
+  public long created; // required
   public @org.apache.thrift.annotation.Nullable LiveLolMatchPayload payload; // required
   public int matchId; // required
 
@@ -100,7 +100,8 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
   }
 
   // isset id assignments
-  private static final int __MATCHID_ISSET_ID = 0;
+  private static final int __CREATED_ISSET_ID = 0;
+  private static final int __MATCHID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -110,7 +111,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
     tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CREATED, new org.apache.thrift.meta_data.FieldMetaData("created", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.PAYLOAD, new org.apache.thrift.meta_data.FieldMetaData("payload", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LiveLolMatchPayload.class)));
     tmpMap.put(_Fields.MATCH_ID, new org.apache.thrift.meta_data.FieldMetaData("matchId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -125,7 +126,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
   public LiveLolMatchSummary(
     java.lang.String channel,
     java.lang.String uuid,
-    java.lang.String created,
+    long created,
     LiveLolMatchPayload payload,
     int matchId)
   {
@@ -133,6 +134,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
     this.channel = channel;
     this.uuid = uuid;
     this.created = created;
+    setCreatedIsSet(true);
     this.payload = payload;
     this.matchId = matchId;
     setMatchIdIsSet(true);
@@ -149,9 +151,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
     if (other.isSetUuid()) {
       this.uuid = other.uuid;
     }
-    if (other.isSetCreated()) {
-      this.created = other.created;
-    }
+    this.created = other.created;
     if (other.isSetPayload()) {
       this.payload = new LiveLolMatchPayload(other.payload);
     }
@@ -167,7 +167,8 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
   public void clear() {
     this.channel = null;
     this.uuid = null;
-    this.created = null;
+    setCreatedIsSet(false);
+    this.created = 0;
     this.payload = null;
     setMatchIdIsSet(false);
     this.matchId = 0;
@@ -223,29 +224,27 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
     }
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.lang.String getCreated() {
+  public long getCreated() {
     return this.created;
   }
 
-  public LiveLolMatchSummary setCreated(@org.apache.thrift.annotation.Nullable java.lang.String created) {
+  public LiveLolMatchSummary setCreated(long created) {
     this.created = created;
+    setCreatedIsSet(true);
     return this;
   }
 
   public void unsetCreated() {
-    this.created = null;
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CREATED_ISSET_ID);
   }
 
   /** Returns true if field created is set (has been assigned a value) and false otherwise */
   public boolean isSetCreated() {
-    return this.created != null;
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CREATED_ISSET_ID);
   }
 
   public void setCreatedIsSet(boolean value) {
-    if (!value) {
-      this.created = null;
-    }
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CREATED_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -319,7 +318,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
       if (value == null) {
         unsetCreated();
       } else {
-        setCreated((java.lang.String)value);
+        setCreated((java.lang.Long)value);
       }
       break;
 
@@ -418,12 +417,12 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
         return false;
     }
 
-    boolean this_present_created = true && this.isSetCreated();
-    boolean that_present_created = true && that.isSetCreated();
+    boolean this_present_created = true;
+    boolean that_present_created = true;
     if (this_present_created || that_present_created) {
       if (!(this_present_created && that_present_created))
         return false;
-      if (!this.created.equals(that.created))
+      if (this.created != that.created)
         return false;
     }
 
@@ -460,9 +459,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
     if (isSetUuid())
       hashCode = hashCode * 8191 + uuid.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetCreated()) ? 131071 : 524287);
-    if (isSetCreated())
-      hashCode = hashCode * 8191 + created.hashCode();
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(created);
 
     hashCode = hashCode * 8191 + ((isSetPayload()) ? 131071 : 524287);
     if (isSetPayload())
@@ -572,11 +569,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
     first = false;
     if (!first) sb.append(", ");
     sb.append("created:");
-    if (this.created == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.created);
-    }
+    sb.append(this.created);
     first = false;
     if (!first) sb.append(", ");
     sb.append("payload:");
@@ -657,8 +650,8 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
             }
             break;
           case 3: // CREATED
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.created = iprot.readString();
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.created = iprot.readI64();
               struct.setCreatedIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -707,11 +700,9 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
         oprot.writeString(struct.uuid);
         oprot.writeFieldEnd();
       }
-      if (struct.created != null) {
-        oprot.writeFieldBegin(CREATED_FIELD_DESC);
-        oprot.writeString(struct.created);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(CREATED_FIELD_DESC);
+      oprot.writeI64(struct.created);
+      oprot.writeFieldEnd();
       if (struct.payload != null) {
         oprot.writeFieldBegin(PAYLOAD_FIELD_DESC);
         struct.payload.write(oprot);
@@ -762,7 +753,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
         oprot.writeString(struct.uuid);
       }
       if (struct.isSetCreated()) {
-        oprot.writeString(struct.created);
+        oprot.writeI64(struct.created);
       }
       if (struct.isSetPayload()) {
         struct.payload.write(oprot);
@@ -785,7 +776,7 @@ public class LiveLolMatchSummary implements org.apache.thrift.TBase<LiveLolMatch
         struct.setUuidIsSet(true);
       }
       if (incoming.get(2)) {
-        struct.created = iprot.readString();
+        struct.created = iprot.readI64();
         struct.setCreatedIsSet(true);
       }
       if (incoming.get(3)) {

@@ -1166,7 +1166,7 @@ struct LiveLolMatchPayload {
 struct LiveLolMatchSummary {
     1: string channel,
     2: string uuid,
-    3: string created,
+    3: i64 created,
     4: LiveLolMatchPayload payload,
     5: i32 matchId, 
 }
@@ -1319,6 +1319,60 @@ struct Movement {
     1: i32 position,
     2: i32 substageId,
     3: string type
+}
+
+union EditSeriesField {
+  1: string title;
+  2: i64 start;
+  3: i64 end;
+  4: i64 postponedFrom;
+  5: i64 deletedAt;
+  6: string lifecycle;
+  7: i32 tier;
+  8: i32 bestOf;
+  9: list<i32> chainIds;
+  10: bool streamed;
+  11: BracketPosition bracketPosition;
+  12: list<Participant> participants;
+  13: i32 tournamentId;
+  14: i32 substageId;
+  15: i32 gameId;
+  16: list<i32> matchIds;
+  17: list<Caster> casters;
+  18: list<Broadcaster> broadcasters;
+  19: bool hasIncidentReport;
+  20: Coverage coverage;
+  21: i32 formatBestOf;
+  22: GameVersion gameVersion;
+  23: i64 resourceVersion;
+  24: i64 createdAt;
+  25: i64 updatedAt;
+}
+
+struct EditSeries {
+  1: required i32 id;
+  2: required list<EditSeriesField> edits;
+  3: required i64 timestamp;
+}
+
+union EditMatchField {
+  1: i32 mapId;
+  2: string lifecycle;
+  3: i32 order;
+  4: i32 seriesId;
+  5: i64 deletedAt;
+  6: i32 gameId;
+  7: list<Participant> participants;
+  8: Coverage coverage;
+  9: i64 resourceVersion;
+  10: i64 createdAt;
+  11: i64 updatedAt;
+}
+
+struct EditMatch {
+  1: required i32 id;
+  2: required list<EditMatchField> edits;
+  3: required i64 timestamp;
 }
 
 

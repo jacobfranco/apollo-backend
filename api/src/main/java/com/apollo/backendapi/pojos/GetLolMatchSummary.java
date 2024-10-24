@@ -25,7 +25,12 @@ public class GetLolMatchSummary {
         this.latestEventsChannelIndex = summary.getLatestEventsChannelIndex();
         this.latestStatesChannelIndex = summary.getLatestStatesChannelIndex();
         this.timestamp = Instant.parse(summary.getTimestamp());
-        this.match = new GetLolMatch(summary.getMatch());
+        if (summary.getMatch() != null) {
+            this.match = new GetLolMatch(summary.getMatch());
+        } else {
+
+            this.match = new GetLolMatch(); // Initialize with default values or handle accordingly
+        }
         this.assetMap = assetMap;
     }
 

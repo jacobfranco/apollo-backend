@@ -2,5 +2,16 @@
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "automatic",
     "java.project.sourcePaths": [],
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx8G -Xms100m -Xlog:disable"
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx8G -Xms100m -Xlog:disable",
+    "workbench.colorTheme": "poimandres",
+    "workbench.iconTheme": "quill-icons-minimal",
+    "workbench.productIconTheme": "icons-carbon",
+    "editor.renderWhitespace": "none",
+    "editor.minimap.renderCharacters": false,
+    "editor.fontSize": 13.5,
+    "editor.fontFamily": "Menlo",
+    "window.zoomLevel": 0.5,
+    "window.menuBarVisibility": "classic",
+    "editor.guides.indentation": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
 }

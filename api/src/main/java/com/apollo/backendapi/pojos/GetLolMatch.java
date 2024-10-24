@@ -16,4 +16,9 @@ public class GetLolMatch {
         this.clock = new GetLolMatchClock(match.getClock());
         this.timeline = new GetLolMatchTimeline(match.getTimeline());
     }
+
+    public GetLolMatch() {
+        this.id = -1; // Default or sentinel value
+        // Initialize other fields with defaults
+    }
 }

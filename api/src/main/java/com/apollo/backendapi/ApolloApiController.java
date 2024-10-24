@@ -1955,7 +1955,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/lolseries/schedule")
+    @GetMapping("/api/lol/series/schedule")
     public Mono<List<GetSeries>> getLolSeriesSchedule(
             @RequestParam double startTime,
             @RequestParam double endTime) {
@@ -1971,7 +1971,7 @@ public class ApolloApiController {
                 });
     }
 
-    @GetMapping("/api/lolseries/week")
+    @GetMapping("/api/lol/series/week")
     public Mono<List<GetSeries>> getLolSeriesWeekSchedule(
             @RequestParam(required = false) Double timestamp) {
         logger.info("Fetching week schedule for timestamp: {}", timestamp);
@@ -1993,13 +1993,13 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/lolmatches/{id}")
+    @GetMapping("/api/matches/{id}")
     public Mono<GetMatch> getLolMatch(@PathVariable("id") int matchId) {
         return Mono.fromFuture(manager.getMatch(matchId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
-    @GetMapping("/api/lolmatches/series/{seriesId}")
+    @GetMapping("/api/matches/series/{seriesId}")
     public Mono<List<GetMatch>> getLolMatchesForSeries(@PathVariable("seriesId") int seriesId) {
         return Mono.fromFuture(manager.getMatchesForSeries(seriesId))
                 .doOnError(e -> logger.error("Error fetching matches for series: ", e))
@@ -2017,7 +2017,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/lolteams/{id}")
+    @GetMapping("/api/lol/teams/{id}")
     public Mono<GetTeam> getLolTeamWithStats(@PathVariable("id") int teamId) {
         return Mono.fromFuture(manager.getTeamWithLolStats(teamId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
@@ -2030,7 +2030,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/lolplayers/{id}")
+    @GetMapping("/api/lol/players/{id}")
     public Mono<GetPlayer> getLolPlayer(@PathVariable("id") int playerId) {
         return Mono.fromFuture(manager.getPlayerWithLolStats(playerId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found")));
@@ -2043,7 +2043,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/lolmatches/{id}/summary")
+    @GetMapping("/api/lol/matches/{id}/summary")
     public Mono<GetLolMatchSummary> getLolMatchSummary(@PathVariable("id") int matchId) {
         return Mono.fromFuture(manager.getLolMatchSummary(matchId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
@@ -2056,7 +2056,7 @@ public class ApolloApiController {
      * ======================================
      */
 
-    @GetMapping("/api/lolassets/{id}")
+    @GetMapping("/api/lol/assets/{id}")
     public Mono<GetAsset> getLolAsset(@PathVariable("id") int assetId) {
         return Mono.fromFuture(manager.getAsset(assetId))
                 .map(asset -> new GetAsset(asset))
