@@ -10,9 +10,26 @@ public class GetLolMatchTimeline {
     public GetLolMatchClock clock;
 
     public GetLolMatchTimeline(LolMatchTimeline timeline) {
+        if (timeline == null) {
+            return;
+        }
+        
         this.phase = timeline.getPhase();
-        this.start = Instant.parse(timeline.getStart());
-        this.end = Instant.parse(timeline.getEnd());
-        this.clock = new GetLolMatchClock(timeline.getClock());
+        
+        // Add null checks for start and end times
+        String startTime = timeline.getStart();
+        if (startTime != null) {
+            this.start = Instant.parse(startTime);
+        }
+        
+        String endTime = timeline.getEnd();
+        if (endTime != null) {
+            this.end = Instant.parse(endTime);
+        }
+        
+        // Add null check for clock
+        if (timeline.getClock() != null) {
+            this.clock = new GetLolMatchClock(timeline.getClock());
+        }
     }
 }

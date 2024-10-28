@@ -109,27 +109,44 @@ public class ApolloApiStreamingConfig {
         }
     }
 
-    private static String serializeEvent(EditSeries editSeries, String stream) {
-    try {
-        String seriesStr = OBJECT_MAPPER.writeValueAsString(editSeries);
-        GetStreamEvent event = new GetStreamEvent(stream, "series_update", seriesStr);
-        return OBJECT_MAPPER.writeValueAsString(event);
-    } catch (JsonProcessingException e) {
-        logger.error("Error serializing EditSeries: {}", e.getMessage(), e);
-        return null;
+    private static String serializeEvent(GetSeries getSeries, String stream) {
+        try {
+            // Create a custom ObjectMapper for this serialization
+            ObjectMapper customMapper = OBJECT_MAPPER.copy();
+            customMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+    
+            // Serialize the GetSeries object with the custom mapper
+            String seriesStr = customMapper.writeValueAsString(getSeries);
+    
+            GetStreamEvent event = new GetStreamEvent(stream, "series_update", seriesStr);
+    
+            // Serialize the event with the custom mapper
+            return customMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            logger.error("Error serializing GetSeries: {}", e.getMessage(), e);
+            return null;
+        }
     }
-}
+    
 
-private static String serializeEvent(EditMatch editMatch, String stream) {
-    try {
-        String matchStr = OBJECT_MAPPER.writeValueAsString(editMatch);
-        GetStreamEvent event = new GetStreamEvent(stream, "match_update", matchStr);
-        return OBJECT_MAPPER.writeValueAsString(event);
-    } catch (JsonProcessingException e) {
-        logger.error("Error serializing EditMatch: {}", e.getMessage(), e);
-        return null;
+    private static String serializeEvent(GetMatch getMatch, String stream) {
+        try {
+            ObjectMapper customMapper = OBJECT_MAPPER.copy();
+            customMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+    
+            String matchStr = customMapper.writeValueAsString(getMatch);
+    
+            GetStreamEvent event = new GetStreamEvent(stream, "match_update", matchStr);
+    
+            return customMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            logger.error("Error serializing GetMatch: {}", e.getMessage(), e);
+            return null;
+        }
     }
-}
+    
+    
+    
 
     public static void sendStatusPointer(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
             Long accountId, StatusPointer statusPointer) {
@@ -193,30 +210,30 @@ private static String serializeEvent(EditMatch editMatch, String stream) {
         }
     }
 
-    public static void sendSeriesUpdate(EditSeries editSeries) {
-    String stream = "series_updates"; // Define a stream identifier for series updates
-    String eventStr = serializeEvent(editSeries, stream);
-    if (eventStr != null) {
-        SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
-            if (streamState.stream.equals(stream)) {
-                streamState.sink.next(streamState.session.textMessage(eventStr));
-            }
-        });
+    public static void sendSeriesUpdate(GetSeries getSeries) {
+        String stream = "series_updates";
+        String eventStr = serializeEvent(getSeries, stream);
+        if (eventStr != null) {
+            SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
+                if (streamState.stream.equals(stream)) {
+                    streamState.sink.next(streamState.session.textMessage(eventStr));
+                }
+            });
+        }
     }
-}
-
-// Method to send match update to subscribed clients
-public static void sendMatchUpdate(EditMatch editMatch) {
-    String stream = "match_updates"; // Define a stream identifier for match updates
-    String eventStr = serializeEvent(editMatch, stream);
-    if (eventStr != null) {
-        SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
-            if (streamState.stream.equals(stream)) {
-                streamState.sink.next(streamState.session.textMessage(eventStr));
-            }
-        });
+    
+    public static void sendMatchUpdate(GetMatch getMatch) {
+        String stream = "match_updates";
+        String eventStr = serializeEvent(getMatch, stream);
+        if (eventStr != null) {
+            SESSION_ID_TO_STATE.forEach((sessionId, streamState) -> {
+                if (streamState.stream.equals(stream)) {
+                    streamState.sink.next(streamState.session.textMessage(eventStr));
+                }
+            });
+        }
     }
-}
+    
 
     // caches of the latest query results of each global timeline
     public static final ConcurrentHashMap<LocalTimeline, ConcurrentSkipListMap<Long, StatusQueryResult>> LOCAL_TIMELINE_TO_INDEX_TO_STATUS = new ConcurrentHashMap() {

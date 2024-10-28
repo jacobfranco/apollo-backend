@@ -17,6 +17,7 @@ public class GetMatch {
     public List<GetParticipant> participants;
     public GetCoverage coverage;
     public long resourceVersion;
+    public GetLolMatchClock clock;
 
     public GetMatch(Match match) {
         this.id = match.getId();

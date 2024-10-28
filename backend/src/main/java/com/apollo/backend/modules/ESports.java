@@ -21,7 +21,7 @@ public class ESports implements RamaModule {
 
                 stream.source("*seriesDepot").out("*series")
                                 .macro(extractFields("*series", "*id", "*start"))
-                                .hashPartition("*id")
+                                .localTransform("$$seriesIdToSeries", Path.key("*id").termVal("*series"))
                                 .localTransform("$$startTimeToSeries",
                                                 Path.key("*start").key("*id").termVal("*series"));
 
@@ -178,6 +178,11 @@ public class ESports implements RamaModule {
         }
 
         private void declareQueries(Topologies topologies) {
+                topologies.query("getSeriesFromSeriesId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$seriesIdToSeries", Path.key("*id")).out("*result")
+                                .originPartition();
+
                 topologies.query("getSeriesFromStartTime", "*startTime", "*endTime").out("*result")
                                 .allPartition()
                                 .localSelect("$$startTimeToSeries", Path.sortedMapRange("*startTime", "*endTime"))
