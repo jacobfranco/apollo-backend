@@ -6,8 +6,11 @@ import com.rpl.rama.ops.*;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.navs.*;
+import com.apollo.backend.ApolloHelpers.*;
 
 import static com.apollo.backend.ApolloHelpers.extractFields;
+
+import java.util.List;
 
 public class ESports implements RamaModule {
 
@@ -25,16 +28,35 @@ public class ESports implements RamaModule {
                                 .localTransform("$$startTimeToSeries",
                                                 Path.key("*start").key("*id").termVal("*series"));
 
-                stream.source("*seriesEditDepot", StreamSourceOptions.retryNone()).out("*editSeries")
+                stream.source("*seriesEditDepot", StreamSourceOptions.retryNone())
+                                .out("*editSeries")
                                 .macro(extractFields("*editSeries", "*id", "*edits"))
-                                .each(Ops.EXPLODE, "*edits").out("*edit")
-                                .each((EditSeriesField editSeriesField, OutputCollector collector) -> {
-                                        collector.emit(editSeriesField.getSetField().getFieldName(),
-                                                        editSeriesField.getFieldValue());
-                                }, "*edit").out("*fieldName", "*fieldValue")
-                                .localTransform("$$seriesIdToSeries", Path.must("*id")
-                                                .customNavBuilder(TField::new, "*fieldName")
-                                                .termVal("*fieldValue"));
+                                .localSelect("$$seriesIdToSeries", Path.key("*id"))
+                                .out("*currentSeries")
+                                .macro(extractFields("*currentSeries", "*start"))
+                                .each(Ops.IDENTITY, "*start")
+                                .out("*oldStart")
+                                .each((Series series, List<EditSeriesField> edits) -> ApolloHelpers.applyEdits(series,
+                                                edits),
+                                                "*currentSeries", "*edits")
+                                .out("*updatedSeries")
+                                .macro(extractFields("*updatedSeries", "*start"))
+                                .each(Ops.IDENTITY, "*start")
+                                .out("*newStart")
+                                .localTransform("$$seriesIdToSeries",
+                                                Path.key("*id")
+                                                                .termVal("*updatedSeries"))
+                                .localTransform("$$startTimeToSeries",
+                                                Path.key("*newStart")
+                                                                .key("*id")
+                                                                .termVal("*updatedSeries"))
+                                .each(Ops.NOT_EQUAL, "*oldStart", "*newStart")
+                                .out("*startChanged")
+                                .ifTrue("*startChanged",
+                                                Block.localTransform("$$startTimeToSeries",
+                                                                Path.key("*oldStart")
+                                                                                .key("*id")
+                                                                                .termVoid()));
         }
 
         private static void declareMatchTopology(Topologies topologies) {

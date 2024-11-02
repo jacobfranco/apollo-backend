@@ -13,5 +13,8 @@
   "window.zoomLevel": 0.5,
   "window.menuBarVisibility": "classic",
   "editor.guides.indentation": false,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  }
 }

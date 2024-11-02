@@ -704,4 +704,61 @@ public class ApolloHelpers {
     return builder.toString();
   }
 
+  public static Series applyEdits(Series series, List<EditSeriesField> edits) {
+    for (EditSeriesField edit : edits) {
+      if (edit.isSetTitle()) {
+        series.setTitle(edit.getTitle());
+      } else if (edit.isSetStart()) {
+        series.setStart(edit.getStart());
+      } else if (edit.isSetEnd()) {
+        series.setEnd(edit.getEnd());
+      } else if (edit.isSetPostponedFrom()) {
+        series.setPostponedFrom(edit.getPostponedFrom());
+      } else if (edit.isSetDeletedAt()) {
+        series.setDeletedAt(edit.getDeletedAt());
+      } else if (edit.isSetLifecycle()) {
+        series.setLifecycle(edit.getLifecycle());
+      } else if (edit.isSetTier()) {
+        series.setTier(edit.getTier());
+      } else if (edit.isSetBestOf()) {
+        series.setBestOf(edit.getBestOf());
+      } else if (edit.isSetChainIds()) {
+        series.setChainIds(edit.getChainIds());
+      } else if (edit.isSetStreamed()) {
+        series.setStreamed(edit.getStreamed());
+      } else if (edit.isSetBracketPosition()) {
+        series.setBracketPosition(edit.getBracketPosition());
+      } else if (edit.isSetParticipants()) {
+        series.setParticipants(edit.getParticipants());
+      } else if (edit.isSetTournamentId()) {
+        series.setTournamentId(edit.getTournamentId());
+      } else if (edit.isSetSubstageId()) {
+        series.setSubstageId(edit.getSubstageId());
+      } else if (edit.isSetGameId()) {
+        series.setGameId(edit.getGameId());
+      } else if (edit.isSetMatchIds()) {
+        series.setMatchIds(edit.getMatchIds());
+      } else if (edit.isSetCasters()) {
+        series.setCasters(edit.getCasters());
+      } else if (edit.isSetBroadcasters()) {
+        series.setBroadcasters(edit.getBroadcasters());
+      } else if (edit.isSetHasIncidentReport()) {
+        series.setHasIncidentReport(edit.getHasIncidentReport());
+      } else if (edit.isSetCoverage()) {
+        series.setCoverage(edit.getCoverage());
+      } else if (edit.isSetFormatBestOf()) {
+        series.setFormatBestOf(edit.getFormatBestOf());
+      } else if (edit.isSetGameVersion()) {
+        series.setGameVersion(edit.getGameVersion());
+      } else if (edit.isSetResourceVersion()) {
+        series.setResourceVersion(edit.getResourceVersion());
+      }
+
+      // Update timestamps
+      series.setUpdatedAt(System.currentTimeMillis());
+    }
+
+    return series;
+  }
+
 }

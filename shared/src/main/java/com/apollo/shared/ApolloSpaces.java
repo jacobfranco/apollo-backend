@@ -94,7 +94,9 @@ public class ApolloSpaces {
                         new GetSpace("Deus Ex", "deusex", S3_BASE_URL + "deusex.jpg"),
                         new GetSpace("Cyberpunk 2077", "cyberpunk2077", S3_BASE_URL + "cyberpunk2077.jpg"),
                         new GetSpace("Mortal Kombat", "mortalkombat", S3_BASE_URL + "mortalkombat.jpg"),
-                        new GetSpace("Baldur's Gate 3", "baldursgate", S3_BASE_URL + "baldursgate.jpg"));
+                        new GetSpace("Baldur's Gate 3", "baldursgate", S3_BASE_URL + "baldursgate.jpg"),
+                        new GetSpace("League of Legends Esports", "lolesports", S3_BASE_URL + "lolesports.jpg"),
+                        new GetSpace("Valorant Esports", "valorantesports", S3_BASE_URL + "valorantesports.jpg"));
 
         public static Map<String, GetSpace> SPACE_MAP = SPACES.stream()
                         .collect(Collectors.toMap(space -> space.id, space -> space));
