@@ -467,14 +467,11 @@ public class TrendsAndHashtags implements RamaModule {
                                                                                 Block.materialize("*authorId",
                                                                                                 "*statusId",
                                                                                                 "*timestamp", "*spaces")
-                                                                                                .out("$$spaces")
-                                                                                                .each(Ops.EXPLODE,
-                                                                                                                "*spaces")
-                                                                                                .out("*space")
-                                                                                                .keepTrue(new Expr(
-                                                                                                                ApolloSpaces.SPACE_MAP::containsKey,
-                                                                                                                "*space"))
-                                                                                                .anchor("NormalSpaceFanout"))
+                                                                                                // TODO: Maybe need to
+                                                                                                // reference the spaces
+                                                                                                // map and remove
+                                                                                                // invalid entries
+                                                                                                .out("$$spaces"))
                                                                 .ifTrue(new Expr(Ops.GREATER_THAN,
                                                                                 new Expr(Ops.SIZE, "*links"), 0),
                                                                                 Block.materialize("*authorId",
