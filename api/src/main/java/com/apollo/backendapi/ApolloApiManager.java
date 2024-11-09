@@ -2575,13 +2575,24 @@ public class ApolloApiManager {
         series.setSubstageId(postSeries.getSubstageId());
         series.setGameId(postSeries.getGameId());
         series.setMatchIds(postSeries.getMatchIds());
+
+        // Convert casters to Thrift Caster objects with only IDs
         series.setCasters(
-                postSeries.casters.stream().map(this::convertCaster).collect(Collectors.toList()));
+                postSeries.casters.stream()
+                        .map(this::convertCasterReference)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()));
+
+        // Convert broadcasters to Thrift Broadcaster objects
         series.setBroadcasters(
-                postSeries.broadcasters.stream().map(this::convertBroadcaster).collect(Collectors.toList()));
+                postSeries.broadcasters.stream()
+                        .map(this::convertBroadcaster)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()));
+
         series.setHasIncidentReport(postSeries.hasIncidentReport);
         series.setCoverage(convertCoverage(postSeries.coverage));
-        series.setFormatBestOf(postSeries.format != null ? postSeries.format.bestOf : 0);
+        series.setFormatBestOf(postSeries.format != null ? postSeries.bestOf : 0);
         series.setGameVersion(convertGameVersion(postSeries.gameVersion));
         series.setResourceVersion(postSeries.resourceVersion);
         series.setCreatedAt(toEpochMilli(postSeries.createdAt));
@@ -2847,6 +2858,21 @@ public class ApolloApiManager {
         return caster;
     }
 
+    private Caster convertCasterReference(PostCasterInfo casterRef) {
+        if (casterRef == null || casterRef.caster == null || casterRef.caster.id == null) {
+            logger.warn("convertCasterReference - Invalid caster reference.");
+            return null;
+        }
+
+        // Create a Caster object with only the ID set. Full details will be fetched
+        // later.
+        Caster caster = new Caster();
+        caster.setId(casterRef.caster.id);
+        // Other fields will remain default or null
+
+        return caster;
+    }
+
     private List<Integer> convertRosterIds(List<PostRosterInfo> postRosters) {
         if (postRosters == null) {
             return null;
@@ -3102,59 +3128,90 @@ public class ApolloApiManager {
     }
 
     private CompletableFuture<List<GetSeries>> processSeriesList(List<Series> seriesList) {
-        logger.info("processSeriesList - Processing list of Series.");
+        logger.info("processSeriesList - Processing list of Series. Count: " + seriesList.size());
+
+        if (seriesList.isEmpty()) {
+            logger.warn("processSeriesList - Received an empty series list.");
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+
+        // Collect IDs of related entities across all series
         Set<Integer> tournamentIds = seriesList.stream()
                 .map(Series::getTournamentId)
+                .filter(id -> id != 0) // Assuming 0 is an invalid ID
                 .collect(Collectors.toSet());
 
         Set<Integer> substageIds = seriesList.stream()
                 .map(Series::getSubstageId)
+                .filter(id -> id != 0)
                 .collect(Collectors.toSet());
 
         Set<Integer> casterIds = seriesList.stream()
                 .flatMap(series -> series.getCasters().stream())
                 .map(Caster::getId)
+                .filter(id -> id != 0)
                 .collect(Collectors.toSet());
 
+        // Fetch related entities asynchronously
         CompletableFuture<Map<Integer, Tournament>> tournamentsFuture = fetchTournamentsByIds(tournamentIds);
         CompletableFuture<Map<Integer, Substage>> substagesFuture = fetchSubstagesByIds(substageIds);
         CompletableFuture<Map<Integer, Caster>> castersFuture = fetchCastersByIds(casterIds);
 
+        // Wait for all related entity fetches to complete
         return CompletableFuture.allOf(tournamentsFuture, substagesFuture, castersFuture)
                 .thenCompose(v -> {
                     Map<Integer, Tournament> tournaments = tournamentsFuture.join();
                     Map<Integer, Substage> substages = substagesFuture.join();
                     Map<Integer, Caster> castersMap = castersFuture.join();
 
+                    // Step 4: Process each series asynchronously
                     List<CompletableFuture<GetSeries>> futuresList = seriesList.stream()
                             .map(series -> {
+                                // Fetch participant data for the current series
                                 List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
                                         .stream()
                                         .map(this::fetchFullParticipantData)
                                         .collect(Collectors.toList());
 
+                                // Map casters with full details
                                 List<GetCaster> getCasters = series.getCasters().stream()
-                                        .map(caster -> {
-                                            Caster fullCaster = castersMap.get(caster.getId());
+                                        .map(casterRef -> {
+                                            Caster fullCaster = castersMap.get(casterRef.getId());
                                             return fullCaster != null ? new GetCaster(fullCaster)
-                                                    : new GetCaster(caster);
+                                                    : new GetCaster(casterRef);
                                         })
                                         .collect(Collectors.toList());
 
+                                // Map broadcasters directly to GetBroadcaster
+                                List<GetBroadcaster> getBroadcasters = series.getBroadcasters().stream()
+                                        .map(GetBroadcaster::new) // Assuming GetBroadcaster has a constructor that
+                                                                  // takes Broadcaster
+                                        .collect(Collectors.toList());
+
+                                // Wait for participant data to complete and assemble GetSeries
                                 return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
                                         .thenApply(vv -> {
                                             GetSeries getSeries = new GetSeries(series);
+
+                                            // Assign participants
                                             getSeries.participants = participantFutures.stream()
                                                     .map(CompletableFuture::join)
                                                     .collect(Collectors.toList());
+
+                                            // Assign casters with full details
                                             getSeries.casters = getCasters;
 
+                                            // Assign tournament
                                             Tournament tournament = tournaments.get(series.getTournamentId());
                                             getSeries.tournament = tournament != null ? new GetTournament(tournament)
                                                     : null;
 
+                                            // Assign substage
                                             Substage substage = substages.get(series.getSubstageId());
                                             getSeries.substage = substage != null ? new GetSubstage(substage) : null;
+
+                                            // Assign broadcasters
+                                            getSeries.broadcasters = getBroadcasters;
 
                                             logger.info("processSeriesList - Enriched GetSeries for series ID: "
                                                     + series.getId());
@@ -3163,6 +3220,7 @@ public class ApolloApiManager {
                             })
                             .collect(Collectors.toList());
 
+                    // Wait for all series processing to complete and collect results
                     return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]))
                             .thenApply(vv -> futuresList.stream()
                                     .map(CompletableFuture::join)
@@ -3171,66 +3229,21 @@ public class ApolloApiManager {
     }
 
     private CompletableFuture<GetSeries> processSingleSeries(Series series) {
-        logger.info("processSingleSeries - Processing series ID: " + series.getId());
+        logger.info("processSingleSeries - Processing single series ID: " + series.getId());
 
-        // Collect IDs of related entities
-        int tournamentId = series.getTournamentId();
-        int substageId = series.getSubstageId();
-        Set<Integer> casterIds = series.getCasters().stream()
-                .map(Caster::getId)
-                .collect(Collectors.toSet());
+        // Step 1: Create a single-element list containing the series
+        List<Series> singleSeriesList = Collections.singletonList(series);
 
-        // Fetch related entities using existing methods
-        CompletableFuture<Map<Integer, Tournament>> tournamentsFuture = fetchTournamentsByIds(
-                Collections.singleton(tournamentId));
-        CompletableFuture<Map<Integer, Substage>> substagesFuture = fetchSubstagesByIds(
-                Collections.singleton(substageId));
-        CompletableFuture<Map<Integer, Caster>> castersFuture = fetchCastersByIds(casterIds);
-
-        // Fetch participants
-        List<CompletableFuture<GetParticipant>> participantFutures = series.getParticipants()
-                .stream()
-                .map(this::fetchFullParticipantData)
-                .collect(Collectors.toList());
-
-        // Wait for all futures to complete
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                tournamentsFuture,
-                substagesFuture,
-                castersFuture,
-                CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0])));
-
-        return allFutures.thenApply(v -> {
-            // Enrich the series
-            GetSeries getSeries = new GetSeries(series);
-
-            // Set participants
-            getSeries.participants = participantFutures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList());
-
-            // Set tournament
-            Map<Integer, Tournament> tournaments = tournamentsFuture.join();
-            Tournament tournament = tournaments.get(tournamentId);
-            getSeries.tournament = tournament != null ? new GetTournament(tournament) : null;
-
-            // Set substage
-            Map<Integer, Substage> substages = substagesFuture.join();
-            Substage substage = substages.get(substageId);
-            getSeries.substage = substage != null ? new GetSubstage(substage) : null;
-
-            // Set casters
-            Map<Integer, Caster> castersMap = castersFuture.join();
-            getSeries.casters = series.getCasters().stream()
-                    .map(caster -> {
-                        Caster fullCaster = castersMap.get(caster.getId());
-                        return fullCaster != null ? new GetCaster(fullCaster) : new GetCaster(caster);
-                    })
-                    .collect(Collectors.toList());
-
-            logger.info("processSingleSeries - Enriched GetSeries for series ID: " + series.getId());
-            return getSeries;
-        });
+        // Step 2: Delegate processing to processSeriesList
+        return processSeriesList(singleSeriesList)
+                .thenApply(getSeriesList -> {
+                    if (getSeriesList == null || getSeriesList.isEmpty()) {
+                        logger.warn("processSingleSeries - No GetSeries returned for series ID: " + series.getId());
+                        return null;
+                    }
+                    // Since it's a single series, return the first element
+                    return getSeriesList.get(0);
+                });
     }
 
     public CompletableFuture<List<GetSeries>> getWeekSchedule(long timestamp) {
@@ -3322,10 +3335,16 @@ public class ApolloApiManager {
     }
 
     private CompletableFuture<GetParticipant> fetchFullParticipantData(Participant participant) {
+        if (participant.getRoster() == null) {
+            logger.warn("fetchFullParticipantData - Participant's roster is null");
+            // Return a GetParticipant object with minimal data
+            return CompletableFuture.completedFuture(new GetParticipant(participant));
+        }
+
         logger.info("fetchFullParticipantData - Fetching full data for participant with rosterId: {}",
                 participant.getRoster().getId());
 
-        // Asynchronously fetch the roster data associated with the participant
+        // Proceed to fetch the roster data associated with the participant
         return getRosterFromRosterId.invokeAsync(participant.getRoster().getId())
                 .exceptionally(e -> {
                     logger.error("fetchFullParticipantData - Failed to fetch Roster for rosterId {}: {}",
@@ -3717,28 +3736,66 @@ public class ApolloApiManager {
         return caster;
     }
 
-    private Broadcaster convertBroadcaster(PostBroadcaster b) {
-        Broadcaster broadcaster = new Broadcaster();
-        if (b == null) {
+    private Broadcaster convertBroadcaster(PostBroadcaster postBroadcaster) {
+        if (postBroadcaster == null || postBroadcaster.broadcaster == null) {
+            logger.warn("convertBroadcaster - PostBroadcaster or nested broadcaster is null.");
             return null;
         }
-        broadcaster.setBroadcasterId(b.broadcasterId);
-        broadcaster.setBroadcasterName(b.broadcasterName);
-        broadcaster.setBroadcasterExternalId(b.broadcasterExternalId);
-        broadcaster.setBroadcasterPlatformId(b.broadcasterPlatformId);
-        broadcaster.setBroadcasterDefaultLanguageId(b.broadcasterDefaultLanguageId);
-        if (b.broadcasts == null) {
-            broadcaster.setBroadcasts(null);
+
+        Broadcaster broadcaster = new Broadcaster();
+
+        // Extracting fields from nested broadcaster
+        broadcaster.setBroadcasterId(postBroadcaster.broadcaster.id);
+        broadcaster
+                .setBroadcasterName(postBroadcaster.broadcaster.name != null ? postBroadcaster.broadcaster.name : "");
+        broadcaster.setBroadcasterExternalId(
+                postBroadcaster.broadcaster.external_id != null ? postBroadcaster.broadcaster.external_id : "");
+        broadcaster.setBroadcasterPlatformId(
+                postBroadcaster.broadcaster.platform != null ? postBroadcaster.broadcaster.platform.id : 0);
+        broadcaster.setBroadcasterDefaultLanguageId(
+                postBroadcaster.broadcaster.broadcast_defaults != null
+                        && postBroadcaster.broadcaster.broadcast_defaults.language != null
+                                ? postBroadcaster.broadcaster.broadcast_defaults.language.id
+                                : 0);
+
+        // Convert broadcasts
+        if (postBroadcaster.broadcasts != null) {
+            broadcaster.setBroadcasts(
+                    postBroadcaster.broadcasts.stream()
+                            .map(this::convertBroadcast)
+                            .filter(Objects::nonNull) // Ensure no null broadcasts are added
+                            .collect(Collectors.toList()));
         } else {
-            broadcaster
-                    .setBroadcasts(b.broadcasts.stream().map(this::convertBroadcast).collect(Collectors.toList()));
+            broadcaster.setBroadcasts(new ArrayList<>());
         }
-        broadcaster.setOfficial(b.official);
+
+        broadcaster.setOfficial(postBroadcaster.official);
+
+        try {
+            logger.info("convertBroadcaster - Converted Broadcaster: " + objectMapper.writeValueAsString(broadcaster));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convertBroadcaster: ", e);
+        }
+
         return broadcaster;
     }
 
-    private Broadcast convertBroadcast(PostBroadcast b) {
-        return new Broadcast(b.externalId, b.languageId);
+    private Broadcast convertBroadcast(PostBroadcast postBroadcast) {
+        if (postBroadcast == null) {
+            logger.warn("convertBroadcast - PostBroadcast is null.");
+            return null;
+        }
+        Broadcast broadcast = new Broadcast();
+        broadcast.setExternalId(postBroadcast.externalId != null ? postBroadcast.externalId : "");
+        broadcast.setLanguageId(postBroadcast.language != null ? postBroadcast.language.id : 0);
+
+        try {
+            logger.info("convertBroadcast - Converted Broadcast: " + objectMapper.writeValueAsString(broadcast));
+        } catch (JsonProcessingException e) {
+            logger.error("JSONProcessing exception during convertBroadcast: ", e);
+        }
+
+        return broadcast;
     }
 
     private GameVersion convertGameVersion(PostGameVersion gv) {

@@ -43,7 +43,7 @@ public class PostSeries {
     public PostGameInfo game;
 
     public List<PostMatchInfo> matches = Collections.emptyList();
-    public List<PostCaster> casters = Collections.emptyList();
+    public List<PostCasterInfo> casters;
     public List<PostBroadcaster> broadcasters = Collections.emptyList();
 
     @JsonProperty("has_incident_report")

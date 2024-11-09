@@ -19,22 +19,26 @@ public class GetPreviewCard {
     public String image = "";
     public String embed_url = "";
     public String blurhash = "";
+
     public static class HistoryItem {
         public String day; // unix timestamp
         public String uses; // counted usage
         public String accounts; // number of accounts using the tag
 
-        public HistoryItem() { }
+        public HistoryItem() {
+        }
 
         public HistoryItem(long day, int uses, int accounts) {
             this.day = (day * 60 * 60 * 24) + "";
-            this.uses = uses+"";
-            this.accounts = accounts+"";
+            this.uses = uses + "";
+            this.accounts = accounts + "";
         }
     }
+
     public List<HistoryItem> history = new ArrayList<>();
 
-    public GetPreviewCard() { }
+    public GetPreviewCard() {
+    }
 
     public GetPreviewCard(String url, String type) {
         this.url = url;
@@ -42,6 +46,7 @@ public class GetPreviewCard {
         try {
             URI uri = new URI(url);
             this.title = uri.getHost() + uri.getPath();
-        } catch (URISyntaxException e) {}
+        } catch (URISyntaxException e) {
+        }
     }
 }

@@ -1955,11 +1955,11 @@ public class ApolloApiController {
      * ======================================
      */
 
-     @GetMapping("/api/lol/series/{id}")
-     public Mono<GetSeries> getLolSeries(@PathVariable("id") int seriesId) {
-         return Mono.fromFuture(manager.getSeries(seriesId))
-                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
-     }
+    @GetMapping("/api/lol/series/{id}")
+    public Mono<GetSeries> getLolSeries(@PathVariable("id") int seriesId) {
+        return Mono.fromFuture(manager.getSeries(seriesId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
 
     @GetMapping("/api/lol/series/schedule")
     public Mono<List<GetSeries>> getLolSeriesSchedule(

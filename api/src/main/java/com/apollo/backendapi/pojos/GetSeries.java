@@ -60,8 +60,8 @@ public class GetSeries {
         this.game = new GetGameInfo(series.getGameId());
         this.matchIds = series.getMatchIds();
 
-        // Map casters directly
-        this.casters = series.getCasters().stream().map(GetCaster::new).collect(Collectors.toList());
+        // Initialize casters as empty; will be set in processSingleSeries
+        this.casters = null;
         this.broadcasters = series.getBroadcasters().stream().map(GetBroadcaster::new).collect(Collectors.toList());
 
         this.hasIncidentReport = series.isHasIncidentReport();
