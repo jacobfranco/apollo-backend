@@ -2,3 +2,4 @@ target/
 logs/
 api/.env
 .DS_Store
+settings.json
