@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.apollo.backend.data.LolTeamSummary;
 
 public class GetLolTeamSummary {
+    public int matchId;
     public GetLolRoster roster;
     public int score;
     public boolean isWinner;
@@ -18,6 +19,7 @@ public class GetLolTeamSummary {
     public List<GetLolPlayerSummary> players;
 
     public GetLolTeamSummary(LolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
+        this.matchId = teamSummary.getMatchId();
         this.roster = new GetLolRoster(teamSummary.getRoster());
         this.score = teamSummary.getScore();
         this.isWinner = teamSummary.isIsWinner();

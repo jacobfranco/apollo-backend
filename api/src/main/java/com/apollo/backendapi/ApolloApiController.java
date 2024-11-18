@@ -1995,7 +1995,6 @@ public class ApolloApiController {
      * League of Legends Match Endpoints
      * ======================================
      * - GET /api/lolmatches/{id}
-     * - GET /api/lolseries/series/{seriesId}
      * ======================================
      */
 
@@ -2005,21 +2004,10 @@ public class ApolloApiController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
-    @GetMapping("/api/matches/series/{seriesId}")
-    public Mono<List<GetMatch>> getLolMatchesForSeries(@PathVariable("seriesId") int seriesId) {
-        return Mono.fromFuture(manager.getMatchesForSeries(seriesId))
-                .doOnError(e -> logger.error("Error fetching matches for series: ", e))
-                .onErrorResume(e -> {
-                    logger.error("Error processing matches for series request", e);
-                    return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Error fetching matches for series", e));
-                });
-    }
-
     /*
      * League of Legends Team Endpoints
      * ======================================
-     * - GET /api/lolteams/{id}
+     * - GET /api/lol/teams/{id}
      * ======================================
      */
 
@@ -2027,6 +2015,12 @@ public class ApolloApiController {
     public Mono<GetTeam> getLolTeamWithStats(@PathVariable("id") int teamId) {
         return Mono.fromFuture(manager.getTeamWithLolStats(teamId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
+    }
+
+    @GetMapping("/api/lol/teams")
+    public Mono<List<GetTeam>> getAllLolTeamsWithStats() {
+        return Mono.fromFuture(manager.getAllTeamsWithLolStats())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No teams found")));
     }
 
     /*

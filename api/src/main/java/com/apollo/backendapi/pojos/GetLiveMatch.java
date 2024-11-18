@@ -11,7 +11,7 @@ public class GetLiveMatch {
     public GetMapInfo map;
     public String lifecycle;
     public int order;
-    public GetSeriesInfo series;
+    public int seriesId;
     public Instant deletedAt;
     public GetGameInfo game;
     public List<GetParticipant> participants;
@@ -24,7 +24,7 @@ public class GetLiveMatch {
         this.map = new GetMapInfo(match.getMapId());
         this.lifecycle = match.getLifecycle();
         this.order = match.getOrder();
-        this.series = new GetSeriesInfo(match.getSeriesId());
+        this.seriesId = match.getSeriesId();
         this.deletedAt = match.isSetDeletedAt() ? Instant.ofEpochMilli(match.getDeletedAt()) : null;
         this.game = new GetGameInfo(match.getGameId());
         this.participants = match.getParticipants().stream()

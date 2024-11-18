@@ -1,6 +1,12 @@
 package com.apollo.backendapi.pojos;
 
+import java.time.Instant;
+import java.util.Map;
+
+import com.apollo.backend.data.LolTeamSummary;
+
 public class GetTeamMatchStats {
+    public int matchId;
     public int score;
     public boolean isWinner;
     public int goldEarned;
@@ -10,8 +16,23 @@ public class GetTeamMatchStats {
     public GetLolStructures structures;
     public GetLolCreeps creeps;
 
-    // Update the constructor to accept GetLolTeamSummary
-    public GetTeamMatchStats(GetLolTeamSummary teamSummary) {
+    public GetTeamMatchStats(GetLolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
+
+        if (teamSummary == null) {
+            // Initialize default values
+            this.matchId = 0;
+            this.score = 0;
+            this.isWinner = false;
+            this.goldEarned = 0;
+            this.turretsDestroyed = 0;
+            this.inhibitorsDestroyed = 0;
+            this.faction = null;
+            this.structures = null;
+            this.creeps = null;
+            return;
+        }
+
+        this.matchId = teamSummary.matchId;
         this.score = teamSummary.score;
         this.isWinner = teamSummary.isWinner;
         this.goldEarned = teamSummary.goldEarned;
@@ -20,5 +41,32 @@ public class GetTeamMatchStats {
         this.faction = teamSummary.faction;
         this.structures = teamSummary.structures;
         this.creeps = teamSummary.creeps;
+    }
+
+    public GetTeamMatchStats(LolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
+
+        if (teamSummary == null) {
+            // Initialize default values
+            this.matchId = 0;
+            this.score = 0;
+            this.isWinner = false;
+            this.goldEarned = 0;
+            this.turretsDestroyed = 0;
+            this.inhibitorsDestroyed = 0;
+            this.faction = null;
+            this.structures = null;
+            this.creeps = null;
+            return;
+        }
+
+        this.matchId = teamSummary.getMatchId();
+        this.score = teamSummary.getScore();
+        this.isWinner = teamSummary.isIsWinner();
+        this.goldEarned = teamSummary.getGoldEarned();
+        this.turretsDestroyed = teamSummary.getTurretsDestroyed();
+        this.inhibitorsDestroyed = teamSummary.getInhibitorsDestroyed();
+        this.faction = teamSummary.isSetFaction() ? new GetLolFaction(teamSummary.getFaction()) : null;
+        this.structures = teamSummary.isSetStructures() ? new GetLolStructures(teamSummary.getStructures()) : null;
+        this.creeps = teamSummary.isSetCreeps() ? new GetLolCreeps(teamSummary.getCreeps(), assetMap) : null;
     }
 }

@@ -139,6 +139,24 @@ public class ApolloApiApplication {
                 ApolloWebHelpers.SigningKeyPair jacobKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(new Account("jacob", "jacob@foo.com", ApolloApiHelpers.encodePassword("jacob"),
                                 "en-US", UUID.randomUUID().toString(), jacobKeys.publicKey, ts += 1));
+                ApolloWebHelpers.SigningKeyPair jordanKeys = ApolloWebHelpers.generateKeys();
+                accountDepot.append(
+                                new Account("jordan", "jordan@apollo.now", ApolloApiHelpers.encodePassword("jordan"),
+                                                "en-US",
+                                                UUID.randomUUID().toString(), jordanKeys.publicKey, ts += 1));
+                ApolloWebHelpers.SigningKeyPair blakeKeys = ApolloWebHelpers.generateKeys();
+                accountDepot.append(
+                                new Account("blake", "blake@apollo.now", ApolloApiHelpers.encodePassword("blake"),
+                                                "en-US",
+                                                UUID.randomUUID().toString(), blakeKeys.publicKey, ts += 1));
+                ApolloWebHelpers.SigningKeyPair dadKeys = ApolloWebHelpers.generateKeys();
+                accountDepot.append(
+                                new Account("dad", "dad@foo.com", ApolloApiHelpers.encodePassword("dad"), "en-US",
+                                                UUID.randomUUID().toString(), dadKeys.publicKey, ts += 1));
+                ApolloWebHelpers.SigningKeyPair momKeys = ApolloWebHelpers.generateKeys();
+                accountDepot.append(
+                                new Account("mom", "mom@foo.com", ApolloApiHelpers.encodePassword("mom"), "en-US",
+                                                UUID.randomUUID().toString(), momKeys.publicKey, ts += 1));
 
                 // Populate and manipulate data for user relationships and statuses
                 List<Long> fooIds = new ArrayList<>();

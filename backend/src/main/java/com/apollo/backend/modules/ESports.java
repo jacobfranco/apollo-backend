@@ -2,15 +2,10 @@ package com.apollo.backend.modules;
 
 import com.rpl.rama.*;
 import com.rpl.rama.module.*;
-import com.rpl.rama.ops.*;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
-import com.apollo.backend.navs.*;
-import com.apollo.backend.ApolloHelpers.*;
 
 import static com.apollo.backend.ApolloHelpers.extractFields;
-
-import java.util.List;
 
 public class ESports implements RamaModule {
 
@@ -27,62 +22,16 @@ public class ESports implements RamaModule {
                                 .localTransform("$$seriesIdToSeries", Path.key("*id").termVal("*series"))
                                 .localTransform("$$startTimeToSeries",
                                                 Path.key("*start").key("*id").termVal("*series"));
-
-                stream.source("*seriesEditDepot", StreamSourceOptions.retryNone())
-                                .out("*editSeries")
-                                .macro(extractFields("*editSeries", "*id", "*edits"))
-                                .localSelect("$$seriesIdToSeries", Path.key("*id"))
-                                .out("*currentSeries")
-                                .macro(extractFields("*currentSeries", "*start"))
-                                .each(Ops.IDENTITY, "*start")
-                                .out("*oldStart")
-                                .each((Series series, List<EditSeriesField> edits) -> ApolloHelpers.applyEdits(series,
-                                                edits),
-                                                "*currentSeries", "*edits")
-                                .out("*updatedSeries")
-                                .macro(extractFields("*updatedSeries", "*start"))
-                                .each(Ops.IDENTITY, "*start")
-                                .out("*newStart")
-                                .localTransform("$$seriesIdToSeries",
-                                                Path.key("*id")
-                                                                .termVal("*updatedSeries"))
-                                .localTransform("$$startTimeToSeries",
-                                                Path.key("*newStart")
-                                                                .key("*id")
-                                                                .termVal("*updatedSeries"))
-                                .each(Ops.NOT_EQUAL, "*oldStart", "*newStart")
-                                .out("*startChanged")
-                                .ifTrue("*startChanged",
-                                                Block.localTransform("$$startTimeToSeries",
-                                                                Path.key("*oldStart")
-                                                                                .key("*id")
-                                                                                .termVoid()));
         }
 
         private static void declareMatchTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("match");
 
                 stream.pstate("$$matchIdToMatch", PState.mapSchema(Integer.class, Match.class));
-                stream.pstate("$$seriesIdToMatches",
-                                PState.mapSchema(Integer.class, PState.listSchema(Match.class)));
 
                 stream.source("*matchDepot").out("*match")
                                 .macro(extractFields("*match", "*id", "*seriesId"))
-                                .localTransform("$$matchIdToMatch", Path.key("*id").termVal("*match"))
-                                .hashPartition("*seriesId")
-                                .compoundAgg("$$seriesIdToMatches",
-                                                CompoundAgg.map("*seriesId", Agg.list("*match")));
-
-                stream.source("*matchEditDepot", StreamSourceOptions.retryNone()).out("*editMatch")
-                                .macro(extractFields("*editMatch", "*id", "*edits"))
-                                .each(Ops.EXPLODE, "*edits").out("*edit")
-                                .each((EditMatchField editMatchField, OutputCollector collector) -> {
-                                        collector.emit(editMatchField.getSetField().getFieldName(),
-                                                        editMatchField.getFieldValue());
-                                }, "*edit").out("*fieldName", "*fieldValue")
-                                .localTransform("$$matchIdToMatch", Path.must("*id")
-                                                .customNavBuilder(TField::new, "*fieldName")
-                                                .termVal("*fieldValue"));
+                                .localTransform("$$matchIdToMatch", Path.key("*id").termVal("*match"));
 
         }
 
@@ -199,6 +148,15 @@ public class ESports implements RamaModule {
                                                 Path.key("*matchId").termVal("*liveSummary"));
         }
 
+        private static void declareLolTeamAggStatsTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("lolTeamAggStats");
+                stream.pstate("$$teamIdToLolTeamAggStats", PState.mapSchema(Integer.class, LolTeamAggStats.class));
+
+                stream.source("*lolTeamAggStatsDepot").out("*aggStats")
+                                .macro(extractFields("*aggStats", "*id"))
+                                .localTransform("$$teamIdToLolTeamAggStats", Path.key("*id").termVal("*aggStats"));
+        }
+
         private void declareQueries(Topologies topologies) {
                 topologies.query("getSeriesFromSeriesId", "*id").out("*result")
                                 .hashPartition("*id")
@@ -217,11 +175,6 @@ public class ESports implements RamaModule {
                                 .localSelect("$$matchIdToMatch", Path.key("*id")).out("*result")
                                 .originPartition();
 
-                topologies.query("getMatchesFromSeriesId", "*seriesId").out("*result")
-                                .hashPartition("*seriesId")
-                                .localSelect("$$seriesIdToMatches", Path.key("*seriesId")).out("*result")
-                                .originPartition();
-
                 topologies.query("getRosterFromRosterId", "*id").out("*result")
                                 .hashPartition("*id")
                                 .localSelect("$$rosterIdToRoster", Path.key("*id")).out("*result")
@@ -231,6 +184,13 @@ public class ESports implements RamaModule {
                                 .hashPartition("*id")
                                 .localSelect("$$teamIdToTeam", Path.key("*id")).out("*result")
                                 .originPartition();
+
+                topologies.query("getAllTeamIds").out("*result")
+                                .allPartition()
+                                .localSelect("$$teamIdToTeam", Path.mapKeys())
+                                .out("*ids")
+                                .originPartition()
+                                .agg(Agg.list("*ids")).out("*result");
 
                 topologies.query("getPlayerFromPlayerId", "*id").out("*result")
                                 .hashPartition("*id")
@@ -276,14 +236,18 @@ public class ESports implements RamaModule {
                                 .hashPartition("*matchId")
                                 .localSelect("$$liveLolMatchIdToSummary", Path.key("*matchId")).out("*result")
                                 .originPartition();
+
+                topologies.query("getLolTeamAggStatsFromTeamId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$teamIdToLolTeamAggStats", Path.key("*id")).out("*result")
+                                .originPartition();
+
         }
 
         @Override
         public void define(Setup setup, Topologies topologies) {
                 setup.declareDepot("*seriesDepot", Depot.hashBy(ApolloHelpers.ExtractSeriesId.class));
-                setup.declareDepot("*seriesEditDepot", Depot.hashBy(ApolloHelpers.ExtractSeriesId.class));
                 setup.declareDepot("*matchDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
-                setup.declareDepot("*matchEditDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
                 setup.declareDepot("*rosterDepot", Depot.hashBy(ApolloHelpers.ExtractRosterId.class));
                 setup.declareDepot("*teamDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
                 setup.declareDepot("*playerDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
@@ -295,6 +259,7 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*lolPlayerSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolTeamSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractLolTeamId.class));
                 setup.declareDepot("*liveLolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractLiveMatchId.class));
+                setup.declareDepot("*lolTeamAggStatsDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
                 declareSeriesTopology(topologies);
                 declareMatchTopology(topologies);
                 declareRosterTopology(topologies);
@@ -308,6 +273,7 @@ public class ESports implements RamaModule {
                 declareLolPlayerSeasonStatsTopology(topologies);
                 declareLolTeamSeasonStatsTopology(topologies);
                 declareLiveLolMatchSummaryTopology(topologies);
+                declareLolTeamAggStatsTopology(topologies);
                 declareQueries(topologies);
         }
 }

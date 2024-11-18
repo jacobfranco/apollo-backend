@@ -201,9 +201,7 @@ public class ApolloApiManager {
 
     // ESports Depots
     private final Depot seriesDepot;
-    private final Depot seriesEditDepot;
     private final Depot matchDepot;
-    private final Depot matchEditDepot;
     private final Depot rosterDepot;
     private final Depot teamDepot;
     private final Depot playerDepot;
@@ -215,14 +213,15 @@ public class ApolloApiManager {
     private final Depot tournamentDepot;
     private final Depot substageDepot;
     private final Depot casterDepot;
+    private final Depot lolTeamAggStatsDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
     private final QueryTopologyClient<Map> getSeriesFromStartTime;
     private final QueryTopologyClient<Match> getMatchFromMatchId;
-    private final QueryTopologyClient<List<Match>> getMatchesFromSeriesId;
     private final QueryTopologyClient<Roster> getRosterFromRosterId;
     private final QueryTopologyClient<Team> getTeamFromTeamId;
+    private final QueryTopologyClient<List<Integer>> getAllTeamIds;
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<Asset> getAssetFromAssetId;
@@ -232,6 +231,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Substage> getSubstageFromSubstageId;
     private final QueryTopologyClient<Caster> getCasterFromCasterId;
     private final QueryTopologyClient<LiveLolMatchSummary> getLiveLolMatchSummaryFromMatchId;
+    private final QueryTopologyClient<LolTeamAggStats> getLolTeamAggStatsFromTeamId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -354,9 +354,7 @@ public class ApolloApiManager {
 
         // ESports Depots
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
-        seriesEditDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesEditDepot");
         matchDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchDepot");
-        matchEditDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchEditDepot");
         rosterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*rosterDepot");
         teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
         playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
@@ -368,14 +366,15 @@ public class ApolloApiManager {
         tournamentDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*tournamentDepot");
         substageDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*substageDepot");
         casterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*casterDepot");
+        lolTeamAggStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolTeamAggStatsDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
         getSeriesFromStartTime = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromStartTime");
         getMatchFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchFromMatchId");
-        getMatchesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchesFromSeriesId");
         getRosterFromRosterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getRosterFromRosterId");
         getTeamFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getTeamFromTeamId");
+        getAllTeamIds = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAllTeamIds");
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
         getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
@@ -387,6 +386,7 @@ public class ApolloApiManager {
         getCasterFromCasterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getCasterFromCasterId");
         getLiveLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
                 "getLiveLolMatchSummaryFromMatchId");
+        getLolTeamAggStatsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolTeamAggStatsFromTeamId");
 
     }
 
@@ -1932,6 +1932,35 @@ public class ApolloApiManager {
         }
     }
 
+    private void fetchAndStoreMatch(int matchId) {
+        try {
+            waitIfNecessary();
+            String matchData = apiClient.getMatch(matchId);
+            logger.info("fetchAndStoreMatch - API Response for matchId " + matchId + ": " + matchData);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostMatch> postMatch = parseJsonToPostMatchList(matchData);
+            logger.info("fetchAndStoreMatch - Parsed PostMatch: " + objectMapper.writeValueAsString(postMatch));
+
+            Match match = convertToThriftMatch(postMatch.get(0));
+            logger.info("fetchAndStoreMatch - Converted Match: " + objectMapper.writeValueAsString(match));
+
+            matchDepot.appendAsync(match).join();
+            fetchAndStoreRostersForMatch(match.getId());
+
+            if (isCoverageAvailable(match)) {
+                logger.info("fetchAndStoreMatch - Fetching LoL Match Summary for matchId: " + match.getId());
+                fetchAndStoreLolMatchSummary(match.getId());
+            } else {
+                logger.info("fetchAndStoreMatch - Match " + match.getId()
+                        + " summary is not available. Skipping summary fetch.");
+            }
+
+        } catch (Exception e) {
+            handleException(e, "match", matchId);
+        }
+    }
+
     private void fetchAndStoreMatchesForSeries(int seriesId) {
         try {
             waitIfNecessary();
@@ -2068,6 +2097,7 @@ public class ApolloApiManager {
                 logger.info("fetchAndStorePlayers - Fetching next batch with skip: " + (skip + take));
                 fetchAndStorePlayers(filter, order, skip + take, take);
             } else {
+
                 logger.info("fetchAndStorePlayers - All active players have been fetched and stored.");
             }
         } catch (Exception e) {
@@ -2107,6 +2137,10 @@ public class ApolloApiManager {
                 CompletableFuture<Void> homeTeamFuture = storeTeamSummary(lolSummary.teams.getHome());
                 CompletableFuture<Void> awayTeamFuture = storeTeamSummary(lolSummary.teams.getAway());
 
+                // Update aggregated stats
+                homeTeamFuture.thenRun(() -> updateTeamAggStats(lolSummary.getTeams().getHome()));
+                awayTeamFuture.thenRun(() -> updateTeamAggStats(lolSummary.getTeams().getAway()));
+
                 CompletableFuture.allOf(homeTeamFuture, awayTeamFuture).join();
                 logger.info("fetchAndStoreLolMatchSummary - Stored Team Summaries for matchId " + matchId);
             } else {
@@ -2136,6 +2170,47 @@ public class ApolloApiManager {
                         return CompletableFuture.completedFuture(null);
                     }
                 });
+    }
+
+    private void updateTeamAggStats(LolTeamSummary teamSummary) {
+        CompletableFuture.runAsync(() -> {
+            int teamId = teamSummary.getTeamId();
+            logger.info("updateTeamAggregatedStats - Updating aggregated stats for teamId: " + teamId);
+
+            getLolTeamAggStatsFromTeamId.invokeAsync(teamId)
+                    .thenCompose(existingStats -> {
+                        if (existingStats == null) {
+                            existingStats = new LolTeamAggStats();
+                            existingStats.setId(teamId);
+                        }
+
+                        // Update aggregated stats
+                        existingStats.setTotalMatches(existingStats.getTotalMatches() + 1);
+                        if (teamSummary.isIsWinner()) {
+                            existingStats.setTotalWins(existingStats.getTotalWins() + 1);
+                        } else {
+                            existingStats.setTotalLosses(existingStats.getTotalLosses() + 1);
+                        }
+                        existingStats.setTotalScore(existingStats.getTotalScore() + teamSummary.getScore());
+                        existingStats
+                                .setTotalGoldEarned(existingStats.getTotalGoldEarned() + teamSummary.getGoldEarned());
+                        existingStats.setTotalTurretsDestroyed(
+                                existingStats.getTotalTurretsDestroyed() + teamSummary.getTurretsDestroyed());
+                        existingStats.setTotalInhibitorsDestroyed(
+                                existingStats.getTotalInhibitorsDestroyed() + teamSummary.getInhibitorsDestroyed());
+
+                        // Store updated aggregated stats
+                        return lolTeamAggStatsDepot.appendAsync(existingStats)
+                                .thenRun(() -> logger.info(
+                                        "updateTeamAggregatedStats - Successfully updated aggregated stats for teamId: "
+                                                + teamId));
+                    })
+                    .exceptionally(e -> {
+                        logger.error("updateTeamAggStats - Error updating aggregated stats for teamId "
+                                + teamSummary.getTeamId(), e);
+                        return null;
+                    });
+        });
     }
 
     private CompletableFuture<Integer> getTeamIdFromRosterId(int rosterId) {
@@ -2720,23 +2795,15 @@ public class ApolloApiManager {
             return summary;
         }
 
-        if (postSummary.match != null) {
-            summary.setId(postSummary.match.id);
-            summary.setMatch(convertToThriftLolMatch(postSummary.match));
-        } else {
-            summary.setMatch(null);
-        }
-
-        summary.setTeams(postSummary.teams != null ? convertToThriftLolTeams(postSummary.teams) : null);
-        summary.setPits(postSummary.pits != null ? convertToThriftLolPits(postSummary.pits) : null);
+        int matchId = (postSummary.match != null) ? postSummary.match.id : 0;
+        summary.setId(matchId);
+        summary.setMatch((postSummary.match != null) ? convertToThriftLolMatch(postSummary.match) : null);
+        summary.setTeams((postSummary.teams != null) ? convertToThriftLolTeams(postSummary.teams, matchId) : null);
+        summary.setPits((postSummary.pits != null) ? convertToThriftLolPits(postSummary.pits) : null);
         summary.setLatestEventsChannelIndex(Math.max(postSummary.latest_events_channel_index, 0L));
         summary.setLatestStatesChannelIndex(Math.max(postSummary.latest_states_channel_index, 0L));
-
-        if (postSummary.timestamp != null) {
-            summary.setTimestamp(postSummary.timestamp.toString());
-        } else {
-            summary.setTimestamp(Instant.ofEpochMilli(System.currentTimeMillis()).toString());
-        }
+        summary.setTimestamp(
+                (postSummary.timestamp != null) ? postSummary.timestamp.toString() : Instant.now().toString());
 
         Set<Integer> assetIds = new HashSet<>();
         collectAssetIds(postSummary, assetIds);
@@ -3037,49 +3104,32 @@ public class ApolloApiManager {
     public CompletableFuture<GetTeam> getTeamWithLolStats(int teamId) {
         logger.info("getTeamWithLolStats - Initiating fetch for teamId: {}", teamId);
 
-        // Asynchronously fetch the team data
-        CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId)
-                .exceptionally(e -> {
-                    logger.error("getTeamWithLolStats - Failed to fetch Team with ID {}: {}", teamId, e.getMessage());
-                    return null;
-                });
+        CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId);
+        CompletableFuture<LolTeamAggStats> aggStatsFuture = getLolTeamAggStatsFromTeamId.invokeAsync(teamId);
+        CompletableFuture<List<LolTeamSummary>> seasonStatsFuture = getLolTeamSeasonStatsFromTeamId.invokeAsync(teamId);
 
-        // Asynchronously fetch the team's League of Legends season statistics
-        CompletableFuture<List<LolTeamSummary>> statsFuture = getLolTeamSeasonStatsFromTeamId.invokeAsync(teamId)
-                .exceptionally(e -> {
-                    logger.error("getTeamWithLolStats - Failed to fetch LoL stats for Team ID {}: {}", teamId,
-                            e.getMessage());
-                    return Collections.emptyList();
-                });
-
-        // Wait for both the team data and stats to be fetched
-        return CompletableFuture.allOf(teamFuture, statsFuture)
+        return CompletableFuture.allOf(teamFuture, aggStatsFuture, seasonStatsFuture)
                 .thenCompose(v -> {
                     Team team = teamFuture.join();
-                    List<LolTeamSummary> seasonStats = statsFuture.join();
+                    LolTeamAggStats aggStats = aggStatsFuture.join();
+                    List<LolTeamSummary> seasonStats = seasonStatsFuture.join();
 
-                    if (team == null) {
-                        logger.warn("getTeamWithLolStats - No Team found with ID: {}", teamId);
+                    if (team == null || aggStats == null) {
+                        logger.warn("getTeamWithLolStats - No Team or Aggregated Stats found with ID: {}", teamId);
                         return CompletableFuture.completedFuture(null);
                     }
 
-                    logger.info("getTeamWithLolStats - Successfully fetched Team and LoL stats for teamId: {}", teamId);
-
-                    // Extract all unique asset IDs from the season statistics
+                    // Collect asset IDs from seasonStats
                     Set<Integer> assetIds = seasonStats.stream()
                             .filter(Objects::nonNull)
                             .map(this::collectTeamAssetIds)
                             .flatMap(Set::stream)
                             .collect(Collectors.toSet());
 
-                    logger.debug("getTeamWithLolStats - Collected asset IDs: {}", assetIds);
-
-                    // Asynchronously fetch all assets based on the collected asset IDs
                     List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
                             .map(this::getAsset)
                             .collect(Collectors.toList());
 
-                    // Wait for all asset fetch operations to complete
                     return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
                             .thenApply(x -> {
                                 Map<Integer, GetAsset> assetMap = assetFutures.stream()
@@ -3087,23 +3137,41 @@ public class ApolloApiManager {
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toMap(Asset::getId, GetAsset::new));
 
-                                logger.debug("getTeamWithLolStats - Fetched {} assets.", assetMap.size());
-
-                                // Create and return a GetTeam object enriched with season stats and assets
-                                GetTeam getTeam = new GetTeam(team, seasonStats, assetMap);
+                                // Create and return a GetTeam object enriched with aggregated stats and season
+                                // stats
+                                GetTeam getTeam = new GetTeam(team, aggStats, seasonStats, assetMap);
                                 logger.info("getTeamWithLolStats - Successfully constructed GetTeam for teamId: {}",
                                         teamId);
                                 return getTeam;
-                            })
-                            .exceptionally(e -> {
-                                logger.error("getTeamWithLolStats - Error while constructing GetTeam for teamId {}: {}",
-                                        teamId, e.getMessage());
-                                return null;
                             });
+                });
+    }
+
+    public CompletableFuture<List<Integer>> getAllTeamIds() {
+        return getAllTeamIds.invokeAsync();
+    }
+
+    public CompletableFuture<List<GetTeam>> getAllTeamsWithLolStats() {
+        return getAllTeamIds()
+                .thenCompose(teamIds -> {
+                    // Map each team ID to a CompletableFuture<GetTeam>
+                    List<CompletableFuture<GetTeam>> teamFutures = teamIds.stream()
+                            .map(this::getTeamWithLolStats)
+                            .collect(Collectors.toList());
+
+                    // Wait for all futures to complete
+                    CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                            teamFutures.toArray(new CompletableFuture[0]));
+
+                    // Collect results into a List<GetTeam>
+                    return allFutures.thenApply(v -> teamFutures.stream()
+                            .map(CompletableFuture::join)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList()));
                 })
                 .exceptionally(e -> {
-                    logger.error("getTeamWithLolStats - Unexpected error for teamId {}: {}", teamId, e.getMessage());
-                    return null;
+                    logger.error("Error fetching all teams with LoL stats: {}", e.getMessage());
+                    return Collections.emptyList();
                 });
     }
 
@@ -3256,84 +3324,6 @@ public class ApolloApiManager {
         return getSeriesSchedule(startOfWeek, endOfWeek);
     }
 
-    public CompletableFuture<List<GetMatch>> getMatchesForSeries(int seriesId) {
-        logger.info("getMatchesForSeries - Initiating fetch for seriesId: {}", seriesId);
-
-        // Asynchronously fetch all matches associated with the given seriesId
-        return getMatchesFromSeriesId.invokeAsync(seriesId)
-                .exceptionally(e -> {
-                    logger.error("getMatchesForSeries - Failed to fetch matches for seriesId {}: {}", seriesId,
-                            e.getMessage());
-                    return Collections.emptyList();
-                })
-                .thenCompose(matches -> {
-                    if (matches == null || matches.isEmpty()) {
-                        logger.warn("getMatchesForSeries - No matches found for seriesId: {}", seriesId);
-                        return CompletableFuture.completedFuture(Collections.emptyList());
-                    }
-
-                    logger.info("getMatchesForSeries - Fetched {} matches for seriesId: {}", matches.size(), seriesId);
-
-                    // For each match, asynchronously fetch and enrich participant data
-                    List<CompletableFuture<GetMatch>> matchFutures = matches.stream()
-                            .map(match -> {
-                                logger.debug("getMatchesForSeries - Processing matchId: {}", match.getId());
-
-                                // Asynchronously fetch and store LoL match summary if applicable
-                                CompletableFuture<GetLolMatchSummary> lolSummaryFuture = (match.getGameId() == 2)
-                                        ? getLolMatchSummary(match.getId())
-                                        : CompletableFuture.completedFuture(null);
-
-                                // Asynchronously fetch and enrich participant data
-                                List<CompletableFuture<GetParticipant>> participantFutures = match.getParticipants()
-                                        .stream()
-                                        .map(this::fetchFullParticipantData)
-                                        .collect(Collectors.toList());
-
-                                // Wait for all participant data and LoL summary to be fetched
-                                return CompletableFuture.allOf(participantFutures.toArray(new CompletableFuture[0]))
-                                        .thenApply(v -> {
-                                            GetMatch getMatch = new GetMatch(match);
-                                            getMatch.participants = participantFutures.stream()
-                                                    .map(CompletableFuture::join)
-                                                    .collect(Collectors.toList());
-
-                                            GetLolMatchSummary lolSummary = lolSummaryFuture.join();
-                                            if (lolSummary != null) {
-                                                mergeStatsIntoParticipants(getMatch.participants, lolSummary);
-                                                logger.debug(
-                                                        "getMatchesForSeries - Merged LoL stats into participants for matchId: {}",
-                                                        match.getId());
-                                            }
-
-                                            logger.info(
-                                                    "getMatchesForSeries - Successfully constructed GetMatch for matchId: {}",
-                                                    match.getId());
-                                            return getMatch;
-                                        })
-                                        .exceptionally(e -> {
-                                            logger.error("getMatchesForSeries - Error processing matchId {}: {}",
-                                                    match.getId(), e.getMessage());
-                                            return null;
-                                        });
-                            })
-                            .collect(Collectors.toList());
-
-                    // Wait for all match enrichment operations to complete
-                    return CompletableFuture.allOf(matchFutures.toArray(new CompletableFuture[0]))
-                            .thenApply(v -> matchFutures.stream()
-                                    .map(CompletableFuture::join)
-                                    .filter(Objects::nonNull)
-                                    .collect(Collectors.toList()))
-                            .exceptionally(e -> {
-                                logger.error(
-                                        "getMatchesForSeries - Error while constructing GetMatch list for seriesId {}: {}",
-                                        seriesId, e.getMessage());
-                                return Collections.emptyList();
-                            });
-                });
-    }
-
     private CompletableFuture<GetParticipant> fetchFullParticipantData(Participant participant) {
         if (participant.getRoster() == null) {
             logger.warn("fetchFullParticipantData - Participant's roster is null");
@@ -3454,7 +3444,7 @@ public class ApolloApiManager {
 
         if (participant != null && participant.roster != null && participant.roster.team != null) {
             // Enrich the team with match statistics from the team summary
-            participant.roster.team.matchStats = new GetTeamMatchStats(teamSummary);
+            participant.roster.team.matchStats = new GetTeamMatchStats(teamSummary, assetMap);
             logger.debug("processTeamSummary - Set matchStats for teamId: {}", participant.roster.team.id);
 
             // Create a map from player ID to GetPlayer for quick lookup
@@ -3956,14 +3946,14 @@ public class ApolloApiManager {
         return teamIds;
     }
 
-    private LolTeams convertToThriftLolTeams(PostLolTeams postTeams) {
+    private LolTeams convertToThriftLolTeams(PostLolTeams postTeams, int matchId) {
         LolTeams teams = new LolTeams();
-        teams.setHome(convertToThriftLolTeamSummary(postTeams.home));
-        teams.setAway(convertToThriftLolTeamSummary(postTeams.away));
+        teams.setHome(convertToThriftLolTeamSummary(postTeams.home, matchId));
+        teams.setAway(convertToThriftLolTeamSummary(postTeams.away, matchId));
         return teams;
     }
 
-    private LolTeamSummary convertToThriftLolTeamSummary(PostLolTeamSummary postTeam) {
+    private LolTeamSummary convertToThriftLolTeamSummary(PostLolTeamSummary postTeam, int matchId) {
         LolTeamSummary team = new LolTeamSummary();
         team.setRoster(convertToThriftLolRoster(postTeam.roster));
         team.setScore(postTeam.score);
@@ -3977,6 +3967,7 @@ public class ApolloApiManager {
         team.setPlayers(postTeam.players.stream()
                 .map(this::convertToThriftLolPlayerSummary)
                 .collect(Collectors.toList()));
+        team.setMatchId(matchId);
         return team;
     }
 
@@ -4919,6 +4910,7 @@ public class ApolloApiManager {
                 return;
             }
 
+            // Extract the series ID from the state
             JsonNode stateNode = payload.get("state");
             if (stateNode == null || !stateNode.has("id")) {
                 logger.warn("Missing series ID in series update message");
@@ -4926,332 +4918,54 @@ public class ApolloApiManager {
             }
             int seriesId = stateNode.get("id").asInt();
 
+            // Extract the list of patches
             JsonNode patchesNode = payload.get("patch");
             if (patchesNode == null || !patchesNode.isArray()) {
                 logger.warn("No patches found in series update message");
                 return;
             }
 
-            // Fetch current series state
-            CompletableFuture<Series> seriesFuture = getSeriesFromSeriesId.invokeAsync(seriesId);
-
-            seriesFuture.thenAccept(currentSeries -> {
-                if (currentSeries == null) {
-                    logger.warn("Series with ID {} not found in data store", seriesId);
-                    return;
+            boolean startTimeChanged = false;
+            for (JsonNode patch : patchesNode) {
+                String path = patch.get("path").asText();
+                if (path.equals("/start")) {
+                    startTimeChanged = true;
+                    break;
                 }
+            }
 
-                // Apply patches to a copy of the current series
-                Series updatedSeries = applyPatchesToSeries(currentSeries, patchesNode);
+            String filter = String.format("id=" + seriesId);
 
-                if (updatedSeries != null) {
-                    // Create edits by comparing old and new state
-                    List<EditSeriesField> edits = createEditSeriesFields(currentSeries, updatedSeries);
-                    if (!edits.isEmpty()) {
-                        EditSeries editSeries = new EditSeries(seriesId, edits, System.currentTimeMillis());
+            if (startTimeChanged) {
+                // Handle deletion of old entry from data store
+                ApolloHelpers.removeOldSeries(seriesId);
+            }
 
-                        // Append the edit to the seriesEditDepot
-                        seriesEditDepot.appendAsync(editSeries).thenCompose(res -> {
-                            logger.info("Series {} updated successfully", seriesId);
-                            return getSeries(seriesId);
-                        }).thenAccept(getSeries -> {
-                            ApolloApiStreamingConfig.sendSeriesUpdate(getSeries);
-                        }).exceptionally(ex -> {
-                            logger.error("Failed to update series {}", seriesId, ex);
-                            return null;
-                        });
-                    }
+            // Wrap fetchAndStoreSeries in a CompletableFuture
+            CompletableFuture<Void> fetchFuture = CompletableFuture.runAsync(() -> {
+                fetchAndStoreSeries(filter, "", 0, 1);
+            });
+
+            // Chain the calls after the fetch is complete
+            fetchFuture.thenCompose(voidResult -> {
+                // Now retrieve the series from the data store
+                return getSeries(seriesId);
+            }).thenAccept(getSeries -> {
+                if (getSeries != null) {
+                    // Broadcast the updated series to clients
+                    ApolloApiStreamingConfig.sendSeriesUpdate(getSeries);
+                    logger.info("Series {} updated and broadcasted successfully", seriesId);
+                } else {
+                    logger.warn("Failed to retrieve series with ID {} from data store", seriesId);
                 }
             }).exceptionally(ex -> {
-                logger.error("Error fetching series with ID {}", seriesId, ex);
+                logger.error("Error processing series update for ID {}", seriesId, ex);
                 return null;
             });
+
         } catch (Exception e) {
             logger.error("Error processing series update message", e);
         }
-    }
-
-    // Method to apply patches to a series
-    private Series applyPatchesToSeries(Series currentSeries, JsonNode patchesNode) {
-        try {
-            // Deep copy the currentSeries to avoid mutating the original
-            Series updatedSeries = currentSeries.deepCopy();
-
-            for (JsonNode patch : patchesNode) {
-                String op = patch.get("op").asText();
-                String path = patch.get("path").asText();
-                JsonNode valueNode = patch.get("value");
-
-                if ("replace".equals(op) || "add".equals(op)) {
-                    applyPatchToSeries(updatedSeries, path, valueNode);
-                }
-                // Handle "remove" operations if needed
-            }
-
-            return updatedSeries;
-        } catch (Exception e) {
-            logger.error("Error applying patches to series", e);
-            return null;
-        }
-    }
-
-    // Method to apply a single patch to a series
-    private void applyPatchToSeries(Series series, String path, JsonNode valueNode) throws JsonProcessingException {
-        // Remove leading slash from path
-        path = path.startsWith("/") ? path.substring(1) : path;
-
-        switch (path) {
-            case "title":
-                series.setTitle(valueNode.asText());
-                break;
-            case "start":
-                series.setStart(parseTimestamp(valueNode));
-                break;
-            case "end":
-                series.setEnd(parseTimestamp(valueNode));
-                break;
-            case "postponed_from":
-                series.setPostponedFrom(parseTimestamp(valueNode));
-                break;
-            case "deleted_at":
-                series.setDeletedAt(parseTimestamp(valueNode));
-                break;
-            case "lifecycle":
-                series.setLifecycle(valueNode.asText());
-                break;
-            case "tier":
-                series.setTier(valueNode.asInt());
-                break;
-            case "best_of":
-                series.setBestOf(valueNode.asInt());
-                break;
-            case "chain":
-                List<Integer> chainIds = new ArrayList<>();
-                valueNode.forEach(node -> chainIds.add(node.asInt()));
-                series.setChainIds(chainIds);
-                break;
-            case "streamed":
-                series.setStreamed(valueNode.asBoolean());
-                break;
-            case "bracket_position":
-                BracketPosition bracketPosition = objectMapper.treeToValue(valueNode, BracketPosition.class);
-                series.setBracketPosition(bracketPosition);
-                break;
-            case "participants":
-                updateSeriesParticipants(series, valueNode);
-                break;
-            case "tournament":
-                series.setTournamentId(valueNode.get("id").asInt());
-                break;
-            case "substage":
-                series.setSubstageId(valueNode.get("id").asInt());
-                break;
-            case "game":
-                series.setGameId(valueNode.get("id").asInt());
-                break;
-            case "matches":
-                List<Integer> matchIds = new ArrayList<>();
-                valueNode.forEach(node -> matchIds.add(node.get("id").asInt()));
-                series.setMatchIds(matchIds);
-                break;
-            case "casters":
-                List<Caster> casters = new ArrayList<>();
-                valueNode.forEach(node -> {
-                    try {
-                        Caster caster = objectMapper.treeToValue(node, Caster.class);
-                        casters.add(caster);
-                    } catch (JsonProcessingException e) {
-                        logger.error("Error parsing caster", e);
-                    }
-                });
-                series.setCasters(casters);
-                break;
-            case "broadcasters":
-                List<Broadcaster> broadcasters = new ArrayList<>();
-                valueNode.forEach(node -> {
-                    try {
-                        Broadcaster broadcaster = objectMapper.treeToValue(node, Broadcaster.class);
-                        broadcasters.add(broadcaster);
-                    } catch (JsonProcessingException e) {
-                        logger.error("Error parsing broadcaster", e);
-                    }
-                });
-                series.setBroadcasters(broadcasters);
-                break;
-            case "has_incident_report":
-                series.setHasIncidentReport(valueNode.asBoolean());
-                break;
-            case "coverage":
-                series.setCoverage(convertCoverage(valueNode));
-                break;
-            case "format":
-                series.setFormatBestOf(valueNode.get("best_of").asInt());
-                break;
-            case "game_version":
-                GameVersion gameVersion = objectMapper.treeToValue(valueNode, GameVersion.class);
-                series.setGameVersion(gameVersion);
-                break;
-            case "resource_version":
-                series.setResourceVersion(valueNode.asLong());
-                break;
-            case "created_at":
-                series.setCreatedAt(parseTimestamp(valueNode));
-                break;
-            case "updated_at":
-                series.setUpdatedAt(parseTimestamp(valueNode));
-                break;
-            default:
-                if (path.startsWith("participants/")) {
-                    updateSeriesParticipantField(series, path, valueNode);
-                } else {
-                    logger.warn("Unhandled series update path: {}", path);
-                }
-                break;
-        }
-    }
-
-    // Method to update series participants
-    private void updateSeriesParticipants(Series series, JsonNode participantsNode) throws JsonProcessingException {
-        List<Participant> participants = new ArrayList<>();
-
-        for (JsonNode participantNode : participantsNode) {
-            Participant participant = convertParticipant(participantNode);
-            participants.add(participant);
-        }
-
-        series.setParticipants(participants);
-    }
-
-    // Method to update a specific participant field in a series
-    private void updateSeriesParticipantField(Series series, String path, JsonNode valueNode)
-            throws JsonProcessingException {
-        String[] parts = path.split("/");
-        if (parts.length < 3) {
-            logger.warn("Invalid participant path: {}", path);
-            return;
-        }
-        int index = Integer.parseInt(parts[1]);
-        String field = parts[2];
-
-        List<Participant> participants = series.getParticipants();
-        if (participants == null) {
-            participants = new ArrayList<>();
-            series.setParticipants(participants);
-        }
-
-        // Ensure list has enough capacity
-        while (participants.size() <= index) {
-            participants.add(new Participant());
-        }
-
-        Participant participant = participants.get(index);
-
-        switch (field) {
-            case "score":
-                participant.setScore(valueNode.asInt());
-                break;
-            case "winner":
-                participant.setWinner(valueNode.asBoolean());
-                break;
-            case "forfeit":
-                participant.setForfeit(valueNode.asBoolean());
-                break;
-            case "seed":
-                participant.setSeed(valueNode.asInt());
-                break;
-            case "stats":
-                participant.setStats(convertParticipantStats(valueNode));
-                break;
-            case "roster":
-                participant.setRoster(convertToThriftRoster(valueNode));
-                break;
-            default:
-                logger.warn("Unhandled participant field: {}", field);
-                break;
-        }
-    }
-
-    // Method to create edit fields by comparing states
-    private List<EditSeriesField> createEditSeriesFields(Series currentSeries, Series updatedSeries) {
-        List<EditSeriesField> edits = new ArrayList<>();
-
-        if (!Objects.equals(currentSeries.getTitle(), updatedSeries.getTitle())) {
-            edits.add(EditSeriesField.title(updatedSeries.getTitle()));
-        }
-        if (currentSeries.getStart() != updatedSeries.getStart()) {
-            edits.add(EditSeriesField.start(updatedSeries.getStart()));
-        }
-        if (currentSeries.getEnd() != updatedSeries.getEnd()) {
-            edits.add(EditSeriesField.end(updatedSeries.getEnd()));
-        }
-        if (currentSeries.getPostponedFrom() != updatedSeries.getPostponedFrom()) {
-            edits.add(EditSeriesField.postponedFrom(updatedSeries.getPostponedFrom()));
-        }
-        if (currentSeries.getDeletedAt() != updatedSeries.getDeletedAt()) {
-            edits.add(EditSeriesField.deletedAt(updatedSeries.getDeletedAt()));
-        }
-        if (!Objects.equals(currentSeries.getLifecycle(), updatedSeries.getLifecycle())) {
-            edits.add(EditSeriesField.lifecycle(updatedSeries.getLifecycle()));
-        }
-        if (currentSeries.getTier() != updatedSeries.getTier()) {
-            edits.add(EditSeriesField.tier(updatedSeries.getTier()));
-        }
-        if (currentSeries.getBestOf() != updatedSeries.getBestOf()) {
-            edits.add(EditSeriesField.bestOf(updatedSeries.getBestOf()));
-        }
-        if (!Objects.equals(currentSeries.getChainIds(), updatedSeries.getChainIds())) {
-            edits.add(EditSeriesField.chainIds(updatedSeries.getChainIds()));
-        }
-        if (currentSeries.isStreamed() != updatedSeries.isStreamed()) {
-            edits.add(EditSeriesField.streamed(updatedSeries.isStreamed()));
-        }
-        if (!Objects.equals(currentSeries.getBracketPosition(), updatedSeries.getBracketPosition())) {
-            edits.add(EditSeriesField.bracketPosition(updatedSeries.getBracketPosition()));
-        }
-        if (!Objects.equals(currentSeries.getParticipants(), updatedSeries.getParticipants())) {
-            edits.add(EditSeriesField.participants(updatedSeries.getParticipants()));
-        }
-        if (currentSeries.getTournamentId() != updatedSeries.getTournamentId()) {
-            edits.add(EditSeriesField.tournamentId(updatedSeries.getTournamentId()));
-        }
-        if (currentSeries.getSubstageId() != updatedSeries.getSubstageId()) {
-            edits.add(EditSeriesField.substageId(updatedSeries.getSubstageId()));
-        }
-        if (currentSeries.getGameId() != updatedSeries.getGameId()) {
-            edits.add(EditSeriesField.gameId(updatedSeries.getGameId()));
-        }
-        if (!Objects.equals(currentSeries.getMatchIds(), updatedSeries.getMatchIds())) {
-            edits.add(EditSeriesField.matchIds(updatedSeries.getMatchIds()));
-        }
-        if (!Objects.equals(currentSeries.getCasters(), updatedSeries.getCasters())) {
-            edits.add(EditSeriesField.casters(updatedSeries.getCasters()));
-        }
-        if (!Objects.equals(currentSeries.getBroadcasters(), updatedSeries.getBroadcasters())) {
-            edits.add(EditSeriesField.broadcasters(updatedSeries.getBroadcasters()));
-        }
-        if (currentSeries.isHasIncidentReport() != updatedSeries.isHasIncidentReport()) {
-            edits.add(EditSeriesField.hasIncidentReport(updatedSeries.isHasIncidentReport()));
-        }
-        if (!Objects.equals(currentSeries.getCoverage(), updatedSeries.getCoverage())) {
-            edits.add(EditSeriesField.coverage(updatedSeries.getCoverage()));
-        }
-        if (currentSeries.getFormatBestOf() != updatedSeries.getFormatBestOf()) {
-            edits.add(EditSeriesField.formatBestOf(updatedSeries.getFormatBestOf()));
-        }
-        if (!Objects.equals(currentSeries.getGameVersion(), updatedSeries.getGameVersion())) {
-            edits.add(EditSeriesField.gameVersion(updatedSeries.getGameVersion()));
-        }
-        if (currentSeries.getResourceVersion() != updatedSeries.getResourceVersion()) {
-            edits.add(EditSeriesField.resourceVersion(updatedSeries.getResourceVersion()));
-        }
-        if (currentSeries.getCreatedAt() != updatedSeries.getCreatedAt()) {
-            edits.add(EditSeriesField.createdAt(updatedSeries.getCreatedAt()));
-        }
-        if (currentSeries.getUpdatedAt() != updatedSeries.getUpdatedAt()) {
-            edits.add(EditSeriesField.updatedAt(updatedSeries.getUpdatedAt()));
-        }
-
-        return edits;
     }
 
     // Method to process match updates
@@ -5271,323 +4985,30 @@ public class ApolloApiManager {
             }
             int matchId = stateNode.get("id").asInt();
 
-            // Extract the list of patches
-            JsonNode patchesNode = payload.get("patch");
-            if (patchesNode == null || !patchesNode.isArray()) {
-                logger.warn("No patches found in match update message");
-                return;
-            }
+            // Wrap fetchAndStoreMatch in a CompletableFuture
+            CompletableFuture<Void> fetchFuture = CompletableFuture.runAsync(() -> {
+                fetchAndStoreMatch(matchId);
+            });
 
-            // Fetch the current Match object from your data store
-            CompletableFuture<Match> matchFuture = getMatchFromMatchId.invokeAsync(matchId);
-
-            matchFuture.thenAccept(currentMatch -> {
-                if (currentMatch == null) {
-                    logger.warn("Match with ID {} not found in data store", matchId);
-                    return;
-                }
-
-                // Apply patches to the currentMatch
-                Match updatedMatch = applyPatchesToMatch(currentMatch, patchesNode);
-
-                if (updatedMatch != null) {
-                    // Create the EditMatch object
-                    List<EditMatchField> edits = createEditMatchFields(currentMatch, updatedMatch);
-                    if (!edits.isEmpty()) {
-                        EditMatch editMatch = new EditMatch(matchId, edits, System.currentTimeMillis());
-
-                        // Append the edit to the matchEditDepot
-                        matchEditDepot.appendAsync(editMatch).thenCompose(res -> {
-                            logger.info("Match {} updated successfully", matchId);
-
-                            // Fetch the updated Match object
-                            return getMatch(matchId);
-                        }).thenAccept(getMatch -> {
-                            // Send the updated GetMatch object to the frontend
-                            ApolloApiStreamingConfig.sendMatchUpdate(getMatch);
-                        }).exceptionally(ex -> {
-                            logger.error("Failed to update match {}", matchId, ex);
-                            return null;
-                        });
-                    }
+            // Chain the calls after the fetch is complete
+            fetchFuture.thenCompose(voidResult -> {
+                // Now retrieve the match from the data store
+                return getMatch(matchId);
+            }).thenAccept(getMatch -> {
+                if (getMatch != null) {
+                    // Broadcast the updated match to clients
+                    ApolloApiStreamingConfig.sendMatchUpdate(getMatch);
+                    logger.info("Match {} updated and broadcasted successfully", matchId);
+                } else {
+                    logger.warn("Failed to retrieve match with ID {} from data store", matchId);
                 }
             }).exceptionally(ex -> {
-                logger.error("Error fetching match with ID {}", matchId, ex);
+                logger.error("Error processing match update for ID {}", matchId, ex);
                 return null;
             });
+
         } catch (Exception e) {
             logger.error("Error processing match update message", e);
-        }
-    }
-
-    private Match applyPatchesToMatch(Match currentMatch, JsonNode patchesNode) {
-        try {
-            // Deep copy the currentMatch to avoid mutating the original
-            Match updatedMatch = currentMatch.deepCopy();
-
-            for (JsonNode patch : patchesNode) {
-                String op = patch.get("op").asText();
-                String path = patch.get("path").asText();
-                JsonNode valueNode = patch.get("value");
-
-                if ("replace".equals(op) || "add".equals(op)) {
-                    applyPatchToMatch(updatedMatch, path, valueNode);
-                }
-                // Handle "remove" operations if needed
-            }
-
-            return updatedMatch;
-        } catch (Exception e) {
-            logger.error("Error applying patches to match", e);
-            return null;
-        }
-    }
-
-    private void applyPatchToMatch(Match match, String path, JsonNode valueNode) throws JsonProcessingException {
-        // Remove leading slash from path
-        path = path.startsWith("/") ? path.substring(1) : path;
-
-        switch (path) {
-            case "map":
-                match.setMapId(valueNode.get("id").asInt());
-                break;
-            case "lifecycle":
-                match.setLifecycle(valueNode.asText());
-                break;
-            case "order":
-                match.setOrder(valueNode.asInt());
-                break;
-            case "series":
-                match.setSeriesId(valueNode.get("id").asInt());
-                break;
-            case "deleted_at":
-                match.setDeletedAt(parseTimestamp(valueNode));
-                break;
-            case "game":
-                match.setGameId(valueNode.get("id").asInt());
-                break;
-            case "participants":
-                updateParticipants(match, valueNode);
-                break;
-            case "coverage":
-                match.setCoverage(convertCoverage(valueNode));
-                break;
-            case "resource_version":
-                match.setResourceVersion(valueNode.asLong());
-                break;
-            default:
-                if (path.startsWith("participants/")) {
-                    updateParticipantField(match, path, valueNode);
-                } else {
-                    logger.warn("Unhandled match update path: {}", path);
-                }
-                break;
-        }
-    }
-
-    private void updateParticipants(Match match, JsonNode participantsNode) throws JsonProcessingException {
-        List<Participant> participants = new ArrayList<>();
-
-        for (JsonNode participantNode : participantsNode) {
-            Participant participant = convertParticipant(participantNode);
-            participants.add(participant);
-        }
-
-        match.setParticipants(participants);
-    }
-
-    private void updateParticipantField(Match match, String path, JsonNode valueNode) throws JsonProcessingException {
-        String[] parts = path.split("/");
-        if (parts.length < 3) {
-            logger.warn("Invalid participant path: {}", path);
-            return;
-        }
-        int index = Integer.parseInt(parts[1]);
-        String field = parts[2];
-
-        List<Participant> participants = match.getParticipants();
-        if (participants == null || index >= participants.size()) {
-            // Ensure participants list is initialized and has the required index
-            while (participants.size() <= index) {
-                participants.add(new Participant());
-            }
-        }
-
-        Participant participant = participants.get(index);
-
-        switch (field) {
-            case "score":
-                participant.setScore(valueNode.asInt());
-                break;
-            case "winner":
-                participant.setWinner(valueNode.asBoolean());
-                break;
-            case "forfeit":
-                participant.setForfeit(valueNode.asBoolean());
-                break;
-            case "seed":
-                participant.setSeed(valueNode.asInt());
-                break;
-            case "roster":
-                // Since 'roster' is an object, we need to convert it properly
-                participant.setRoster(convertToThriftRoster(valueNode));
-                break;
-            // Add other participant fields as needed
-            default:
-                logger.warn("Unhandled participant field: {}", field);
-                break;
-        }
-    }
-
-    private Participant convertParticipant(JsonNode participantNode) throws JsonProcessingException {
-        Participant participant = new Participant();
-
-        participant.setSeed(participantNode.has("seed") ? participantNode.get("seed").asInt() : 0);
-        participant.setScore(participantNode.has("score") ? participantNode.get("score").asInt() : 0);
-        participant.setForfeit(participantNode.has("forfeit") && participantNode.get("forfeit").asBoolean());
-        participant.setWinner(participantNode.has("winner") && participantNode.get("winner").asBoolean());
-        participant
-                .setStats(participantNode.has("stats") ? convertParticipantStats(participantNode.get("stats")) : null);
-
-        // Handle 'roster' field
-        if (participantNode.has("roster")) {
-            JsonNode rosterNode = participantNode.get("roster");
-            participant.setRoster(convertToThriftRoster(rosterNode));
-        } else {
-            // Handle the case where 'roster' is not provided
-            participant.setRoster(null);
-        }
-
-        return participant;
-    }
-
-    private Roster convertToThriftRoster(JsonNode rosterNode) throws JsonProcessingException {
-        Roster roster = new Roster();
-
-        roster.setId(rosterNode.has("id") ? rosterNode.get("id").asInt() : 0);
-        roster.setTeamId(
-                rosterNode.has("team") && rosterNode.get("team").has("id") ? rosterNode.get("team").get("id").asInt()
-                        : 0);
-
-        // Since 'line_up' may not be provided in the patch, we can set playerIds to an
-        // empty list or null
-        roster.setPlayerIds(Collections.emptyList());
-        roster.setGameId(
-                rosterNode.has("game") && rosterNode.get("game").has("id") ? rosterNode.get("game").get("id").asInt()
-                        : 0);
-
-        return roster;
-    }
-
-    private Coverage convertCoverage(JsonNode c) {
-        if (c == null || c.isNull()) {
-            return null;
-        }
-        JsonNode dataNode = c.get("data");
-        if (dataNode == null || dataNode.isNull()) {
-            return null;
-        }
-
-        CoverageData coverageData = new CoverageData(
-                convertCoverageType(dataNode.get("live")),
-                convertCoverageType(dataNode.get("realtime")),
-                convertCoverageType(dataNode.get("postgame")));
-
-        return new Coverage(coverageData);
-    }
-
-    private CoverageType convertCoverageType(JsonNode ctNode) {
-        if (ctNode == null || ctNode.isNull()) {
-            return null;
-        }
-        CoverageType coverageType = new CoverageType();
-        coverageType.setApi(convertCoverageStatus(ctNode.get("api")));
-        if (ctNode.has("cv")) {
-            coverageType.setCv(convertCoverageStatus(ctNode.get("cv")));
-        }
-        if (ctNode.has("server")) {
-            coverageType.setServer(convertCoverageStatus(ctNode.get("server")));
-        }
-        return coverageType;
-    }
-
-    private CoverageStatus convertCoverageStatus(JsonNode csNode) {
-        if (csNode == null || csNode.isNull()) {
-            return null;
-        }
-        String expectation = csNode.has("expectation") ? csNode.get("expectation").asText() : null;
-        String fact = csNode.has("fact") ? csNode.get("fact").asText() : null;
-        return new CoverageStatus(expectation, fact);
-    }
-
-    private ParticipantStats convertParticipantStats(JsonNode statsNode) {
-        if (statsNode == null || statsNode.isNull()) {
-            return null;
-        }
-        ParticipantStats participantStats = new ParticipantStats();
-        participantStats.setKills(statsNode.has("kills") ? statsNode.get("kills").asInt() : 0);
-        participantStats.setPlacement(statsNode.has("placement") ? statsNode.get("placement").asInt() : 0);
-        // Add other fields as necessary
-        return participantStats;
-    }
-
-    private List<EditMatchField> createEditMatchFields(Match currentMatch, Match updatedMatch) {
-        List<EditMatchField> edits = new ArrayList<>();
-
-        if (!Objects.equals(currentMatch.getLifecycle(), updatedMatch.getLifecycle())) {
-            edits.add(EditMatchField.lifecycle(updatedMatch.getLifecycle()));
-        }
-        if (currentMatch.getOrder() != updatedMatch.getOrder()) {
-            edits.add(EditMatchField.order(updatedMatch.getOrder()));
-        }
-        if (currentMatch.getMapId() != updatedMatch.getMapId()) {
-            edits.add(EditMatchField.mapId(updatedMatch.getMapId()));
-        }
-        if (currentMatch.getSeriesId() != updatedMatch.getSeriesId()) {
-            edits.add(EditMatchField.seriesId(updatedMatch.getSeriesId()));
-        }
-        if (currentMatch.getDeletedAt() != updatedMatch.getDeletedAt()) {
-            edits.add(EditMatchField.deletedAt(updatedMatch.getDeletedAt()));
-        }
-        if (currentMatch.getGameId() != updatedMatch.getGameId()) {
-            edits.add(EditMatchField.gameId(updatedMatch.getGameId()));
-        }
-        if (!Objects.equals(currentMatch.getParticipants(), updatedMatch.getParticipants())) {
-            edits.add(EditMatchField.participants(updatedMatch.getParticipants()));
-        }
-        if (!Objects.equals(currentMatch.getCoverage(), updatedMatch.getCoverage())) {
-            edits.add(EditMatchField.coverage(updatedMatch.getCoverage()));
-        }
-        if (currentMatch.getResourceVersion() != updatedMatch.getResourceVersion()) {
-            edits.add(EditMatchField.resourceVersion(updatedMatch.getResourceVersion()));
-        }
-        // Add other fields as needed
-
-        return edits;
-    }
-
-    private long parseTimestamp(String timestamp) {
-        // Implement parsing of timestamp strings to epoch milliseconds
-        Instant instant = Instant.parse(timestamp);
-        return instant.toEpochMilli();
-    }
-
-    private long parseTimestamp(JsonNode timestampNode) {
-        if (timestampNode == null || timestampNode.isNull()) {
-            return 0;
-        }
-        if (timestampNode.isTextual()) {
-            try {
-                Instant instant = Instant.parse(timestampNode.asText());
-                return instant.toEpochMilli();
-            } catch (DateTimeParseException e) {
-                logger.error("Failed to parse timestamp: {}", timestampNode.asText(), e);
-                return 0;
-            }
-        } else if (timestampNode.isNumber()) {
-            return timestampNode.asLong();
-        } else {
-            return 0;
         }
     }
 

@@ -138,6 +138,11 @@ public class AbiosApiClient {
         return makeRequest("series", filter, order, skip, take);
     }
 
+    public String getMatch(int matchId) throws IOException {
+        String endpoint = "matches/" + matchId;
+        return makeRequest(endpoint, "", "start-asc", 0, 1);
+    }
+
     public String getMatchesForSeries(int seriesId, String filter, String order, int skip, int take)
             throws IOException {
         String endpoint = "series/" + seriesId + "/matches";
