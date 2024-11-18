@@ -2018,8 +2018,8 @@ public class ApolloApiController {
     }
 
     @GetMapping("/api/lol/teams")
-    public Mono<List<GetTeam>> getAllLolTeamsWithStats() {
-        return Mono.fromFuture(manager.getAllTeamsWithLolStats())
+    public Mono<List<GetTeam>> getAllLolTeamsWithAggStats() {
+        return Mono.fromFuture(manager.getAllTeamsWithAggStats())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No teams found")));
     }
 

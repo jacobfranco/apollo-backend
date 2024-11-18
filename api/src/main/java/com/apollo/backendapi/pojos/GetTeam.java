@@ -53,8 +53,11 @@ public class GetTeam {
             Map<Integer, GetAsset> assetMap) {
         this(team);
 
-        // Initialize lolSeasonStats first
-        if (lolSeasonStats != null) {
+        if (aggStats != null) {
+            this.aggStats = new GetTeamAggStats(aggStats);
+        }
+
+        if (lolSeasonStats != null && !lolSeasonStats.isEmpty()) {
             this.lolSeasonStats = lolSeasonStats.stream()
                     .map(stat -> new GetTeamMatchStats(stat, assetMap))
                     .collect(Collectors.toList());
@@ -62,8 +65,10 @@ public class GetTeam {
             this.lolSeasonStats = Collections.emptyList();
         }
 
-        this.aggStats = new GetTeamAggStats(aggStats);
-
-        this.assetMap = assetMap;
+        if (assetMap != null && !assetMap.isEmpty()) {
+            this.assetMap = assetMap;
+        } else {
+            this.assetMap = Collections.emptyMap();
+        }
     }
 }

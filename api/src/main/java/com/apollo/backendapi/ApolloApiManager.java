@@ -3151,26 +3151,47 @@ public class ApolloApiManager {
         return getAllTeamIds.invokeAsync();
     }
 
-    public CompletableFuture<List<GetTeam>> getAllTeamsWithLolStats() {
+    public CompletableFuture<GetTeam> getTeamWithAggStats(int teamId) {
+        logger.info("getTeamWithAggStats - Initiating fetch for teamId: {}", teamId);
+
+        CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId);
+        CompletableFuture<LolTeamAggStats> aggStatsFuture = getLolTeamAggStatsFromTeamId.invokeAsync(teamId);
+
+        return CompletableFuture.allOf(teamFuture, aggStatsFuture)
+                .thenApply(v -> {
+                    Team team = teamFuture.join();
+                    LolTeamAggStats aggStats = aggStatsFuture.join();
+
+                    if (team == null || aggStats == null) {
+                        logger.warn("getTeamWithAggStats - No Team or Aggregated Stats found with ID: {}", teamId);
+                        return null;
+                    }
+
+                    // Construct GetTeam without seasonStats and assetMap
+                    GetTeam getTeam = new GetTeam(team, aggStats, Collections.emptyList(), Collections.emptyMap());
+                    logger.info("getTeamWithAggStats - Successfully constructed GetTeam with agg stats for teamId: {}",
+                            teamId);
+                    return getTeam;
+                });
+    }
+
+    public CompletableFuture<List<GetTeam>> getAllTeamsWithAggStats() {
         return getAllTeamIds()
                 .thenCompose(teamIds -> {
-                    // Map each team ID to a CompletableFuture<GetTeam>
+                    // Fetch team and agg stats in parallel for all team IDs
                     List<CompletableFuture<GetTeam>> teamFutures = teamIds.stream()
-                            .map(this::getTeamWithLolStats)
+                            .map(this::getTeamWithAggStats)
                             .collect(Collectors.toList());
 
                     // Wait for all futures to complete
-                    CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                            teamFutures.toArray(new CompletableFuture[0]));
-
-                    // Collect results into a List<GetTeam>
-                    return allFutures.thenApply(v -> teamFutures.stream()
-                            .map(CompletableFuture::join)
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList()));
+                    return CompletableFuture.allOf(teamFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> teamFutures.stream()
+                                    .map(CompletableFuture::join)
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList()));
                 })
                 .exceptionally(e -> {
-                    logger.error("Error fetching all teams with LoL stats: {}", e.getMessage());
+                    logger.error("Error fetching all teams with aggregated stats: {}", e.getMessage());
                     return Collections.emptyList();
                 });
     }
