@@ -25,9 +25,9 @@ public class GetTeam {
     public int gameId;
     public Integer organizationId;
     public long resourceVersion;
-    public GetTeamMatchStats matchStats;
-    public GetTeamAggStats aggStats;
-    public List<GetTeamMatchStats> lolSeasonStats;
+    public GetLolTeamMatchStats matchStats;
+    public GetLolTeamAggStats aggStats;
+    public List<GetLolTeamMatchStats> lolSeasonStats;
 
     @JsonIgnore
     public Map<Integer, GetAsset> assetMap;
@@ -54,12 +54,12 @@ public class GetTeam {
         this(team);
 
         if (aggStats != null) {
-            this.aggStats = new GetTeamAggStats(aggStats);
+            this.aggStats = new GetLolTeamAggStats(aggStats);
         }
 
         if (lolSeasonStats != null && !lolSeasonStats.isEmpty()) {
             this.lolSeasonStats = lolSeasonStats.stream()
-                    .map(stat -> new GetTeamMatchStats(stat, assetMap))
+                    .map(stat -> new GetLolTeamMatchStats(stat, assetMap))
                     .collect(Collectors.toList());
         } else {
             this.lolSeasonStats = Collections.emptyList();

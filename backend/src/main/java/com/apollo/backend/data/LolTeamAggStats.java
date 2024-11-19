@@ -18,6 +18,11 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   private static final org.apache.thrift.protocol.TField TOTAL_GOLD_EARNED_FIELD_DESC = new org.apache.thrift.protocol.TField("totalGoldEarned", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField TOTAL_TURRETS_DESTROYED_FIELD_DESC = new org.apache.thrift.protocol.TField("totalTurretsDestroyed", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField TOTAL_INHIBITORS_DESTROYED_FIELD_DESC = new org.apache.thrift.protocol.TField("totalInhibitorsDestroyed", org.apache.thrift.protocol.TType.I32, (short)8);
+  private static final org.apache.thrift.protocol.TField AVERAGE_SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("averageScore", org.apache.thrift.protocol.TType.DOUBLE, (short)9);
+  private static final org.apache.thrift.protocol.TField AVERAGE_GOLD_EARNED_FIELD_DESC = new org.apache.thrift.protocol.TField("averageGoldEarned", org.apache.thrift.protocol.TType.DOUBLE, (short)10);
+  private static final org.apache.thrift.protocol.TField AVERAGE_TURRETS_DESTROYED_FIELD_DESC = new org.apache.thrift.protocol.TField("averageTurretsDestroyed", org.apache.thrift.protocol.TType.DOUBLE, (short)11);
+  private static final org.apache.thrift.protocol.TField AVERAGE_INHIBITORS_DESTROYED_FIELD_DESC = new org.apache.thrift.protocol.TField("averageInhibitorsDestroyed", org.apache.thrift.protocol.TType.DOUBLE, (short)12);
+  private static final org.apache.thrift.protocol.TField CURRENT_WIN_STREAK_FIELD_DESC = new org.apache.thrift.protocol.TField("currentWinStreak", org.apache.thrift.protocol.TType.I32, (short)13);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolTeamAggStatsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolTeamAggStatsTupleSchemeFactory();
@@ -30,6 +35,11 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   public int totalGoldEarned; // required
   public int totalTurretsDestroyed; // required
   public int totalInhibitorsDestroyed; // required
+  public double averageScore; // required
+  public double averageGoldEarned; // required
+  public double averageTurretsDestroyed; // required
+  public double averageInhibitorsDestroyed; // required
+  public int currentWinStreak; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -40,7 +50,12 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     TOTAL_SCORE((short)5, "totalScore"),
     TOTAL_GOLD_EARNED((short)6, "totalGoldEarned"),
     TOTAL_TURRETS_DESTROYED((short)7, "totalTurretsDestroyed"),
-    TOTAL_INHIBITORS_DESTROYED((short)8, "totalInhibitorsDestroyed");
+    TOTAL_INHIBITORS_DESTROYED((short)8, "totalInhibitorsDestroyed"),
+    AVERAGE_SCORE((short)9, "averageScore"),
+    AVERAGE_GOLD_EARNED((short)10, "averageGoldEarned"),
+    AVERAGE_TURRETS_DESTROYED((short)11, "averageTurretsDestroyed"),
+    AVERAGE_INHIBITORS_DESTROYED((short)12, "averageInhibitorsDestroyed"),
+    CURRENT_WIN_STREAK((short)13, "currentWinStreak");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -72,6 +87,16 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
           return TOTAL_TURRETS_DESTROYED;
         case 8: // TOTAL_INHIBITORS_DESTROYED
           return TOTAL_INHIBITORS_DESTROYED;
+        case 9: // AVERAGE_SCORE
+          return AVERAGE_SCORE;
+        case 10: // AVERAGE_GOLD_EARNED
+          return AVERAGE_GOLD_EARNED;
+        case 11: // AVERAGE_TURRETS_DESTROYED
+          return AVERAGE_TURRETS_DESTROYED;
+        case 12: // AVERAGE_INHIBITORS_DESTROYED
+          return AVERAGE_INHIBITORS_DESTROYED;
+        case 13: // CURRENT_WIN_STREAK
+          return CURRENT_WIN_STREAK;
         default:
           return null;
       }
@@ -123,7 +148,12 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   private static final int __TOTALGOLDEARNED_ISSET_ID = 5;
   private static final int __TOTALTURRETSDESTROYED_ISSET_ID = 6;
   private static final int __TOTALINHIBITORSDESTROYED_ISSET_ID = 7;
-  private byte __isset_bitfield = 0;
+  private static final int __AVERAGESCORE_ISSET_ID = 8;
+  private static final int __AVERAGEGOLDEARNED_ISSET_ID = 9;
+  private static final int __AVERAGETURRETSDESTROYED_ISSET_ID = 10;
+  private static final int __AVERAGEINHIBITORSDESTROYED_ISSET_ID = 11;
+  private static final int __CURRENTWINSTREAK_ISSET_ID = 12;
+  private short __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -143,6 +173,16 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.TOTAL_INHIBITORS_DESTROYED, new org.apache.thrift.meta_data.FieldMetaData("totalInhibitorsDestroyed", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.AVERAGE_SCORE, new org.apache.thrift.meta_data.FieldMetaData("averageScore", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.AVERAGE_GOLD_EARNED, new org.apache.thrift.meta_data.FieldMetaData("averageGoldEarned", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.AVERAGE_TURRETS_DESTROYED, new org.apache.thrift.meta_data.FieldMetaData("averageTurretsDestroyed", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.AVERAGE_INHIBITORS_DESTROYED, new org.apache.thrift.meta_data.FieldMetaData("averageInhibitorsDestroyed", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.CURRENT_WIN_STREAK, new org.apache.thrift.meta_data.FieldMetaData("currentWinStreak", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolTeamAggStats.class, metaDataMap);
   }
@@ -158,7 +198,12 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     int totalScore,
     int totalGoldEarned,
     int totalTurretsDestroyed,
-    int totalInhibitorsDestroyed)
+    int totalInhibitorsDestroyed,
+    double averageScore,
+    double averageGoldEarned,
+    double averageTurretsDestroyed,
+    double averageInhibitorsDestroyed,
+    int currentWinStreak)
   {
     this();
     this.id = id;
@@ -177,6 +222,16 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     setTotalTurretsDestroyedIsSet(true);
     this.totalInhibitorsDestroyed = totalInhibitorsDestroyed;
     setTotalInhibitorsDestroyedIsSet(true);
+    this.averageScore = averageScore;
+    setAverageScoreIsSet(true);
+    this.averageGoldEarned = averageGoldEarned;
+    setAverageGoldEarnedIsSet(true);
+    this.averageTurretsDestroyed = averageTurretsDestroyed;
+    setAverageTurretsDestroyedIsSet(true);
+    this.averageInhibitorsDestroyed = averageInhibitorsDestroyed;
+    setAverageInhibitorsDestroyedIsSet(true);
+    this.currentWinStreak = currentWinStreak;
+    setCurrentWinStreakIsSet(true);
   }
 
   /**
@@ -192,6 +247,11 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     this.totalGoldEarned = other.totalGoldEarned;
     this.totalTurretsDestroyed = other.totalTurretsDestroyed;
     this.totalInhibitorsDestroyed = other.totalInhibitorsDestroyed;
+    this.averageScore = other.averageScore;
+    this.averageGoldEarned = other.averageGoldEarned;
+    this.averageTurretsDestroyed = other.averageTurretsDestroyed;
+    this.averageInhibitorsDestroyed = other.averageInhibitorsDestroyed;
+    this.currentWinStreak = other.currentWinStreak;
   }
 
   @Override
@@ -217,6 +277,16 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     this.totalTurretsDestroyed = 0;
     setTotalInhibitorsDestroyedIsSet(false);
     this.totalInhibitorsDestroyed = 0;
+    setAverageScoreIsSet(false);
+    this.averageScore = 0.0;
+    setAverageGoldEarnedIsSet(false);
+    this.averageGoldEarned = 0.0;
+    setAverageTurretsDestroyedIsSet(false);
+    this.averageTurretsDestroyed = 0.0;
+    setAverageInhibitorsDestroyedIsSet(false);
+    this.averageInhibitorsDestroyed = 0.0;
+    setCurrentWinStreakIsSet(false);
+    this.currentWinStreak = 0;
   }
 
   public int getId() {
@@ -403,6 +473,121 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALINHIBITORSDESTROYED_ISSET_ID, value);
   }
 
+  public double getAverageScore() {
+    return this.averageScore;
+  }
+
+  public LolTeamAggStats setAverageScore(double averageScore) {
+    this.averageScore = averageScore;
+    setAverageScoreIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageScore() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGESCORE_ISSET_ID);
+  }
+
+  /** Returns true if field averageScore is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageScore() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGESCORE_ISSET_ID);
+  }
+
+  public void setAverageScoreIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGESCORE_ISSET_ID, value);
+  }
+
+  public double getAverageGoldEarned() {
+    return this.averageGoldEarned;
+  }
+
+  public LolTeamAggStats setAverageGoldEarned(double averageGoldEarned) {
+    this.averageGoldEarned = averageGoldEarned;
+    setAverageGoldEarnedIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageGoldEarned() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGEGOLDEARNED_ISSET_ID);
+  }
+
+  /** Returns true if field averageGoldEarned is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageGoldEarned() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGEGOLDEARNED_ISSET_ID);
+  }
+
+  public void setAverageGoldEarnedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEGOLDEARNED_ISSET_ID, value);
+  }
+
+  public double getAverageTurretsDestroyed() {
+    return this.averageTurretsDestroyed;
+  }
+
+  public LolTeamAggStats setAverageTurretsDestroyed(double averageTurretsDestroyed) {
+    this.averageTurretsDestroyed = averageTurretsDestroyed;
+    setAverageTurretsDestroyedIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageTurretsDestroyed() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGETURRETSDESTROYED_ISSET_ID);
+  }
+
+  /** Returns true if field averageTurretsDestroyed is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageTurretsDestroyed() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGETURRETSDESTROYED_ISSET_ID);
+  }
+
+  public void setAverageTurretsDestroyedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGETURRETSDESTROYED_ISSET_ID, value);
+  }
+
+  public double getAverageInhibitorsDestroyed() {
+    return this.averageInhibitorsDestroyed;
+  }
+
+  public LolTeamAggStats setAverageInhibitorsDestroyed(double averageInhibitorsDestroyed) {
+    this.averageInhibitorsDestroyed = averageInhibitorsDestroyed;
+    setAverageInhibitorsDestroyedIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageInhibitorsDestroyed() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGEINHIBITORSDESTROYED_ISSET_ID);
+  }
+
+  /** Returns true if field averageInhibitorsDestroyed is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageInhibitorsDestroyed() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGEINHIBITORSDESTROYED_ISSET_ID);
+  }
+
+  public void setAverageInhibitorsDestroyedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEINHIBITORSDESTROYED_ISSET_ID, value);
+  }
+
+  public int getCurrentWinStreak() {
+    return this.currentWinStreak;
+  }
+
+  public LolTeamAggStats setCurrentWinStreak(int currentWinStreak) {
+    this.currentWinStreak = currentWinStreak;
+    setCurrentWinStreakIsSet(true);
+    return this;
+  }
+
+  public void unsetCurrentWinStreak() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CURRENTWINSTREAK_ISSET_ID);
+  }
+
+  /** Returns true if field currentWinStreak is set (has been assigned a value) and false otherwise */
+  public boolean isSetCurrentWinStreak() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CURRENTWINSTREAK_ISSET_ID);
+  }
+
+  public void setCurrentWinStreakIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CURRENTWINSTREAK_ISSET_ID, value);
+  }
+
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -470,6 +655,46 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       }
       break;
 
+    case AVERAGE_SCORE:
+      if (value == null) {
+        unsetAverageScore();
+      } else {
+        setAverageScore((java.lang.Double)value);
+      }
+      break;
+
+    case AVERAGE_GOLD_EARNED:
+      if (value == null) {
+        unsetAverageGoldEarned();
+      } else {
+        setAverageGoldEarned((java.lang.Double)value);
+      }
+      break;
+
+    case AVERAGE_TURRETS_DESTROYED:
+      if (value == null) {
+        unsetAverageTurretsDestroyed();
+      } else {
+        setAverageTurretsDestroyed((java.lang.Double)value);
+      }
+      break;
+
+    case AVERAGE_INHIBITORS_DESTROYED:
+      if (value == null) {
+        unsetAverageInhibitorsDestroyed();
+      } else {
+        setAverageInhibitorsDestroyed((java.lang.Double)value);
+      }
+      break;
+
+    case CURRENT_WIN_STREAK:
+      if (value == null) {
+        unsetCurrentWinStreak();
+      } else {
+        setCurrentWinStreak((java.lang.Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -501,6 +726,21 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     case TOTAL_INHIBITORS_DESTROYED:
       return getTotalInhibitorsDestroyed();
 
+    case AVERAGE_SCORE:
+      return getAverageScore();
+
+    case AVERAGE_GOLD_EARNED:
+      return getAverageGoldEarned();
+
+    case AVERAGE_TURRETS_DESTROYED:
+      return getAverageTurretsDestroyed();
+
+    case AVERAGE_INHIBITORS_DESTROYED:
+      return getAverageInhibitorsDestroyed();
+
+    case CURRENT_WIN_STREAK:
+      return getCurrentWinStreak();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -529,6 +769,16 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       return isSetTotalTurretsDestroyed();
     case TOTAL_INHIBITORS_DESTROYED:
       return isSetTotalInhibitorsDestroyed();
+    case AVERAGE_SCORE:
+      return isSetAverageScore();
+    case AVERAGE_GOLD_EARNED:
+      return isSetAverageGoldEarned();
+    case AVERAGE_TURRETS_DESTROYED:
+      return isSetAverageTurretsDestroyed();
+    case AVERAGE_INHIBITORS_DESTROYED:
+      return isSetAverageInhibitorsDestroyed();
+    case CURRENT_WIN_STREAK:
+      return isSetCurrentWinStreak();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -618,6 +868,51 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
         return false;
     }
 
+    boolean this_present_averageScore = true;
+    boolean that_present_averageScore = true;
+    if (this_present_averageScore || that_present_averageScore) {
+      if (!(this_present_averageScore && that_present_averageScore))
+        return false;
+      if (this.averageScore != that.averageScore)
+        return false;
+    }
+
+    boolean this_present_averageGoldEarned = true;
+    boolean that_present_averageGoldEarned = true;
+    if (this_present_averageGoldEarned || that_present_averageGoldEarned) {
+      if (!(this_present_averageGoldEarned && that_present_averageGoldEarned))
+        return false;
+      if (this.averageGoldEarned != that.averageGoldEarned)
+        return false;
+    }
+
+    boolean this_present_averageTurretsDestroyed = true;
+    boolean that_present_averageTurretsDestroyed = true;
+    if (this_present_averageTurretsDestroyed || that_present_averageTurretsDestroyed) {
+      if (!(this_present_averageTurretsDestroyed && that_present_averageTurretsDestroyed))
+        return false;
+      if (this.averageTurretsDestroyed != that.averageTurretsDestroyed)
+        return false;
+    }
+
+    boolean this_present_averageInhibitorsDestroyed = true;
+    boolean that_present_averageInhibitorsDestroyed = true;
+    if (this_present_averageInhibitorsDestroyed || that_present_averageInhibitorsDestroyed) {
+      if (!(this_present_averageInhibitorsDestroyed && that_present_averageInhibitorsDestroyed))
+        return false;
+      if (this.averageInhibitorsDestroyed != that.averageInhibitorsDestroyed)
+        return false;
+    }
+
+    boolean this_present_currentWinStreak = true;
+    boolean that_present_currentWinStreak = true;
+    if (this_present_currentWinStreak || that_present_currentWinStreak) {
+      if (!(this_present_currentWinStreak && that_present_currentWinStreak))
+        return false;
+      if (this.currentWinStreak != that.currentWinStreak)
+        return false;
+    }
+
     return true;
   }
 
@@ -640,6 +935,16 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     hashCode = hashCode * 8191 + totalTurretsDestroyed;
 
     hashCode = hashCode * 8191 + totalInhibitorsDestroyed;
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageScore);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageGoldEarned);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageTurretsDestroyed);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageInhibitorsDestroyed);
+
+    hashCode = hashCode * 8191 + currentWinStreak;
 
     return hashCode;
   }
@@ -732,6 +1037,56 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetAverageScore(), other.isSetAverageScore());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageScore()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageScore, other.averageScore);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageGoldEarned(), other.isSetAverageGoldEarned());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageGoldEarned()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageGoldEarned, other.averageGoldEarned);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageTurretsDestroyed(), other.isSetAverageTurretsDestroyed());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageTurretsDestroyed()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageTurretsDestroyed, other.averageTurretsDestroyed);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageInhibitorsDestroyed(), other.isSetAverageInhibitorsDestroyed());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageInhibitorsDestroyed()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageInhibitorsDestroyed, other.averageInhibitorsDestroyed);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetCurrentWinStreak(), other.isSetCurrentWinStreak());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCurrentWinStreak()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.currentWinStreak, other.currentWinStreak);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -786,6 +1141,26 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     if (!first) sb.append(", ");
     sb.append("totalInhibitorsDestroyed:");
     sb.append(this.totalInhibitorsDestroyed);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageScore:");
+    sb.append(this.averageScore);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageGoldEarned:");
+    sb.append(this.averageGoldEarned);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageTurretsDestroyed:");
+    sb.append(this.averageTurretsDestroyed);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageInhibitorsDestroyed:");
+    sb.append(this.averageInhibitorsDestroyed);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("currentWinStreak:");
+    sb.append(this.currentWinStreak);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -898,6 +1273,46 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // AVERAGE_SCORE
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageScore = iprot.readDouble();
+              struct.setAverageScoreIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // AVERAGE_GOLD_EARNED
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageGoldEarned = iprot.readDouble();
+              struct.setAverageGoldEarnedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 11: // AVERAGE_TURRETS_DESTROYED
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageTurretsDestroyed = iprot.readDouble();
+              struct.setAverageTurretsDestroyedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 12: // AVERAGE_INHIBITORS_DESTROYED
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageInhibitorsDestroyed = iprot.readDouble();
+              struct.setAverageInhibitorsDestroyedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 13: // CURRENT_WIN_STREAK
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.currentWinStreak = iprot.readI32();
+              struct.setCurrentWinStreakIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -937,6 +1352,21 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(TOTAL_INHIBITORS_DESTROYED_FIELD_DESC);
       oprot.writeI32(struct.totalInhibitorsDestroyed);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_SCORE_FIELD_DESC);
+      oprot.writeDouble(struct.averageScore);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_GOLD_EARNED_FIELD_DESC);
+      oprot.writeDouble(struct.averageGoldEarned);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_TURRETS_DESTROYED_FIELD_DESC);
+      oprot.writeDouble(struct.averageTurretsDestroyed);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_INHIBITORS_DESTROYED_FIELD_DESC);
+      oprot.writeDouble(struct.averageInhibitorsDestroyed);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(CURRENT_WIN_STREAK_FIELD_DESC);
+      oprot.writeI32(struct.currentWinStreak);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -981,7 +1411,22 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       if (struct.isSetTotalInhibitorsDestroyed()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetAverageScore()) {
+        optionals.set(8);
+      }
+      if (struct.isSetAverageGoldEarned()) {
+        optionals.set(9);
+      }
+      if (struct.isSetAverageTurretsDestroyed()) {
+        optionals.set(10);
+      }
+      if (struct.isSetAverageInhibitorsDestroyed()) {
+        optionals.set(11);
+      }
+      if (struct.isSetCurrentWinStreak()) {
+        optionals.set(12);
+      }
+      oprot.writeBitSet(optionals, 13);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
@@ -1006,12 +1451,27 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       if (struct.isSetTotalInhibitorsDestroyed()) {
         oprot.writeI32(struct.totalInhibitorsDestroyed);
       }
+      if (struct.isSetAverageScore()) {
+        oprot.writeDouble(struct.averageScore);
+      }
+      if (struct.isSetAverageGoldEarned()) {
+        oprot.writeDouble(struct.averageGoldEarned);
+      }
+      if (struct.isSetAverageTurretsDestroyed()) {
+        oprot.writeDouble(struct.averageTurretsDestroyed);
+      }
+      if (struct.isSetAverageInhibitorsDestroyed()) {
+        oprot.writeDouble(struct.averageInhibitorsDestroyed);
+      }
+      if (struct.isSetCurrentWinStreak()) {
+        oprot.writeI32(struct.currentWinStreak);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LolTeamAggStats struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(8);
+      java.util.BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -1043,6 +1503,26 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       if (incoming.get(7)) {
         struct.totalInhibitorsDestroyed = iprot.readI32();
         struct.setTotalInhibitorsDestroyedIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.averageScore = iprot.readDouble();
+        struct.setAverageScoreIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.averageGoldEarned = iprot.readDouble();
+        struct.setAverageGoldEarnedIsSet(true);
+      }
+      if (incoming.get(10)) {
+        struct.averageTurretsDestroyed = iprot.readDouble();
+        struct.setAverageTurretsDestroyedIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.averageInhibitorsDestroyed = iprot.readDouble();
+        struct.setAverageInhibitorsDestroyedIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.currentWinStreak = iprot.readI32();
+        struct.setCurrentWinStreakIsSet(true);
       }
     }
   }

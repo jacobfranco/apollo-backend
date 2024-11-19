@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.apollo.backend.data.LolTeamSummary;
 
-public class GetTeamMatchStats {
+public class GetLolTeamMatchStats {
     public int matchId;
     public int score;
     public boolean isWinner;
@@ -16,7 +16,7 @@ public class GetTeamMatchStats {
     public GetLolStructures structures;
     public GetLolCreeps creeps;
 
-    public GetTeamMatchStats(GetLolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
+    public GetLolTeamMatchStats(GetLolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
 
         if (teamSummary == null) {
             // Initialize default values
@@ -43,7 +43,7 @@ public class GetTeamMatchStats {
         this.creeps = teamSummary.creeps;
     }
 
-    public GetTeamMatchStats(LolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
+    public GetLolTeamMatchStats(LolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
 
         if (teamSummary == null) {
             // Initialize default values

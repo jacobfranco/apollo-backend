@@ -2182,6 +2182,8 @@ public class ApolloApiManager {
                         if (existingStats == null) {
                             existingStats = new LolTeamAggStats();
                             existingStats.setId(teamId);
+                            // Initialize currentWinStreak
+                            existingStats.setCurrentWinStreak(0);
                         }
 
                         // Update aggregated stats
@@ -2198,6 +2200,31 @@ public class ApolloApiManager {
                                 existingStats.getTotalTurretsDestroyed() + teamSummary.getTurretsDestroyed());
                         existingStats.setTotalInhibitorsDestroyed(
                                 existingStats.getTotalInhibitorsDestroyed() + teamSummary.getInhibitorsDestroyed());
+
+                        // Update currentWinStreak
+                        if (teamSummary.isIsWinner()) {
+                            if (existingStats.getCurrentWinStreak() >= 0) {
+                                existingStats.setCurrentWinStreak(existingStats.getCurrentWinStreak() + 1);
+                            } else {
+                                existingStats.setCurrentWinStreak(1); // Reset negative streak
+                            }
+                        } else {
+                            if (existingStats.getCurrentWinStreak() <= 0) {
+                                existingStats.setCurrentWinStreak(existingStats.getCurrentWinStreak() - 1);
+                            } else {
+                                existingStats.setCurrentWinStreak(-1); // Reset positive streak
+                            }
+                        }
+
+                        // Calculate averages
+                        existingStats.setAverageScore(
+                                (double) existingStats.getTotalScore() / existingStats.getTotalMatches());
+                        existingStats.setAverageGoldEarned(
+                                (double) existingStats.getTotalGoldEarned() / existingStats.getTotalMatches());
+                        existingStats.setAverageTurretsDestroyed(
+                                (double) existingStats.getTotalTurretsDestroyed() / existingStats.getTotalMatches());
+                        existingStats.setAverageInhibitorsDestroyed(
+                                (double) existingStats.getTotalInhibitorsDestroyed() / existingStats.getTotalMatches());
 
                         // Store updated aggregated stats
                         return lolTeamAggStatsDepot.appendAsync(existingStats)
@@ -3465,7 +3492,7 @@ public class ApolloApiManager {
 
         if (participant != null && participant.roster != null && participant.roster.team != null) {
             // Enrich the team with match statistics from the team summary
-            participant.roster.team.matchStats = new GetTeamMatchStats(teamSummary, assetMap);
+            participant.roster.team.matchStats = new GetLolTeamMatchStats(teamSummary, assetMap);
             logger.debug("processTeamSummary - Set matchStats for teamId: {}", participant.roster.team.id);
 
             // Create a map from player ID to GetPlayer for quick lookup

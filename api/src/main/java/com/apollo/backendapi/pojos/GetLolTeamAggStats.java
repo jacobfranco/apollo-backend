@@ -2,7 +2,7 @@ package com.apollo.backendapi.pojos;
 
 import com.apollo.backend.data.LolTeamAggStats;
 
-public class GetTeamAggStats {
+public class GetLolTeamAggStats {
     public int totalMatches;
     public int totalWins;
     public int totalLosses;
@@ -16,7 +16,7 @@ public class GetTeamAggStats {
     public double averageInhibitorsDestroyed;
     public int currentWinStreak;
 
-    public GetTeamAggStats(LolTeamAggStats stats) {
+    public GetLolTeamAggStats(LolTeamAggStats stats) {
         this.totalMatches = stats.getTotalMatches();
         this.totalWins = stats.getTotalWins();
         this.totalLosses = stats.getTotalLosses();
@@ -24,5 +24,10 @@ public class GetTeamAggStats {
         this.totalGoldEarned = stats.getTotalGoldEarned();
         this.totalTurretsDestroyed = stats.getTotalTurretsDestroyed();
         this.totalInhibitorsDestroyed = stats.getTotalInhibitorsDestroyed();
+        this.averageScore = stats.getAverageScore();
+        this.averageGoldEarned = stats.getAverageGoldEarned();
+        this.averageTurretsDestroyed = stats.getAverageTurretsDestroyed();
+        this.averageInhibitorsDestroyed = stats.getAverageInhibitorsDestroyed();
+        this.currentWinStreak = stats.getCurrentWinStreak();
     }
 }
