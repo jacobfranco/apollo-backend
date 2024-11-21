@@ -1336,6 +1336,17 @@ struct LolTeamAggStats {
   11: double averageTurretsDestroyed
   12: double averageInhibitorsDestroyed
   13: i32 currentWinStreak
+  14: i32 totalDragonKills
+  15: i32 totalBaronKills
+  16: i32 totalHeraldKills
+  17: i32 totalVoidGrubKills
+  18: double averageDragonKills
+  19: double averageBaronKills
+  20: double averageHeraldKills
+  21: double averageVoidGrubKills
+  22: i32 totalSeries
+  23: i32 totalSeriesWins
+  24: i32 totalSeriesLosses
 }
 
 

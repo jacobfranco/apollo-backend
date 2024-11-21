@@ -1919,6 +1919,7 @@ public class ApolloApiManager {
                 seriesDepot.appendAsync(series).join();
                 fetchAndStoreRostersForSeries(postSeries.id);
                 fetchAndStoreMatchesForSeries(postSeries.id);
+                updateTeamSeriesStats(postSeries);
             }
 
             if (postSeriesList.size() == take) {
@@ -2172,6 +2173,61 @@ public class ApolloApiManager {
                 });
     }
 
+    private void updateTeamSeriesStats(PostSeries postSeries) {
+        if (!"over".equals(postSeries.lifecycle)) {
+            logger.info("updateTeamSeriesStats - Skipping series id " + postSeries.id + " with lifecycle: "
+                    + postSeries.lifecycle);
+            return; // Skip this series
+        }
+
+        for (PostParticipant participant : postSeries.participants) {
+            if (participant.roster == null) {
+                logger.warn("Participant roster is null for series id " + postSeries.id);
+                continue; // Skip this participant
+            }
+            int rosterId = participant.roster.id;
+            boolean isWinner = participant.winner;
+
+            CompletableFuture.runAsync(() -> {
+                getTeamIdFromRosterId(rosterId)
+                        .thenCompose(teamId -> {
+                            if (teamId == null) {
+                                logger.warn("No team ID found for rosterId: " + rosterId);
+                                return CompletableFuture.completedFuture(null);
+                            }
+
+                            return getLolTeamAggStatsFromTeamId.invokeAsync(teamId)
+                                    .thenCompose(existingStats -> {
+                                        // Initialize if null
+                                        if (existingStats == null) {
+                                            existingStats = initializeNewTeamAggStats(teamId);
+                                        }
+
+                                        // Update series stats
+                                        existingStats.setTotalSeries(existingStats.getTotalSeries() + 1);
+                                        if (isWinner) {
+                                            existingStats.setTotalSeriesWins(existingStats.getTotalSeriesWins() + 1);
+                                        } else {
+                                            existingStats
+                                                    .setTotalSeriesLosses(existingStats.getTotalSeriesLosses() + 1);
+                                        }
+
+                                        // Store updated aggregated stats
+                                        return lolTeamAggStatsDepot.appendAsync(existingStats)
+                                                .thenRun(() -> logger.info(
+                                                        "updateTeamSeriesStats - Successfully updated series stats for teamId: "
+                                                                + teamId));
+                                    });
+                        })
+                        .exceptionally(e -> {
+                            logger.error("updateTeamSeriesStats - Error updating series stats for rosterId " + rosterId,
+                                    e);
+                            return null;
+                        });
+            });
+        }
+    }
+
     private void updateTeamAggStats(LolTeamSummary teamSummary) {
         CompletableFuture.runAsync(() -> {
             int teamId = teamSummary.getTeamId();
@@ -2179,52 +2235,19 @@ public class ApolloApiManager {
 
             getLolTeamAggStatsFromTeamId.invokeAsync(teamId)
                     .thenCompose(existingStats -> {
+                        // Initialize if null
                         if (existingStats == null) {
-                            existingStats = new LolTeamAggStats();
-                            existingStats.setId(teamId);
-                            // Initialize currentWinStreak
-                            existingStats.setCurrentWinStreak(0);
+                            existingStats = initializeNewTeamAggStats(teamId);
                         }
 
-                        // Update aggregated stats
-                        existingStats.setTotalMatches(existingStats.getTotalMatches() + 1);
-                        if (teamSummary.isIsWinner()) {
-                            existingStats.setTotalWins(existingStats.getTotalWins() + 1);
-                        } else {
-                            existingStats.setTotalLosses(existingStats.getTotalLosses() + 1);
-                        }
-                        existingStats.setTotalScore(existingStats.getTotalScore() + teamSummary.getScore());
-                        existingStats
-                                .setTotalGoldEarned(existingStats.getTotalGoldEarned() + teamSummary.getGoldEarned());
-                        existingStats.setTotalTurretsDestroyed(
-                                existingStats.getTotalTurretsDestroyed() + teamSummary.getTurretsDestroyed());
-                        existingStats.setTotalInhibitorsDestroyed(
-                                existingStats.getTotalInhibitorsDestroyed() + teamSummary.getInhibitorsDestroyed());
+                        // Update basic aggregated stats
+                        updateBasicStats(existingStats, teamSummary);
 
-                        // Update currentWinStreak
-                        if (teamSummary.isIsWinner()) {
-                            if (existingStats.getCurrentWinStreak() >= 0) {
-                                existingStats.setCurrentWinStreak(existingStats.getCurrentWinStreak() + 1);
-                            } else {
-                                existingStats.setCurrentWinStreak(1); // Reset negative streak
-                            }
-                        } else {
-                            if (existingStats.getCurrentWinStreak() <= 0) {
-                                existingStats.setCurrentWinStreak(existingStats.getCurrentWinStreak() - 1);
-                            } else {
-                                existingStats.setCurrentWinStreak(-1); // Reset positive streak
-                            }
-                        }
+                        // Update neutral objectives
+                        updateNeutralObjectiveStats(existingStats, teamSummary);
 
                         // Calculate averages
-                        existingStats.setAverageScore(
-                                (double) existingStats.getTotalScore() / existingStats.getTotalMatches());
-                        existingStats.setAverageGoldEarned(
-                                (double) existingStats.getTotalGoldEarned() / existingStats.getTotalMatches());
-                        existingStats.setAverageTurretsDestroyed(
-                                (double) existingStats.getTotalTurretsDestroyed() / existingStats.getTotalMatches());
-                        existingStats.setAverageInhibitorsDestroyed(
-                                (double) existingStats.getTotalInhibitorsDestroyed() / existingStats.getTotalMatches());
+                        calculateAverages(existingStats);
 
                         // Store updated aggregated stats
                         return lolTeamAggStatsDepot.appendAsync(existingStats)
@@ -2238,6 +2261,134 @@ public class ApolloApiManager {
                         return null;
                     });
         });
+    }
+
+    // Helper method to initialize a new LolTeamAggStats object
+    private LolTeamAggStats initializeNewTeamAggStats(int teamId) {
+        LolTeamAggStats stats = new LolTeamAggStats();
+        stats.setId(teamId);
+        // All integer fields in Thrift structs are initialized to 0 by default
+        return stats;
+    }
+
+    // Helper method to update basic stats
+    private void updateBasicStats(LolTeamAggStats existingStats, LolTeamSummary teamSummary) {
+        existingStats.setTotalMatches(existingStats.getTotalMatches() + 1);
+        if (teamSummary.isIsWinner()) {
+            existingStats.setTotalWins(existingStats.getTotalWins() + 1);
+        } else {
+            existingStats.setTotalLosses(existingStats.getTotalLosses() + 1);
+        }
+        existingStats.setTotalScore(existingStats.getTotalScore() + teamSummary.getScore());
+        existingStats.setTotalGoldEarned(existingStats.getTotalGoldEarned() + teamSummary.getGoldEarned());
+        existingStats.setTotalTurretsDestroyed(
+                existingStats.getTotalTurretsDestroyed() + teamSummary.getTurretsDestroyed());
+        existingStats.setTotalInhibitorsDestroyed(
+                existingStats.getTotalInhibitorsDestroyed() + teamSummary.getInhibitorsDestroyed());
+
+        // Update currentWinStreak
+        if (teamSummary.isIsWinner()) {
+            existingStats.setCurrentWinStreak(
+                    existingStats.getCurrentWinStreak() >= 0
+                            ? existingStats.getCurrentWinStreak() + 1
+                            : 1); // Reset negative streak
+        } else {
+            existingStats.setCurrentWinStreak(
+                    existingStats.getCurrentWinStreak() <= 0
+                            ? existingStats.getCurrentWinStreak() - 1
+                            : -1); // Reset positive streak
+        }
+    }
+
+    // Helper method to update neutral objective stats
+    private void updateNeutralObjectiveStats(LolTeamAggStats existingStats, LolTeamSummary teamSummary) {
+        int dragonsKilled = 0;
+        int baronsKilled = 0;
+        int heraldsKilled = 0;
+        int voidGrubsKilled = 0;
+
+        // Safely extract neutral creeps data
+        List<LolEliteCreepKills> eliteCreepKills = Optional.ofNullable(teamSummary.getCreeps())
+                .map(LolCreeps::getNeutrals)
+                .map(LolNeutralCreeps::getKills)
+                .map(LolNeutralCreepKills::getPerEliteType)
+                .orElse(Collections.emptyList());
+
+        // Iterate over elite creep kills
+        for (LolEliteCreepKills eliteKill : eliteCreepKills) {
+            int eliteId = eliteKill.getElite().getId();
+            int kills = eliteKill.getTotal();
+            ObjectiveType objectiveType = getObjectiveTypeByEliteId(eliteId);
+
+            switch (objectiveType) {
+                case DRAGON:
+                    dragonsKilled += kills;
+                    break;
+                case BARON:
+                    baronsKilled += kills;
+                    break;
+                case HERALD:
+                    heraldsKilled += kills;
+                    break;
+                case VOID_GRUB:
+                    voidGrubsKilled += kills;
+                    break;
+                default:
+                    logger.warn("Unknown elite ID encountered: " + eliteId);
+                    break;
+            }
+        }
+
+        // Update total kills for neutral objectives
+        existingStats.setTotalDragonKills(existingStats.getTotalDragonKills() + dragonsKilled);
+        existingStats.setTotalBaronKills(existingStats.getTotalBaronKills() + baronsKilled);
+        existingStats.setTotalHeraldKills(existingStats.getTotalHeraldKills() + heraldsKilled);
+        existingStats.setTotalVoidGrubKills(existingStats.getTotalVoidGrubKills() + voidGrubsKilled);
+    }
+
+    // Helper method to calculate averages
+    private void calculateAverages(LolTeamAggStats existingStats) {
+        int totalMatches = existingStats.getTotalMatches();
+
+        existingStats.setAverageScore((double) existingStats.getTotalScore() / totalMatches);
+        existingStats.setAverageGoldEarned((double) existingStats.getTotalGoldEarned() / totalMatches);
+        existingStats.setAverageTurretsDestroyed((double) existingStats.getTotalTurretsDestroyed() / totalMatches);
+        existingStats
+                .setAverageInhibitorsDestroyed((double) existingStats.getTotalInhibitorsDestroyed() / totalMatches);
+        existingStats.setAverageDragonKills((double) existingStats.getTotalDragonKills() / totalMatches);
+        existingStats.setAverageBaronKills((double) existingStats.getTotalBaronKills() / totalMatches);
+        existingStats.setAverageHeraldKills((double) existingStats.getTotalHeraldKills() / totalMatches);
+        existingStats.setAverageVoidGrubKills((double) existingStats.getTotalVoidGrubKills() / totalMatches);
+    }
+
+    // Helper enum and method for mapping elite IDs to objective types
+    public enum ObjectiveType {
+        DRAGON,
+        BARON,
+        HERALD,
+        VOID_GRUB,
+        UNKNOWN
+    }
+
+    private ObjectiveType getObjectiveTypeByEliteId(int eliteId) {
+        switch (eliteId) {
+            case 5426:
+            case 5427:
+            case 5428:
+            case 5429:
+            case 5430:
+            case 7098:
+            case 7097:
+                return ObjectiveType.DRAGON;
+            case 5431:
+                return ObjectiveType.BARON;
+            case 5432:
+                return ObjectiveType.HERALD;
+            case 8602:
+                return ObjectiveType.VOID_GRUB;
+            default:
+                return ObjectiveType.UNKNOWN;
+        }
     }
 
     private CompletableFuture<Integer> getTeamIdFromRosterId(int rosterId) {

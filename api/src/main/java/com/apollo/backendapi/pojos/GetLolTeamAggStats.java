@@ -15,6 +15,17 @@ public class GetLolTeamAggStats {
     public double averageTurretsDestroyed;
     public double averageInhibitorsDestroyed;
     public int currentWinStreak;
+    public int totalDragonKills;
+    public int totalBaronKills;
+    public int totalHeraldKills;
+    public int totalVoidGrubKills;
+    public double averageDragonKills;
+    public double averageBaronKills;
+    public double averageHeraldKills;
+    public double averageVoidGrubKills;
+    public int totalSeries;
+    public int totalSeriesWins;
+    public int totalSeriesLosses;
 
     public GetLolTeamAggStats(LolTeamAggStats stats) {
         this.totalMatches = stats.getTotalMatches();
@@ -29,5 +40,16 @@ public class GetLolTeamAggStats {
         this.averageTurretsDestroyed = stats.getAverageTurretsDestroyed();
         this.averageInhibitorsDestroyed = stats.getAverageInhibitorsDestroyed();
         this.currentWinStreak = stats.getCurrentWinStreak();
+        this.totalDragonKills = stats.getTotalDragonKills();
+        this.totalBaronKills = stats.getTotalBaronKills();
+        this.totalHeraldKills = stats.getTotalHeraldKills();
+        this.totalVoidGrubKills = stats.getTotalVoidGrubKills();
+        this.averageDragonKills = stats.getAverageDragonKills();
+        this.averageBaronKills = stats.getAverageBaronKills();
+        this.averageHeraldKills = stats.getAverageHeraldKills();
+        this.averageVoidGrubKills = stats.getAverageVoidGrubKills();
+        this.totalSeries = stats.getTotalSeries();
+        this.totalSeriesWins = stats.getTotalSeriesWins();
+        this.totalSeriesLosses = stats.getTotalSeriesLosses();
     }
 }

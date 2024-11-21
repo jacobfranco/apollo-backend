@@ -23,6 +23,17 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   private static final org.apache.thrift.protocol.TField AVERAGE_TURRETS_DESTROYED_FIELD_DESC = new org.apache.thrift.protocol.TField("averageTurretsDestroyed", org.apache.thrift.protocol.TType.DOUBLE, (short)11);
   private static final org.apache.thrift.protocol.TField AVERAGE_INHIBITORS_DESTROYED_FIELD_DESC = new org.apache.thrift.protocol.TField("averageInhibitorsDestroyed", org.apache.thrift.protocol.TType.DOUBLE, (short)12);
   private static final org.apache.thrift.protocol.TField CURRENT_WIN_STREAK_FIELD_DESC = new org.apache.thrift.protocol.TField("currentWinStreak", org.apache.thrift.protocol.TType.I32, (short)13);
+  private static final org.apache.thrift.protocol.TField TOTAL_DRAGON_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalDragonKills", org.apache.thrift.protocol.TType.I32, (short)14);
+  private static final org.apache.thrift.protocol.TField TOTAL_BARON_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalBaronKills", org.apache.thrift.protocol.TType.I32, (short)15);
+  private static final org.apache.thrift.protocol.TField TOTAL_HERALD_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalHeraldKills", org.apache.thrift.protocol.TType.I32, (short)16);
+  private static final org.apache.thrift.protocol.TField TOTAL_VOID_GRUB_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalVoidGrubKills", org.apache.thrift.protocol.TType.I32, (short)17);
+  private static final org.apache.thrift.protocol.TField AVERAGE_DRAGON_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageDragonKills", org.apache.thrift.protocol.TType.DOUBLE, (short)18);
+  private static final org.apache.thrift.protocol.TField AVERAGE_BARON_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageBaronKills", org.apache.thrift.protocol.TType.DOUBLE, (short)19);
+  private static final org.apache.thrift.protocol.TField AVERAGE_HERALD_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageHeraldKills", org.apache.thrift.protocol.TType.DOUBLE, (short)20);
+  private static final org.apache.thrift.protocol.TField AVERAGE_VOID_GRUB_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageVoidGrubKills", org.apache.thrift.protocol.TType.DOUBLE, (short)21);
+  private static final org.apache.thrift.protocol.TField TOTAL_SERIES_FIELD_DESC = new org.apache.thrift.protocol.TField("totalSeries", org.apache.thrift.protocol.TType.I32, (short)22);
+  private static final org.apache.thrift.protocol.TField TOTAL_SERIES_WINS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalSeriesWins", org.apache.thrift.protocol.TType.I32, (short)23);
+  private static final org.apache.thrift.protocol.TField TOTAL_SERIES_LOSSES_FIELD_DESC = new org.apache.thrift.protocol.TField("totalSeriesLosses", org.apache.thrift.protocol.TType.I32, (short)24);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolTeamAggStatsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolTeamAggStatsTupleSchemeFactory();
@@ -40,6 +51,17 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   public double averageTurretsDestroyed; // required
   public double averageInhibitorsDestroyed; // required
   public int currentWinStreak; // required
+  public int totalDragonKills; // required
+  public int totalBaronKills; // required
+  public int totalHeraldKills; // required
+  public int totalVoidGrubKills; // required
+  public double averageDragonKills; // required
+  public double averageBaronKills; // required
+  public double averageHeraldKills; // required
+  public double averageVoidGrubKills; // required
+  public int totalSeries; // required
+  public int totalSeriesWins; // required
+  public int totalSeriesLosses; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -55,7 +77,18 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     AVERAGE_GOLD_EARNED((short)10, "averageGoldEarned"),
     AVERAGE_TURRETS_DESTROYED((short)11, "averageTurretsDestroyed"),
     AVERAGE_INHIBITORS_DESTROYED((short)12, "averageInhibitorsDestroyed"),
-    CURRENT_WIN_STREAK((short)13, "currentWinStreak");
+    CURRENT_WIN_STREAK((short)13, "currentWinStreak"),
+    TOTAL_DRAGON_KILLS((short)14, "totalDragonKills"),
+    TOTAL_BARON_KILLS((short)15, "totalBaronKills"),
+    TOTAL_HERALD_KILLS((short)16, "totalHeraldKills"),
+    TOTAL_VOID_GRUB_KILLS((short)17, "totalVoidGrubKills"),
+    AVERAGE_DRAGON_KILLS((short)18, "averageDragonKills"),
+    AVERAGE_BARON_KILLS((short)19, "averageBaronKills"),
+    AVERAGE_HERALD_KILLS((short)20, "averageHeraldKills"),
+    AVERAGE_VOID_GRUB_KILLS((short)21, "averageVoidGrubKills"),
+    TOTAL_SERIES((short)22, "totalSeries"),
+    TOTAL_SERIES_WINS((short)23, "totalSeriesWins"),
+    TOTAL_SERIES_LOSSES((short)24, "totalSeriesLosses");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -97,6 +130,28 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
           return AVERAGE_INHIBITORS_DESTROYED;
         case 13: // CURRENT_WIN_STREAK
           return CURRENT_WIN_STREAK;
+        case 14: // TOTAL_DRAGON_KILLS
+          return TOTAL_DRAGON_KILLS;
+        case 15: // TOTAL_BARON_KILLS
+          return TOTAL_BARON_KILLS;
+        case 16: // TOTAL_HERALD_KILLS
+          return TOTAL_HERALD_KILLS;
+        case 17: // TOTAL_VOID_GRUB_KILLS
+          return TOTAL_VOID_GRUB_KILLS;
+        case 18: // AVERAGE_DRAGON_KILLS
+          return AVERAGE_DRAGON_KILLS;
+        case 19: // AVERAGE_BARON_KILLS
+          return AVERAGE_BARON_KILLS;
+        case 20: // AVERAGE_HERALD_KILLS
+          return AVERAGE_HERALD_KILLS;
+        case 21: // AVERAGE_VOID_GRUB_KILLS
+          return AVERAGE_VOID_GRUB_KILLS;
+        case 22: // TOTAL_SERIES
+          return TOTAL_SERIES;
+        case 23: // TOTAL_SERIES_WINS
+          return TOTAL_SERIES_WINS;
+        case 24: // TOTAL_SERIES_LOSSES
+          return TOTAL_SERIES_LOSSES;
         default:
           return null;
       }
@@ -153,7 +208,18 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   private static final int __AVERAGETURRETSDESTROYED_ISSET_ID = 10;
   private static final int __AVERAGEINHIBITORSDESTROYED_ISSET_ID = 11;
   private static final int __CURRENTWINSTREAK_ISSET_ID = 12;
-  private short __isset_bitfield = 0;
+  private static final int __TOTALDRAGONKILLS_ISSET_ID = 13;
+  private static final int __TOTALBARONKILLS_ISSET_ID = 14;
+  private static final int __TOTALHERALDKILLS_ISSET_ID = 15;
+  private static final int __TOTALVOIDGRUBKILLS_ISSET_ID = 16;
+  private static final int __AVERAGEDRAGONKILLS_ISSET_ID = 17;
+  private static final int __AVERAGEBARONKILLS_ISSET_ID = 18;
+  private static final int __AVERAGEHERALDKILLS_ISSET_ID = 19;
+  private static final int __AVERAGEVOIDGRUBKILLS_ISSET_ID = 20;
+  private static final int __TOTALSERIES_ISSET_ID = 21;
+  private static final int __TOTALSERIESWINS_ISSET_ID = 22;
+  private static final int __TOTALSERIESLOSSES_ISSET_ID = 23;
+  private int __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -183,11 +249,39 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.CURRENT_WIN_STREAK, new org.apache.thrift.meta_data.FieldMetaData("currentWinStreak", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_DRAGON_KILLS, new org.apache.thrift.meta_data.FieldMetaData("totalDragonKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_BARON_KILLS, new org.apache.thrift.meta_data.FieldMetaData("totalBaronKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_HERALD_KILLS, new org.apache.thrift.meta_data.FieldMetaData("totalHeraldKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_VOID_GRUB_KILLS, new org.apache.thrift.meta_data.FieldMetaData("totalVoidGrubKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.AVERAGE_DRAGON_KILLS, new org.apache.thrift.meta_data.FieldMetaData("averageDragonKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.AVERAGE_BARON_KILLS, new org.apache.thrift.meta_data.FieldMetaData("averageBaronKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.AVERAGE_HERALD_KILLS, new org.apache.thrift.meta_data.FieldMetaData("averageHeraldKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.AVERAGE_VOID_GRUB_KILLS, new org.apache.thrift.meta_data.FieldMetaData("averageVoidGrubKills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.TOTAL_SERIES, new org.apache.thrift.meta_data.FieldMetaData("totalSeries", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_SERIES_WINS, new org.apache.thrift.meta_data.FieldMetaData("totalSeriesWins", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_SERIES_LOSSES, new org.apache.thrift.meta_data.FieldMetaData("totalSeriesLosses", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolTeamAggStats.class, metaDataMap);
   }
 
   public LolTeamAggStats() {
+    this.totalSeries = 0;
+
+    this.totalSeriesWins = 0;
+
+    this.totalSeriesLosses = 0;
+
   }
 
   public LolTeamAggStats(
@@ -203,7 +297,18 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     double averageGoldEarned,
     double averageTurretsDestroyed,
     double averageInhibitorsDestroyed,
-    int currentWinStreak)
+    int currentWinStreak,
+    int totalDragonKills,
+    int totalBaronKills,
+    int totalHeraldKills,
+    int totalVoidGrubKills,
+    double averageDragonKills,
+    double averageBaronKills,
+    double averageHeraldKills,
+    double averageVoidGrubKills,
+    int totalSeries,
+    int totalSeriesWins,
+    int totalSeriesLosses)
   {
     this();
     this.id = id;
@@ -232,6 +337,28 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     setAverageInhibitorsDestroyedIsSet(true);
     this.currentWinStreak = currentWinStreak;
     setCurrentWinStreakIsSet(true);
+    this.totalDragonKills = totalDragonKills;
+    setTotalDragonKillsIsSet(true);
+    this.totalBaronKills = totalBaronKills;
+    setTotalBaronKillsIsSet(true);
+    this.totalHeraldKills = totalHeraldKills;
+    setTotalHeraldKillsIsSet(true);
+    this.totalVoidGrubKills = totalVoidGrubKills;
+    setTotalVoidGrubKillsIsSet(true);
+    this.averageDragonKills = averageDragonKills;
+    setAverageDragonKillsIsSet(true);
+    this.averageBaronKills = averageBaronKills;
+    setAverageBaronKillsIsSet(true);
+    this.averageHeraldKills = averageHeraldKills;
+    setAverageHeraldKillsIsSet(true);
+    this.averageVoidGrubKills = averageVoidGrubKills;
+    setAverageVoidGrubKillsIsSet(true);
+    this.totalSeries = totalSeries;
+    setTotalSeriesIsSet(true);
+    this.totalSeriesWins = totalSeriesWins;
+    setTotalSeriesWinsIsSet(true);
+    this.totalSeriesLosses = totalSeriesLosses;
+    setTotalSeriesLossesIsSet(true);
   }
 
   /**
@@ -252,6 +379,17 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     this.averageTurretsDestroyed = other.averageTurretsDestroyed;
     this.averageInhibitorsDestroyed = other.averageInhibitorsDestroyed;
     this.currentWinStreak = other.currentWinStreak;
+    this.totalDragonKills = other.totalDragonKills;
+    this.totalBaronKills = other.totalBaronKills;
+    this.totalHeraldKills = other.totalHeraldKills;
+    this.totalVoidGrubKills = other.totalVoidGrubKills;
+    this.averageDragonKills = other.averageDragonKills;
+    this.averageBaronKills = other.averageBaronKills;
+    this.averageHeraldKills = other.averageHeraldKills;
+    this.averageVoidGrubKills = other.averageVoidGrubKills;
+    this.totalSeries = other.totalSeries;
+    this.totalSeriesWins = other.totalSeriesWins;
+    this.totalSeriesLosses = other.totalSeriesLosses;
   }
 
   @Override
@@ -287,6 +425,28 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     this.averageInhibitorsDestroyed = 0.0;
     setCurrentWinStreakIsSet(false);
     this.currentWinStreak = 0;
+    setTotalDragonKillsIsSet(false);
+    this.totalDragonKills = 0;
+    setTotalBaronKillsIsSet(false);
+    this.totalBaronKills = 0;
+    setTotalHeraldKillsIsSet(false);
+    this.totalHeraldKills = 0;
+    setTotalVoidGrubKillsIsSet(false);
+    this.totalVoidGrubKills = 0;
+    setAverageDragonKillsIsSet(false);
+    this.averageDragonKills = 0.0;
+    setAverageBaronKillsIsSet(false);
+    this.averageBaronKills = 0.0;
+    setAverageHeraldKillsIsSet(false);
+    this.averageHeraldKills = 0.0;
+    setAverageVoidGrubKillsIsSet(false);
+    this.averageVoidGrubKills = 0.0;
+    this.totalSeries = 0;
+
+    this.totalSeriesWins = 0;
+
+    this.totalSeriesLosses = 0;
+
   }
 
   public int getId() {
@@ -588,6 +748,259 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CURRENTWINSTREAK_ISSET_ID, value);
   }
 
+  public int getTotalDragonKills() {
+    return this.totalDragonKills;
+  }
+
+  public LolTeamAggStats setTotalDragonKills(int totalDragonKills) {
+    this.totalDragonKills = totalDragonKills;
+    setTotalDragonKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalDragonKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALDRAGONKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field totalDragonKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalDragonKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALDRAGONKILLS_ISSET_ID);
+  }
+
+  public void setTotalDragonKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALDRAGONKILLS_ISSET_ID, value);
+  }
+
+  public int getTotalBaronKills() {
+    return this.totalBaronKills;
+  }
+
+  public LolTeamAggStats setTotalBaronKills(int totalBaronKills) {
+    this.totalBaronKills = totalBaronKills;
+    setTotalBaronKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalBaronKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALBARONKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field totalBaronKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalBaronKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALBARONKILLS_ISSET_ID);
+  }
+
+  public void setTotalBaronKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALBARONKILLS_ISSET_ID, value);
+  }
+
+  public int getTotalHeraldKills() {
+    return this.totalHeraldKills;
+  }
+
+  public LolTeamAggStats setTotalHeraldKills(int totalHeraldKills) {
+    this.totalHeraldKills = totalHeraldKills;
+    setTotalHeraldKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalHeraldKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALHERALDKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field totalHeraldKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalHeraldKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALHERALDKILLS_ISSET_ID);
+  }
+
+  public void setTotalHeraldKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALHERALDKILLS_ISSET_ID, value);
+  }
+
+  public int getTotalVoidGrubKills() {
+    return this.totalVoidGrubKills;
+  }
+
+  public LolTeamAggStats setTotalVoidGrubKills(int totalVoidGrubKills) {
+    this.totalVoidGrubKills = totalVoidGrubKills;
+    setTotalVoidGrubKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalVoidGrubKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALVOIDGRUBKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field totalVoidGrubKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalVoidGrubKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALVOIDGRUBKILLS_ISSET_ID);
+  }
+
+  public void setTotalVoidGrubKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALVOIDGRUBKILLS_ISSET_ID, value);
+  }
+
+  public double getAverageDragonKills() {
+    return this.averageDragonKills;
+  }
+
+  public LolTeamAggStats setAverageDragonKills(double averageDragonKills) {
+    this.averageDragonKills = averageDragonKills;
+    setAverageDragonKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageDragonKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGEDRAGONKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field averageDragonKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageDragonKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGEDRAGONKILLS_ISSET_ID);
+  }
+
+  public void setAverageDragonKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEDRAGONKILLS_ISSET_ID, value);
+  }
+
+  public double getAverageBaronKills() {
+    return this.averageBaronKills;
+  }
+
+  public LolTeamAggStats setAverageBaronKills(double averageBaronKills) {
+    this.averageBaronKills = averageBaronKills;
+    setAverageBaronKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageBaronKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGEBARONKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field averageBaronKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageBaronKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGEBARONKILLS_ISSET_ID);
+  }
+
+  public void setAverageBaronKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEBARONKILLS_ISSET_ID, value);
+  }
+
+  public double getAverageHeraldKills() {
+    return this.averageHeraldKills;
+  }
+
+  public LolTeamAggStats setAverageHeraldKills(double averageHeraldKills) {
+    this.averageHeraldKills = averageHeraldKills;
+    setAverageHeraldKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageHeraldKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGEHERALDKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field averageHeraldKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageHeraldKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGEHERALDKILLS_ISSET_ID);
+  }
+
+  public void setAverageHeraldKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEHERALDKILLS_ISSET_ID, value);
+  }
+
+  public double getAverageVoidGrubKills() {
+    return this.averageVoidGrubKills;
+  }
+
+  public LolTeamAggStats setAverageVoidGrubKills(double averageVoidGrubKills) {
+    this.averageVoidGrubKills = averageVoidGrubKills;
+    setAverageVoidGrubKillsIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageVoidGrubKills() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGEVOIDGRUBKILLS_ISSET_ID);
+  }
+
+  /** Returns true if field averageVoidGrubKills is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageVoidGrubKills() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGEVOIDGRUBKILLS_ISSET_ID);
+  }
+
+  public void setAverageVoidGrubKillsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEVOIDGRUBKILLS_ISSET_ID, value);
+  }
+
+  public int getTotalSeries() {
+    return this.totalSeries;
+  }
+
+  public LolTeamAggStats setTotalSeries(int totalSeries) {
+    this.totalSeries = totalSeries;
+    setTotalSeriesIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalSeries() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALSERIES_ISSET_ID);
+  }
+
+  /** Returns true if field totalSeries is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalSeries() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALSERIES_ISSET_ID);
+  }
+
+  public void setTotalSeriesIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALSERIES_ISSET_ID, value);
+  }
+
+  public int getTotalSeriesWins() {
+    return this.totalSeriesWins;
+  }
+
+  public LolTeamAggStats setTotalSeriesWins(int totalSeriesWins) {
+    this.totalSeriesWins = totalSeriesWins;
+    setTotalSeriesWinsIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalSeriesWins() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALSERIESWINS_ISSET_ID);
+  }
+
+  /** Returns true if field totalSeriesWins is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalSeriesWins() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALSERIESWINS_ISSET_ID);
+  }
+
+  public void setTotalSeriesWinsIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALSERIESWINS_ISSET_ID, value);
+  }
+
+  public int getTotalSeriesLosses() {
+    return this.totalSeriesLosses;
+  }
+
+  public LolTeamAggStats setTotalSeriesLosses(int totalSeriesLosses) {
+    this.totalSeriesLosses = totalSeriesLosses;
+    setTotalSeriesLossesIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalSeriesLosses() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALSERIESLOSSES_ISSET_ID);
+  }
+
+  /** Returns true if field totalSeriesLosses is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalSeriesLosses() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALSERIESLOSSES_ISSET_ID);
+  }
+
+  public void setTotalSeriesLossesIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALSERIESLOSSES_ISSET_ID, value);
+  }
+
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -695,6 +1108,94 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       }
       break;
 
+    case TOTAL_DRAGON_KILLS:
+      if (value == null) {
+        unsetTotalDragonKills();
+      } else {
+        setTotalDragonKills((java.lang.Integer)value);
+      }
+      break;
+
+    case TOTAL_BARON_KILLS:
+      if (value == null) {
+        unsetTotalBaronKills();
+      } else {
+        setTotalBaronKills((java.lang.Integer)value);
+      }
+      break;
+
+    case TOTAL_HERALD_KILLS:
+      if (value == null) {
+        unsetTotalHeraldKills();
+      } else {
+        setTotalHeraldKills((java.lang.Integer)value);
+      }
+      break;
+
+    case TOTAL_VOID_GRUB_KILLS:
+      if (value == null) {
+        unsetTotalVoidGrubKills();
+      } else {
+        setTotalVoidGrubKills((java.lang.Integer)value);
+      }
+      break;
+
+    case AVERAGE_DRAGON_KILLS:
+      if (value == null) {
+        unsetAverageDragonKills();
+      } else {
+        setAverageDragonKills((java.lang.Double)value);
+      }
+      break;
+
+    case AVERAGE_BARON_KILLS:
+      if (value == null) {
+        unsetAverageBaronKills();
+      } else {
+        setAverageBaronKills((java.lang.Double)value);
+      }
+      break;
+
+    case AVERAGE_HERALD_KILLS:
+      if (value == null) {
+        unsetAverageHeraldKills();
+      } else {
+        setAverageHeraldKills((java.lang.Double)value);
+      }
+      break;
+
+    case AVERAGE_VOID_GRUB_KILLS:
+      if (value == null) {
+        unsetAverageVoidGrubKills();
+      } else {
+        setAverageVoidGrubKills((java.lang.Double)value);
+      }
+      break;
+
+    case TOTAL_SERIES:
+      if (value == null) {
+        unsetTotalSeries();
+      } else {
+        setTotalSeries((java.lang.Integer)value);
+      }
+      break;
+
+    case TOTAL_SERIES_WINS:
+      if (value == null) {
+        unsetTotalSeriesWins();
+      } else {
+        setTotalSeriesWins((java.lang.Integer)value);
+      }
+      break;
+
+    case TOTAL_SERIES_LOSSES:
+      if (value == null) {
+        unsetTotalSeriesLosses();
+      } else {
+        setTotalSeriesLosses((java.lang.Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -741,6 +1242,39 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     case CURRENT_WIN_STREAK:
       return getCurrentWinStreak();
 
+    case TOTAL_DRAGON_KILLS:
+      return getTotalDragonKills();
+
+    case TOTAL_BARON_KILLS:
+      return getTotalBaronKills();
+
+    case TOTAL_HERALD_KILLS:
+      return getTotalHeraldKills();
+
+    case TOTAL_VOID_GRUB_KILLS:
+      return getTotalVoidGrubKills();
+
+    case AVERAGE_DRAGON_KILLS:
+      return getAverageDragonKills();
+
+    case AVERAGE_BARON_KILLS:
+      return getAverageBaronKills();
+
+    case AVERAGE_HERALD_KILLS:
+      return getAverageHeraldKills();
+
+    case AVERAGE_VOID_GRUB_KILLS:
+      return getAverageVoidGrubKills();
+
+    case TOTAL_SERIES:
+      return getTotalSeries();
+
+    case TOTAL_SERIES_WINS:
+      return getTotalSeriesWins();
+
+    case TOTAL_SERIES_LOSSES:
+      return getTotalSeriesLosses();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -779,6 +1313,28 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       return isSetAverageInhibitorsDestroyed();
     case CURRENT_WIN_STREAK:
       return isSetCurrentWinStreak();
+    case TOTAL_DRAGON_KILLS:
+      return isSetTotalDragonKills();
+    case TOTAL_BARON_KILLS:
+      return isSetTotalBaronKills();
+    case TOTAL_HERALD_KILLS:
+      return isSetTotalHeraldKills();
+    case TOTAL_VOID_GRUB_KILLS:
+      return isSetTotalVoidGrubKills();
+    case AVERAGE_DRAGON_KILLS:
+      return isSetAverageDragonKills();
+    case AVERAGE_BARON_KILLS:
+      return isSetAverageBaronKills();
+    case AVERAGE_HERALD_KILLS:
+      return isSetAverageHeraldKills();
+    case AVERAGE_VOID_GRUB_KILLS:
+      return isSetAverageVoidGrubKills();
+    case TOTAL_SERIES:
+      return isSetTotalSeries();
+    case TOTAL_SERIES_WINS:
+      return isSetTotalSeriesWins();
+    case TOTAL_SERIES_LOSSES:
+      return isSetTotalSeriesLosses();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -913,6 +1469,105 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
         return false;
     }
 
+    boolean this_present_totalDragonKills = true;
+    boolean that_present_totalDragonKills = true;
+    if (this_present_totalDragonKills || that_present_totalDragonKills) {
+      if (!(this_present_totalDragonKills && that_present_totalDragonKills))
+        return false;
+      if (this.totalDragonKills != that.totalDragonKills)
+        return false;
+    }
+
+    boolean this_present_totalBaronKills = true;
+    boolean that_present_totalBaronKills = true;
+    if (this_present_totalBaronKills || that_present_totalBaronKills) {
+      if (!(this_present_totalBaronKills && that_present_totalBaronKills))
+        return false;
+      if (this.totalBaronKills != that.totalBaronKills)
+        return false;
+    }
+
+    boolean this_present_totalHeraldKills = true;
+    boolean that_present_totalHeraldKills = true;
+    if (this_present_totalHeraldKills || that_present_totalHeraldKills) {
+      if (!(this_present_totalHeraldKills && that_present_totalHeraldKills))
+        return false;
+      if (this.totalHeraldKills != that.totalHeraldKills)
+        return false;
+    }
+
+    boolean this_present_totalVoidGrubKills = true;
+    boolean that_present_totalVoidGrubKills = true;
+    if (this_present_totalVoidGrubKills || that_present_totalVoidGrubKills) {
+      if (!(this_present_totalVoidGrubKills && that_present_totalVoidGrubKills))
+        return false;
+      if (this.totalVoidGrubKills != that.totalVoidGrubKills)
+        return false;
+    }
+
+    boolean this_present_averageDragonKills = true;
+    boolean that_present_averageDragonKills = true;
+    if (this_present_averageDragonKills || that_present_averageDragonKills) {
+      if (!(this_present_averageDragonKills && that_present_averageDragonKills))
+        return false;
+      if (this.averageDragonKills != that.averageDragonKills)
+        return false;
+    }
+
+    boolean this_present_averageBaronKills = true;
+    boolean that_present_averageBaronKills = true;
+    if (this_present_averageBaronKills || that_present_averageBaronKills) {
+      if (!(this_present_averageBaronKills && that_present_averageBaronKills))
+        return false;
+      if (this.averageBaronKills != that.averageBaronKills)
+        return false;
+    }
+
+    boolean this_present_averageHeraldKills = true;
+    boolean that_present_averageHeraldKills = true;
+    if (this_present_averageHeraldKills || that_present_averageHeraldKills) {
+      if (!(this_present_averageHeraldKills && that_present_averageHeraldKills))
+        return false;
+      if (this.averageHeraldKills != that.averageHeraldKills)
+        return false;
+    }
+
+    boolean this_present_averageVoidGrubKills = true;
+    boolean that_present_averageVoidGrubKills = true;
+    if (this_present_averageVoidGrubKills || that_present_averageVoidGrubKills) {
+      if (!(this_present_averageVoidGrubKills && that_present_averageVoidGrubKills))
+        return false;
+      if (this.averageVoidGrubKills != that.averageVoidGrubKills)
+        return false;
+    }
+
+    boolean this_present_totalSeries = true;
+    boolean that_present_totalSeries = true;
+    if (this_present_totalSeries || that_present_totalSeries) {
+      if (!(this_present_totalSeries && that_present_totalSeries))
+        return false;
+      if (this.totalSeries != that.totalSeries)
+        return false;
+    }
+
+    boolean this_present_totalSeriesWins = true;
+    boolean that_present_totalSeriesWins = true;
+    if (this_present_totalSeriesWins || that_present_totalSeriesWins) {
+      if (!(this_present_totalSeriesWins && that_present_totalSeriesWins))
+        return false;
+      if (this.totalSeriesWins != that.totalSeriesWins)
+        return false;
+    }
+
+    boolean this_present_totalSeriesLosses = true;
+    boolean that_present_totalSeriesLosses = true;
+    if (this_present_totalSeriesLosses || that_present_totalSeriesLosses) {
+      if (!(this_present_totalSeriesLosses && that_present_totalSeriesLosses))
+        return false;
+      if (this.totalSeriesLosses != that.totalSeriesLosses)
+        return false;
+    }
+
     return true;
   }
 
@@ -945,6 +1600,28 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageInhibitorsDestroyed);
 
     hashCode = hashCode * 8191 + currentWinStreak;
+
+    hashCode = hashCode * 8191 + totalDragonKills;
+
+    hashCode = hashCode * 8191 + totalBaronKills;
+
+    hashCode = hashCode * 8191 + totalHeraldKills;
+
+    hashCode = hashCode * 8191 + totalVoidGrubKills;
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageDragonKills);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageBaronKills);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageHeraldKills);
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageVoidGrubKills);
+
+    hashCode = hashCode * 8191 + totalSeries;
+
+    hashCode = hashCode * 8191 + totalSeriesWins;
+
+    hashCode = hashCode * 8191 + totalSeriesLosses;
 
     return hashCode;
   }
@@ -1087,6 +1764,116 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetTotalDragonKills(), other.isSetTotalDragonKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalDragonKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalDragonKills, other.totalDragonKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTotalBaronKills(), other.isSetTotalBaronKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalBaronKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalBaronKills, other.totalBaronKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTotalHeraldKills(), other.isSetTotalHeraldKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalHeraldKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalHeraldKills, other.totalHeraldKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTotalVoidGrubKills(), other.isSetTotalVoidGrubKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalVoidGrubKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalVoidGrubKills, other.totalVoidGrubKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageDragonKills(), other.isSetAverageDragonKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageDragonKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageDragonKills, other.averageDragonKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageBaronKills(), other.isSetAverageBaronKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageBaronKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageBaronKills, other.averageBaronKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageHeraldKills(), other.isSetAverageHeraldKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageHeraldKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageHeraldKills, other.averageHeraldKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageVoidGrubKills(), other.isSetAverageVoidGrubKills());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageVoidGrubKills()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageVoidGrubKills, other.averageVoidGrubKills);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTotalSeries(), other.isSetTotalSeries());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalSeries()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalSeries, other.totalSeries);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTotalSeriesWins(), other.isSetTotalSeriesWins());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalSeriesWins()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalSeriesWins, other.totalSeriesWins);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTotalSeriesLosses(), other.isSetTotalSeriesLosses());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalSeriesLosses()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalSeriesLosses, other.totalSeriesLosses);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1161,6 +1948,50 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     if (!first) sb.append(", ");
     sb.append("currentWinStreak:");
     sb.append(this.currentWinStreak);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalDragonKills:");
+    sb.append(this.totalDragonKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalBaronKills:");
+    sb.append(this.totalBaronKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalHeraldKills:");
+    sb.append(this.totalHeraldKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalVoidGrubKills:");
+    sb.append(this.totalVoidGrubKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageDragonKills:");
+    sb.append(this.averageDragonKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageBaronKills:");
+    sb.append(this.averageBaronKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageHeraldKills:");
+    sb.append(this.averageHeraldKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageVoidGrubKills:");
+    sb.append(this.averageVoidGrubKills);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalSeries:");
+    sb.append(this.totalSeries);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalSeriesWins:");
+    sb.append(this.totalSeriesWins);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalSeriesLosses:");
+    sb.append(this.totalSeriesLosses);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -1313,6 +2144,94 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 14: // TOTAL_DRAGON_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalDragonKills = iprot.readI32();
+              struct.setTotalDragonKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 15: // TOTAL_BARON_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalBaronKills = iprot.readI32();
+              struct.setTotalBaronKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 16: // TOTAL_HERALD_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalHeraldKills = iprot.readI32();
+              struct.setTotalHeraldKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 17: // TOTAL_VOID_GRUB_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalVoidGrubKills = iprot.readI32();
+              struct.setTotalVoidGrubKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 18: // AVERAGE_DRAGON_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageDragonKills = iprot.readDouble();
+              struct.setAverageDragonKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 19: // AVERAGE_BARON_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageBaronKills = iprot.readDouble();
+              struct.setAverageBaronKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 20: // AVERAGE_HERALD_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageHeraldKills = iprot.readDouble();
+              struct.setAverageHeraldKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 21: // AVERAGE_VOID_GRUB_KILLS
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageVoidGrubKills = iprot.readDouble();
+              struct.setAverageVoidGrubKillsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 22: // TOTAL_SERIES
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalSeries = iprot.readI32();
+              struct.setTotalSeriesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 23: // TOTAL_SERIES_WINS
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalSeriesWins = iprot.readI32();
+              struct.setTotalSeriesWinsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 24: // TOTAL_SERIES_LOSSES
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalSeriesLosses = iprot.readI32();
+              struct.setTotalSeriesLossesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1367,6 +2286,39 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(CURRENT_WIN_STREAK_FIELD_DESC);
       oprot.writeI32(struct.currentWinStreak);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_DRAGON_KILLS_FIELD_DESC);
+      oprot.writeI32(struct.totalDragonKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_BARON_KILLS_FIELD_DESC);
+      oprot.writeI32(struct.totalBaronKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_HERALD_KILLS_FIELD_DESC);
+      oprot.writeI32(struct.totalHeraldKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_VOID_GRUB_KILLS_FIELD_DESC);
+      oprot.writeI32(struct.totalVoidGrubKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_DRAGON_KILLS_FIELD_DESC);
+      oprot.writeDouble(struct.averageDragonKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_BARON_KILLS_FIELD_DESC);
+      oprot.writeDouble(struct.averageBaronKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_HERALD_KILLS_FIELD_DESC);
+      oprot.writeDouble(struct.averageHeraldKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_VOID_GRUB_KILLS_FIELD_DESC);
+      oprot.writeDouble(struct.averageVoidGrubKills);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_SERIES_FIELD_DESC);
+      oprot.writeI32(struct.totalSeries);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_SERIES_WINS_FIELD_DESC);
+      oprot.writeI32(struct.totalSeriesWins);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_SERIES_LOSSES_FIELD_DESC);
+      oprot.writeI32(struct.totalSeriesLosses);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1426,7 +2378,40 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       if (struct.isSetCurrentWinStreak()) {
         optionals.set(12);
       }
-      oprot.writeBitSet(optionals, 13);
+      if (struct.isSetTotalDragonKills()) {
+        optionals.set(13);
+      }
+      if (struct.isSetTotalBaronKills()) {
+        optionals.set(14);
+      }
+      if (struct.isSetTotalHeraldKills()) {
+        optionals.set(15);
+      }
+      if (struct.isSetTotalVoidGrubKills()) {
+        optionals.set(16);
+      }
+      if (struct.isSetAverageDragonKills()) {
+        optionals.set(17);
+      }
+      if (struct.isSetAverageBaronKills()) {
+        optionals.set(18);
+      }
+      if (struct.isSetAverageHeraldKills()) {
+        optionals.set(19);
+      }
+      if (struct.isSetAverageVoidGrubKills()) {
+        optionals.set(20);
+      }
+      if (struct.isSetTotalSeries()) {
+        optionals.set(21);
+      }
+      if (struct.isSetTotalSeriesWins()) {
+        optionals.set(22);
+      }
+      if (struct.isSetTotalSeriesLosses()) {
+        optionals.set(23);
+      }
+      oprot.writeBitSet(optionals, 24);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
@@ -1466,12 +2451,45 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       if (struct.isSetCurrentWinStreak()) {
         oprot.writeI32(struct.currentWinStreak);
       }
+      if (struct.isSetTotalDragonKills()) {
+        oprot.writeI32(struct.totalDragonKills);
+      }
+      if (struct.isSetTotalBaronKills()) {
+        oprot.writeI32(struct.totalBaronKills);
+      }
+      if (struct.isSetTotalHeraldKills()) {
+        oprot.writeI32(struct.totalHeraldKills);
+      }
+      if (struct.isSetTotalVoidGrubKills()) {
+        oprot.writeI32(struct.totalVoidGrubKills);
+      }
+      if (struct.isSetAverageDragonKills()) {
+        oprot.writeDouble(struct.averageDragonKills);
+      }
+      if (struct.isSetAverageBaronKills()) {
+        oprot.writeDouble(struct.averageBaronKills);
+      }
+      if (struct.isSetAverageHeraldKills()) {
+        oprot.writeDouble(struct.averageHeraldKills);
+      }
+      if (struct.isSetAverageVoidGrubKills()) {
+        oprot.writeDouble(struct.averageVoidGrubKills);
+      }
+      if (struct.isSetTotalSeries()) {
+        oprot.writeI32(struct.totalSeries);
+      }
+      if (struct.isSetTotalSeriesWins()) {
+        oprot.writeI32(struct.totalSeriesWins);
+      }
+      if (struct.isSetTotalSeriesLosses()) {
+        oprot.writeI32(struct.totalSeriesLosses);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LolTeamAggStats struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(13);
+      java.util.BitSet incoming = iprot.readBitSet(24);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -1523,6 +2541,50 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
       if (incoming.get(12)) {
         struct.currentWinStreak = iprot.readI32();
         struct.setCurrentWinStreakIsSet(true);
+      }
+      if (incoming.get(13)) {
+        struct.totalDragonKills = iprot.readI32();
+        struct.setTotalDragonKillsIsSet(true);
+      }
+      if (incoming.get(14)) {
+        struct.totalBaronKills = iprot.readI32();
+        struct.setTotalBaronKillsIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.totalHeraldKills = iprot.readI32();
+        struct.setTotalHeraldKillsIsSet(true);
+      }
+      if (incoming.get(16)) {
+        struct.totalVoidGrubKills = iprot.readI32();
+        struct.setTotalVoidGrubKillsIsSet(true);
+      }
+      if (incoming.get(17)) {
+        struct.averageDragonKills = iprot.readDouble();
+        struct.setAverageDragonKillsIsSet(true);
+      }
+      if (incoming.get(18)) {
+        struct.averageBaronKills = iprot.readDouble();
+        struct.setAverageBaronKillsIsSet(true);
+      }
+      if (incoming.get(19)) {
+        struct.averageHeraldKills = iprot.readDouble();
+        struct.setAverageHeraldKillsIsSet(true);
+      }
+      if (incoming.get(20)) {
+        struct.averageVoidGrubKills = iprot.readDouble();
+        struct.setAverageVoidGrubKillsIsSet(true);
+      }
+      if (incoming.get(21)) {
+        struct.totalSeries = iprot.readI32();
+        struct.setTotalSeriesIsSet(true);
+      }
+      if (incoming.get(22)) {
+        struct.totalSeriesWins = iprot.readI32();
+        struct.setTotalSeriesWinsIsSet(true);
+      }
+      if (incoming.get(23)) {
+        struct.totalSeriesLosses = iprot.readI32();
+        struct.setTotalSeriesLossesIsSet(true);
       }
     }
   }
