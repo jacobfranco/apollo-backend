@@ -3340,9 +3340,16 @@ public class ApolloApiManager {
                     Team team = teamFuture.join();
                     LolTeamAggStats aggStats = aggStatsFuture.join();
 
-                    if (team == null || aggStats == null) {
-                        logger.warn("getTeamWithAggStats - No Team or Aggregated Stats found with ID: {}", teamId);
+                    if (team == null) {
+                        logger.warn("getTeamWithAggStats - No Team found with ID: {}", teamId);
                         return null;
+                    }
+
+                    if (aggStats == null) {
+                        logger.warn(
+                                "getTeamWithAggStats - No Aggregated Stats found for teamId: {}. Initializing with default values.",
+                                teamId);
+                        aggStats = createDefaultAggStats(teamId);
                     }
 
                     // Construct GetTeam without seasonStats and assetMap
@@ -3392,6 +3399,35 @@ public class ApolloApiManager {
                     logger.info("getSeriesSchedule - Total Series fetched: " + seriesList.size());
                     return processSeriesList(seriesList);
                 });
+    }
+
+    private LolTeamAggStats createDefaultAggStats(int teamId) {
+        LolTeamAggStats defaultStats = new LolTeamAggStats();
+        defaultStats.setId(teamId);
+        defaultStats.setTotalMatches(0);
+        defaultStats.setTotalWins(0);
+        defaultStats.setTotalLosses(0);
+        defaultStats.setTotalScore(0);
+        defaultStats.setTotalGoldEarned(0);
+        defaultStats.setTotalTurretsDestroyed(0);
+        defaultStats.setTotalInhibitorsDestroyed(0);
+        defaultStats.setAverageScore(0.0);
+        defaultStats.setAverageGoldEarned(0.0);
+        defaultStats.setAverageTurretsDestroyed(0.0);
+        defaultStats.setAverageInhibitorsDestroyed(0.0);
+        defaultStats.setCurrentWinStreak(0);
+        defaultStats.setTotalDragonKills(0);
+        defaultStats.setTotalBaronKills(0);
+        defaultStats.setTotalHeraldKills(0);
+        defaultStats.setTotalVoidGrubKills(0);
+        defaultStats.setAverageDragonKills(0.0);
+        defaultStats.setAverageBaronKills(0.0);
+        defaultStats.setAverageHeraldKills(0.0);
+        defaultStats.setAverageVoidGrubKills(0.0);
+        defaultStats.setTotalSeries(0);
+        defaultStats.setTotalSeriesWins(0);
+        defaultStats.setTotalSeriesLosses(0);
+        return defaultStats;
     }
 
     private CompletableFuture<List<GetSeries>> processSeriesList(List<Series> seriesList) {
