@@ -17,7 +17,9 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.threeten.extra.PeriodDuration;
 
 import java.time.Instant;
@@ -3232,6 +3234,32 @@ public class ApolloApiManager {
                     } else {
                         logger.warn("getPlayer - No player found with ID: " + playerId);
                         return null;
+                    }
+                });
+    }
+
+    public CompletableFuture<List<GetPlayer>> getPlayersFromRosterId(int rosterId) {
+        logger.info("getPlayersFromRosterId - Fetching players from rosterId: " + rosterId);
+        return getRosterFromRosterId.invokeAsync(rosterId)
+                .thenCompose(roster -> {
+                    if (roster == null) {
+                        // Roster does not exist
+                        logger.warn("getPlayersFromRosterId - Roster not found for rosterId: " + rosterId);
+                        return CompletableFuture
+                                .failedFuture(new ResponseStatusException(HttpStatus.NOT_FOUND, "Roster not found"));
+                    }
+                    if (roster.getPlayerIds() != null && !roster.getPlayerIds().isEmpty()) {
+                        List<CompletableFuture<GetPlayer>> playerFutures = roster.getPlayerIds().stream()
+                                .map(this::getPlayer)
+                                .collect(Collectors.toList());
+                        return CompletableFuture.allOf(playerFutures.toArray(new CompletableFuture[0]))
+                                .thenApply(v -> playerFutures.stream()
+                                        .map(CompletableFuture::join)
+                                        .collect(Collectors.toList()));
+                    } else {
+                        // Roster exists but has no players
+                        logger.warn("getPlayersFromRosterId - No players found for rosterId: " + rosterId);
+                        return CompletableFuture.completedFuture(Collections.emptyList());
                     }
                 });
     }

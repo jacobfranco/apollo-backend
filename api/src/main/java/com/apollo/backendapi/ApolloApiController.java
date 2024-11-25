@@ -2036,6 +2036,24 @@ public class ApolloApiController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found")));
     }
 
+    @GetMapping("/api/rosters/{rosterId}/players")
+    public Mono<ResponseEntity<List<GetPlayer>>> getPlayersByRosterId(@PathVariable int rosterId) {
+        return Mono.fromFuture(manager.getPlayersFromRosterId(rosterId))
+                .map(players -> ResponseEntity.ok(players))
+                .onErrorResume(ResponseStatusException.class, e -> {
+                    // Handle 404 Not Found for roster not found
+                    if (e.getStatus() == HttpStatus.NOT_FOUND) {
+                        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                    }
+                    // Handle other ResponseStatusExceptions if needed
+                    return Mono.just(ResponseEntity.status(e.getStatus()).build());
+                })
+                .onErrorResume(e -> {
+                    // Handle any other unexpected exceptions
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                });
+    }
+
     /*
      * Lol Match Summary Endpoints
      * ======================================
