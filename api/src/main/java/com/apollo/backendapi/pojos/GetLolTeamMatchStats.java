@@ -7,6 +7,8 @@ import com.apollo.backend.data.LolTeamSummary;
 
 public class GetLolTeamMatchStats {
     public int matchId;
+    public Instant start;
+    public GetTeam opponent;
     public int score;
     public boolean isWinner;
     public int goldEarned;
@@ -33,6 +35,8 @@ public class GetLolTeamMatchStats {
         }
 
         this.matchId = teamSummary.matchId;
+        this.start = teamSummary.start;
+        this.opponent = teamSummary.opponent;
         this.score = teamSummary.score;
         this.isWinner = teamSummary.isWinner;
         this.goldEarned = teamSummary.goldEarned;
@@ -60,6 +64,8 @@ public class GetLolTeamMatchStats {
         }
 
         this.matchId = teamSummary.getMatchId();
+        this.start = Instant.ofEpochMilli(teamSummary.getStart());
+        this.opponent = teamSummary.isSetOpponent() ? new GetTeam(teamSummary.getOpponent()) : null;
         this.score = teamSummary.getScore();
         this.isWinner = teamSummary.isIsWinner();
         this.goldEarned = teamSummary.getGoldEarned();

@@ -947,6 +947,8 @@ struct LolTeamSummary {
     10: list<LolPlayerSummary> players
     11: optional i32 teamId
     12: optional i32 matchId
+    13: optional i64 start
+    14: optional Team opponent
 }
 
 struct LolRoster {

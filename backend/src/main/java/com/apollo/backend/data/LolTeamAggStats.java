@@ -276,12 +276,6 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
   }
 
   public LolTeamAggStats() {
-    this.totalSeries = 0;
-
-    this.totalSeriesWins = 0;
-
-    this.totalSeriesLosses = 0;
-
   }
 
   public LolTeamAggStats(
@@ -441,12 +435,12 @@ public class LolTeamAggStats implements org.apache.thrift.TBase<LolTeamAggStats,
     this.averageHeraldKills = 0.0;
     setAverageVoidGrubKillsIsSet(false);
     this.averageVoidGrubKills = 0.0;
+    setTotalSeriesIsSet(false);
     this.totalSeries = 0;
-
+    setTotalSeriesWinsIsSet(false);
     this.totalSeriesWins = 0;
-
+    setTotalSeriesLossesIsSet(false);
     this.totalSeriesLosses = 0;
-
   }
 
   public int getId() {

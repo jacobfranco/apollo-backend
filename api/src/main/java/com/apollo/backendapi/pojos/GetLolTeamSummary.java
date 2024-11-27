@@ -1,5 +1,6 @@
 package com.apollo.backendapi.pojos;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,6 +18,8 @@ public class GetLolTeamSummary {
     public GetLolStructures structures;
     public GetLolCreeps creeps;
     public List<GetLolPlayerSummary> players;
+    public Instant start;
+    public GetTeam opponent;
 
     public GetLolTeamSummary(LolTeamSummary teamSummary, Map<Integer, GetAsset> assetMap) {
         this.matchId = teamSummary.getMatchId();
@@ -32,5 +35,7 @@ public class GetLolTeamSummary {
         this.players = teamSummary.getPlayers().stream()
                 .map(player -> new GetLolPlayerSummary(player, assetMap))
                 .collect(Collectors.toList());
+        this.start = teamSummary.isSetStart() ? Instant.ofEpochMilli(teamSummary.getStart()) : null;
+        this.opponent = teamSummary.isSetOpponent() ? new GetTeam(teamSummary.getOpponent()) : null;
     }
 }
