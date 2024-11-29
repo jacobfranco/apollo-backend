@@ -161,6 +161,10 @@ public class AbiosApiClient {
         return makeRequest("teams/" + teamId, null, null, 0, 1);
     }
 
+    public String getTeamSeries(int teamId, String filter, String order, int skip, int take) throws IOException {
+        return makeRequest("teams/" + teamId + "/series", filter, order, skip, take);
+    }
+
     public String getPlayer(int playerId) throws IOException {
         return makeRequest("players/" + playerId, null, null, 0, 1);
     }

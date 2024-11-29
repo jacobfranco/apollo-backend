@@ -154,6 +154,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 ReplyStatusContent.class,
                 Roster.class,
                 Series.class,
+                Schedule.class,
                 SocialMediaAccount.class,
                 SocialMediaPlatform.class,
                 SpaceFanout.class,

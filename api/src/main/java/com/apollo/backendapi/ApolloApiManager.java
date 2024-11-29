@@ -206,6 +206,7 @@ public class ApolloApiManager {
     private final Depot matchDepot;
     private final Depot rosterDepot;
     private final Depot teamDepot;
+    private final Depot scheduleDepot;
     private final Depot playerDepot;
     private final Depot lolMatchSummaryDepot;
     private final Depot lolPlayerSeasonStatsDepot;
@@ -223,6 +224,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Match> getMatchFromMatchId;
     private final QueryTopologyClient<Roster> getRosterFromRosterId;
     private final QueryTopologyClient<Team> getTeamFromTeamId;
+    private final QueryTopologyClient<List<Integer>> getSeriesIdsFromTeamId;
     private final QueryTopologyClient<List<Integer>> getAllTeamIds;
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
@@ -359,6 +361,7 @@ public class ApolloApiManager {
         matchDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchDepot");
         rosterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*rosterDepot");
         teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
+        scheduleDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*scheduleDepot");
         playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
         lolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolMatchSummaryDepot");
         lolPlayerSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolPlayerSeasonStatsDepot");
@@ -376,6 +379,7 @@ public class ApolloApiManager {
         getMatchFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getMatchFromMatchId");
         getRosterFromRosterId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getRosterFromRosterId");
         getTeamFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getTeamFromTeamId");
+        getSeriesIdsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesIdsFromTeamId");
         getAllTeamIds = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAllTeamIds");
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
@@ -2066,6 +2070,9 @@ public class ApolloApiManager {
                 Team team = convertToThriftTeam(postTeam);
                 logger.info("fetchAndStoreTeams - Converted Team: " + objectMapper.writeValueAsString(team));
                 teamDepot.appendAsync(team).join();
+
+                // Fetch and store series IDs for the team
+                fetchAndStoreTeamSeries(team.getId());
             }
 
             if (postTeams.size() == take) {
@@ -2076,6 +2083,47 @@ public class ApolloApiManager {
             }
         } catch (Exception e) {
             handleException(e, "teams batch", skip);
+        }
+    }
+
+    private void fetchAndStoreTeamSeries(int teamId) {
+        fetchAndStoreTeamSeries(teamId, null, null, 0, 50, new ArrayList<>());
+    }
+
+    private void fetchAndStoreTeamSeries(int teamId, String filter, String order, int skip, int take,
+            List<Integer> accumulatedSeriesIds) {
+        try {
+            waitIfNecessary();
+            String seriesData = apiClient.getTeamSeries(teamId, filter, order, skip, take);
+            logger.info("fetchAndStoreTeamSeries - API Response for team {}: {}", teamId, seriesData);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
+            logger.info("fetchAndStoreTeamSeries - Parsed PostSeries List for team {}: {}", teamId,
+                    objectMapper.writeValueAsString(postSeriesList));
+
+            // Extract series IDs from PostSeries objects
+            List<Integer> seriesIds = postSeriesList.stream()
+                    .map(postSeries -> postSeries.id)
+                    .collect(Collectors.toList());
+
+            accumulatedSeriesIds.addAll(seriesIds);
+
+            if (postSeriesList.size() == take) {
+                logger.info("fetchAndStoreTeamSeries - Fetching next batch with skip: {}", (skip + take));
+                fetchAndStoreTeamSeries(teamId, filter, order, skip + take, take, accumulatedSeriesIds);
+            } else {
+                logger.info("fetchAndStoreTeamSeries - All series for team {} have been fetched.", teamId);
+
+                // Create a Schedule object and append it to the scheduleDepot
+                Schedule schedule = new Schedule();
+                schedule.setId(teamId);
+                schedule.setSeriesIds(accumulatedSeriesIds);
+
+                scheduleDepot.appendAsync(schedule).join();
+            }
+        } catch (Exception e) {
+            handleException(e, "team series batch", skip);
         }
     }
 
@@ -3340,6 +3388,17 @@ public class ApolloApiManager {
                 });
     }
 
+    public CompletableFuture<List<Integer>> getSeriesIdsForTeam(int teamId) {
+        return getSeriesIdsFromTeamId.invokeAsync(teamId)
+                .thenApply(seriesIds -> {
+                    if (seriesIds != null) {
+                        return seriesIds;
+                    } else {
+                        return Collections.emptyList();
+                    }
+                });
+    }
+
     public CompletableFuture<GetPlayer> getPlayer(int playerId) {
         logger.info("getPlayer - Fetching player with ID: " + playerId);
         return getPlayerFromPlayerId.invokeAsync(playerId)
@@ -3429,12 +3488,14 @@ public class ApolloApiManager {
         CompletableFuture<Team> teamFuture = getTeamFromTeamId.invokeAsync(teamId);
         CompletableFuture<LolTeamAggStats> aggStatsFuture = getLolTeamAggStatsFromTeamId.invokeAsync(teamId);
         CompletableFuture<List<LolTeamSummary>> seasonStatsFuture = getLolTeamSeasonStatsFromTeamId.invokeAsync(teamId);
+        CompletableFuture<List<Integer>> seriesIdsFuture = getSeriesIdsForTeam(teamId);
 
-        return CompletableFuture.allOf(teamFuture, aggStatsFuture, seasonStatsFuture)
+        return CompletableFuture.allOf(teamFuture, aggStatsFuture, seasonStatsFuture, seriesIdsFuture)
                 .thenCompose(v -> {
                     Team team = teamFuture.join();
                     LolTeamAggStats aggStats = aggStatsFuture.join();
                     List<LolTeamSummary> seasonStats = seasonStatsFuture.join();
+                    List<Integer> seriesIds = seriesIdsFuture.join();
 
                     if (team == null || aggStats == null) {
                         logger.warn("getTeamWithLolStats - No Team or Aggregated Stats found with ID: {}", teamId);
@@ -3452,16 +3513,20 @@ public class ApolloApiManager {
                             .map(this::getAsset)
                             .collect(Collectors.toList());
 
-                    return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
+                    CompletableFuture<Void> assetsFuture = CompletableFuture
+                            .allOf(assetFutures.toArray(new CompletableFuture[0]));
+
+                    return CompletableFuture.allOf(assetsFuture)
                             .thenApply(x -> {
                                 Map<Integer, GetAsset> assetMap = assetFutures.stream()
                                         .map(CompletableFuture::join)
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toMap(Asset::getId, GetAsset::new));
 
-                                // Create and return a GetTeam object enriched with aggregated stats and season
-                                // stats
+                                // Create and return a GetTeam object enriched with series data
                                 GetTeam getTeam = new GetTeam(team, aggStats, seasonStats, assetMap);
+                                getTeam.schedule = seriesIds;
+
                                 logger.info("getTeamWithLolStats - Successfully constructed GetTeam for teamId: {}",
                                         teamId);
                                 return getTeam;
