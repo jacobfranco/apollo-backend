@@ -217,6 +217,7 @@ public class ApolloApiManager {
     private final Depot substageDepot;
     private final Depot casterDepot;
     private final Depot lolTeamAggStatsDepot;
+    private final Depot lolPlayerAggStatsDepot;
 
     // ESports Queries
     private final QueryTopologyClient<Series> getSeriesFromSeriesId;
@@ -227,6 +228,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<List<Integer>> getSeriesIdsFromTeamId;
     private final QueryTopologyClient<List<Integer>> getAllTeamIds;
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
+    private final QueryTopologyClient<List<Integer>> getAllPlayerIds;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<Asset> getAssetFromAssetId;
     private final QueryTopologyClient<List<LolPlayerSummary>> getLolPlayerSeasonStatsFromPlayerId;
@@ -236,6 +238,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Caster> getCasterFromCasterId;
     private final QueryTopologyClient<LiveLolMatchSummary> getLiveLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<LolTeamAggStats> getLolTeamAggStatsFromTeamId;
+    private final QueryTopologyClient<LolPlayerAggStats> getLolPlayerAggStatsFromPlayerId;
 
     public ApolloApiManager(ClusterManagerBase cluster) {
 
@@ -372,6 +375,7 @@ public class ApolloApiManager {
         substageDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*substageDepot");
         casterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*casterDepot");
         lolTeamAggStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolTeamAggStatsDepot");
+        lolPlayerAggStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolPlayerAggStatsDepot");
 
         // ESports Queries
         getSeriesFromSeriesId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesFromSeriesId");
@@ -382,6 +386,7 @@ public class ApolloApiManager {
         getSeriesIdsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesIdsFromTeamId");
         getAllTeamIds = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAllTeamIds");
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
+        getAllPlayerIds = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAllPlayerIds");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
         getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
         getLolPlayerSeasonStatsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
@@ -393,6 +398,8 @@ public class ApolloApiManager {
         getLiveLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
                 "getLiveLolMatchSummaryFromMatchId");
         getLolTeamAggStatsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolTeamAggStatsFromTeamId");
+        getLolPlayerAggStatsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME,
+                "getLolPlayerAggStatsFromPlayerId");
 
     }
 
@@ -2173,14 +2180,13 @@ public class ApolloApiManager {
                 lolMatchSummaryDepot.appendAsync(lolSummary).join();
 
                 // Process and store player stats
-                for (LolPlayerSummary playerSummary : lolSummary.teams.getHome().getPlayers()) {
+                List<LolPlayerSummary> allPlayers = new ArrayList<>();
+                allPlayers.addAll(lolSummary.teams.getHome().getPlayers());
+                allPlayers.addAll(lolSummary.teams.getAway().getPlayers());
+
+                for (LolPlayerSummary playerSummary : allPlayers) {
                     lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
-                    logger.info("fetchAndStoreLolMatchSummary - Stored Home Player Summary: "
-                            + objectMapper.writeValueAsString(playerSummary));
-                }
-                for (LolPlayerSummary playerSummary : lolSummary.teams.getAway().getPlayers()) {
-                    lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
-                    logger.info("fetchAndStoreLolMatchSummary - Stored Away Player Summary: "
+                    logger.info("fetchAndStoreLolMatchSummary - Stored Player Summary: "
                             + objectMapper.writeValueAsString(playerSummary));
                 }
 
@@ -2188,12 +2194,16 @@ public class ApolloApiManager {
                 CompletableFuture<Void> homeTeamFuture = storeTeamSummary(lolSummary.teams.getHome());
                 CompletableFuture<Void> awayTeamFuture = storeTeamSummary(lolSummary.teams.getAway());
 
-                // Update aggregated stats
+                // Update aggregated team stats
                 homeTeamFuture.thenRun(() -> updateTeamAggStats(lolSummary.getTeams().getHome()));
                 awayTeamFuture.thenRun(() -> updateTeamAggStats(lolSummary.getTeams().getAway()));
 
+                // Update aggregated player stats
+                homeTeamFuture.thenRun(() -> updatePlayerAggStats(lolSummary.getTeams().getHome()));
+                awayTeamFuture.thenRun(() -> updatePlayerAggStats(lolSummary.getTeams().getAway()));
+
                 CompletableFuture.allOf(homeTeamFuture, awayTeamFuture).join();
-                logger.info("fetchAndStoreLolMatchSummary - Stored Team Summaries for matchId " + matchId);
+                logger.info("fetchAndStoreLolMatchSummary - Stored Team and Player Summaries for matchId " + matchId);
             } else {
                 logger.warn("fetchAndStoreLolMatchSummary - Failed to parse match summary for match " + matchId);
             }
@@ -2555,6 +2565,92 @@ public class ApolloApiManager {
             default:
                 return ObjectiveType.UNKNOWN;
         }
+    }
+
+    private void updatePlayerAggStats(LolTeamSummary teamSummary) {
+        CompletableFuture.runAsync(() -> {
+            List<LolPlayerSummary> players = teamSummary.getPlayers();
+            for (LolPlayerSummary playerSummary : players) {
+                int playerId = playerSummary.getId();
+                logger.info("updatePlayerAggStats - Updating aggregated stats for playerId: " + playerId);
+
+                getLolPlayerAggStatsFromPlayerId.invokeAsync(playerId)
+                        .thenCompose(existingStats -> {
+                            // Initialize if null
+                            if (existingStats == null) {
+                                existingStats = initializeNewPlayerAggStats(playerId);
+                            }
+
+                            // Update basic aggregated stats
+                            updatePlayerBasicStats(existingStats, playerSummary);
+
+                            // Calculate averages
+                            calculatePlayerAverages(existingStats);
+
+                            // Store updated aggregated stats
+                            return lolPlayerAggStatsDepot.appendAsync(existingStats)
+                                    .thenRun(() -> logger.info(
+                                            "updatePlayerAggStats - Successfully updated aggregated stats for playerId: "
+                                                    + playerId));
+                        })
+                        .exceptionally(e -> {
+                            logger.error(
+                                    "updatePlayerAggStats - Error updating aggregated stats for playerId: " + playerId,
+                                    e);
+                            return null;
+                        });
+            }
+        });
+    }
+
+    // Helper method to initialize a new LolPlayerAggStats object
+    private LolPlayerAggStats initializeNewPlayerAggStats(int playerId) {
+        LolPlayerAggStats stats = new LolPlayerAggStats();
+        stats.setId(playerId);
+        stats.setTotalMatches(0);
+        stats.setTotalKills(0);
+        stats.setTotalDeaths(0);
+        stats.setTotalAssists(0);
+        stats.setAverageKills(0.0);
+        stats.setAverageDeaths(0.0);
+        stats.setAverageAssists(0.0);
+        stats.setCurrentKillStreak(0);
+        stats.setTotalKillStreaks(0);
+        stats.setTotalDeathsStreaks(0);
+        return stats;
+    }
+
+    // Helper method to update basic player stats
+    private void updatePlayerBasicStats(LolPlayerAggStats existingStats, LolPlayerSummary playerSummary) {
+        existingStats.setTotalMatches(existingStats.getTotalMatches() + 1);
+        existingStats.setTotalKills(existingStats.getTotalKills() + playerSummary.getKills().getTotal());
+        existingStats.setTotalDeaths(existingStats.getTotalDeaths() + playerSummary.getDeaths().getTotal());
+        existingStats.setTotalAssists(existingStats.getTotalAssists() + playerSummary.getAssists().getTotal());
+
+        // Update current kill streak
+        if (playerSummary.getKills().getTotal() > 0) {
+            existingStats.setCurrentKillStreak(existingStats.getCurrentKillStreak() + 1);
+            existingStats.setTotalKillStreaks(existingStats.getTotalKillStreaks() + 1);
+        } else if (playerSummary.getDeaths().getTotal() > 0) {
+            existingStats.setCurrentKillStreak(
+                    existingStats.getCurrentKillStreak() > 0 ? 0 : existingStats.getCurrentKillStreak() - 1);
+            existingStats.setTotalDeathsStreaks(existingStats.getTotalDeathsStreaks() + 1);
+        }
+    }
+
+    // Helper method to calculate averages for player stats
+    private void calculatePlayerAverages(LolPlayerAggStats existingStats) {
+        int totalMatches = existingStats.getTotalMatches();
+        if (totalMatches == 0) {
+            existingStats.setAverageKills(0.0);
+            existingStats.setAverageDeaths(0.0);
+            existingStats.setAverageAssists(0.0);
+            return;
+        }
+
+        existingStats.setAverageKills((double) existingStats.getTotalKills() / totalMatches);
+        existingStats.setAverageDeaths((double) existingStats.getTotalDeaths() / totalMatches);
+        existingStats.setAverageAssists((double) existingStats.getTotalAssists() / totalMatches);
     }
 
     private CompletableFuture<Integer> getTeamIdFromRosterId(int rosterId) {
@@ -3439,44 +3535,58 @@ public class ApolloApiManager {
                 });
     }
 
+    // TODO: Maybe implement schedule but maybe take out
     public CompletableFuture<GetPlayer> getPlayerWithLolStats(int playerId) {
-        logger.info("getPlayerWithLolStats - Fetching player with LoL stats for ID: " + playerId);
-        CompletableFuture<Player> playerFuture = getPlayerFromPlayerId.invokeAsync(playerId);
-        CompletableFuture<List<LolPlayerSummary>> statsFuture = getLolPlayerSeasonStatsFromPlayerId
-                .invokeAsync(playerId);
+        logger.info("getPlayerWithLolStats - Initiating fetch for playerId: {}", playerId);
 
-        return CompletableFuture.allOf(playerFuture, statsFuture)
+        CompletableFuture<Player> playerFuture = getPlayerFromPlayerId.invokeAsync(playerId);
+        CompletableFuture<LolPlayerAggStats> aggStatsFuture = getLolPlayerAggStatsFromPlayerId.invokeAsync(playerId);
+        CompletableFuture<List<LolPlayerSummary>> seasonStatsFuture = getLolPlayerSeasonStatsFromPlayerId
+                .invokeAsync(playerId);
+        // CompletableFuture<List<Integer>> seriesIdsFuture =
+        // getSeriesIdsForTeam(teamId);
+
+        return CompletableFuture.allOf(playerFuture, aggStatsFuture, seasonStatsFuture /* , seriesIdsFuture */ )
                 .thenCompose(v -> {
                     Player player = playerFuture.join();
-                    List<LolPlayerSummary> seasonStats = statsFuture.join();
+                    LolPlayerAggStats aggStats = aggStatsFuture.join();
+                    List<LolPlayerSummary> seasonStats = seasonStatsFuture.join();
+                    // List<Integer> seriesIds = seriesIdsFuture.join();
 
-                    if (player == null) {
-                        logger.warn("getPlayerWithLolStats - No player found with ID: " + playerId);
+                    if (player == null || aggStats == null) {
+                        logger.warn("getPlayerWithLolStats - No Player or Aggregated Stats found with ID: {}",
+                                playerId);
                         return CompletableFuture.completedFuture(null);
                     }
 
+                    // Collect asset IDs from seasonStats
                     Set<Integer> assetIds = seasonStats.stream()
                             .filter(Objects::nonNull)
                             .map(this::collectPlayerAssetIds)
                             .flatMap(Set::stream)
                             .collect(Collectors.toSet());
 
-                    logger.info("getPlayerWithLolStats - Collected asset IDs: " + assetIds);
-
                     List<CompletableFuture<Asset>> assetFutures = assetIds.stream()
                             .map(this::getAsset)
                             .collect(Collectors.toList());
 
-                    return CompletableFuture.allOf(assetFutures.toArray(new CompletableFuture[0]))
+                    CompletableFuture<Void> assetsFuture = CompletableFuture
+                            .allOf(assetFutures.toArray(new CompletableFuture[0]));
+
+                    return CompletableFuture.allOf(assetsFuture)
                             .thenApply(x -> {
                                 Map<Integer, GetAsset> assetMap = assetFutures.stream()
                                         .map(CompletableFuture::join)
                                         .filter(Objects::nonNull)
                                         .collect(Collectors.toMap(Asset::getId, GetAsset::new));
 
-                                GetPlayer getPlayer = new GetPlayer(player, seasonStats, assetMap);
-                                logger.info("getPlayerWithLolStats - Successfully constructed GetPlayer for ID: "
-                                        + playerId);
+                                // Create and return a GetTeam object enriched with series data
+                                GetPlayer getPlayer = new GetPlayer(player, aggStats, seasonStats, assetMap);
+                                // getPlayer.schedule = seriesIds;
+
+                                logger.info(
+                                        "getPlayerWithLolStats - Successfully constructed GetPlayer for playerId: {}",
+                                        playerId);
                                 return getPlayer;
                             });
                 });
@@ -3558,7 +3668,7 @@ public class ApolloApiManager {
                         logger.warn(
                                 "getTeamWithAggStats - No Aggregated Stats found for teamId: {}. Initializing with default values.",
                                 teamId);
-                        aggStats = createDefaultAggStats(teamId);
+                        aggStats = createDefaultTeamAggStats(teamId);
                     }
 
                     // Construct GetTeam without seasonStats and assetMap
@@ -3590,6 +3700,64 @@ public class ApolloApiManager {
                 });
     }
 
+    public CompletableFuture<List<Integer>> getAllPlayerIds() {
+        return getAllPlayerIds.invokeAsync();
+    }
+
+    public CompletableFuture<GetPlayer> getPlayerWithAggStats(int playerId) {
+        logger.info("getPlayerWithAggStats - Initiating fetch for playerId: {}", playerId);
+
+        CompletableFuture<Player> playerFuture = getPlayerFromPlayerId.invokeAsync(playerId);
+        CompletableFuture<LolPlayerAggStats> aggStatsFuture = getLolPlayerAggStatsFromPlayerId.invokeAsync(playerId);
+
+        return CompletableFuture.allOf(playerFuture, aggStatsFuture)
+                .thenApply(v -> {
+                    Player player = playerFuture.join();
+                    LolPlayerAggStats aggStats = aggStatsFuture.join();
+
+                    if (player == null) {
+                        logger.warn("getPlayerWithAggStats - No Player found with ID: {}", playerId);
+                        return null;
+                    }
+
+                    if (aggStats == null) {
+                        logger.warn(
+                                "getPlayerWithAggStats - No Aggregated Stats found for playerId: {}. Initializing with default values.",
+                                playerId);
+                        aggStats = createDefaultPlayerAggStats(playerId);
+                    }
+
+                    // Construct GetPlayer without seasonStats and assetMap
+                    GetPlayer getPlayer = new GetPlayer(player, aggStats, Collections.emptyList(),
+                            Collections.emptyMap());
+                    logger.info(
+                            "getPlayerWithAggStats - Successfully constructed GetPlayer with agg stats for playerId: {}",
+                            playerId);
+                    return getPlayer;
+                });
+    }
+
+    public CompletableFuture<List<GetPlayer>> getAllPlayersWithAggStats() {
+        return getAllPlayerIds()
+                .thenCompose(playerIds -> {
+                    // Fetch player and agg stats in parallel for all team IDs
+                    List<CompletableFuture<GetPlayer>> playerFutures = playerIds.stream()
+                            .map(this::getPlayerWithAggStats)
+                            .collect(Collectors.toList());
+
+                    // Wait for all futures to complete
+                    return CompletableFuture.allOf(playerFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> playerFutures.stream()
+                                    .map(CompletableFuture::join)
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList()));
+                })
+                .exceptionally(e -> {
+                    logger.error("Error fetching all players with aggregated stats: {}", e.getMessage());
+                    return Collections.emptyList();
+                });
+    }
+
     public CompletableFuture<List<GetSeries>> getSeriesSchedule(long startTime, long endTime) {
         logger.info("getSeriesSchedule - Fetching series schedule from " + startTime + " to " + endTime);
         return getSeriesFromStartTime.invokeAsync(startTime, endTime)
@@ -3610,7 +3778,7 @@ public class ApolloApiManager {
                 });
     }
 
-    private LolTeamAggStats createDefaultAggStats(int teamId) {
+    private LolTeamAggStats createDefaultTeamAggStats(int teamId) {
         LolTeamAggStats defaultStats = new LolTeamAggStats();
         defaultStats.setId(teamId);
         defaultStats.setTotalMatches(0);
@@ -3636,6 +3804,12 @@ public class ApolloApiManager {
         defaultStats.setTotalSeries(0);
         defaultStats.setTotalSeriesWins(0);
         defaultStats.setTotalSeriesLosses(0);
+        return defaultStats;
+    }
+
+    private LolPlayerAggStats createDefaultPlayerAggStats(int playerId) {
+        LolPlayerAggStats defaultStats = new LolPlayerAggStats();
+        defaultStats.setId(playerId);
         return defaultStats;
     }
 

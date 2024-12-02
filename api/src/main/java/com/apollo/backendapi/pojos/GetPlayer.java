@@ -1,10 +1,12 @@
 package com.apollo.backendapi.pojos;
 
+import com.apollo.backend.data.LolPlayerAggStats;
 import com.apollo.backend.data.LolPlayerSummary;
 import com.apollo.backend.data.Player;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,9 +28,9 @@ public class GetPlayer {
     public List<Integer> teamIds;
     public List<GetSocialMediaAccount> socialMediaAccounts;
     public long resourceVersion;
-    public GetLolPlayerSummary lolStats;
+    public GetLolPlayerAggStats aggStats;
     public GetPlayerMatchStats matchStats;
-    public List<GetLolPlayerSummary> lolSeasonStats;
+    public List<GetLolPlayerMatchStats> lolSeasonStats;
 
     @JsonIgnore
     public Map<Integer, GetAsset> assetMap;
@@ -53,12 +55,27 @@ public class GetPlayer {
         this.resourceVersion = player.getResourceVersion();
     }
 
-    public GetPlayer(Player player, List<LolPlayerSummary> lolSeasonStats, Map<Integer, GetAsset> assetMap) {
+    public GetPlayer(Player player, LolPlayerAggStats aggStats, List<LolPlayerSummary> lolSeasonStats,
+            Map<Integer, GetAsset> assetMap) {
         this(player);
-        this.lolSeasonStats = lolSeasonStats.stream()
-                .map(stat -> new GetLolPlayerSummary(stat, assetMap))
-                .collect(Collectors.toList());
-        this.assetMap = assetMap;
+
+        if (aggStats != null) {
+            this.aggStats = new GetLolPlayerAggStats(aggStats);
+        }
+
+        if (lolSeasonStats != null && !lolSeasonStats.isEmpty()) {
+            this.lolSeasonStats = lolSeasonStats.stream()
+                    .map(stat -> new GetLolPlayerMatchStats(stat, assetMap))
+                    .collect(Collectors.toList());
+        } else {
+            this.lolSeasonStats = Collections.emptyList();
+        }
+
+        if (assetMap != null && !assetMap.isEmpty()) {
+            this.assetMap = assetMap;
+        } else {
+            this.assetMap = Collections.emptyMap();
+        }
     }
 
     // Map roleId to role name

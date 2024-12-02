@@ -1351,6 +1351,20 @@ struct LolTeamAggStats {
   24: i32 totalSeriesLosses
 }
 
+struct LolPlayerAggStats {
+  1: i32 id              
+  2: i32 totalMatches
+  3: i32 totalKills
+  4: i32 totalDeaths
+  5: i32 totalAssists
+  6: double averageKills
+  7: double averageDeaths
+  8: double averageAssists
+  9: i32 currentKillStreak
+  10: i32 totalKillStreaks
+  11: i32 totalDeathsStreaks
+}
+
 struct Schedule {
   1: i32 id
   2: list<i32> seriesIds

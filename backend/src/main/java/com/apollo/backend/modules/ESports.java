@@ -167,6 +167,16 @@ public class ESports implements RamaModule {
                                 .localTransform("$$teamIdToLolTeamAggStats", Path.key("*id").termVal("*aggStats"));
         }
 
+        private static void declareLolPlayerAggStatsTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("lolPlayerAggStats");
+                stream.pstate("$$playerIdToLolPlayerAggStats",
+                                PState.mapSchema(Integer.class, LolPlayerAggStats.class));
+
+                stream.source("*lolPlayerAggStatsDepot").out("*aggStats")
+                                .macro(extractFields("*aggStats", "*id"))
+                                .localTransform("$$playerIdToLolPlayerAggStats", Path.key("*id").termVal("*aggStats"));
+        }
+
         private void declareQueries(Topologies topologies) {
                 topologies.query("getSeriesFromSeriesId", "*id").out("*result")
                                 .hashPartition("*id")
@@ -211,6 +221,13 @@ public class ESports implements RamaModule {
                                 .hashPartition("*id")
                                 .localSelect("$$playerIdToPlayer", Path.key("*id")).out("*result")
                                 .originPartition();
+
+                topologies.query("getAllPlayerIds").out("*result")
+                                .allPartition()
+                                .localSelect("$$playerIdToPlayer", Path.mapKeys())
+                                .out("*ids")
+                                .originPartition()
+                                .agg(Agg.list("*ids")).out("*result");
 
                 topologies.query("getLolMatchSummaryFromMatchId", "*id").out("*result")
                                 .hashPartition("*id")
@@ -257,6 +274,11 @@ public class ESports implements RamaModule {
                                 .localSelect("$$teamIdToLolTeamAggStats", Path.key("*id")).out("*result")
                                 .originPartition();
 
+                topologies.query("getLolPlayerAggStatsFromPlayerId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$playerIdToLolPlayerAggStats", Path.key("*id")).out("*result")
+                                .originPartition();
+
         }
 
         @Override
@@ -276,6 +298,7 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*lolTeamSeasonStatsDepot", Depot.hashBy(ApolloHelpers.ExtractLolTeamId.class));
                 setup.declareDepot("*liveLolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractLiveMatchId.class));
                 setup.declareDepot("*lolTeamAggStatsDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
+                setup.declareDepot("*lolPlayerAggStatsDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 declareSeriesTopology(topologies);
                 declareMatchTopology(topologies);
                 declareRosterTopology(topologies);
@@ -291,6 +314,7 @@ public class ESports implements RamaModule {
                 declareLolTeamSeasonStatsTopology(topologies);
                 declareLiveLolMatchSummaryTopology(topologies);
                 declareLolTeamAggStatsTopology(topologies);
+                declareLolPlayerAggStatsTopology(topologies);
                 declareQueries(topologies);
         }
 }

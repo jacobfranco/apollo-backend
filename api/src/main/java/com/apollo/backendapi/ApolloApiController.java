@@ -2031,9 +2031,15 @@ public class ApolloApiController {
      */
 
     @GetMapping("/api/lol/players/{id}")
-    public Mono<GetPlayer> getLolPlayer(@PathVariable("id") int playerId) {
+    public Mono<GetPlayer> getLolPlayerWithStats(@PathVariable("id") int playerId) {
         return Mono.fromFuture(manager.getPlayerWithLolStats(playerId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not found")));
+    }
+
+    @GetMapping("/api/lol/players")
+    public Mono<List<GetPlayer>> getAllLolPlayersWithAggStats() {
+        return Mono.fromFuture(manager.getAllPlayersWithAggStats())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No players found")));
     }
 
     @GetMapping("/api/rosters/{rosterId}/players")
