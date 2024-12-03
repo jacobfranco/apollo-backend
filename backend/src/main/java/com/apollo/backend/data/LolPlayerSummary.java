@@ -6,24 +6,40 @@
  */
 package com.apollo.backend.data;
 
-@SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummary, LolPlayerSummary._Fields>, java.io.Serializable, Cloneable, Comparable<LolPlayerSummary> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("LolPlayerSummary");
+@SuppressWarnings({ "cast", "rawtypes", "serial", "unchecked", "unused" })
+public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummary, LolPlayerSummary._Fields>,
+    java.io.Serializable, Cloneable, Comparable<LolPlayerSummary> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct(
+      "LolPlayerSummary");
 
-  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField UI_INDEX_FIELD_DESC = new org.apache.thrift.protocol.TField("uiIndex", org.apache.thrift.protocol.TType.I32, (short)2);
-  private static final org.apache.thrift.protocol.TField CHAMPION_FIELD_DESC = new org.apache.thrift.protocol.TField("champion", org.apache.thrift.protocol.TType.STRUCT, (short)3);
-  private static final org.apache.thrift.protocol.TField KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("kills", org.apache.thrift.protocol.TType.STRUCT, (short)4);
-  private static final org.apache.thrift.protocol.TField ASSISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("assists", org.apache.thrift.protocol.TType.STRUCT, (short)5);
-  private static final org.apache.thrift.protocol.TField DEATHS_FIELD_DESC = new org.apache.thrift.protocol.TField("deaths", org.apache.thrift.protocol.TType.STRUCT, (short)6);
-  private static final org.apache.thrift.protocol.TField REVIVES_FIELD_DESC = new org.apache.thrift.protocol.TField("revives", org.apache.thrift.protocol.TType.STRUCT, (short)7);
-  private static final org.apache.thrift.protocol.TField MULTI_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("multiKills", org.apache.thrift.protocol.TType.LIST, (short)8);
-  private static final org.apache.thrift.protocol.TField KILL_STREAKS_FIELD_DESC = new org.apache.thrift.protocol.TField("killStreaks", org.apache.thrift.protocol.TType.LIST, (short)9);
-  private static final org.apache.thrift.protocol.TField ITEMS_FIELD_DESC = new org.apache.thrift.protocol.TField("items", org.apache.thrift.protocol.TType.STRUCT, (short)10);
-  private static final org.apache.thrift.protocol.TField SUMMONER_SPELLS_FIELD_DESC = new org.apache.thrift.protocol.TField("summonerSpells", org.apache.thrift.protocol.TType.LIST, (short)11);
-  private static final org.apache.thrift.protocol.TField CREEPS_FIELD_DESC = new org.apache.thrift.protocol.TField("creeps", org.apache.thrift.protocol.TType.STRUCT, (short)12);
-  private static final org.apache.thrift.protocol.TField KEYSTONE_FIELD_DESC = new org.apache.thrift.protocol.TField("keystone", org.apache.thrift.protocol.TType.STRUCT, (short)13);
-  private static final org.apache.thrift.protocol.TField POSITION_FIELD_DESC = new org.apache.thrift.protocol.TField("position", org.apache.thrift.protocol.TType.STRUCT, (short)14);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id",
+      org.apache.thrift.protocol.TType.I32, (short) 1);
+  private static final org.apache.thrift.protocol.TField UI_INDEX_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "uiIndex", org.apache.thrift.protocol.TType.I32, (short) 2);
+  private static final org.apache.thrift.protocol.TField CHAMPION_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "champion", org.apache.thrift.protocol.TType.STRUCT, (short) 3);
+  private static final org.apache.thrift.protocol.TField KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "kills", org.apache.thrift.protocol.TType.STRUCT, (short) 4);
+  private static final org.apache.thrift.protocol.TField ASSISTS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "assists", org.apache.thrift.protocol.TType.STRUCT, (short) 5);
+  private static final org.apache.thrift.protocol.TField DEATHS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "deaths", org.apache.thrift.protocol.TType.STRUCT, (short) 6);
+  private static final org.apache.thrift.protocol.TField REVIVES_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "revives", org.apache.thrift.protocol.TType.STRUCT, (short) 7);
+  private static final org.apache.thrift.protocol.TField MULTI_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "multiKills", org.apache.thrift.protocol.TType.LIST, (short) 8);
+  private static final org.apache.thrift.protocol.TField KILL_STREAKS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "killStreaks", org.apache.thrift.protocol.TType.LIST, (short) 9);
+  private static final org.apache.thrift.protocol.TField ITEMS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "items", org.apache.thrift.protocol.TType.STRUCT, (short) 10);
+  private static final org.apache.thrift.protocol.TField SUMMONER_SPELLS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "summonerSpells", org.apache.thrift.protocol.TType.LIST, (short) 11);
+  private static final org.apache.thrift.protocol.TField CREEPS_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "creeps", org.apache.thrift.protocol.TType.STRUCT, (short) 12);
+  private static final org.apache.thrift.protocol.TField KEYSTONE_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "keystone", org.apache.thrift.protocol.TType.STRUCT, (short) 13);
+  private static final org.apache.thrift.protocol.TField POSITION_FIELD_DESC = new org.apache.thrift.protocol.TField(
+      "position", org.apache.thrift.protocol.TType.STRUCT, (short) 14);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolPlayerSummaryStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolPlayerSummaryTupleSchemeFactory();
@@ -43,22 +59,25 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   public @org.apache.thrift.annotation.Nullable LolKeystone keystone; // optional
   public @org.apache.thrift.annotation.Nullable LolPosition position; // optional
 
-  /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+  /**
+   * The set of fields this struct contains, along with convenience methods for
+   * finding and manipulating them.
+   */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    ID((short)1, "id"),
-    UI_INDEX((short)2, "uiIndex"),
-    CHAMPION((short)3, "champion"),
-    KILLS((short)4, "kills"),
-    ASSISTS((short)5, "assists"),
-    DEATHS((short)6, "deaths"),
-    REVIVES((short)7, "revives"),
-    MULTI_KILLS((short)8, "multiKills"),
-    KILL_STREAKS((short)9, "killStreaks"),
-    ITEMS((short)10, "items"),
-    SUMMONER_SPELLS((short)11, "summonerSpells"),
-    CREEPS((short)12, "creeps"),
-    KEYSTONE((short)13, "keystone"),
-    POSITION((short)14, "position");
+    ID((short) 1, "id"),
+    UI_INDEX((short) 2, "uiIndex"),
+    CHAMPION((short) 3, "champion"),
+    KILLS((short) 4, "kills"),
+    ASSISTS((short) 5, "assists"),
+    DEATHS((short) 6, "deaths"),
+    REVIVES((short) 7, "revives"),
+    MULTI_KILLS((short) 8, "multiKills"),
+    KILL_STREAKS((short) 9, "killStreaks"),
+    ITEMS((short) 10, "items"),
+    SUMMONER_SPELLS((short) 11, "summonerSpells"),
+    CREEPS((short) 12, "creeps"),
+    KEYSTONE((short) 13, "keystone"),
+    POSITION((short) 14, "position");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -73,7 +92,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
      */
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
-      switch(fieldId) {
+      switch (fieldId) {
         case 1: // ID
           return ID;
         case 2: // UI_INDEX
@@ -113,7 +132,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
      */
     public static _Fields findByThriftIdOrThrow(int fieldId) {
       _Fields fields = findByThriftId(fieldId);
-      if (fields == null) throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+      if (fields == null)
+        throw new java.lang.IllegalArgumentException("Field " + fieldId + " doesn't exist!");
       return fields;
     }
 
@@ -148,40 +168,58 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   private static final int __ID_ISSET_ID = 0;
   private static final int __UIINDEX_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CHAMPION,_Fields.MULTI_KILLS,_Fields.KEYSTONE,_Fields.POSITION};
+  private static final _Fields optionals[] = { _Fields.CHAMPION, _Fields.MULTI_KILLS, _Fields.KEYSTONE,
+      _Fields.POSITION };
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.UI_INDEX, new org.apache.thrift.meta_data.FieldMetaData("uiIndex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.CHAMPION, new org.apache.thrift.meta_data.FieldMetaData("champion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(
+        _Fields.class);
+    tmpMap.put(_Fields.ID,
+        new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.UI_INDEX,
+        new org.apache.thrift.meta_data.FieldMetaData("uiIndex", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.CHAMPION, new org.apache.thrift.meta_data.FieldMetaData("champion",
+        org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolChampion.class)));
-    tmpMap.put(_Fields.KILLS, new org.apache.thrift.meta_data.FieldMetaData("kills", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolKills.class)));
-    tmpMap.put(_Fields.ASSISTS, new org.apache.thrift.meta_data.FieldMetaData("assists", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolAssists.class)));
-    tmpMap.put(_Fields.DEATHS, new org.apache.thrift.meta_data.FieldMetaData("deaths", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolDeaths.class)));
-    tmpMap.put(_Fields.REVIVES, new org.apache.thrift.meta_data.FieldMetaData("revives", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolRevives.class)));
-    tmpMap.put(_Fields.MULTI_KILLS, new org.apache.thrift.meta_data.FieldMetaData("multiKills", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolMultiKill.class))));
-    tmpMap.put(_Fields.KILL_STREAKS, new org.apache.thrift.meta_data.FieldMetaData("killStreaks", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
-    tmpMap.put(_Fields.ITEMS, new org.apache.thrift.meta_data.FieldMetaData("items", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolItems.class)));
-    tmpMap.put(_Fields.SUMMONER_SPELLS, new org.apache.thrift.meta_data.FieldMetaData("summonerSpells", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolSummonerSpell.class))));
-    tmpMap.put(_Fields.CREEPS, new org.apache.thrift.meta_data.FieldMetaData("creeps", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolCreeps.class)));
-    tmpMap.put(_Fields.KEYSTONE, new org.apache.thrift.meta_data.FieldMetaData("keystone", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.KILLS,
+        new org.apache.thrift.meta_data.FieldMetaData("kills", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolKills.class)));
+    tmpMap.put(_Fields.ASSISTS,
+        new org.apache.thrift.meta_data.FieldMetaData("assists", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolAssists.class)));
+    tmpMap.put(_Fields.DEATHS,
+        new org.apache.thrift.meta_data.FieldMetaData("deaths", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolDeaths.class)));
+    tmpMap.put(_Fields.REVIVES,
+        new org.apache.thrift.meta_data.FieldMetaData("revives", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolRevives.class)));
+    tmpMap.put(_Fields.MULTI_KILLS,
+        new org.apache.thrift.meta_data.FieldMetaData("multiKills", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+            new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+                new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT,
+                    LolMultiKill.class))));
+    tmpMap.put(_Fields.KILL_STREAKS,
+        new org.apache.thrift.meta_data.FieldMetaData("killStreaks", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
+    tmpMap.put(_Fields.ITEMS,
+        new org.apache.thrift.meta_data.FieldMetaData("items", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolItems.class)));
+    tmpMap.put(_Fields.SUMMONER_SPELLS,
+        new org.apache.thrift.meta_data.FieldMetaData("summonerSpells", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+                new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT,
+                    LolSummonerSpell.class))));
+    tmpMap.put(_Fields.CREEPS,
+        new org.apache.thrift.meta_data.FieldMetaData("creeps", org.apache.thrift.TFieldRequirementType.DEFAULT,
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolCreeps.class)));
+    tmpMap.put(_Fields.KEYSTONE, new org.apache.thrift.meta_data.FieldMetaData("keystone",
+        org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolKeystone.class)));
-    tmpMap.put(_Fields.POSITION, new org.apache.thrift.meta_data.FieldMetaData("position", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.POSITION, new org.apache.thrift.meta_data.FieldMetaData("position",
+        org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolPosition.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolPlayerSummary.class, metaDataMap);
@@ -191,17 +229,16 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   }
 
   public LolPlayerSummary(
-    int id,
-    int uiIndex,
-    LolKills kills,
-    LolAssists assists,
-    LolDeaths deaths,
-    LolRevives revives,
-    java.util.List<java.lang.Integer> killStreaks,
-    LolItems items,
-    java.util.List<LolSummonerSpell> summonerSpells,
-    LolCreeps creeps)
-  {
+      int id,
+      int uiIndex,
+      LolKills kills,
+      LolAssists assists,
+      LolDeaths deaths,
+      LolRevives revives,
+      java.util.List<java.lang.Integer> killStreaks,
+      LolItems items,
+      java.util.List<LolSummonerSpell> summonerSpells,
+      LolCreeps creeps) {
     this();
     this.id = id;
     setIdIsSet(true);
@@ -247,14 +284,16 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       this.multiKills = __this__multiKills;
     }
     if (other.isSetKillStreaks()) {
-      java.util.List<java.lang.Integer> __this__killStreaks = new java.util.ArrayList<java.lang.Integer>(other.killStreaks);
+      java.util.List<java.lang.Integer> __this__killStreaks = new java.util.ArrayList<java.lang.Integer>(
+          other.killStreaks);
       this.killStreaks = __this__killStreaks;
     }
     if (other.isSetItems()) {
       this.items = new LolItems(other.items);
     }
     if (other.isSetSummonerSpells()) {
-      java.util.List<LolSummonerSpell> __this__summonerSpells = new java.util.ArrayList<LolSummonerSpell>(other.summonerSpells.size());
+      java.util.List<LolSummonerSpell> __this__summonerSpells = new java.util.ArrayList<LolSummonerSpell>(
+          other.summonerSpells.size());
       for (LolSummonerSpell other_element : other.summonerSpells) {
         __this__summonerSpells.add(new LolSummonerSpell(other_element));
       }
@@ -310,7 +349,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
   }
 
-  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field id is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetId() {
     return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
   }
@@ -333,7 +375,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __UIINDEX_ISSET_ID);
   }
 
-  /** Returns true if field uiIndex is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field uiIndex is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetUiIndex() {
     return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __UIINDEX_ISSET_ID);
   }
@@ -356,7 +401,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.champion = null;
   }
 
-  /** Returns true if field champion is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field champion is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetChampion() {
     return this.champion != null;
   }
@@ -381,7 +429,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.kills = null;
   }
 
-  /** Returns true if field kills is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field kills is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetKills() {
     return this.kills != null;
   }
@@ -406,7 +457,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.assists = null;
   }
 
-  /** Returns true if field assists is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field assists is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetAssists() {
     return this.assists != null;
   }
@@ -431,7 +485,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.deaths = null;
   }
 
-  /** Returns true if field deaths is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field deaths is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetDeaths() {
     return this.deaths != null;
   }
@@ -456,7 +513,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.revives = null;
   }
 
-  /** Returns true if field revives is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field revives is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetRevives() {
     return this.revives != null;
   }
@@ -488,7 +548,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     return this.multiKills;
   }
 
-  public LolPlayerSummary setMultiKills(@org.apache.thrift.annotation.Nullable java.util.List<LolMultiKill> multiKills) {
+  public LolPlayerSummary setMultiKills(
+      @org.apache.thrift.annotation.Nullable java.util.List<LolMultiKill> multiKills) {
     this.multiKills = multiKills;
     return this;
   }
@@ -497,7 +558,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.multiKills = null;
   }
 
-  /** Returns true if field multiKills is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field multiKills is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetMultiKills() {
     return this.multiKills != null;
   }
@@ -529,7 +593,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     return this.killStreaks;
   }
 
-  public LolPlayerSummary setKillStreaks(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> killStreaks) {
+  public LolPlayerSummary setKillStreaks(
+      @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> killStreaks) {
     this.killStreaks = killStreaks;
     return this;
   }
@@ -538,7 +603,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.killStreaks = null;
   }
 
-  /** Returns true if field killStreaks is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field killStreaks is set (has been assigned a value) and
+   * false otherwise
+   */
   public boolean isSetKillStreaks() {
     return this.killStreaks != null;
   }
@@ -563,7 +631,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.items = null;
   }
 
-  /** Returns true if field items is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field items is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetItems() {
     return this.items != null;
   }
@@ -595,7 +666,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     return this.summonerSpells;
   }
 
-  public LolPlayerSummary setSummonerSpells(@org.apache.thrift.annotation.Nullable java.util.List<LolSummonerSpell> summonerSpells) {
+  public LolPlayerSummary setSummonerSpells(
+      @org.apache.thrift.annotation.Nullable java.util.List<LolSummonerSpell> summonerSpells) {
     this.summonerSpells = summonerSpells;
     return this;
   }
@@ -604,7 +676,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.summonerSpells = null;
   }
 
-  /** Returns true if field summonerSpells is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field summonerSpells is set (has been assigned a value) and
+   * false otherwise
+   */
   public boolean isSetSummonerSpells() {
     return this.summonerSpells != null;
   }
@@ -629,7 +704,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.creeps = null;
   }
 
-  /** Returns true if field creeps is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field creeps is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetCreeps() {
     return this.creeps != null;
   }
@@ -654,7 +732,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.keystone = null;
   }
 
-  /** Returns true if field keystone is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field keystone is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetKeystone() {
     return this.keystone != null;
   }
@@ -679,7 +760,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.position = null;
   }
 
-  /** Returns true if field position is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field position is set (has been assigned a value) and false
+   * otherwise
+   */
   public boolean isSetPosition() {
     return this.position != null;
   }
@@ -693,117 +777,117 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
-    case ID:
-      if (value == null) {
-        unsetId();
-      } else {
-        setId((java.lang.Integer)value);
-      }
-      break;
+      case ID:
+        if (value == null) {
+          unsetId();
+        } else {
+          setId((java.lang.Integer) value);
+        }
+        break;
 
-    case UI_INDEX:
-      if (value == null) {
-        unsetUiIndex();
-      } else {
-        setUiIndex((java.lang.Integer)value);
-      }
-      break;
+      case UI_INDEX:
+        if (value == null) {
+          unsetUiIndex();
+        } else {
+          setUiIndex((java.lang.Integer) value);
+        }
+        break;
 
-    case CHAMPION:
-      if (value == null) {
-        unsetChampion();
-      } else {
-        setChampion((LolChampion)value);
-      }
-      break;
+      case CHAMPION:
+        if (value == null) {
+          unsetChampion();
+        } else {
+          setChampion((LolChampion) value);
+        }
+        break;
 
-    case KILLS:
-      if (value == null) {
-        unsetKills();
-      } else {
-        setKills((LolKills)value);
-      }
-      break;
+      case KILLS:
+        if (value == null) {
+          unsetKills();
+        } else {
+          setKills((LolKills) value);
+        }
+        break;
 
-    case ASSISTS:
-      if (value == null) {
-        unsetAssists();
-      } else {
-        setAssists((LolAssists)value);
-      }
-      break;
+      case ASSISTS:
+        if (value == null) {
+          unsetAssists();
+        } else {
+          setAssists((LolAssists) value);
+        }
+        break;
 
-    case DEATHS:
-      if (value == null) {
-        unsetDeaths();
-      } else {
-        setDeaths((LolDeaths)value);
-      }
-      break;
+      case DEATHS:
+        if (value == null) {
+          unsetDeaths();
+        } else {
+          setDeaths((LolDeaths) value);
+        }
+        break;
 
-    case REVIVES:
-      if (value == null) {
-        unsetRevives();
-      } else {
-        setRevives((LolRevives)value);
-      }
-      break;
+      case REVIVES:
+        if (value == null) {
+          unsetRevives();
+        } else {
+          setRevives((LolRevives) value);
+        }
+        break;
 
-    case MULTI_KILLS:
-      if (value == null) {
-        unsetMultiKills();
-      } else {
-        setMultiKills((java.util.List<LolMultiKill>)value);
-      }
-      break;
+      case MULTI_KILLS:
+        if (value == null) {
+          unsetMultiKills();
+        } else {
+          setMultiKills((java.util.List<LolMultiKill>) value);
+        }
+        break;
 
-    case KILL_STREAKS:
-      if (value == null) {
-        unsetKillStreaks();
-      } else {
-        setKillStreaks((java.util.List<java.lang.Integer>)value);
-      }
-      break;
+      case KILL_STREAKS:
+        if (value == null) {
+          unsetKillStreaks();
+        } else {
+          setKillStreaks((java.util.List<java.lang.Integer>) value);
+        }
+        break;
 
-    case ITEMS:
-      if (value == null) {
-        unsetItems();
-      } else {
-        setItems((LolItems)value);
-      }
-      break;
+      case ITEMS:
+        if (value == null) {
+          unsetItems();
+        } else {
+          setItems((LolItems) value);
+        }
+        break;
 
-    case SUMMONER_SPELLS:
-      if (value == null) {
-        unsetSummonerSpells();
-      } else {
-        setSummonerSpells((java.util.List<LolSummonerSpell>)value);
-      }
-      break;
+      case SUMMONER_SPELLS:
+        if (value == null) {
+          unsetSummonerSpells();
+        } else {
+          setSummonerSpells((java.util.List<LolSummonerSpell>) value);
+        }
+        break;
 
-    case CREEPS:
-      if (value == null) {
-        unsetCreeps();
-      } else {
-        setCreeps((LolCreeps)value);
-      }
-      break;
+      case CREEPS:
+        if (value == null) {
+          unsetCreeps();
+        } else {
+          setCreeps((LolCreeps) value);
+        }
+        break;
 
-    case KEYSTONE:
-      if (value == null) {
-        unsetKeystone();
-      } else {
-        setKeystone((LolKeystone)value);
-      }
-      break;
+      case KEYSTONE:
+        if (value == null) {
+          unsetKeystone();
+        } else {
+          setKeystone((LolKeystone) value);
+        }
+        break;
 
-    case POSITION:
-      if (value == null) {
-        unsetPosition();
-      } else {
-        setPosition((LolPosition)value);
-      }
-      break;
+      case POSITION:
+        if (value == null) {
+          unsetPosition();
+        } else {
+          setPosition((LolPosition) value);
+        }
+        break;
 
     }
   }
@@ -812,53 +896,56 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   @Override
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
-    case ID:
-      return getId();
+      case ID:
+        return getId();
 
-    case UI_INDEX:
-      return getUiIndex();
+      case UI_INDEX:
+        return getUiIndex();
 
-    case CHAMPION:
-      return getChampion();
+      case CHAMPION:
+        return getChampion();
 
-    case KILLS:
-      return getKills();
+      case KILLS:
+        return getKills();
 
-    case ASSISTS:
-      return getAssists();
+      case ASSISTS:
+        return getAssists();
 
-    case DEATHS:
-      return getDeaths();
+      case DEATHS:
+        return getDeaths();
 
-    case REVIVES:
-      return getRevives();
+      case REVIVES:
+        return getRevives();
 
-    case MULTI_KILLS:
-      return getMultiKills();
+      case MULTI_KILLS:
+        return getMultiKills();
 
-    case KILL_STREAKS:
-      return getKillStreaks();
+      case KILL_STREAKS:
+        return getKillStreaks();
 
-    case ITEMS:
-      return getItems();
+      case ITEMS:
+        return getItems();
 
-    case SUMMONER_SPELLS:
-      return getSummonerSpells();
+      case SUMMONER_SPELLS:
+        return getSummonerSpells();
 
-    case CREEPS:
-      return getCreeps();
+      case CREEPS:
+        return getCreeps();
 
-    case KEYSTONE:
-      return getKeystone();
+      case KEYSTONE:
+        return getKeystone();
 
-    case POSITION:
-      return getPosition();
+      case POSITION:
+        return getPosition();
 
     }
     throw new java.lang.IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+  /**
+   * Returns true if field corresponding to fieldID is set (has been assigned a
+   * value) and false otherwise
+   */
   @Override
   public boolean isSet(_Fields field) {
     if (field == null) {
@@ -866,34 +953,34 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
 
     switch (field) {
-    case ID:
-      return isSetId();
-    case UI_INDEX:
-      return isSetUiIndex();
-    case CHAMPION:
-      return isSetChampion();
-    case KILLS:
-      return isSetKills();
-    case ASSISTS:
-      return isSetAssists();
-    case DEATHS:
-      return isSetDeaths();
-    case REVIVES:
-      return isSetRevives();
-    case MULTI_KILLS:
-      return isSetMultiKills();
-    case KILL_STREAKS:
-      return isSetKillStreaks();
-    case ITEMS:
-      return isSetItems();
-    case SUMMONER_SPELLS:
-      return isSetSummonerSpells();
-    case CREEPS:
-      return isSetCreeps();
-    case KEYSTONE:
-      return isSetKeystone();
-    case POSITION:
-      return isSetPosition();
+      case ID:
+        return isSetId();
+      case UI_INDEX:
+        return isSetUiIndex();
+      case CHAMPION:
+        return isSetChampion();
+      case KILLS:
+        return isSetKills();
+      case ASSISTS:
+        return isSetAssists();
+      case DEATHS:
+        return isSetDeaths();
+      case REVIVES:
+        return isSetRevives();
+      case MULTI_KILLS:
+        return isSetMultiKills();
+      case KILL_STREAKS:
+        return isSetKillStreaks();
+      case ITEMS:
+        return isSetItems();
+      case SUMMONER_SPELLS:
+        return isSetSummonerSpells();
+      case CREEPS:
+        return isSetCreeps();
+      case KEYSTONE:
+        return isSetKeystone();
+      case POSITION:
+        return isSetPosition();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -901,7 +988,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   @Override
   public boolean equals(java.lang.Object that) {
     if (that instanceof LolPlayerSummary)
-      return this.equals((LolPlayerSummary)that);
+      return this.equals((LolPlayerSummary) that);
     return false;
   }
 
@@ -1274,12 +1361,14 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     sb.append("id:");
     sb.append(this.id);
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("uiIndex:");
     sb.append(this.uiIndex);
     first = false;
     if (isSetChampion()) {
-      if (!first) sb.append(", ");
+      if (!first)
+        sb.append(", ");
       sb.append("champion:");
       if (this.champion == null) {
         sb.append("null");
@@ -1288,7 +1377,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       first = false;
     }
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("kills:");
     if (this.kills == null) {
       sb.append("null");
@@ -1296,7 +1386,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       sb.append(this.kills);
     }
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("assists:");
     if (this.assists == null) {
       sb.append("null");
@@ -1304,7 +1395,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       sb.append(this.assists);
     }
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("deaths:");
     if (this.deaths == null) {
       sb.append("null");
@@ -1312,7 +1404,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       sb.append(this.deaths);
     }
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("revives:");
     if (this.revives == null) {
       sb.append("null");
@@ -1321,7 +1414,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
     first = false;
     if (isSetMultiKills()) {
-      if (!first) sb.append(", ");
+      if (!first)
+        sb.append(", ");
       sb.append("multiKills:");
       if (this.multiKills == null) {
         sb.append("null");
@@ -1330,7 +1424,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       first = false;
     }
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("killStreaks:");
     if (this.killStreaks == null) {
       sb.append("null");
@@ -1338,7 +1433,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       sb.append(this.killStreaks);
     }
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("items:");
     if (this.items == null) {
       sb.append("null");
@@ -1346,7 +1442,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       sb.append(this.items);
     }
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("summonerSpells:");
     if (this.summonerSpells == null) {
       sb.append("null");
@@ -1354,7 +1451,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       sb.append(this.summonerSpells);
     }
     first = false;
-    if (!first) sb.append(", ");
+    if (!first)
+      sb.append(", ");
     sb.append("creeps:");
     if (this.creeps == null) {
       sb.append("null");
@@ -1363,7 +1461,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
     first = false;
     if (isSetKeystone()) {
-      if (!first) sb.append(", ");
+      if (!first)
+        sb.append(", ");
       sb.append("keystone:");
       if (this.keystone == null) {
         sb.append("null");
@@ -1373,7 +1472,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       first = false;
     }
     if (isSetPosition()) {
-      if (!first) sb.append(", ");
+      if (!first)
+        sb.append(", ");
       sb.append("position:");
       if (this.position == null) {
         sb.append("null");
@@ -1428,7 +1528,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      // it doesn't seem like you should have to do this, but java serialization is
+      // wacky, and doesn't call the default constructor.
       __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
@@ -1443,16 +1544,17 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
   }
 
-  private static class LolPlayerSummaryStandardScheme extends org.apache.thrift.scheme.StandardScheme<LolPlayerSummary> {
+  private static class LolPlayerSummaryStandardScheme
+      extends org.apache.thrift.scheme.StandardScheme<LolPlayerSummary> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, LolPlayerSummary struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, LolPlayerSummary struct)
+        throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
-      while (true)
-      {
+      while (true) {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
           break;
         }
         switch (schemeField.id) {
@@ -1460,7 +1562,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.id = iprot.readI32();
               struct.setIdIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1468,7 +1570,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.uiIndex = iprot.readI32();
               struct.setUiIndexIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1477,7 +1579,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.champion = new LolChampion();
               struct.champion.read(iprot);
               struct.setChampionIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1486,7 +1588,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.kills = new LolKills();
               struct.kills.read(iprot);
               struct.setKillsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1495,7 +1597,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.assists = new LolAssists();
               struct.assists.read(iprot);
               struct.setAssistsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1504,7 +1606,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.deaths = new LolDeaths();
               struct.deaths.read(iprot);
               struct.setDeathsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1513,7 +1615,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.revives = new LolRevives();
               struct.revives.read(iprot);
               struct.setRevivesIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1522,9 +1624,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               {
                 org.apache.thrift.protocol.TList _list416 = iprot.readListBegin();
                 struct.multiKills = new java.util.ArrayList<LolMultiKill>(_list416.size);
-                @org.apache.thrift.annotation.Nullable LolMultiKill _elem417;
-                for (int _i418 = 0; _i418 < _list416.size; ++_i418)
-                {
+                @org.apache.thrift.annotation.Nullable
+                LolMultiKill _elem417;
+                for (int _i418 = 0; _i418 < _list416.size; ++_i418) {
                   _elem417 = new LolMultiKill();
                   _elem417.read(iprot);
                   struct.multiKills.add(_elem417);
@@ -1532,7 +1634,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
                 iprot.readListEnd();
               }
               struct.setMultiKillsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1542,15 +1644,14 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
                 org.apache.thrift.protocol.TList _list419 = iprot.readListBegin();
                 struct.killStreaks = new java.util.ArrayList<java.lang.Integer>(_list419.size);
                 int _elem420;
-                for (int _i421 = 0; _i421 < _list419.size; ++_i421)
-                {
+                for (int _i421 = 0; _i421 < _list419.size; ++_i421) {
                   _elem420 = iprot.readI32();
                   struct.killStreaks.add(_elem420);
                 }
                 iprot.readListEnd();
               }
               struct.setKillStreaksIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1559,7 +1660,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.items = new LolItems();
               struct.items.read(iprot);
               struct.setItemsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1568,9 +1669,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               {
                 org.apache.thrift.protocol.TList _list422 = iprot.readListBegin();
                 struct.summonerSpells = new java.util.ArrayList<LolSummonerSpell>(_list422.size);
-                @org.apache.thrift.annotation.Nullable LolSummonerSpell _elem423;
-                for (int _i424 = 0; _i424 < _list422.size; ++_i424)
-                {
+                @org.apache.thrift.annotation.Nullable
+                LolSummonerSpell _elem423;
+                for (int _i424 = 0; _i424 < _list422.size; ++_i424) {
                   _elem423 = new LolSummonerSpell();
                   _elem423.read(iprot);
                   struct.summonerSpells.add(_elem423);
@@ -1578,7 +1679,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
                 iprot.readListEnd();
               }
               struct.setSummonerSpellsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1587,7 +1688,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.creeps = new LolCreeps();
               struct.creeps.read(iprot);
               struct.setCreepsIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1596,7 +1697,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.keystone = new LolKeystone();
               struct.keystone.read(iprot);
               struct.setKeystoneIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1605,7 +1706,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               struct.position = new LolPosition();
               struct.position.read(iprot);
               struct.setPositionIsSet(true);
-            } else { 
+            } else {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -1616,12 +1717,14 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       iprot.readStructEnd();
 
-      // check for required fields of primitive type, which can't be checked in the validate method
+      // check for required fields of primitive type, which can't be checked in the
+      // validate method
       struct.validate();
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, LolPlayerSummary struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, LolPlayerSummary struct)
+        throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -1662,9 +1765,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         if (struct.isSetMultiKills()) {
           oprot.writeFieldBegin(MULTI_KILLS_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.multiKills.size()));
-            for (LolMultiKill _iter425 : struct.multiKills)
-            {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT,
+                struct.multiKills.size()));
+            for (LolMultiKill _iter425 : struct.multiKills) {
               _iter425.write(oprot);
             }
             oprot.writeListEnd();
@@ -1675,9 +1778,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.killStreaks != null) {
         oprot.writeFieldBegin(KILL_STREAKS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.killStreaks.size()));
-          for (int _iter426 : struct.killStreaks)
-          {
+          oprot.writeListBegin(
+              new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.killStreaks.size()));
+          for (int _iter426 : struct.killStreaks) {
             oprot.writeI32(_iter426);
           }
           oprot.writeListEnd();
@@ -1692,9 +1795,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.summonerSpells != null) {
         oprot.writeFieldBegin(SUMMONER_SPELLS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.summonerSpells.size()));
-          for (LolSummonerSpell _iter427 : struct.summonerSpells)
-          {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT,
+              struct.summonerSpells.size()));
+          for (LolSummonerSpell _iter427 : struct.summonerSpells) {
             _iter427.write(oprot);
           }
           oprot.writeListEnd();
@@ -1736,7 +1839,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   private static class LolPlayerSummaryTupleScheme extends org.apache.thrift.scheme.TupleScheme<LolPlayerSummary> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, LolPlayerSummary struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, LolPlayerSummary struct)
+        throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetId()) {
@@ -1806,8 +1910,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetMultiKills()) {
         {
           oprot.writeI32(struct.multiKills.size());
-          for (LolMultiKill _iter428 : struct.multiKills)
-          {
+          for (LolMultiKill _iter428 : struct.multiKills) {
             _iter428.write(oprot);
           }
         }
@@ -1815,8 +1918,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetKillStreaks()) {
         {
           oprot.writeI32(struct.killStreaks.size());
-          for (int _iter429 : struct.killStreaks)
-          {
+          for (int _iter429 : struct.killStreaks) {
             oprot.writeI32(_iter429);
           }
         }
@@ -1827,8 +1929,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetSummonerSpells()) {
         {
           oprot.writeI32(struct.summonerSpells.size());
-          for (LolSummonerSpell _iter430 : struct.summonerSpells)
-          {
+          for (LolSummonerSpell _iter430 : struct.summonerSpells) {
             _iter430.write(oprot);
           }
         }
@@ -1845,7 +1946,8 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, LolPlayerSummary struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, LolPlayerSummary struct)
+        throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(14);
       if (incoming.get(0)) {
@@ -1885,9 +1987,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         {
           org.apache.thrift.protocol.TList _list431 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
           struct.multiKills = new java.util.ArrayList<LolMultiKill>(_list431.size);
-          @org.apache.thrift.annotation.Nullable LolMultiKill _elem432;
-          for (int _i433 = 0; _i433 < _list431.size; ++_i433)
-          {
+          @org.apache.thrift.annotation.Nullable
+          LolMultiKill _elem432;
+          for (int _i433 = 0; _i433 < _list431.size; ++_i433) {
             _elem432 = new LolMultiKill();
             _elem432.read(iprot);
             struct.multiKills.add(_elem432);
@@ -1900,8 +2002,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           org.apache.thrift.protocol.TList _list434 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
           struct.killStreaks = new java.util.ArrayList<java.lang.Integer>(_list434.size);
           int _elem435;
-          for (int _i436 = 0; _i436 < _list434.size; ++_i436)
-          {
+          for (int _i436 = 0; _i436 < _list434.size; ++_i436) {
             _elem435 = iprot.readI32();
             struct.killStreaks.add(_elem435);
           }
@@ -1917,9 +2018,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         {
           org.apache.thrift.protocol.TList _list437 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
           struct.summonerSpells = new java.util.ArrayList<LolSummonerSpell>(_list437.size);
-          @org.apache.thrift.annotation.Nullable LolSummonerSpell _elem438;
-          for (int _i439 = 0; _i439 < _list437.size; ++_i439)
-          {
+          @org.apache.thrift.annotation.Nullable
+          LolSummonerSpell _elem438;
+          for (int _i439 = 0; _i439 < _list437.size; ++_i439) {
             _elem438 = new LolSummonerSpell();
             _elem438.read(iprot);
             struct.summonerSpells.add(_elem438);
@@ -1946,7 +2047,7 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   }
 
   private static <S extends org.apache.thrift.scheme.IScheme> S scheme(org.apache.thrift.protocol.TProtocol proto) {
-    return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY : TUPLE_SCHEME_FACTORY).getScheme();
+    return (org.apache.thrift.scheme.StandardScheme.class.equals(proto.getScheme()) ? STANDARD_SCHEME_FACTORY
+        : TUPLE_SCHEME_FACTORY).getScheme();
   }
 }
-

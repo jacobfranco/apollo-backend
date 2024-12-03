@@ -2614,9 +2614,6 @@ public class ApolloApiManager {
         stats.setAverageKills(0.0);
         stats.setAverageDeaths(0.0);
         stats.setAverageAssists(0.0);
-        stats.setCurrentKillStreak(0);
-        stats.setTotalKillStreaks(0);
-        stats.setTotalDeathsStreaks(0);
         return stats;
     }
 
@@ -2626,16 +2623,6 @@ public class ApolloApiManager {
         existingStats.setTotalKills(existingStats.getTotalKills() + playerSummary.getKills().getTotal());
         existingStats.setTotalDeaths(existingStats.getTotalDeaths() + playerSummary.getDeaths().getTotal());
         existingStats.setTotalAssists(existingStats.getTotalAssists() + playerSummary.getAssists().getTotal());
-
-        // Update current kill streak
-        if (playerSummary.getKills().getTotal() > 0) {
-            existingStats.setCurrentKillStreak(existingStats.getCurrentKillStreak() + 1);
-            existingStats.setTotalKillStreaks(existingStats.getTotalKillStreaks() + 1);
-        } else if (playerSummary.getDeaths().getTotal() > 0) {
-            existingStats.setCurrentKillStreak(
-                    existingStats.getCurrentKillStreak() > 0 ? 0 : existingStats.getCurrentKillStreak() - 1);
-            existingStats.setTotalDeathsStreaks(existingStats.getTotalDeathsStreaks() + 1);
-        }
     }
 
     // Helper method to calculate averages for player stats

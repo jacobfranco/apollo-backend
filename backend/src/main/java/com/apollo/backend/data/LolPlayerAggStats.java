@@ -18,9 +18,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
   private static final org.apache.thrift.protocol.TField AVERAGE_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageKills", org.apache.thrift.protocol.TType.DOUBLE, (short)6);
   private static final org.apache.thrift.protocol.TField AVERAGE_DEATHS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageDeaths", org.apache.thrift.protocol.TType.DOUBLE, (short)7);
   private static final org.apache.thrift.protocol.TField AVERAGE_ASSISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageAssists", org.apache.thrift.protocol.TType.DOUBLE, (short)8);
-  private static final org.apache.thrift.protocol.TField CURRENT_KILL_STREAK_FIELD_DESC = new org.apache.thrift.protocol.TField("currentKillStreak", org.apache.thrift.protocol.TType.I32, (short)9);
-  private static final org.apache.thrift.protocol.TField TOTAL_KILL_STREAKS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalKillStreaks", org.apache.thrift.protocol.TType.I32, (short)10);
-  private static final org.apache.thrift.protocol.TField TOTAL_DEATHS_STREAKS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalDeathsStreaks", org.apache.thrift.protocol.TType.I32, (short)11);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolPlayerAggStatsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolPlayerAggStatsTupleSchemeFactory();
@@ -33,9 +30,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
   public double averageKills; // required
   public double averageDeaths; // required
   public double averageAssists; // required
-  public int currentKillStreak; // required
-  public int totalKillStreaks; // required
-  public int totalDeathsStreaks; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -46,10 +40,7 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     TOTAL_ASSISTS((short)5, "totalAssists"),
     AVERAGE_KILLS((short)6, "averageKills"),
     AVERAGE_DEATHS((short)7, "averageDeaths"),
-    AVERAGE_ASSISTS((short)8, "averageAssists"),
-    CURRENT_KILL_STREAK((short)9, "currentKillStreak"),
-    TOTAL_KILL_STREAKS((short)10, "totalKillStreaks"),
-    TOTAL_DEATHS_STREAKS((short)11, "totalDeathsStreaks");
+    AVERAGE_ASSISTS((short)8, "averageAssists");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -81,12 +72,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
           return AVERAGE_DEATHS;
         case 8: // AVERAGE_ASSISTS
           return AVERAGE_ASSISTS;
-        case 9: // CURRENT_KILL_STREAK
-          return CURRENT_KILL_STREAK;
-        case 10: // TOTAL_KILL_STREAKS
-          return TOTAL_KILL_STREAKS;
-        case 11: // TOTAL_DEATHS_STREAKS
-          return TOTAL_DEATHS_STREAKS;
         default:
           return null;
       }
@@ -138,10 +123,7 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
   private static final int __AVERAGEKILLS_ISSET_ID = 5;
   private static final int __AVERAGEDEATHS_ISSET_ID = 6;
   private static final int __AVERAGEASSISTS_ISSET_ID = 7;
-  private static final int __CURRENTKILLSTREAK_ISSET_ID = 8;
-  private static final int __TOTALKILLSTREAKS_ISSET_ID = 9;
-  private static final int __TOTALDEATHSSTREAKS_ISSET_ID = 10;
-  private short __isset_bitfield = 0;
+  private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -161,12 +143,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.AVERAGE_ASSISTS, new org.apache.thrift.meta_data.FieldMetaData("averageAssists", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
-    tmpMap.put(_Fields.CURRENT_KILL_STREAK, new org.apache.thrift.meta_data.FieldMetaData("currentKillStreak", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.TOTAL_KILL_STREAKS, new org.apache.thrift.meta_data.FieldMetaData("totalKillStreaks", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.TOTAL_DEATHS_STREAKS, new org.apache.thrift.meta_data.FieldMetaData("totalDeathsStreaks", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolPlayerAggStats.class, metaDataMap);
   }
@@ -182,10 +158,7 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     int totalAssists,
     double averageKills,
     double averageDeaths,
-    double averageAssists,
-    int currentKillStreak,
-    int totalKillStreaks,
-    int totalDeathsStreaks)
+    double averageAssists)
   {
     this();
     this.id = id;
@@ -204,12 +177,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     setAverageDeathsIsSet(true);
     this.averageAssists = averageAssists;
     setAverageAssistsIsSet(true);
-    this.currentKillStreak = currentKillStreak;
-    setCurrentKillStreakIsSet(true);
-    this.totalKillStreaks = totalKillStreaks;
-    setTotalKillStreaksIsSet(true);
-    this.totalDeathsStreaks = totalDeathsStreaks;
-    setTotalDeathsStreaksIsSet(true);
   }
 
   /**
@@ -225,9 +192,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     this.averageKills = other.averageKills;
     this.averageDeaths = other.averageDeaths;
     this.averageAssists = other.averageAssists;
-    this.currentKillStreak = other.currentKillStreak;
-    this.totalKillStreaks = other.totalKillStreaks;
-    this.totalDeathsStreaks = other.totalDeathsStreaks;
   }
 
   @Override
@@ -253,12 +217,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     this.averageDeaths = 0.0;
     setAverageAssistsIsSet(false);
     this.averageAssists = 0.0;
-    setCurrentKillStreakIsSet(false);
-    this.currentKillStreak = 0;
-    setTotalKillStreaksIsSet(false);
-    this.totalKillStreaks = 0;
-    setTotalDeathsStreaksIsSet(false);
-    this.totalDeathsStreaks = 0;
   }
 
   public int getId() {
@@ -445,75 +403,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEASSISTS_ISSET_ID, value);
   }
 
-  public int getCurrentKillStreak() {
-    return this.currentKillStreak;
-  }
-
-  public LolPlayerAggStats setCurrentKillStreak(int currentKillStreak) {
-    this.currentKillStreak = currentKillStreak;
-    setCurrentKillStreakIsSet(true);
-    return this;
-  }
-
-  public void unsetCurrentKillStreak() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CURRENTKILLSTREAK_ISSET_ID);
-  }
-
-  /** Returns true if field currentKillStreak is set (has been assigned a value) and false otherwise */
-  public boolean isSetCurrentKillStreak() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CURRENTKILLSTREAK_ISSET_ID);
-  }
-
-  public void setCurrentKillStreakIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CURRENTKILLSTREAK_ISSET_ID, value);
-  }
-
-  public int getTotalKillStreaks() {
-    return this.totalKillStreaks;
-  }
-
-  public LolPlayerAggStats setTotalKillStreaks(int totalKillStreaks) {
-    this.totalKillStreaks = totalKillStreaks;
-    setTotalKillStreaksIsSet(true);
-    return this;
-  }
-
-  public void unsetTotalKillStreaks() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALKILLSTREAKS_ISSET_ID);
-  }
-
-  /** Returns true if field totalKillStreaks is set (has been assigned a value) and false otherwise */
-  public boolean isSetTotalKillStreaks() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALKILLSTREAKS_ISSET_ID);
-  }
-
-  public void setTotalKillStreaksIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALKILLSTREAKS_ISSET_ID, value);
-  }
-
-  public int getTotalDeathsStreaks() {
-    return this.totalDeathsStreaks;
-  }
-
-  public LolPlayerAggStats setTotalDeathsStreaks(int totalDeathsStreaks) {
-    this.totalDeathsStreaks = totalDeathsStreaks;
-    setTotalDeathsStreaksIsSet(true);
-    return this;
-  }
-
-  public void unsetTotalDeathsStreaks() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALDEATHSSTREAKS_ISSET_ID);
-  }
-
-  /** Returns true if field totalDeathsStreaks is set (has been assigned a value) and false otherwise */
-  public boolean isSetTotalDeathsStreaks() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALDEATHSSTREAKS_ISSET_ID);
-  }
-
-  public void setTotalDeathsStreaksIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALDEATHSSTREAKS_ISSET_ID, value);
-  }
-
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -581,30 +470,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       }
       break;
 
-    case CURRENT_KILL_STREAK:
-      if (value == null) {
-        unsetCurrentKillStreak();
-      } else {
-        setCurrentKillStreak((java.lang.Integer)value);
-      }
-      break;
-
-    case TOTAL_KILL_STREAKS:
-      if (value == null) {
-        unsetTotalKillStreaks();
-      } else {
-        setTotalKillStreaks((java.lang.Integer)value);
-      }
-      break;
-
-    case TOTAL_DEATHS_STREAKS:
-      if (value == null) {
-        unsetTotalDeathsStreaks();
-      } else {
-        setTotalDeathsStreaks((java.lang.Integer)value);
-      }
-      break;
-
     }
   }
 
@@ -636,15 +501,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     case AVERAGE_ASSISTS:
       return getAverageAssists();
 
-    case CURRENT_KILL_STREAK:
-      return getCurrentKillStreak();
-
-    case TOTAL_KILL_STREAKS:
-      return getTotalKillStreaks();
-
-    case TOTAL_DEATHS_STREAKS:
-      return getTotalDeathsStreaks();
-
     }
     throw new java.lang.IllegalStateException();
   }
@@ -673,12 +529,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       return isSetAverageDeaths();
     case AVERAGE_ASSISTS:
       return isSetAverageAssists();
-    case CURRENT_KILL_STREAK:
-      return isSetCurrentKillStreak();
-    case TOTAL_KILL_STREAKS:
-      return isSetTotalKillStreaks();
-    case TOTAL_DEATHS_STREAKS:
-      return isSetTotalDeathsStreaks();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -768,33 +618,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
         return false;
     }
 
-    boolean this_present_currentKillStreak = true;
-    boolean that_present_currentKillStreak = true;
-    if (this_present_currentKillStreak || that_present_currentKillStreak) {
-      if (!(this_present_currentKillStreak && that_present_currentKillStreak))
-        return false;
-      if (this.currentKillStreak != that.currentKillStreak)
-        return false;
-    }
-
-    boolean this_present_totalKillStreaks = true;
-    boolean that_present_totalKillStreaks = true;
-    if (this_present_totalKillStreaks || that_present_totalKillStreaks) {
-      if (!(this_present_totalKillStreaks && that_present_totalKillStreaks))
-        return false;
-      if (this.totalKillStreaks != that.totalKillStreaks)
-        return false;
-    }
-
-    boolean this_present_totalDeathsStreaks = true;
-    boolean that_present_totalDeathsStreaks = true;
-    if (this_present_totalDeathsStreaks || that_present_totalDeathsStreaks) {
-      if (!(this_present_totalDeathsStreaks && that_present_totalDeathsStreaks))
-        return false;
-      if (this.totalDeathsStreaks != that.totalDeathsStreaks)
-        return false;
-    }
-
     return true;
   }
 
@@ -817,12 +640,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageDeaths);
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageAssists);
-
-    hashCode = hashCode * 8191 + currentKillStreak;
-
-    hashCode = hashCode * 8191 + totalKillStreaks;
-
-    hashCode = hashCode * 8191 + totalDeathsStreaks;
 
     return hashCode;
   }
@@ -915,36 +732,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetCurrentKillStreak(), other.isSetCurrentKillStreak());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCurrentKillStreak()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.currentKillStreak, other.currentKillStreak);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetTotalKillStreaks(), other.isSetTotalKillStreaks());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTotalKillStreaks()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalKillStreaks, other.totalKillStreaks);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetTotalDeathsStreaks(), other.isSetTotalDeathsStreaks());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTotalDeathsStreaks()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalDeathsStreaks, other.totalDeathsStreaks);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -999,18 +786,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     if (!first) sb.append(", ");
     sb.append("averageAssists:");
     sb.append(this.averageAssists);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("currentKillStreak:");
-    sb.append(this.currentKillStreak);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("totalKillStreaks:");
-    sb.append(this.totalKillStreaks);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("totalDeathsStreaks:");
-    sb.append(this.totalDeathsStreaks);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -1123,30 +898,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 9: // CURRENT_KILL_STREAK
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.currentKillStreak = iprot.readI32();
-              struct.setCurrentKillStreakIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 10: // TOTAL_KILL_STREAKS
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.totalKillStreaks = iprot.readI32();
-              struct.setTotalKillStreaksIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 11: // TOTAL_DEATHS_STREAKS
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.totalDeathsStreaks = iprot.readI32();
-              struct.setTotalDeathsStreaksIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1186,15 +937,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(AVERAGE_ASSISTS_FIELD_DESC);
       oprot.writeDouble(struct.averageAssists);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(CURRENT_KILL_STREAK_FIELD_DESC);
-      oprot.writeI32(struct.currentKillStreak);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(TOTAL_KILL_STREAKS_FIELD_DESC);
-      oprot.writeI32(struct.totalKillStreaks);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(TOTAL_DEATHS_STREAKS_FIELD_DESC);
-      oprot.writeI32(struct.totalDeathsStreaks);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1239,16 +981,7 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       if (struct.isSetAverageAssists()) {
         optionals.set(7);
       }
-      if (struct.isSetCurrentKillStreak()) {
-        optionals.set(8);
-      }
-      if (struct.isSetTotalKillStreaks()) {
-        optionals.set(9);
-      }
-      if (struct.isSetTotalDeathsStreaks()) {
-        optionals.set(10);
-      }
-      oprot.writeBitSet(optionals, 11);
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
@@ -1273,21 +1006,12 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       if (struct.isSetAverageAssists()) {
         oprot.writeDouble(struct.averageAssists);
       }
-      if (struct.isSetCurrentKillStreak()) {
-        oprot.writeI32(struct.currentKillStreak);
-      }
-      if (struct.isSetTotalKillStreaks()) {
-        oprot.writeI32(struct.totalKillStreaks);
-      }
-      if (struct.isSetTotalDeathsStreaks()) {
-        oprot.writeI32(struct.totalDeathsStreaks);
-      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LolPlayerAggStats struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(11);
+      java.util.BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -1319,18 +1043,6 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       if (incoming.get(7)) {
         struct.averageAssists = iprot.readDouble();
         struct.setAverageAssistsIsSet(true);
-      }
-      if (incoming.get(8)) {
-        struct.currentKillStreak = iprot.readI32();
-        struct.setCurrentKillStreakIsSet(true);
-      }
-      if (incoming.get(9)) {
-        struct.totalKillStreaks = iprot.readI32();
-        struct.setTotalKillStreaksIsSet(true);
-      }
-      if (incoming.get(10)) {
-        struct.totalDeathsStreaks = iprot.readI32();
-        struct.setTotalDeathsStreaksIsSet(true);
       }
     }
   }

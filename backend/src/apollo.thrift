@@ -1360,9 +1360,6 @@ struct LolPlayerAggStats {
   6: double averageKills
   7: double averageDeaths
   8: double averageAssists
-  9: i32 currentKillStreak
-  10: i32 totalKillStreaks
-  11: i32 totalDeathsStreaks
 }
 
 struct Schedule {

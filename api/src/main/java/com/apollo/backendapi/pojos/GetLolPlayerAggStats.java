@@ -11,9 +11,6 @@ public class GetLolPlayerAggStats {
     public double averageKills;
     public double averageDeaths;
     public double averageAssists;
-    public int currentKillStreak;
-    public int totalKillStreaks;
-    public int totalDeathsStreaks;
 
     public GetLolPlayerAggStats(LolPlayerAggStats stats) {
         this.id = stats.getId();
@@ -24,8 +21,5 @@ public class GetLolPlayerAggStats {
         this.averageKills = stats.getAverageKills();
         this.averageDeaths = stats.getAverageDeaths();
         this.averageAssists = stats.getAverageAssists();
-        this.currentKillStreak = stats.getCurrentKillStreak();
-        this.totalKillStreaks = stats.getTotalKillStreaks();
-        this.totalDeathsStreaks = stats.getTotalDeathsStreaks();
     }
 }
