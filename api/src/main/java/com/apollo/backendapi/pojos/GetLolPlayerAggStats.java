@@ -11,6 +11,8 @@ public class GetLolPlayerAggStats {
     public double averageKills;
     public double averageDeaths;
     public double averageAssists;
+    public int totalCreepScore;
+    public double averageCreepScore;
 
     public GetLolPlayerAggStats(LolPlayerAggStats stats) {
         this.id = stats.getId();
@@ -21,5 +23,7 @@ public class GetLolPlayerAggStats {
         this.averageKills = stats.getAverageKills();
         this.averageDeaths = stats.getAverageDeaths();
         this.averageAssists = stats.getAverageAssists();
+        this.totalCreepScore = stats.getTotalCreepScore();
+        this.averageCreepScore = stats.getAverageCreepScore();
     }
 }

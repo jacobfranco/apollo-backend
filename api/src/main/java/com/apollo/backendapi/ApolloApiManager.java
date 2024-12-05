@@ -2614,6 +2614,8 @@ public class ApolloApiManager {
         stats.setAverageKills(0.0);
         stats.setAverageDeaths(0.0);
         stats.setAverageAssists(0.0);
+        stats.setTotalCreepScore(0);
+        stats.setAverageCreepScore(0.0);
         return stats;
     }
 
@@ -2623,6 +2625,8 @@ public class ApolloApiManager {
         existingStats.setTotalKills(existingStats.getTotalKills() + playerSummary.getKills().getTotal());
         existingStats.setTotalDeaths(existingStats.getTotalDeaths() + playerSummary.getDeaths().getTotal());
         existingStats.setTotalAssists(existingStats.getTotalAssists() + playerSummary.getAssists().getTotal());
+        existingStats.setTotalCreepScore(existingStats.getTotalCreepScore() +
+                playerSummary.getCreeps().getOverall().getKills().getTotal());
     }
 
     // Helper method to calculate averages for player stats
@@ -2632,12 +2636,14 @@ public class ApolloApiManager {
             existingStats.setAverageKills(0.0);
             existingStats.setAverageDeaths(0.0);
             existingStats.setAverageAssists(0.0);
+            existingStats.setAverageCreepScore(0.0);
             return;
         }
 
         existingStats.setAverageKills((double) existingStats.getTotalKills() / totalMatches);
         existingStats.setAverageDeaths((double) existingStats.getTotalDeaths() / totalMatches);
         existingStats.setAverageAssists((double) existingStats.getTotalAssists() / totalMatches);
+        existingStats.setAverageCreepScore((double) existingStats.getTotalCreepScore() / totalMatches);
     }
 
     private CompletableFuture<Integer> getTeamIdFromRosterId(int rosterId) {

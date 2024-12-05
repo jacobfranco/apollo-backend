@@ -18,6 +18,8 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
   private static final org.apache.thrift.protocol.TField AVERAGE_KILLS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageKills", org.apache.thrift.protocol.TType.DOUBLE, (short)6);
   private static final org.apache.thrift.protocol.TField AVERAGE_DEATHS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageDeaths", org.apache.thrift.protocol.TType.DOUBLE, (short)7);
   private static final org.apache.thrift.protocol.TField AVERAGE_ASSISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("averageAssists", org.apache.thrift.protocol.TType.DOUBLE, (short)8);
+  private static final org.apache.thrift.protocol.TField TOTAL_CREEP_SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("totalCreepScore", org.apache.thrift.protocol.TType.I32, (short)9);
+  private static final org.apache.thrift.protocol.TField AVERAGE_CREEP_SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("averageCreepScore", org.apache.thrift.protocol.TType.DOUBLE, (short)10);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolPlayerAggStatsStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolPlayerAggStatsTupleSchemeFactory();
@@ -30,6 +32,8 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
   public double averageKills; // required
   public double averageDeaths; // required
   public double averageAssists; // required
+  public int totalCreepScore; // required
+  public double averageCreepScore; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -40,7 +44,9 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     TOTAL_ASSISTS((short)5, "totalAssists"),
     AVERAGE_KILLS((short)6, "averageKills"),
     AVERAGE_DEATHS((short)7, "averageDeaths"),
-    AVERAGE_ASSISTS((short)8, "averageAssists");
+    AVERAGE_ASSISTS((short)8, "averageAssists"),
+    TOTAL_CREEP_SCORE((short)9, "totalCreepScore"),
+    AVERAGE_CREEP_SCORE((short)10, "averageCreepScore");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -72,6 +78,10 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
           return AVERAGE_DEATHS;
         case 8: // AVERAGE_ASSISTS
           return AVERAGE_ASSISTS;
+        case 9: // TOTAL_CREEP_SCORE
+          return TOTAL_CREEP_SCORE;
+        case 10: // AVERAGE_CREEP_SCORE
+          return AVERAGE_CREEP_SCORE;
         default:
           return null;
       }
@@ -123,7 +133,9 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
   private static final int __AVERAGEKILLS_ISSET_ID = 5;
   private static final int __AVERAGEDEATHS_ISSET_ID = 6;
   private static final int __AVERAGEASSISTS_ISSET_ID = 7;
-  private byte __isset_bitfield = 0;
+  private static final int __TOTALCREEPSCORE_ISSET_ID = 8;
+  private static final int __AVERAGECREEPSCORE_ISSET_ID = 9;
+  private short __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -143,6 +155,10 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.AVERAGE_ASSISTS, new org.apache.thrift.meta_data.FieldMetaData("averageAssists", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.TOTAL_CREEP_SCORE, new org.apache.thrift.meta_data.FieldMetaData("totalCreepScore", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.AVERAGE_CREEP_SCORE, new org.apache.thrift.meta_data.FieldMetaData("averageCreepScore", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolPlayerAggStats.class, metaDataMap);
   }
@@ -158,7 +174,9 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     int totalAssists,
     double averageKills,
     double averageDeaths,
-    double averageAssists)
+    double averageAssists,
+    int totalCreepScore,
+    double averageCreepScore)
   {
     this();
     this.id = id;
@@ -177,6 +195,10 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     setAverageDeathsIsSet(true);
     this.averageAssists = averageAssists;
     setAverageAssistsIsSet(true);
+    this.totalCreepScore = totalCreepScore;
+    setTotalCreepScoreIsSet(true);
+    this.averageCreepScore = averageCreepScore;
+    setAverageCreepScoreIsSet(true);
   }
 
   /**
@@ -192,6 +214,8 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     this.averageKills = other.averageKills;
     this.averageDeaths = other.averageDeaths;
     this.averageAssists = other.averageAssists;
+    this.totalCreepScore = other.totalCreepScore;
+    this.averageCreepScore = other.averageCreepScore;
   }
 
   @Override
@@ -217,6 +241,10 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     this.averageDeaths = 0.0;
     setAverageAssistsIsSet(false);
     this.averageAssists = 0.0;
+    setTotalCreepScoreIsSet(false);
+    this.totalCreepScore = 0;
+    setAverageCreepScoreIsSet(false);
+    this.averageCreepScore = 0.0;
   }
 
   public int getId() {
@@ -403,6 +431,52 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGEASSISTS_ISSET_ID, value);
   }
 
+  public int getTotalCreepScore() {
+    return this.totalCreepScore;
+  }
+
+  public LolPlayerAggStats setTotalCreepScore(int totalCreepScore) {
+    this.totalCreepScore = totalCreepScore;
+    setTotalCreepScoreIsSet(true);
+    return this;
+  }
+
+  public void unsetTotalCreepScore() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TOTALCREEPSCORE_ISSET_ID);
+  }
+
+  /** Returns true if field totalCreepScore is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalCreepScore() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TOTALCREEPSCORE_ISSET_ID);
+  }
+
+  public void setTotalCreepScoreIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TOTALCREEPSCORE_ISSET_ID, value);
+  }
+
+  public double getAverageCreepScore() {
+    return this.averageCreepScore;
+  }
+
+  public LolPlayerAggStats setAverageCreepScore(double averageCreepScore) {
+    this.averageCreepScore = averageCreepScore;
+    setAverageCreepScoreIsSet(true);
+    return this;
+  }
+
+  public void unsetAverageCreepScore() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __AVERAGECREEPSCORE_ISSET_ID);
+  }
+
+  /** Returns true if field averageCreepScore is set (has been assigned a value) and false otherwise */
+  public boolean isSetAverageCreepScore() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __AVERAGECREEPSCORE_ISSET_ID);
+  }
+
+  public void setAverageCreepScoreIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __AVERAGECREEPSCORE_ISSET_ID, value);
+  }
+
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -470,6 +544,22 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       }
       break;
 
+    case TOTAL_CREEP_SCORE:
+      if (value == null) {
+        unsetTotalCreepScore();
+      } else {
+        setTotalCreepScore((java.lang.Integer)value);
+      }
+      break;
+
+    case AVERAGE_CREEP_SCORE:
+      if (value == null) {
+        unsetAverageCreepScore();
+      } else {
+        setAverageCreepScore((java.lang.Double)value);
+      }
+      break;
+
     }
   }
 
@@ -501,6 +591,12 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     case AVERAGE_ASSISTS:
       return getAverageAssists();
 
+    case TOTAL_CREEP_SCORE:
+      return getTotalCreepScore();
+
+    case AVERAGE_CREEP_SCORE:
+      return getAverageCreepScore();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -529,6 +625,10 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       return isSetAverageDeaths();
     case AVERAGE_ASSISTS:
       return isSetAverageAssists();
+    case TOTAL_CREEP_SCORE:
+      return isSetTotalCreepScore();
+    case AVERAGE_CREEP_SCORE:
+      return isSetAverageCreepScore();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -618,6 +718,24 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
         return false;
     }
 
+    boolean this_present_totalCreepScore = true;
+    boolean that_present_totalCreepScore = true;
+    if (this_present_totalCreepScore || that_present_totalCreepScore) {
+      if (!(this_present_totalCreepScore && that_present_totalCreepScore))
+        return false;
+      if (this.totalCreepScore != that.totalCreepScore)
+        return false;
+    }
+
+    boolean this_present_averageCreepScore = true;
+    boolean that_present_averageCreepScore = true;
+    if (this_present_averageCreepScore || that_present_averageCreepScore) {
+      if (!(this_present_averageCreepScore && that_present_averageCreepScore))
+        return false;
+      if (this.averageCreepScore != that.averageCreepScore)
+        return false;
+    }
+
     return true;
   }
 
@@ -640,6 +758,10 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageDeaths);
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageAssists);
+
+    hashCode = hashCode * 8191 + totalCreepScore;
+
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(averageCreepScore);
 
     return hashCode;
   }
@@ -732,6 +854,26 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetTotalCreepScore(), other.isSetTotalCreepScore());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTotalCreepScore()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalCreepScore, other.totalCreepScore);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAverageCreepScore(), other.isSetAverageCreepScore());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAverageCreepScore()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.averageCreepScore, other.averageCreepScore);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -786,6 +928,14 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
     if (!first) sb.append(", ");
     sb.append("averageAssists:");
     sb.append(this.averageAssists);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("totalCreepScore:");
+    sb.append(this.totalCreepScore);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("averageCreepScore:");
+    sb.append(this.averageCreepScore);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -898,6 +1048,22 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // TOTAL_CREEP_SCORE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.totalCreepScore = iprot.readI32();
+              struct.setTotalCreepScoreIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // AVERAGE_CREEP_SCORE
+            if (schemeField.type == org.apache.thrift.protocol.TType.DOUBLE) {
+              struct.averageCreepScore = iprot.readDouble();
+              struct.setAverageCreepScoreIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -937,6 +1103,12 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(AVERAGE_ASSISTS_FIELD_DESC);
       oprot.writeDouble(struct.averageAssists);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(TOTAL_CREEP_SCORE_FIELD_DESC);
+      oprot.writeI32(struct.totalCreepScore);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(AVERAGE_CREEP_SCORE_FIELD_DESC);
+      oprot.writeDouble(struct.averageCreepScore);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -981,7 +1153,13 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       if (struct.isSetAverageAssists()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetTotalCreepScore()) {
+        optionals.set(8);
+      }
+      if (struct.isSetAverageCreepScore()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
@@ -1006,12 +1184,18 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       if (struct.isSetAverageAssists()) {
         oprot.writeDouble(struct.averageAssists);
       }
+      if (struct.isSetTotalCreepScore()) {
+        oprot.writeI32(struct.totalCreepScore);
+      }
+      if (struct.isSetAverageCreepScore()) {
+        oprot.writeDouble(struct.averageCreepScore);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LolPlayerAggStats struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(8);
+      java.util.BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -1043,6 +1227,14 @@ public class LolPlayerAggStats implements org.apache.thrift.TBase<LolPlayerAggSt
       if (incoming.get(7)) {
         struct.averageAssists = iprot.readDouble();
         struct.setAverageAssistsIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.totalCreepScore = iprot.readI32();
+        struct.setTotalCreepScoreIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.averageCreepScore = iprot.readDouble();
+        struct.setAverageCreepScoreIsSet(true);
       }
     }
   }
