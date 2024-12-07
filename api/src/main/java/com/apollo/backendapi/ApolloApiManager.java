@@ -2177,32 +2177,35 @@ public class ApolloApiManager {
                 LolMatchSummary lolSummary = convertToThriftLolMatchSummary(postLolSummary);
                 logger.info("fetchAndStoreLolMatchSummary - Converted LolMatchSummary: "
                         + objectMapper.writeValueAsString(lolSummary));
+
+                // Store the LolMatchSummary itself
                 lolMatchSummaryDepot.appendAsync(lolSummary).join();
 
-                // Process and store player stats
-                List<LolPlayerSummary> allPlayers = new ArrayList<>();
-                allPlayers.addAll(lolSummary.teams.getHome().getPlayers());
-                allPlayers.addAll(lolSummary.teams.getAway().getPlayers());
-
-                for (LolPlayerSummary playerSummary : allPlayers) {
-                    lolPlayerSeasonStatsDepot.appendAsync(playerSummary).join();
-                    logger.info("fetchAndStoreLolMatchSummary - Stored Player Summary: "
-                            + objectMapper.writeValueAsString(playerSummary));
-                }
-
-                // Process and store team stats
+                // Store team summaries with their details
                 CompletableFuture<Void> homeTeamFuture = storeTeamSummary(lolSummary.teams.getHome());
                 CompletableFuture<Void> awayTeamFuture = storeTeamSummary(lolSummary.teams.getAway());
 
-                // Update aggregated team stats
+                // Wait for team summaries to be stored
+                CompletableFuture.allOf(homeTeamFuture, awayTeamFuture).join();
+
+                // Now store player summaries for both teams
+                CompletableFuture<Void> homePlayersFuture = storePlayerSummaries(lolSummary.teams.getHome());
+                CompletableFuture<Void> awayPlayersFuture = storePlayerSummaries(lolSummary.teams.getAway());
+
+                // Run aggregator updates after teams and players have been processed
                 homeTeamFuture.thenRun(() -> updateTeamAggStats(lolSummary.getTeams().getHome()));
                 awayTeamFuture.thenRun(() -> updateTeamAggStats(lolSummary.getTeams().getAway()));
 
-                // Update aggregated player stats
                 homeTeamFuture.thenRun(() -> updatePlayerAggStats(lolSummary.getTeams().getHome()));
                 awayTeamFuture.thenRun(() -> updatePlayerAggStats(lolSummary.getTeams().getAway()));
 
-                CompletableFuture.allOf(homeTeamFuture, awayTeamFuture).join();
+                // Wait for all operations to complete
+                CompletableFuture.allOf(
+                        homeTeamFuture,
+                        awayTeamFuture,
+                        homePlayersFuture,
+                        awayPlayersFuture).join();
+
                 logger.info("fetchAndStoreLolMatchSummary - Stored Team and Player Summaries for matchId " + matchId);
             } else {
                 logger.warn("fetchAndStoreLolMatchSummary - Failed to parse match summary for match " + matchId);
@@ -2337,7 +2340,7 @@ public class ApolloApiManager {
                         logger.warn("storeTeamSummary - Opponent is NOT set for team ID: " + teamId);
                     }
 
-                    // Now store the teamSummary
+                    // Now store the teamSummary, just like we do for teams normally
                     return lolTeamSeasonStatsDepot.appendAsync(teamSummary)
                             .thenAccept(result -> {
                                 logger.info(
@@ -2347,6 +2350,128 @@ public class ApolloApiManager {
                                 return null;
                             });
                 });
+    }
+
+    private CompletableFuture<Void> storePlayerSummary(LolPlayerSummary playerSummary, LolTeamSummary teamSummary) {
+        logger.info("storePlayerSummary - Starting processing for player: " + playerSummary.getId()
+                + " from team roster ID: " + teamSummary.getRoster().getId());
+
+        // Fetch Match using matchId from teamSummary
+        CompletableFuture<Match> matchFuture = getMatchFromMatchId.invokeAsync(teamSummary.getMatchId())
+                .exceptionally(ex -> {
+                    logger.error("Error fetching Match for matchId: " + teamSummary.getMatchId(), ex);
+                    return null;
+                });
+
+        // Fetch Series for the match
+        CompletableFuture<Series> seriesFuture = matchFuture.thenCompose(match -> {
+            if (match != null) {
+                return getSeriesFromSeriesId.invokeAsync(match.getSeriesId())
+                        .exceptionally(ex -> {
+                            logger.error("Error fetching Series for seriesId: " + match.getSeriesId(), ex);
+                            return null;
+                        });
+            } else {
+                logger.warn("storePlayerSummary - Match not found for matchId: " + teamSummary.getMatchId());
+                return CompletableFuture.completedFuture(null);
+            }
+        });
+
+        // Fetch opponent information
+        CompletableFuture<Team> opponentFuture = matchFuture.thenCompose(match -> {
+            if (match != null) {
+                // Get participants
+                List<Participant> participants = match.getParticipants();
+
+                // Identify opponent rosterId
+                int teamRosterId = teamSummary.getRoster().getId();
+                Integer opponentRosterId = null;
+                for (Participant participant : participants) {
+                    if (participant.getRoster().getId() != teamRosterId) {
+                        opponentRosterId = participant.getRoster().getId();
+                        break;
+                    }
+                }
+
+                if (opponentRosterId != null) {
+                    logger.info("storePlayerSummary - Found opponent rosterId: " + opponentRosterId);
+
+                    // Fetch opponent teamId
+                    return getTeamIdFromRosterId(opponentRosterId)
+                            .thenCompose(opponentTeamId -> {
+                                if (opponentTeamId != null) {
+                                    logger.info("storePlayerSummary - Found opponent teamId: " + opponentTeamId);
+                                    return getTeamFromTeamId.invokeAsync(opponentTeamId);
+                                } else {
+                                    logger.warn("storePlayerSummary - Opponent teamId not found");
+                                    return CompletableFuture.completedFuture(null);
+                                }
+                            })
+                            .exceptionally(ex -> {
+                                logger.error("Error fetching opponent team", ex);
+                                return null;
+                            });
+                } else {
+                    logger.warn("storePlayerSummary - Opponent rosterId not found in match participants.");
+                    return CompletableFuture.completedFuture(null);
+                }
+            } else {
+                logger.warn("storePlayerSummary - Match is null for matchId: " + teamSummary.getMatchId());
+                return CompletableFuture.completedFuture(null);
+            }
+        });
+
+        // Combine all futures
+        return CompletableFuture.allOf(matchFuture, seriesFuture, opponentFuture)
+                .thenCompose(v -> {
+                    Match match = matchFuture.join();
+                    Series series = seriesFuture.join();
+                    Team opponentTeam = opponentFuture.join();
+
+                    // Set match-related details for the player
+                    if (match != null) {
+                        playerSummary.setMatchId(match.getId());
+                    }
+
+                    // Set start time from series
+                    if (series != null) {
+                        playerSummary.setStart(series.getStart());
+                        logger.info("storePlayerSummary - Start time set for player: "
+                                + playerSummary.getId() + " with start: " + playerSummary.getStart());
+                    } else {
+                        logger.warn("storePlayerSummary - Series not found for matchId: " + teamSummary.getMatchId());
+                    }
+
+                    // Set opponent information
+                    if (opponentTeam != null) {
+                        playerSummary.setOpponent(opponentTeam);
+                        logger.info("storePlayerSummary - Opponent Team set for player: "
+                                + playerSummary.getId()
+                                + " with opponent team: " + opponentTeam.getName());
+                    } else {
+                        logger.warn("storePlayerSummary - Opponent Team not found for player: "
+                                + playerSummary.getId());
+                    }
+
+                    // Store the player summary
+                    return lolPlayerSeasonStatsDepot.appendAsync(playerSummary)
+                            .thenAccept(result -> {
+                                logger.info("storePlayerSummary - Successfully stored player summary: "
+                                        + playerSummary.getId());
+                            }).exceptionally(ex -> {
+                                logger.error("Error storing playerSummary: " + playerSummary.getId(), ex);
+                                return null;
+                            });
+                });
+    }
+
+    // Modify the existing method to use the new storePlayerSummary approach
+    private CompletableFuture<Void> storePlayerSummaries(LolTeamSummary teamSummary) {
+        List<CompletableFuture<Void>> playerFutures = teamSummary.getPlayers().stream()
+                .map(playerSummary -> storePlayerSummary(playerSummary, teamSummary))
+                .collect(Collectors.toList());
+
+        return CompletableFuture.allOf(playerFutures.toArray(new CompletableFuture[0]));
     }
 
     private void updateTeamSeriesStats(PostSeries postSeries) {

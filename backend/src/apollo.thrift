@@ -1038,6 +1038,9 @@ struct LolPlayerSummary {
     12: LolCreeps creeps
     13: optional LolKeystone keystone
     14: optional LolPosition position
+    15: optional i32 matchId
+    16: optional i64 start
+    17: optional Team opponent
 }
 
 struct LolChampion {

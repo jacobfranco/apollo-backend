@@ -24,6 +24,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   private static final org.apache.thrift.protocol.TField CREEPS_FIELD_DESC = new org.apache.thrift.protocol.TField("creeps", org.apache.thrift.protocol.TType.STRUCT, (short)12);
   private static final org.apache.thrift.protocol.TField KEYSTONE_FIELD_DESC = new org.apache.thrift.protocol.TField("keystone", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField POSITION_FIELD_DESC = new org.apache.thrift.protocol.TField("position", org.apache.thrift.protocol.TType.STRUCT, (short)14);
+  private static final org.apache.thrift.protocol.TField MATCH_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("matchId", org.apache.thrift.protocol.TType.I32, (short)15);
+  private static final org.apache.thrift.protocol.TField START_FIELD_DESC = new org.apache.thrift.protocol.TField("start", org.apache.thrift.protocol.TType.I64, (short)16);
+  private static final org.apache.thrift.protocol.TField OPPONENT_FIELD_DESC = new org.apache.thrift.protocol.TField("opponent", org.apache.thrift.protocol.TType.STRUCT, (short)17);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LolPlayerSummaryStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LolPlayerSummaryTupleSchemeFactory();
@@ -42,6 +45,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   public @org.apache.thrift.annotation.Nullable LolCreeps creeps; // required
   public @org.apache.thrift.annotation.Nullable LolKeystone keystone; // optional
   public @org.apache.thrift.annotation.Nullable LolPosition position; // optional
+  public int matchId; // optional
+  public long start; // optional
+  public @org.apache.thrift.annotation.Nullable Team opponent; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -58,7 +64,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     SUMMONER_SPELLS((short)11, "summonerSpells"),
     CREEPS((short)12, "creeps"),
     KEYSTONE((short)13, "keystone"),
-    POSITION((short)14, "position");
+    POSITION((short)14, "position"),
+    MATCH_ID((short)15, "matchId"),
+    START((short)16, "start"),
+    OPPONENT((short)17, "opponent");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -102,6 +111,12 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           return KEYSTONE;
         case 14: // POSITION
           return POSITION;
+        case 15: // MATCH_ID
+          return MATCH_ID;
+        case 16: // START
+          return START;
+        case 17: // OPPONENT
+          return OPPONENT;
         default:
           return null;
       }
@@ -147,8 +162,10 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private static final int __UIINDEX_ISSET_ID = 1;
+  private static final int __MATCHID_ISSET_ID = 2;
+  private static final int __START_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CHAMPION,_Fields.MULTI_KILLS,_Fields.KEYSTONE,_Fields.POSITION};
+  private static final _Fields optionals[] = {_Fields.CHAMPION,_Fields.MULTI_KILLS,_Fields.KEYSTONE,_Fields.POSITION,_Fields.MATCH_ID,_Fields.START,_Fields.OPPONENT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -183,6 +200,12 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolKeystone.class)));
     tmpMap.put(_Fields.POSITION, new org.apache.thrift.meta_data.FieldMetaData("position", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, LolPosition.class)));
+    tmpMap.put(_Fields.MATCH_ID, new org.apache.thrift.meta_data.FieldMetaData("matchId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.OPPONENT, new org.apache.thrift.meta_data.FieldMetaData("opponent", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Team.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LolPlayerSummary.class, metaDataMap);
   }
@@ -269,6 +292,11 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     if (other.isSetPosition()) {
       this.position = new LolPosition(other.position);
     }
+    this.matchId = other.matchId;
+    this.start = other.start;
+    if (other.isSetOpponent()) {
+      this.opponent = new Team(other.opponent);
+    }
   }
 
   @Override
@@ -294,6 +322,11 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     this.creeps = null;
     this.keystone = null;
     this.position = null;
+    setMatchIdIsSet(false);
+    this.matchId = 0;
+    setStartIsSet(false);
+    this.start = 0;
+    this.opponent = null;
   }
 
   public int getId() {
@@ -690,6 +723,77 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
   }
 
+  public int getMatchId() {
+    return this.matchId;
+  }
+
+  public LolPlayerSummary setMatchId(int matchId) {
+    this.matchId = matchId;
+    setMatchIdIsSet(true);
+    return this;
+  }
+
+  public void unsetMatchId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __MATCHID_ISSET_ID);
+  }
+
+  /** Returns true if field matchId is set (has been assigned a value) and false otherwise */
+  public boolean isSetMatchId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __MATCHID_ISSET_ID);
+  }
+
+  public void setMatchIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MATCHID_ISSET_ID, value);
+  }
+
+  public long getStart() {
+    return this.start;
+  }
+
+  public LolPlayerSummary setStart(long start) {
+    this.start = start;
+    setStartIsSet(true);
+    return this;
+  }
+
+  public void unsetStart() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __START_ISSET_ID);
+  }
+
+  /** Returns true if field start is set (has been assigned a value) and false otherwise */
+  public boolean isSetStart() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __START_ISSET_ID);
+  }
+
+  public void setStartIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __START_ISSET_ID, value);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public Team getOpponent() {
+    return this.opponent;
+  }
+
+  public LolPlayerSummary setOpponent(@org.apache.thrift.annotation.Nullable Team opponent) {
+    this.opponent = opponent;
+    return this;
+  }
+
+  public void unsetOpponent() {
+    this.opponent = null;
+  }
+
+  /** Returns true if field opponent is set (has been assigned a value) and false otherwise */
+  public boolean isSetOpponent() {
+    return this.opponent != null;
+  }
+
+  public void setOpponentIsSet(boolean value) {
+    if (!value) {
+      this.opponent = null;
+    }
+  }
+
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -805,6 +909,30 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       break;
 
+    case MATCH_ID:
+      if (value == null) {
+        unsetMatchId();
+      } else {
+        setMatchId((java.lang.Integer)value);
+      }
+      break;
+
+    case START:
+      if (value == null) {
+        unsetStart();
+      } else {
+        setStart((java.lang.Long)value);
+      }
+      break;
+
+    case OPPONENT:
+      if (value == null) {
+        unsetOpponent();
+      } else {
+        setOpponent((Team)value);
+      }
+      break;
+
     }
   }
 
@@ -854,6 +982,15 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     case POSITION:
       return getPosition();
 
+    case MATCH_ID:
+      return getMatchId();
+
+    case START:
+      return getStart();
+
+    case OPPONENT:
+      return getOpponent();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -894,6 +1031,12 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       return isSetKeystone();
     case POSITION:
       return isSetPosition();
+    case MATCH_ID:
+      return isSetMatchId();
+    case START:
+      return isSetStart();
+    case OPPONENT:
+      return isSetOpponent();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1037,6 +1180,33 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         return false;
     }
 
+    boolean this_present_matchId = true && this.isSetMatchId();
+    boolean that_present_matchId = true && that.isSetMatchId();
+    if (this_present_matchId || that_present_matchId) {
+      if (!(this_present_matchId && that_present_matchId))
+        return false;
+      if (this.matchId != that.matchId)
+        return false;
+    }
+
+    boolean this_present_start = true && this.isSetStart();
+    boolean that_present_start = true && that.isSetStart();
+    if (this_present_start || that_present_start) {
+      if (!(this_present_start && that_present_start))
+        return false;
+      if (this.start != that.start)
+        return false;
+    }
+
+    boolean this_present_opponent = true && this.isSetOpponent();
+    boolean that_present_opponent = true && that.isSetOpponent();
+    if (this_present_opponent || that_present_opponent) {
+      if (!(this_present_opponent && that_present_opponent))
+        return false;
+      if (!this.opponent.equals(that.opponent))
+        return false;
+    }
+
     return true;
   }
 
@@ -1095,6 +1265,18 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     hashCode = hashCode * 8191 + ((isSetPosition()) ? 131071 : 524287);
     if (isSetPosition())
       hashCode = hashCode * 8191 + position.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetMatchId()) ? 131071 : 524287);
+    if (isSetMatchId())
+      hashCode = hashCode * 8191 + matchId;
+
+    hashCode = hashCode * 8191 + ((isSetStart()) ? 131071 : 524287);
+    if (isSetStart())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(start);
+
+    hashCode = hashCode * 8191 + ((isSetOpponent()) ? 131071 : 524287);
+    if (isSetOpponent())
+      hashCode = hashCode * 8191 + opponent.hashCode();
 
     return hashCode;
   }
@@ -1247,6 +1429,36 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetMatchId(), other.isSetMatchId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMatchId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.matchId, other.matchId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetStart(), other.isSetStart());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStart()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.start, other.start);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetOpponent(), other.isSetOpponent());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetOpponent()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.opponent, other.opponent);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1382,6 +1594,28 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       }
       first = false;
     }
+    if (isSetMatchId()) {
+      if (!first) sb.append(", ");
+      sb.append("matchId:");
+      sb.append(this.matchId);
+      first = false;
+    }
+    if (isSetStart()) {
+      if (!first) sb.append(", ");
+      sb.append("start:");
+      sb.append(this.start);
+      first = false;
+    }
+    if (isSetOpponent()) {
+      if (!first) sb.append(", ");
+      sb.append("opponent:");
+      if (this.opponent == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.opponent);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1415,6 +1649,9 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
     }
     if (position != null) {
       position.validate();
+    }
+    if (opponent != null) {
+      opponent.validate();
     }
   }
 
@@ -1609,6 +1846,31 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 15: // MATCH_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.matchId = iprot.readI32();
+              struct.setMatchIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 16: // START
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.start = iprot.readI64();
+              struct.setStartIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 17: // OPPONENT
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.opponent = new Team();
+              struct.opponent.read(iprot);
+              struct.setOpponentIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1720,6 +1982,23 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetMatchId()) {
+        oprot.writeFieldBegin(MATCH_ID_FIELD_DESC);
+        oprot.writeI32(struct.matchId);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetStart()) {
+        oprot.writeFieldBegin(START_FIELD_DESC);
+        oprot.writeI64(struct.start);
+        oprot.writeFieldEnd();
+      }
+      if (struct.opponent != null) {
+        if (struct.isSetOpponent()) {
+          oprot.writeFieldBegin(OPPONENT_FIELD_DESC);
+          struct.opponent.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1781,7 +2060,16 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetPosition()) {
         optionals.set(13);
       }
-      oprot.writeBitSet(optionals, 14);
+      if (struct.isSetMatchId()) {
+        optionals.set(14);
+      }
+      if (struct.isSetStart()) {
+        optionals.set(15);
+      }
+      if (struct.isSetOpponent()) {
+        optionals.set(16);
+      }
+      oprot.writeBitSet(optionals, 17);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
@@ -1842,12 +2130,21 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
       if (struct.isSetPosition()) {
         struct.position.write(oprot);
       }
+      if (struct.isSetMatchId()) {
+        oprot.writeI32(struct.matchId);
+      }
+      if (struct.isSetStart()) {
+        oprot.writeI64(struct.start);
+      }
+      if (struct.isSetOpponent()) {
+        struct.opponent.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LolPlayerSummary struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(14);
+      java.util.BitSet incoming = iprot.readBitSet(17);
       if (incoming.get(0)) {
         struct.id = iprot.readI32();
         struct.setIdIsSet(true);
@@ -1941,6 +2238,19 @@ public class LolPlayerSummary implements org.apache.thrift.TBase<LolPlayerSummar
         struct.position = new LolPosition();
         struct.position.read(iprot);
         struct.setPositionIsSet(true);
+      }
+      if (incoming.get(14)) {
+        struct.matchId = iprot.readI32();
+        struct.setMatchIdIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.start = iprot.readI64();
+        struct.setStartIsSet(true);
+      }
+      if (incoming.get(16)) {
+        struct.opponent = new Team();
+        struct.opponent.read(iprot);
+        struct.setOpponentIsSet(true);
       }
     }
   }

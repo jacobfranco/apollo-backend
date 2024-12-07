@@ -23,7 +23,7 @@ public class GetLolPlayerMatchStats {
         public GetLolCreeps creeps;
         public GetLolKeystone keystone;
         public GetLolPosition position;
-        public Instant matchStart;
+        public Instant start;
         public int matchId;
         public boolean isWinner;
         public int score;
@@ -32,6 +32,7 @@ public class GetLolPlayerMatchStats {
         public int inhibitorsDestroyed;
         public GetLolFaction faction;
         public GetLolStructures structures;
+        public GetTeam opponent;
 
         /**
          * Constructor that initializes GetLolPlayerMatchStats from GetLolPlayerSummary.
@@ -56,7 +57,7 @@ public class GetLolPlayerMatchStats {
                         this.creeps = null;
                         this.keystone = null;
                         this.position = null;
-                        this.matchStart = null;
+                        this.start = null;
                         this.matchId = 0;
                         this.isWinner = false;
                         this.score = 0;
@@ -65,6 +66,7 @@ public class GetLolPlayerMatchStats {
                         this.inhibitorsDestroyed = 0;
                         this.faction = null;
                         this.structures = null;
+                        this.opponent = null;
                         return;
                 }
 
@@ -83,19 +85,26 @@ public class GetLolPlayerMatchStats {
                 this.keystone = playerSummary.keystone;
                 this.position = playerSummary.position;
 
-                // Assuming these fields are part of GetLolPlayerSummary or need to be set
-                // separately
-                // If they are not part of GetLolPlayerSummary, you might need to adjust
-                // accordingly
-                this.matchStart = null; // Set appropriately if available
-                this.matchId = 0; // Set appropriately if available
-                this.isWinner = false; // Set appropriately if available
-                this.score = 0; // Set appropriately if available
-                this.goldEarned = 0; // Set appropriately if available
-                this.turretsDestroyed = 0; // Set appropriately if available
-                this.inhibitorsDestroyed = 0; // Set appropriately if available
-                this.faction = null; // Set appropriately if available
-                this.structures = null; // Set appropriately if available
+                if (playerSummary.start != null) {
+                        this.start = Instant.ofEpochMilli(playerSummary.start);
+                } else {
+                        this.start = null;
+                }
+
+                this.matchId = playerSummary.matchId != null ? playerSummary.matchId : 0;
+
+                // If isWinner, score, goldEarned, etc. need to be set, do it here if you have
+                // data.
+                // For now, leave them as defaults:
+                this.isWinner = false;
+                this.score = 0;
+                this.goldEarned = 0;
+                this.turretsDestroyed = 0;
+                this.inhibitorsDestroyed = 0;
+                this.faction = null;
+                this.structures = null;
+
+                this.opponent = playerSummary.opponent; // Already a GetTeam if present
         }
 
         /**
@@ -123,7 +132,7 @@ public class GetLolPlayerMatchStats {
                         this.creeps = null;
                         this.keystone = null;
                         this.position = null;
-                        this.matchStart = null;
+                        this.start = null;
                         this.matchId = 0;
                         this.isWinner = false;
                         this.score = 0;
@@ -175,6 +184,27 @@ public class GetLolPlayerMatchStats {
                 this.position = playerSummary.isSetPosition()
                                 ? new GetLolPosition(playerSummary.getPosition())
                                 : null;
+
+                if (playerSummary.isSetStart()) {
+                        this.start = Instant.ofEpochMilli(playerSummary.getStart());
+                } else {
+                        this.start = null;
+                }
+
+                this.matchId = playerSummary.isSetMatchId() ? playerSummary.getMatchId() : 0;
+
+                // If isWinner, score, goldEarned, etc. need to be set, do it here if you have
+                // data.
+                // For now, leave them as defaults:
+                this.isWinner = false;
+                this.score = 0;
+                this.goldEarned = 0;
+                this.turretsDestroyed = 0;
+                this.inhibitorsDestroyed = 0;
+                this.faction = null;
+                this.structures = null;
+
+                this.opponent = new GetTeam(playerSummary.getOpponent());
         }
 
 }

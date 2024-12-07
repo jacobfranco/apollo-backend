@@ -22,6 +22,9 @@ public class GetLolPlayerSummary {
         public GetLolCreeps creeps;
         public GetLolKeystone keystone;
         public GetLolPosition position;
+        public Long start;
+        public Integer matchId;
+        public GetTeam opponent;
 
         public GetLolPlayerSummary(LolPlayerSummary playerSummary, Map<Integer, GetAsset> assetMap) {
                 this.id = playerSummary.getId();
@@ -67,5 +70,26 @@ public class GetLolPlayerSummary {
 
                 // Map position
                 this.position = playerSummary.isSetPosition() ? new GetLolPosition(playerSummary.getPosition()) : null;
+
+                // Handle start and matchId if set
+                if (playerSummary.isSetStart()) {
+                        this.start = playerSummary.getStart(); // epoch millis
+                } else {
+                        this.start = null;
+                }
+
+                if (playerSummary.isSetMatchId()) {
+                        this.matchId = playerSummary.getMatchId();
+                } else {
+                        this.matchId = null;
+                }
+
+                // Opponent
+                if (playerSummary.isSetOpponent()) {
+                        // Map opponent team
+                        this.opponent = new GetTeam(playerSummary.getOpponent());
+                } else {
+                        this.opponent = null;
+                }
         }
 }
