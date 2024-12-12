@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GetTeam {
@@ -28,7 +29,7 @@ public class GetTeam {
     public GetLolTeamMatchStats matchStats;
     public GetLolTeamAggStats aggStats;
     public List<GetLolTeamMatchStats> lolSeasonStats;
-    public List<Integer> schedule;
+    public Set<Integer> schedule;
 
     @JsonIgnore
     public Map<Integer, GetAsset> assetMap;
@@ -48,7 +49,7 @@ public class GetTeam {
         this.gameId = team.getGameId();
         this.organizationId = team.isSetOrganizationId() ? team.getOrganizationId() : null;
         this.resourceVersion = team.getResourceVersion();
-        this.schedule = Collections.emptyList();
+        this.schedule = Collections.emptySet();
     }
 
     public GetTeam(Team team, LolTeamAggStats aggStats, List<LolTeamSummary> lolSeasonStats,

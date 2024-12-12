@@ -3620,6 +3620,7 @@ public class ApolloApiManager {
                     LolPlayerAggStats aggStats = aggStatsFuture.join();
                     List<LolPlayerSummary> seasonStats = seasonStatsFuture.join();
                     List<Integer> seriesIds = seriesIdsFuture.join();
+                    Set<Integer> seriesIdsSet = new HashSet<>(seriesIds);
 
                     if (player == null) {
                         logger.warn("getPlayerWithLolStats - No Player found with ID: {}",
@@ -3656,7 +3657,7 @@ public class ApolloApiManager {
 
                         // Create and return a GetPlayer object enriched with asset data
                         GetPlayer getPlayer = new GetPlayer(player, aggStats, seasonStats, assetMap);
-                        getPlayer.schedule = seriesIds;
+                        getPlayer.schedule = seriesIdsSet;
 
                         logger.info(
                                 "getPlayerWithLolStats - Successfully constructed GetPlayer for playerId: {}",
@@ -3680,6 +3681,7 @@ public class ApolloApiManager {
                     LolTeamAggStats aggStats = aggStatsFuture.join();
                     List<LolTeamSummary> seasonStats = seasonStatsFuture.join();
                     List<Integer> seriesIds = seriesIdsFuture.join();
+                    Set<Integer> seriesIdsSet = new HashSet<>(seriesIds);
 
                     if (team == null) {
                         logger.warn("getTeamWithLolStats - No Team found with ID: {}", teamId);
@@ -3715,7 +3717,7 @@ public class ApolloApiManager {
 
                                 // Create and return a GetTeam object enriched with series data
                                 GetTeam getTeam = new GetTeam(team, aggStats, finalSeasonStats, assetMap);
-                                getTeam.schedule = seriesIds;
+                                getTeam.schedule = seriesIdsSet;
 
                                 logger.info("getTeamWithLolStats - Successfully constructed GetTeam for teamId: {}",
                                         teamId);

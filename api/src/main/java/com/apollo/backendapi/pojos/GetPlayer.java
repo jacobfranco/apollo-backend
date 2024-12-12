@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GetPlayer {
@@ -31,7 +32,7 @@ public class GetPlayer {
     public GetLolPlayerAggStats aggStats;
     public GetPlayerMatchStats matchStats;
     public List<GetLolPlayerMatchStats> lolSeasonStats;
-    public List<Integer> schedule;
+    public Set<Integer> schedule;
 
     @JsonIgnore
     public Map<Integer, GetAsset> assetMap;
@@ -54,7 +55,7 @@ public class GetPlayer {
         this.socialMediaAccounts = player.getSocialMediaAccounts().stream().map(GetSocialMediaAccount::new)
                 .collect(Collectors.toList());
         this.resourceVersion = player.getResourceVersion();
-        this.schedule = Collections.emptyList();
+        this.schedule = Collections.emptySet();
     }
 
     public GetPlayer(Player player, LolPlayerAggStats aggStats, List<LolPlayerSummary> lolSeasonStats,
