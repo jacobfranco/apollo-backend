@@ -206,8 +206,9 @@ public class ApolloApiManager {
     private final Depot matchDepot;
     private final Depot rosterDepot;
     private final Depot teamDepot;
-    private final Depot scheduleDepot;
+    private final Depot teamScheduleDepot;
     private final Depot playerDepot;
+    private final Depot playerScheduleDepot;
     private final Depot lolMatchSummaryDepot;
     private final Depot lolPlayerSeasonStatsDepot;
     private final Depot lolTeamSeasonStatsDepot;
@@ -228,6 +229,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<List<Integer>> getSeriesIdsFromTeamId;
     private final QueryTopologyClient<List<Integer>> getAllTeamIds;
     private final QueryTopologyClient<Player> getPlayerFromPlayerId;
+    private final QueryTopologyClient<List<Integer>> getSeriesIdsFromPlayerId;
     private final QueryTopologyClient<List<Integer>> getAllPlayerIds;
     private final QueryTopologyClient<LolMatchSummary> getLolMatchSummaryFromMatchId;
     private final QueryTopologyClient<Asset> getAssetFromAssetId;
@@ -364,8 +366,9 @@ public class ApolloApiManager {
         matchDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*matchDepot");
         rosterDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*rosterDepot");
         teamDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamDepot");
-        scheduleDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*scheduleDepot");
+        teamScheduleDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*teamScheduleDepot");
         playerDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerDepot");
+        playerScheduleDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*playerScheduleDepot");
         lolMatchSummaryDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolMatchSummaryDepot");
         lolPlayerSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolPlayerSeasonStatsDepot");
         lolTeamSeasonStatsDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*lolTeamSeasonStatsDepot");
@@ -386,6 +389,7 @@ public class ApolloApiManager {
         getSeriesIdsFromTeamId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesIdsFromTeamId");
         getAllTeamIds = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAllTeamIds");
         getPlayerFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getPlayerFromPlayerId");
+        getSeriesIdsFromPlayerId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getSeriesIdsFromPlayerId");
         getAllPlayerIds = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAllPlayerIds");
         getLolMatchSummaryFromMatchId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getLolMatchSummaryFromMatchId");
         getAssetFromAssetId = cluster.clusterQuery(ESPORTS_MODULE_NAME, "getAssetFromAssetId");
@@ -2062,9 +2066,8 @@ public class ApolloApiManager {
                 logger.info("fetchAndStoreTeams - Converted Team: " + objectMapper.writeValueAsString(team));
                 teamDepot.appendAsync(team).join();
 
-                // Now fetch and store rosters and schedule for this team
+                // Now fetch and store rosters for this team
                 fetchAndStoreTeamRosters(team.getId(), null, null, 0, 50);
-                fetchAndStoreTeamSeries(team.getId());
             }
 
             if (postTeams.size() == take) {
@@ -2075,47 +2078,6 @@ public class ApolloApiManager {
             }
         } catch (Exception e) {
             handleException(e, "teams batch", skip);
-        }
-    }
-
-    private void fetchAndStoreTeamSeries(int teamId) {
-        fetchAndStoreTeamSeries(teamId, null, null, 0, 50, new ArrayList<>());
-    }
-
-    private void fetchAndStoreTeamSeries(int teamId, String filter, String order, int skip, int take,
-            List<Integer> accumulatedSeriesIds) {
-        try {
-            waitIfNecessary();
-            String seriesData = apiClient.getTeamSeries(teamId, filter, order, skip, take);
-            logger.info("fetchAndStoreTeamSeries - API Response for team {}: {}", teamId, seriesData);
-            updateRateLimitInfo(apiClient.getLastResponseHeaders());
-
-            List<PostSeries> postSeriesList = parseJsonToPostSeriesList(seriesData);
-            logger.info("fetchAndStoreTeamSeries - Parsed PostSeries List for team {}: {}", teamId,
-                    objectMapper.writeValueAsString(postSeriesList));
-
-            // Extract series IDs from PostSeries objects
-            List<Integer> seriesIds = postSeriesList.stream()
-                    .map(postSeries -> postSeries.id)
-                    .collect(Collectors.toList());
-
-            accumulatedSeriesIds.addAll(seriesIds);
-
-            if (postSeriesList.size() == take) {
-                logger.info("fetchAndStoreTeamSeries - Fetching next batch with skip: {}", (skip + take));
-                fetchAndStoreTeamSeries(teamId, filter, order, skip + take, take, accumulatedSeriesIds);
-            } else {
-                logger.info("fetchAndStoreTeamSeries - All series for team {} have been fetched.", teamId);
-
-                // Create a Schedule object and append it to the scheduleDepot
-                Schedule schedule = new Schedule();
-                schedule.setId(teamId);
-                schedule.setSeriesIds(accumulatedSeriesIds);
-
-                scheduleDepot.appendAsync(schedule).join();
-            }
-        } catch (Exception e) {
-            handleException(e, "team series batch", skip);
         }
     }
 
@@ -2203,21 +2165,18 @@ public class ApolloApiManager {
     private CompletableFuture<Void> storeTeamSummary(LolTeamSummary teamSummary) {
         logger.info("storeTeamSummary - Starting processing for team roster ID: " + teamSummary.getRoster().getId());
 
-        // Fetch teamId from rosterId
         CompletableFuture<Integer> teamIdFuture = getTeamIdFromRosterId(teamSummary.getRoster().getId())
                 .exceptionally(ex -> {
                     logger.error("Error fetching teamId from rosterId: " + teamSummary.getRoster().getId(), ex);
                     return null;
                 });
 
-        // Fetch Match using matchId from teamSummary
         CompletableFuture<Match> matchFuture = getMatchFromMatchId.invokeAsync(teamSummary.getMatchId())
                 .exceptionally(ex -> {
                     logger.error("Error fetching Match for matchId: " + teamSummary.getMatchId(), ex);
                     return null;
                 });
 
-        // Once we have the Match, fetch the Series
         CompletableFuture<Series> seriesFuture = matchFuture.thenCompose(match -> {
             if (match != null) {
                 return getSeriesFromSeriesId.invokeAsync(match.getSeriesId())
@@ -2231,70 +2190,57 @@ public class ApolloApiManager {
             }
         });
 
-        // Fetch opponent team information
         CompletableFuture<Void> opponentFuture = matchFuture.thenCompose(match -> {
-            if (match != null) {
-                // Get participants
-                List<Participant> participants = match.getParticipants();
-
-                // Identify opponent rosterId
-                int teamRosterId = teamSummary.getRoster().getId();
-                Integer opponentRosterId = null;
-                for (Participant participant : participants) {
-                    if (participant.getRoster().getId() != teamRosterId) {
-                        opponentRosterId = participant.getRoster().getId();
-                        break;
-                    }
-                }
-
-                if (opponentRosterId != null) {
-                    logger.info("storeTeamSummary - Found opponent rosterId: " + opponentRosterId);
-
-                    // Fetch opponent teamId
-                    return getTeamIdFromRosterId(opponentRosterId).thenCompose(opponentTeamId -> {
-                        if (opponentTeamId != null) {
-                            logger.info("storeTeamSummary - Found opponent teamId: " + opponentTeamId);
-
-                            // Fetch opponent Team object
-                            return getTeamFromTeamId.invokeAsync(opponentTeamId).thenAccept(opponentTeam -> {
-                                if (opponentTeam != null) {
-                                    teamSummary.setOpponent(opponentTeam);
-                                    logger.info("storeTeamSummary - Opponent Team set for team ID: "
-                                            + teamSummary.getTeamId() + " with opponent team ID: "
-                                            + opponentTeam.getId());
-                                } else {
-                                    logger.warn("storeTeamSummary - Opponent Team not found for team ID: "
-                                            + opponentTeamId);
-                                }
-                            }).exceptionally(ex -> {
-                                logger.error("Error fetching opponent Team for teamId: " + opponentTeamId, ex);
-                                return null;
-                            });
-                        } else {
-                            logger.warn("storeTeamSummary - Opponent teamId not found");
-                            return CompletableFuture.completedFuture(null);
-                        }
-                    }).exceptionally(ex -> {
-                        logger.error("Error fetching opponent teamId", ex);
-                        return null;
-                    });
-                } else {
-                    logger.warn("storeTeamSummary - Opponent rosterId not found in match participants.");
-                    return CompletableFuture.completedFuture(null);
-                }
-            } else {
-                logger.warn("storeTeamSummary - Match is null for matchId: " + teamSummary.getMatchId());
+            if (match == null) {
+                logger.warn("storeTeamSummary - Match is null for matchId: {}", teamSummary.getMatchId());
                 return CompletableFuture.completedFuture(null);
             }
+
+            List<Participant> participants = match.getParticipants();
+            int teamRosterId = teamSummary.getRoster().getId();
+            Integer opponentRosterId = participants.stream()
+                    .filter(p -> p.getRoster().getId() != teamRosterId)
+                    .map(p -> p.getRoster().getId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (opponentRosterId == null) {
+                logger.warn("storeTeamSummary - Opponent rosterId not found in match participants.");
+                return CompletableFuture.completedFuture(null);
+            }
+
+            logger.info("storeTeamSummary - Found opponent rosterId: {}", opponentRosterId);
+
+            return getTeamIdFromRosterId(opponentRosterId).thenCompose(opponentTeamId -> {
+                if (opponentTeamId == null) {
+                    logger.warn("storeTeamSummary - Opponent teamId not found");
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                logger.info("storeTeamSummary - Found opponent teamId: {}", opponentTeamId);
+                return getTeamFromTeamId.invokeAsync(opponentTeamId).thenAccept(opponentTeam -> {
+                    if (opponentTeam != null) {
+                        teamSummary.setOpponent(opponentTeam);
+                        logger.info("storeTeamSummary - Opponent Team set for team ID: {} with opponent team ID: {}",
+                                teamSummary.getTeamId(), opponentTeam.getId());
+                    } else {
+                        logger.warn("storeTeamSummary - Opponent Team not found for team ID: {}", opponentTeamId);
+                    }
+                }).exceptionally(ex -> {
+                    logger.error("Error fetching opponent Team for teamId: {}", opponentTeamId, ex);
+                    return null;
+                });
+            }).exceptionally(ex -> {
+                logger.error("Error fetching opponent teamId", ex);
+                return null;
+            });
         });
 
-        // Combine all futures
         return CompletableFuture.allOf(teamIdFuture, seriesFuture, opponentFuture)
                 .thenCompose(v -> {
                     Integer teamId = teamIdFuture.join();
                     Series series = seriesFuture.join();
 
-                    // Handle exceptions in opponentFuture
                     try {
                         opponentFuture.join();
                     } catch (Exception e) {
@@ -2303,148 +2249,158 @@ public class ApolloApiManager {
 
                     if (teamId != null) {
                         teamSummary.setTeamId(teamId);
-                        logger.info("storeTeamSummary - Team ID set to: " + teamId);
+                        logger.info("storeTeamSummary - Team ID set to: {}", teamId);
                     } else {
-                        logger.warn("storeTeamSummary - Failed to fetch team ID for rosterId: "
-                                + teamSummary.getRoster().getId());
+                        logger.warn("storeTeamSummary - Failed to fetch team ID for rosterId: {}",
+                                teamSummary.getRoster().getId());
                     }
 
                     if (series != null) {
                         teamSummary.setStart(series.getStart());
-                        logger.info("storeTeamSummary - Start time set for team ID: " + teamId + " with start: "
-                                + teamSummary.getStart());
+                        logger.info("storeTeamSummary - Start time set for team ID: {} with start: {}",
+                                teamId, teamSummary.getStart());
                     } else {
-                        logger.warn("storeTeamSummary - Series not found for matchId: " + teamSummary.getMatchId());
+                        logger.warn("storeTeamSummary - Series not found for matchId: {}", teamSummary.getMatchId());
                     }
 
-                    // Log the opponent information
                     if (teamSummary.isSetOpponent()) {
-                        logger.info("storeTeamSummary - Opponent is set: " + teamSummary.getOpponent().getName()
-                                + " (ID: " + teamSummary.getOpponent().getId() + ")");
+                        logger.info("storeTeamSummary - Opponent is set: {} (ID: {})",
+                                teamSummary.getOpponent().getName(), teamSummary.getOpponent().getId());
                     } else {
-                        logger.warn("storeTeamSummary - Opponent is NOT set for team ID: " + teamId);
+                        logger.warn("storeTeamSummary - Opponent is NOT set for team ID: {}", teamId);
                     }
 
-                    // Now store the teamSummary, just like we do for teams normally
+                    // Store the team summary
                     return lolTeamSeasonStatsDepot.appendAsync(teamSummary)
-                            .thenAccept(result -> {
-                                logger.info(
-                                        "storeTeamSummary - Successfully stored team summary for team ID: " + teamId);
+                            .thenCompose(result -> {
+                                logger.info("storeTeamSummary - Successfully stored team summary for team ID: {}",
+                                        teamId);
+
+                                // If we have a valid teamId and series, append to TeamSchedule
+                                if (teamId != null && series != null) {
+                                    TeamSchedule schedule = new TeamSchedule();
+                                    schedule.setId(teamId);
+                                    schedule.setSeriesId(series.getId());
+
+                                    return teamScheduleDepot.appendAsync(schedule)
+                                            .thenRun(() -> logger.info("Added series {} to team {} schedule",
+                                                    series.getId(), teamId));
+                                }
+
+                                return CompletableFuture.completedFuture(null);
                             }).exceptionally(ex -> {
-                                logger.error("Error storing teamSummary for team ID: " + teamId, ex);
+                                logger.error("Error storing teamSummary for team ID: {}", teamId, ex);
                                 return null;
                             });
                 });
     }
 
     private CompletableFuture<Void> storePlayerSummary(LolPlayerSummary playerSummary, LolTeamSummary teamSummary) {
-        logger.info("storePlayerSummary - Starting processing for player: " + playerSummary.getId()
-                + " from team roster ID: " + teamSummary.getRoster().getId());
+        logger.info("storePlayerSummary - Starting processing for player: {} from team roster ID: {}",
+                playerSummary.getId(), teamSummary.getRoster().getId());
 
-        // Fetch Match using matchId from teamSummary
         CompletableFuture<Match> matchFuture = getMatchFromMatchId.invokeAsync(teamSummary.getMatchId())
                 .exceptionally(ex -> {
-                    logger.error("Error fetching Match for matchId: " + teamSummary.getMatchId(), ex);
+                    logger.error("Error fetching Match for matchId: {}", teamSummary.getMatchId(), ex);
                     return null;
                 });
 
-        // Fetch Series for the match
         CompletableFuture<Series> seriesFuture = matchFuture.thenCompose(match -> {
             if (match != null) {
                 return getSeriesFromSeriesId.invokeAsync(match.getSeriesId())
                         .exceptionally(ex -> {
-                            logger.error("Error fetching Series for seriesId: " + match.getSeriesId(), ex);
+                            logger.error("Error fetching Series for seriesId: {}", match.getSeriesId(), ex);
                             return null;
                         });
             } else {
-                logger.warn("storePlayerSummary - Match not found for matchId: " + teamSummary.getMatchId());
+                logger.warn("storePlayerSummary - Match not found for matchId: {}", teamSummary.getMatchId());
                 return CompletableFuture.completedFuture(null);
             }
         });
 
-        // Fetch opponent information
         CompletableFuture<Team> opponentFuture = matchFuture.thenCompose(match -> {
-            if (match != null) {
-                // Get participants
-                List<Participant> participants = match.getParticipants();
-
-                // Identify opponent rosterId
-                int teamRosterId = teamSummary.getRoster().getId();
-                Integer opponentRosterId = null;
-                for (Participant participant : participants) {
-                    if (participant.getRoster().getId() != teamRosterId) {
-                        opponentRosterId = participant.getRoster().getId();
-                        break;
-                    }
-                }
-
-                if (opponentRosterId != null) {
-                    logger.info("storePlayerSummary - Found opponent rosterId: " + opponentRosterId);
-
-                    // Fetch opponent teamId
-                    return getTeamIdFromRosterId(opponentRosterId)
-                            .thenCompose(opponentTeamId -> {
-                                if (opponentTeamId != null) {
-                                    logger.info("storePlayerSummary - Found opponent teamId: " + opponentTeamId);
-                                    return getTeamFromTeamId.invokeAsync(opponentTeamId);
-                                } else {
-                                    logger.warn("storePlayerSummary - Opponent teamId not found");
-                                    return CompletableFuture.completedFuture(null);
-                                }
-                            })
-                            .exceptionally(ex -> {
-                                logger.error("Error fetching opponent team", ex);
-                                return null;
-                            });
-                } else {
-                    logger.warn("storePlayerSummary - Opponent rosterId not found in match participants.");
-                    return CompletableFuture.completedFuture(null);
-                }
-            } else {
-                logger.warn("storePlayerSummary - Match is null for matchId: " + teamSummary.getMatchId());
+            if (match == null) {
+                logger.warn("storePlayerSummary - Match is null for matchId: {}", teamSummary.getMatchId());
                 return CompletableFuture.completedFuture(null);
             }
+
+            List<Participant> participants = match.getParticipants();
+            int teamRosterId = teamSummary.getRoster().getId();
+            Integer opponentRosterId = participants.stream()
+                    .filter(p -> p.getRoster().getId() != teamRosterId)
+                    .map(p -> p.getRoster().getId())
+                    .findFirst()
+                    .orElse(null);
+
+            if (opponentRosterId == null) {
+                logger.warn("storePlayerSummary - Opponent rosterId not found in match participants.");
+                return CompletableFuture.completedFuture(null);
+            }
+
+            logger.info("storePlayerSummary - Found opponent rosterId: {}", opponentRosterId);
+            return getTeamIdFromRosterId(opponentRosterId)
+                    .thenCompose(opponentTeamId -> {
+                        if (opponentTeamId != null) {
+                            logger.info("storePlayerSummary - Found opponent teamId: {}", opponentTeamId);
+                            return getTeamFromTeamId.invokeAsync(opponentTeamId);
+                        } else {
+                            logger.warn("storePlayerSummary - Opponent teamId not found");
+                            return CompletableFuture.completedFuture(null);
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        logger.error("Error fetching opponent team", ex);
+                        return null;
+                    });
         });
 
-        // Combine all futures
         return CompletableFuture.allOf(matchFuture, seriesFuture, opponentFuture)
                 .thenCompose(v -> {
                     Match match = matchFuture.join();
                     Series series = seriesFuture.join();
                     Team opponentTeam = opponentFuture.join();
 
-                    // Set match-related details for the player
                     if (match != null) {
                         playerSummary.setMatchId(match.getId());
                     }
 
-                    // Set start time from series
                     if (series != null) {
                         playerSummary.setStart(series.getStart());
-                        logger.info("storePlayerSummary - Start time set for player: "
-                                + playerSummary.getId() + " with start: " + playerSummary.getStart());
+                        logger.info("storePlayerSummary - Start time set for player: {} with start: {}",
+                                playerSummary.getId(), playerSummary.getStart());
                     } else {
-                        logger.warn("storePlayerSummary - Series not found for matchId: " + teamSummary.getMatchId());
+                        logger.warn("storePlayerSummary - Series not found for matchId: {}", teamSummary.getMatchId());
                     }
 
-                    // Set opponent information
                     if (opponentTeam != null) {
                         playerSummary.setOpponent(opponentTeam);
-                        logger.info("storePlayerSummary - Opponent Team set for player: "
-                                + playerSummary.getId()
-                                + " with opponent team: " + opponentTeam.getName());
+                        logger.info("storePlayerSummary - Opponent Team set for player: {} with opponent team: {}",
+                                playerSummary.getId(), opponentTeam.getName());
                     } else {
-                        logger.warn("storePlayerSummary - Opponent Team not found for player: "
-                                + playerSummary.getId());
+                        logger.warn("storePlayerSummary - Opponent Team not found for player: {}",
+                                playerSummary.getId());
                     }
 
-                    // Store the player summary
                     return lolPlayerSeasonStatsDepot.appendAsync(playerSummary)
-                            .thenAccept(result -> {
-                                logger.info("storePlayerSummary - Successfully stored player summary: "
-                                        + playerSummary.getId());
+                            .thenCompose(result -> {
+                                logger.info("storePlayerSummary - Successfully stored player summary: {}",
+                                        playerSummary.getId());
+
+                                // If we have a valid series and player ID, append to PlayerSchedule
+                                int playerId = playerSummary.getId();
+                                if (series != null && playerId > 0) {
+                                    PlayerSchedule playerSchedule = new PlayerSchedule();
+                                    playerSchedule.setId(playerId);
+                                    playerSchedule.setSeriesId(series.getId());
+
+                                    return playerScheduleDepot.appendAsync(playerSchedule)
+                                            .thenRun(() -> logger.info("Added series {} to player {} schedule",
+                                                    series.getId(), playerId));
+                                }
+
+                                return CompletableFuture.completedFuture(null);
                             }).exceptionally(ex -> {
-                                logger.error("Error storing playerSummary: " + playerSummary.getId(), ex);
+                                logger.error("Error storing playerSummary: {}", playerSummary.getId(), ex);
                                 return null;
                             });
                 });
@@ -3598,6 +3554,17 @@ public class ApolloApiManager {
                 });
     }
 
+    public CompletableFuture<List<Integer>> getSeriesIdsForPlayer(int playerId) {
+        return getSeriesIdsFromPlayerId.invokeAsync(playerId)
+                .thenApply(seriesIds -> {
+                    if (seriesIds != null) {
+                        return seriesIds;
+                    } else {
+                        return Collections.emptyList();
+                    }
+                });
+    }
+
     public CompletableFuture<GetPlayer> getPlayer(int playerId) {
         logger.info("getPlayer - Fetching player with ID: " + playerId);
         return getPlayerFromPlayerId.invokeAsync(playerId)
@@ -3645,12 +3612,14 @@ public class ApolloApiManager {
         CompletableFuture<LolPlayerAggStats> aggStatsFuture = getLolPlayerAggStatsFromPlayerId.invokeAsync(playerId);
         CompletableFuture<List<LolPlayerSummary>> seasonStatsFuture = getLolPlayerSeasonStatsFromPlayerId
                 .invokeAsync(playerId);
+        CompletableFuture<List<Integer>> seriesIdsFuture = getSeriesIdsForPlayer(playerId);
 
-        return CompletableFuture.allOf(playerFuture, aggStatsFuture, seasonStatsFuture)
+        return CompletableFuture.allOf(playerFuture, aggStatsFuture, seasonStatsFuture, seriesIdsFuture)
                 .thenCompose(v -> {
                     Player player = playerFuture.join();
                     LolPlayerAggStats aggStats = aggStatsFuture.join();
                     List<LolPlayerSummary> seasonStats = seasonStatsFuture.join();
+                    List<Integer> seriesIds = seriesIdsFuture.join();
 
                     if (player == null) {
                         logger.warn("getPlayerWithLolStats - No Player found with ID: {}",
@@ -3687,6 +3656,7 @@ public class ApolloApiManager {
 
                         // Create and return a GetPlayer object enriched with asset data
                         GetPlayer getPlayer = new GetPlayer(player, aggStats, seasonStats, assetMap);
+                        getPlayer.schedule = seriesIds;
 
                         logger.info(
                                 "getPlayerWithLolStats - Successfully constructed GetPlayer for playerId: {}",

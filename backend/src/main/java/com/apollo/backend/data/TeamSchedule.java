@@ -7,22 +7,22 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fields>, java.io.Serializable, Cloneable, Comparable<Schedule> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Schedule");
+public class TeamSchedule implements org.apache.thrift.TBase<TeamSchedule, TeamSchedule._Fields>, java.io.Serializable, Cloneable, Comparable<TeamSchedule> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TeamSchedule");
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField SERIES_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("seriesIds", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField SERIES_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("seriesId", org.apache.thrift.protocol.TType.I32, (short)2);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ScheduleStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ScheduleTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TeamScheduleStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TeamScheduleTupleSchemeFactory();
 
   public int id; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> seriesIds; // required
+  public int seriesId; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ID((short)1, "id"),
-    SERIES_IDS((short)2, "seriesIds");
+    SERIES_ID((short)2, "seriesId");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -40,8 +40,8 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // SERIES_IDS
-          return SERIES_IDS;
+        case 2: // SERIES_ID
+          return SERIES_ID;
         default:
           return null;
       }
@@ -86,61 +86,60 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
 
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
+  private static final int __SERIESID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.SERIES_IDS, new org.apache.thrift.meta_data.FieldMetaData("seriesIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
+    tmpMap.put(_Fields.SERIES_ID, new org.apache.thrift.meta_data.FieldMetaData("seriesId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Schedule.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TeamSchedule.class, metaDataMap);
   }
 
-  public Schedule() {
+  public TeamSchedule() {
   }
 
-  public Schedule(
+  public TeamSchedule(
     int id,
-    java.util.List<java.lang.Integer> seriesIds)
+    int seriesId)
   {
     this();
     this.id = id;
     setIdIsSet(true);
-    this.seriesIds = seriesIds;
+    this.seriesId = seriesId;
+    setSeriesIdIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Schedule(Schedule other) {
+  public TeamSchedule(TeamSchedule other) {
     __isset_bitfield = other.__isset_bitfield;
     this.id = other.id;
-    if (other.isSetSeriesIds()) {
-      java.util.List<java.lang.Integer> __this__seriesIds = new java.util.ArrayList<java.lang.Integer>(other.seriesIds);
-      this.seriesIds = __this__seriesIds;
-    }
+    this.seriesId = other.seriesId;
   }
 
   @Override
-  public Schedule deepCopy() {
-    return new Schedule(this);
+  public TeamSchedule deepCopy() {
+    return new TeamSchedule(this);
   }
 
   @Override
   public void clear() {
     setIdIsSet(false);
     this.id = 0;
-    this.seriesIds = null;
+    setSeriesIdIsSet(false);
+    this.seriesId = 0;
   }
 
   public int getId() {
     return this.id;
   }
 
-  public Schedule setId(int id) {
+  public TeamSchedule setId(int id) {
     this.id = id;
     setIdIsSet(true);
     return this;
@@ -159,45 +158,27 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
   }
 
-  public int getSeriesIdsSize() {
-    return (this.seriesIds == null) ? 0 : this.seriesIds.size();
+  public int getSeriesId() {
+    return this.seriesId;
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<java.lang.Integer> getSeriesIdsIterator() {
-    return (this.seriesIds == null) ? null : this.seriesIds.iterator();
-  }
-
-  public void addToSeriesIds(int elem) {
-    if (this.seriesIds == null) {
-      this.seriesIds = new java.util.ArrayList<java.lang.Integer>();
-    }
-    this.seriesIds.add(elem);
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<java.lang.Integer> getSeriesIds() {
-    return this.seriesIds;
-  }
-
-  public Schedule setSeriesIds(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.Integer> seriesIds) {
-    this.seriesIds = seriesIds;
+  public TeamSchedule setSeriesId(int seriesId) {
+    this.seriesId = seriesId;
+    setSeriesIdIsSet(true);
     return this;
   }
 
-  public void unsetSeriesIds() {
-    this.seriesIds = null;
+  public void unsetSeriesId() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SERIESID_ISSET_ID);
   }
 
-  /** Returns true if field seriesIds is set (has been assigned a value) and false otherwise */
-  public boolean isSetSeriesIds() {
-    return this.seriesIds != null;
+  /** Returns true if field seriesId is set (has been assigned a value) and false otherwise */
+  public boolean isSetSeriesId() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SERIESID_ISSET_ID);
   }
 
-  public void setSeriesIdsIsSet(boolean value) {
-    if (!value) {
-      this.seriesIds = null;
-    }
+  public void setSeriesIdIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SERIESID_ISSET_ID, value);
   }
 
   @Override
@@ -211,11 +192,11 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
       }
       break;
 
-    case SERIES_IDS:
+    case SERIES_ID:
       if (value == null) {
-        unsetSeriesIds();
+        unsetSeriesId();
       } else {
-        setSeriesIds((java.util.List<java.lang.Integer>)value);
+        setSeriesId((java.lang.Integer)value);
       }
       break;
 
@@ -229,8 +210,8 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
     case ID:
       return getId();
 
-    case SERIES_IDS:
-      return getSeriesIds();
+    case SERIES_ID:
+      return getSeriesId();
 
     }
     throw new java.lang.IllegalStateException();
@@ -246,20 +227,20 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
     switch (field) {
     case ID:
       return isSetId();
-    case SERIES_IDS:
-      return isSetSeriesIds();
+    case SERIES_ID:
+      return isSetSeriesId();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof Schedule)
-      return this.equals((Schedule)that);
+    if (that instanceof TeamSchedule)
+      return this.equals((TeamSchedule)that);
     return false;
   }
 
-  public boolean equals(Schedule that) {
+  public boolean equals(TeamSchedule that) {
     if (that == null)
       return false;
     if (this == that)
@@ -274,12 +255,12 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
         return false;
     }
 
-    boolean this_present_seriesIds = true && this.isSetSeriesIds();
-    boolean that_present_seriesIds = true && that.isSetSeriesIds();
-    if (this_present_seriesIds || that_present_seriesIds) {
-      if (!(this_present_seriesIds && that_present_seriesIds))
+    boolean this_present_seriesId = true;
+    boolean that_present_seriesId = true;
+    if (this_present_seriesId || that_present_seriesId) {
+      if (!(this_present_seriesId && that_present_seriesId))
         return false;
-      if (!this.seriesIds.equals(that.seriesIds))
+      if (this.seriesId != that.seriesId)
         return false;
     }
 
@@ -292,15 +273,13 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
 
     hashCode = hashCode * 8191 + id;
 
-    hashCode = hashCode * 8191 + ((isSetSeriesIds()) ? 131071 : 524287);
-    if (isSetSeriesIds())
-      hashCode = hashCode * 8191 + seriesIds.hashCode();
+    hashCode = hashCode * 8191 + seriesId;
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(Schedule other) {
+  public int compareTo(TeamSchedule other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -317,12 +296,12 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetSeriesIds(), other.isSetSeriesIds());
+    lastComparison = java.lang.Boolean.compare(isSetSeriesId(), other.isSetSeriesId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSeriesIds()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.seriesIds, other.seriesIds);
+    if (isSetSeriesId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.seriesId, other.seriesId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -348,19 +327,15 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("Schedule(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("TeamSchedule(");
     boolean first = true;
 
     sb.append("id:");
     sb.append(this.id);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("seriesIds:");
-    if (this.seriesIds == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.seriesIds);
-    }
+    sb.append("seriesId:");
+    sb.append(this.seriesId);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -389,17 +364,17 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
     }
   }
 
-  private static class ScheduleStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class TeamScheduleStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public ScheduleStandardScheme getScheme() {
-      return new ScheduleStandardScheme();
+    public TeamScheduleStandardScheme getScheme() {
+      return new TeamScheduleStandardScheme();
     }
   }
 
-  private static class ScheduleStandardScheme extends org.apache.thrift.scheme.StandardScheme<Schedule> {
+  private static class TeamScheduleStandardScheme extends org.apache.thrift.scheme.StandardScheme<TeamSchedule> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Schedule struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, TeamSchedule struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -417,20 +392,10 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SERIES_IDS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list544 = iprot.readListBegin();
-                struct.seriesIds = new java.util.ArrayList<java.lang.Integer>(_list544.size);
-                int _elem545;
-                for (int _i546 = 0; _i546 < _list544.size; ++_i546)
-                {
-                  _elem545 = iprot.readI32();
-                  struct.seriesIds.add(_elem545);
-                }
-                iprot.readListEnd();
-              }
-              struct.setSeriesIdsIsSet(true);
+          case 2: // SERIES_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.seriesId = iprot.readI32();
+              struct.setSeriesIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -447,67 +412,52 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Schedule struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, TeamSchedule struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(ID_FIELD_DESC);
       oprot.writeI32(struct.id);
       oprot.writeFieldEnd();
-      if (struct.seriesIds != null) {
-        oprot.writeFieldBegin(SERIES_IDS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.seriesIds.size()));
-          for (int _iter547 : struct.seriesIds)
-          {
-            oprot.writeI32(_iter547);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(SERIES_ID_FIELD_DESC);
+      oprot.writeI32(struct.seriesId);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
   }
 
-  private static class ScheduleTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class TeamScheduleTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public ScheduleTupleScheme getScheme() {
-      return new ScheduleTupleScheme();
+    public TeamScheduleTupleScheme getScheme() {
+      return new TeamScheduleTupleScheme();
     }
   }
 
-  private static class ScheduleTupleScheme extends org.apache.thrift.scheme.TupleScheme<Schedule> {
+  private static class TeamScheduleTupleScheme extends org.apache.thrift.scheme.TupleScheme<TeamSchedule> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Schedule struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, TeamSchedule struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetId()) {
         optionals.set(0);
       }
-      if (struct.isSetSeriesIds()) {
+      if (struct.isSetSeriesId()) {
         optionals.set(1);
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetId()) {
         oprot.writeI32(struct.id);
       }
-      if (struct.isSetSeriesIds()) {
-        {
-          oprot.writeI32(struct.seriesIds.size());
-          for (int _iter548 : struct.seriesIds)
-          {
-            oprot.writeI32(_iter548);
-          }
-        }
+      if (struct.isSetSeriesId()) {
+        oprot.writeI32(struct.seriesId);
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Schedule struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, TeamSchedule struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
@@ -515,17 +465,8 @@ public class Schedule implements org.apache.thrift.TBase<Schedule, Schedule._Fie
         struct.setIdIsSet(true);
       }
       if (incoming.get(1)) {
-        {
-          org.apache.thrift.protocol.TList _list549 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.seriesIds = new java.util.ArrayList<java.lang.Integer>(_list549.size);
-          int _elem550;
-          for (int _i551 = 0; _i551 < _list549.size; ++_i551)
-          {
-            _elem550 = iprot.readI32();
-            struct.seriesIds.add(_elem550);
-          }
-        }
-        struct.setSeriesIdsIsSet(true);
+        struct.seriesId = iprot.readI32();
+        struct.setSeriesIdIsSet(true);
       }
     }
   }

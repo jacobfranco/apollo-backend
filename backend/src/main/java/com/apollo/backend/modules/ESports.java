@@ -55,14 +55,15 @@ public class ESports implements RamaModule {
                                 .localTransform("$$teamIdToTeam", Path.key("*id").termVal("*team"));
         }
 
-        private static void declareScheduleTopology(Topologies topologies) {
-                StreamTopology stream = topologies.stream("schedule");
+        private static void declareTeamScheduleTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("teamSchedule");
 
                 stream.pstate("$$teamIdToSeriesIds", PState.mapSchema(Integer.class, PState.listSchema(Integer.class)));
 
-                stream.source("*scheduleDepot").out("*schedule")
-                                .macro(extractFields("*schedule", "*id", "*seriesIds"))
-                                .localTransform("$$teamIdToSeriesIds", Path.key("*id").termVal("*seriesIds"));
+                stream.source("*teamScheduleDepot").out("*schedule")
+                                .macro(extractFields("*schedule", "*id", "*seriesId"))
+                                .compoundAgg("$$teamIdToSeriesIds",
+                                                CompoundAgg.map("*id", Agg.list("*seriesId")));
         }
 
         private static void declarePlayerTopology(Topologies topologies) {
@@ -73,6 +74,18 @@ public class ESports implements RamaModule {
                 stream.source("*playerDepot").out("*player")
                                 .macro(extractFields("*player", "*id"))
                                 .localTransform("$$playerIdToPlayer", Path.key("*id").termVal("*player"));
+        }
+
+        private static void declarePlayerScheduleTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("playerSchedule");
+
+                stream.pstate("$$playerIdToSeriesIds",
+                                PState.mapSchema(Integer.class, PState.listSchema(Integer.class)));
+
+                stream.source("*playerScheduleDepot").out("*schedule")
+                                .macro(extractFields("*schedule", "*id", "*seriesId"))
+                                .compoundAgg("$$playerIdToSeriesIds",
+                                                CompoundAgg.map("*id", Agg.list("*seriesId")));
         }
 
         private static void declareTournamentTopology(Topologies topologies) {
@@ -210,6 +223,11 @@ public class ESports implements RamaModule {
                                 .localSelect("$$teamIdToSeriesIds", Path.key("*id")).out("*result")
                                 .originPartition();
 
+                topologies.query("getSeriesIdsFromPlayerId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$playerIdToSeriesIds", Path.key("*id")).out("*result")
+                                .originPartition();
+
                 topologies.query("getAllTeamIds").out("*result")
                                 .allPartition()
                                 .localSelect("$$teamIdToTeam", Path.mapKeys())
@@ -287,8 +305,9 @@ public class ESports implements RamaModule {
                 setup.declareDepot("*matchDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
                 setup.declareDepot("*rosterDepot", Depot.hashBy(ApolloHelpers.ExtractRosterId.class));
                 setup.declareDepot("*teamDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
-                setup.declareDepot("*scheduleDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
+                setup.declareDepot("*teamScheduleDepot", Depot.hashBy(ApolloHelpers.ExtractTeamId.class));
                 setup.declareDepot("*playerDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
+                setup.declareDepot("*playerScheduleDepot", Depot.hashBy(ApolloHelpers.ExtractPlayerId.class));
                 setup.declareDepot("*lolMatchSummaryDepot", Depot.hashBy(ApolloHelpers.ExtractMatchId.class));
                 setup.declareDepot("*assetDepot", Depot.hashBy(ApolloHelpers.ExtractAssetId.class));
                 setup.declareDepot("*tournamentDepot", Depot.hashBy(ApolloHelpers.ExtractTournamentId.class));
@@ -303,8 +322,9 @@ public class ESports implements RamaModule {
                 declareMatchTopology(topologies);
                 declareRosterTopology(topologies);
                 declareTeamTopology(topologies);
-                declareScheduleTopology(topologies);
+                declareTeamScheduleTopology(topologies);
                 declarePlayerTopology(topologies);
+                declarePlayerScheduleTopology(topologies);
                 declareLolMatchSummaryTopology(topologies);
                 declareAssetTopology(topologies);
                 declareTournamentTopology(topologies);

@@ -1367,9 +1367,14 @@ struct LolPlayerAggStats {
   10: double averageCreepScore
 }
 
-struct Schedule {
+struct TeamSchedule {
   1: i32 id
-  2: list<i32> seriesIds
+  2: i32 seriesId
+}
+
+struct PlayerSchedule {
+  1: i32 id
+  2: i32 seriesId
 }
 
 

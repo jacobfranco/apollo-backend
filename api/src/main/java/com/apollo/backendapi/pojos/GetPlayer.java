@@ -31,6 +31,7 @@ public class GetPlayer {
     public GetLolPlayerAggStats aggStats;
     public GetPlayerMatchStats matchStats;
     public List<GetLolPlayerMatchStats> lolSeasonStats;
+    public List<Integer> schedule;
 
     @JsonIgnore
     public Map<Integer, GetAsset> assetMap;
@@ -53,6 +54,7 @@ public class GetPlayer {
         this.socialMediaAccounts = player.getSocialMediaAccounts().stream().map(GetSocialMediaAccount::new)
                 .collect(Collectors.toList());
         this.resourceVersion = player.getResourceVersion();
+        this.schedule = Collections.emptyList();
     }
 
     public GetPlayer(Player player, LolPlayerAggStats aggStats, List<LolPlayerSummary> lolSeasonStats,
