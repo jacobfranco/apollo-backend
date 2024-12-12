@@ -330,7 +330,7 @@ public class ApolloSpaces {
                         new GetSpace("Undertale", "undertale", S3_BASE_URL + "undertale.webp"),
                         new GetSpace("Untitled Goose Game", "goosegame", S3_BASE_URL + "goosegame.webp"),
                         new GetSpace("Valheim", "valheim", S3_BASE_URL + "valheim.webp"),
-                        new GetSpace("Valorant", "valorant", S3_BASE_URL + "valorant.webp"),
+                        new GetSpace("Valorant", "val", S3_BASE_URL + "valorant.webp"),
                         new GetSpace("Vampire Survivors", "vampiresurvivors", S3_BASE_URL + "vampiresurvivors.webp"),
                         new GetSpace("Warframe", "warframe", S3_BASE_URL + "warframe.webp"),
                         new GetSpace("Warhammer 40K: Space Marine", "wh40k", S3_BASE_URL + "wh40k.webp"),
@@ -339,7 +339,8 @@ public class ApolloSpaces {
                         new GetSpace("World of Warcraft", "wow", S3_BASE_URL + "wow.webp"),
                         new GetSpace("XCOM 2", "xcom2", S3_BASE_URL + "xcom2.webp"),
                         new GetSpace("League of Legends Esports", "lolesports", S3_BASE_URL + "lolesports.webp"),
-                        new GetSpace("Valorant Esports", "valorantesports", S3_BASE_URL + "valorantesports.webp"));
+                        new GetSpace("Valorant Esports", "valesports", S3_BASE_URL + "valorantesports.webp"),
+                        new GetSpace("Counter Strike Esports", "csesports", S3_BASE_URL + "csesports.webp"));
 
         public static Map<String, GetSpace> SPACE_MAP = SPACES.stream()
                         .collect(Collectors.toMap(space -> space.id, space -> space));
