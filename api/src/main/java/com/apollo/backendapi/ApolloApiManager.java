@@ -2110,6 +2110,46 @@ public class ApolloApiManager {
         }
     }
 
+    private void fetchAndStorePlayer(int playerId) {
+        try {
+            waitIfNecessary();
+            String playerData = apiClient.getPlayer(playerId);
+            logger.info("fetchAndStorePlayer - API Response for playerId {}: {}", playerId, playerData);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostPlayer> postPlayers = parseJsonToPostPlayerList(playerData);
+            logger.info("fetchAndStorePlayer - Parsed PostPlayer: {}", objectMapper.writeValueAsString(postPlayers));
+
+            Player thriftPlayer = convertToThriftPlayer(postPlayers.get(0));
+            logger.info("fetchAndStorePlayer - Converted Player: {}", objectMapper.writeValueAsString(thriftPlayer));
+
+            playerDepot.appendAsync(thriftPlayer).join();
+
+        } catch (Exception e) {
+            handleException(e, "player", playerId);
+        }
+    }
+
+    private void fetchAndStoreTeam(int teamId) {
+        try {
+            waitIfNecessary();
+            String teamData = apiClient.getTeam(teamId);
+            logger.info("fetchAndStoreTeam - API Response for teamId {}: {}", teamId, teamData);
+            updateRateLimitInfo(apiClient.getLastResponseHeaders());
+
+            List<PostTeam> postTeams = parseJsonToPostTeamList(teamData);
+            logger.info("fetchAndStoreTeam - Parsed PostTeam: {}", objectMapper.writeValueAsString(postTeams));
+
+            Team thriftTeam = convertToThriftTeam(postTeams.get(0));
+            logger.info("fetchAndStoreTeam - Converted Team: {}", objectMapper.writeValueAsString(thriftTeam));
+
+            teamDepot.appendAsync(thriftTeam).join();
+
+        } catch (Exception e) {
+            handleException(e, "team", teamId);
+        }
+    }
+
     public void fetchAndStoreLolMatchSummary(int matchId) {
         try {
             waitIfNecessary();
@@ -5593,6 +5633,12 @@ public class ApolloApiManager {
                 case "lol_live_cv_events":
                     processLiveLolMatchEvent(rootNode);
                     break;
+                case "player_updates":
+                    processPlayerUpdate(rootNode);
+                    break;
+                case "team_updates":
+                    processTeamUpdate(rootNode);
+                    break;
                 default:
                     logger.warn("Received message for unhandled channel: {}", channel);
             }
@@ -5747,10 +5793,90 @@ public class ApolloApiManager {
     public void processLiveLolMatchEvent(JsonNode rootNode) {
         try {
             // TODO: Implement the logic to process live LoL match events
-            // For now, you can leave this method empty or add a simple log statement
             System.out.println("Received live LoL match event.");
         } catch (Exception e) {
             System.err.println("Error processing live LoL match event: " + e.getMessage());
+        }
+    }
+
+    private void processPlayerUpdate(JsonNode rootNode) {
+        try {
+            JsonNode payload = rootNode.get("payload");
+            if (payload == null) {
+                logger.warn("Missing payload in player update message");
+                return;
+            }
+
+            JsonNode stateNode = payload.get("state");
+            if (stateNode == null || !stateNode.has("id")) {
+                logger.warn("Missing player ID in player update message");
+                return;
+            }
+            int playerId = stateNode.get("id").asInt();
+
+            // Fetch and store player data (pseudo-code):
+            CompletableFuture<Void> fetchFuture = CompletableFuture.runAsync(() -> {
+                fetchAndStorePlayer(playerId);
+            });
+
+            fetchFuture.thenCompose(voidResult -> {
+                // After storage, retrieve from data store
+                return getPlayer(playerId);
+            }).thenAccept(getPlayer -> {
+                if (getPlayer != null) {
+                    // If you decide to broadcast live changes:
+                    // ApolloApiStreamingConfig.sendPlayerUpdate(getPlayer);
+                    logger.info("Player {} updated successfully", playerId);
+                } else {
+                    logger.warn("Failed to retrieve player with ID {}", playerId);
+                }
+            }).exceptionally(ex -> {
+                logger.error("Error processing player update for ID {}", playerId, ex);
+                return null;
+            });
+
+        } catch (Exception e) {
+            logger.error("Error processing player update message", e);
+        }
+    }
+
+    private void processTeamUpdate(JsonNode rootNode) {
+        try {
+            JsonNode payload = rootNode.get("payload");
+            if (payload == null) {
+                logger.warn("Missing payload in team update message");
+                return;
+            }
+
+            JsonNode stateNode = payload.get("state");
+            if (stateNode == null || !stateNode.has("id")) {
+                logger.warn("Missing team ID in team update message");
+                return;
+            }
+            int teamId = stateNode.get("id").asInt();
+
+            // Fetch and store team data (pseudo-code):
+            CompletableFuture<Void> fetchFuture = CompletableFuture.runAsync(() -> {
+                fetchAndStoreTeam(teamId);
+            });
+
+            fetchFuture.thenCompose(voidResult -> {
+                return getTeam(teamId);
+            }).thenAccept(getTeam -> {
+                if (getTeam != null) {
+                    // If you decide to broadcast live changes:
+                    // ApolloApiStreamingConfig.sendTeamUpdate(getTeam);
+                    logger.info("Team {} updated successfully", teamId);
+                } else {
+                    logger.warn("Failed to retrieve team with ID {}", teamId);
+                }
+            }).exceptionally(ex -> {
+                logger.error("Error processing team update for ID {}", teamId, ex);
+                return null;
+            });
+
+        } catch (Exception e) {
+            logger.error("Error processing team update message", e);
         }
     }
 
