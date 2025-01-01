@@ -430,14 +430,14 @@ public class SubstageFormat implements org.apache.thrift.TBase<SubstageFormat, S
           case 2: // MOVEMENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list536 = iprot.readListBegin();
-                struct.movements = new java.util.ArrayList<Movement>(_list536.size);
-                @org.apache.thrift.annotation.Nullable Movement _elem537;
-                for (int _i538 = 0; _i538 < _list536.size; ++_i538)
+                org.apache.thrift.protocol.TList _list552 = iprot.readListBegin();
+                struct.movements = new java.util.ArrayList<Movement>(_list552.size);
+                @org.apache.thrift.annotation.Nullable Movement _elem553;
+                for (int _i554 = 0; _i554 < _list552.size; ++_i554)
                 {
-                  _elem537 = new Movement();
-                  _elem537.read(iprot);
-                  struct.movements.add(_elem537);
+                  _elem553 = new Movement();
+                  _elem553.read(iprot);
+                  struct.movements.add(_elem553);
                 }
                 iprot.readListEnd();
               }
@@ -471,9 +471,9 @@ public class SubstageFormat implements org.apache.thrift.TBase<SubstageFormat, S
         oprot.writeFieldBegin(MOVEMENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.movements.size()));
-          for (Movement _iter539 : struct.movements)
+          for (Movement _iter555 : struct.movements)
           {
-            _iter539.write(oprot);
+            _iter555.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -511,9 +511,9 @@ public class SubstageFormat implements org.apache.thrift.TBase<SubstageFormat, S
       if (struct.isSetMovements()) {
         {
           oprot.writeI32(struct.movements.size());
-          for (Movement _iter540 : struct.movements)
+          for (Movement _iter556 : struct.movements)
           {
-            _iter540.write(oprot);
+            _iter556.write(oprot);
           }
         }
       }
@@ -530,14 +530,14 @@ public class SubstageFormat implements org.apache.thrift.TBase<SubstageFormat, S
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list541 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.movements = new java.util.ArrayList<Movement>(_list541.size);
-          @org.apache.thrift.annotation.Nullable Movement _elem542;
-          for (int _i543 = 0; _i543 < _list541.size; ++_i543)
+          org.apache.thrift.protocol.TList _list557 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.movements = new java.util.ArrayList<Movement>(_list557.size);
+          @org.apache.thrift.annotation.Nullable Movement _elem558;
+          for (int _i559 = 0; _i559 < _list557.size; ++_i559)
           {
-            _elem542 = new Movement();
-            _elem542.read(iprot);
-            struct.movements.add(_elem542);
+            _elem558 = new Movement();
+            _elem558.read(iprot);
+            struct.movements.add(_elem558);
           }
         }
         struct.setMovementsIsSet(true);

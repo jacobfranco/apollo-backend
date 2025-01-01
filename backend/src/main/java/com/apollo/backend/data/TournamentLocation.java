@@ -430,14 +430,14 @@ public class TournamentLocation implements org.apache.thrift.TBase<TournamentLoc
           case 2: // PARTICIPANTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list496 = iprot.readListBegin();
-                struct.participants = new java.util.ArrayList<Participant>(_list496.size);
-                @org.apache.thrift.annotation.Nullable Participant _elem497;
-                for (int _i498 = 0; _i498 < _list496.size; ++_i498)
+                org.apache.thrift.protocol.TList _list512 = iprot.readListBegin();
+                struct.participants = new java.util.ArrayList<Participant>(_list512.size);
+                @org.apache.thrift.annotation.Nullable Participant _elem513;
+                for (int _i514 = 0; _i514 < _list512.size; ++_i514)
                 {
-                  _elem497 = new Participant();
-                  _elem497.read(iprot);
-                  struct.participants.add(_elem497);
+                  _elem513 = new Participant();
+                  _elem513.read(iprot);
+                  struct.participants.add(_elem513);
                 }
                 iprot.readListEnd();
               }
@@ -471,9 +471,9 @@ public class TournamentLocation implements org.apache.thrift.TBase<TournamentLoc
         oprot.writeFieldBegin(PARTICIPANTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.participants.size()));
-          for (Participant _iter499 : struct.participants)
+          for (Participant _iter515 : struct.participants)
           {
-            _iter499.write(oprot);
+            _iter515.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -511,9 +511,9 @@ public class TournamentLocation implements org.apache.thrift.TBase<TournamentLoc
       if (struct.isSetParticipants()) {
         {
           oprot.writeI32(struct.participants.size());
-          for (Participant _iter500 : struct.participants)
+          for (Participant _iter516 : struct.participants)
           {
-            _iter500.write(oprot);
+            _iter516.write(oprot);
           }
         }
       }
@@ -530,14 +530,14 @@ public class TournamentLocation implements org.apache.thrift.TBase<TournamentLoc
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list501 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.participants = new java.util.ArrayList<Participant>(_list501.size);
-          @org.apache.thrift.annotation.Nullable Participant _elem502;
-          for (int _i503 = 0; _i503 < _list501.size; ++_i503)
+          org.apache.thrift.protocol.TList _list517 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.participants = new java.util.ArrayList<Participant>(_list517.size);
+          @org.apache.thrift.annotation.Nullable Participant _elem518;
+          for (int _i519 = 0; _i519 < _list517.size; ++_i519)
           {
-            _elem502 = new Participant();
-            _elem502.read(iprot);
-            struct.participants.add(_elem502);
+            _elem518 = new Participant();
+            _elem518.read(iprot);
+            struct.participants.add(_elem518);
           }
         }
         struct.setParticipantsIsSet(true);

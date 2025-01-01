@@ -1862,13 +1862,13 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
           case 11: // ROSTER_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list504 = iprot.readListBegin();
-                struct.rosterIds = new java.util.ArrayList<java.lang.Integer>(_list504.size);
-                int _elem505;
-                for (int _i506 = 0; _i506 < _list504.size; ++_i506)
+                org.apache.thrift.protocol.TList _list520 = iprot.readListBegin();
+                struct.rosterIds = new java.util.ArrayList<java.lang.Integer>(_list520.size);
+                int _elem521;
+                for (int _i522 = 0; _i522 < _list520.size; ++_i522)
                 {
-                  _elem505 = iprot.readI32();
-                  struct.rosterIds.add(_elem505);
+                  _elem521 = iprot.readI32();
+                  struct.rosterIds.add(_elem521);
                 }
                 iprot.readListEnd();
               }
@@ -1896,14 +1896,14 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
           case 14: // STANDINGS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list507 = iprot.readListBegin();
-                struct.standings = new java.util.ArrayList<Standing>(_list507.size);
-                @org.apache.thrift.annotation.Nullable Standing _elem508;
-                for (int _i509 = 0; _i509 < _list507.size; ++_i509)
+                org.apache.thrift.protocol.TList _list523 = iprot.readListBegin();
+                struct.standings = new java.util.ArrayList<Standing>(_list523.size);
+                @org.apache.thrift.annotation.Nullable Standing _elem524;
+                for (int _i525 = 0; _i525 < _list523.size; ++_i525)
                 {
-                  _elem508 = new Standing();
-                  _elem508.read(iprot);
-                  struct.standings.add(_elem508);
+                  _elem524 = new Standing();
+                  _elem524.read(iprot);
+                  struct.standings.add(_elem524);
                 }
                 iprot.readListEnd();
               }
@@ -2012,9 +2012,9 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
         oprot.writeFieldBegin(ROSTER_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.rosterIds.size()));
-          for (int _iter510 : struct.rosterIds)
+          for (int _iter526 : struct.rosterIds)
           {
-            oprot.writeI32(_iter510);
+            oprot.writeI32(_iter526);
           }
           oprot.writeListEnd();
         }
@@ -2032,9 +2032,9 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
         oprot.writeFieldBegin(STANDINGS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.standings.size()));
-          for (Standing _iter511 : struct.standings)
+          for (Standing _iter527 : struct.standings)
           {
-            _iter511.write(oprot);
+            _iter527.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2173,9 +2173,9 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
       if (struct.isSetRosterIds()) {
         {
           oprot.writeI32(struct.rosterIds.size());
-          for (int _iter512 : struct.rosterIds)
+          for (int _iter528 : struct.rosterIds)
           {
-            oprot.writeI32(_iter512);
+            oprot.writeI32(_iter528);
           }
         }
       }
@@ -2188,9 +2188,9 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
       if (struct.isSetStandings()) {
         {
           oprot.writeI32(struct.standings.size());
-          for (Standing _iter513 : struct.standings)
+          for (Standing _iter529 : struct.standings)
           {
-            _iter513.write(oprot);
+            _iter529.write(oprot);
           }
         }
       }
@@ -2258,13 +2258,13 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
       }
       if (incoming.get(10)) {
         {
-          org.apache.thrift.protocol.TList _list514 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.rosterIds = new java.util.ArrayList<java.lang.Integer>(_list514.size);
-          int _elem515;
-          for (int _i516 = 0; _i516 < _list514.size; ++_i516)
+          org.apache.thrift.protocol.TList _list530 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.rosterIds = new java.util.ArrayList<java.lang.Integer>(_list530.size);
+          int _elem531;
+          for (int _i532 = 0; _i532 < _list530.size; ++_i532)
           {
-            _elem515 = iprot.readI32();
-            struct.rosterIds.add(_elem515);
+            _elem531 = iprot.readI32();
+            struct.rosterIds.add(_elem531);
           }
         }
         struct.setRosterIdsIsSet(true);
@@ -2279,14 +2279,14 @@ public class Substage implements org.apache.thrift.TBase<Substage, Substage._Fie
       }
       if (incoming.get(13)) {
         {
-          org.apache.thrift.protocol.TList _list517 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.standings = new java.util.ArrayList<Standing>(_list517.size);
-          @org.apache.thrift.annotation.Nullable Standing _elem518;
-          for (int _i519 = 0; _i519 < _list517.size; ++_i519)
+          org.apache.thrift.protocol.TList _list533 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.standings = new java.util.ArrayList<Standing>(_list533.size);
+          @org.apache.thrift.annotation.Nullable Standing _elem534;
+          for (int _i535 = 0; _i535 < _list533.size; ++_i535)
           {
-            _elem518 = new Standing();
-            _elem518.read(iprot);
-            struct.standings.add(_elem518);
+            _elem534 = new Standing();
+            _elem534.read(iprot);
+            struct.standings.add(_elem534);
           }
         }
         struct.setStandingsIsSet(true);

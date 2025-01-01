@@ -26,6 +26,12 @@ public class GetAccount {
     public String avatar_static;
     public String header;
     public String header_static;
+    public boolean admin;
+    public boolean moderator;
+    public boolean verified;
+    public boolean is_suggested;
+    public boolean suspended;
+    public List<String> tags;
 
     public static class Field {
         public String name;
@@ -75,6 +81,12 @@ public class GetAccount {
         this.locked = account.locked;
         this.bot = account.bot;
         this.discoverable = account.discoverable;
+        this.admin = account.admin;
+        this.moderator = account.moderator;
+        this.verified = account.isSetVerified() ? account.verified : false;
+        this.is_suggested = account.isSetIsSuggested() ? account.isSuggested : false;
+        this.suspended = account.isSetSuspended() ? account.suspended : false;
+        this.tags = account.isSetTags() ? new ArrayList<>(account.tags) : new ArrayList<>();
 
         this.url = ApolloConfig.FRONTEND_URL + "/@" + account.name; // TODO: Maybe change
 

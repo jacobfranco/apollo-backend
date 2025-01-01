@@ -1947,14 +1947,14 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
           case 13: // IMAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list464 = iprot.readListBegin();
-                struct.images = new java.util.ArrayList<Image>(_list464.size);
-                @org.apache.thrift.annotation.Nullable Image _elem465;
-                for (int _i466 = 0; _i466 < _list464.size; ++_i466)
+                org.apache.thrift.protocol.TList _list480 = iprot.readListBegin();
+                struct.images = new java.util.ArrayList<Image>(_list480.size);
+                @org.apache.thrift.annotation.Nullable Image _elem481;
+                for (int _i482 = 0; _i482 < _list480.size; ++_i482)
                 {
-                  _elem465 = new Image();
-                  _elem465.read(iprot);
-                  struct.images.add(_elem465);
+                  _elem481 = new Image();
+                  _elem481.read(iprot);
+                  struct.images.add(_elem481);
                 }
                 iprot.readListEnd();
               }
@@ -1966,13 +1966,13 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
           case 14: // STAGE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list467 = iprot.readListBegin();
-                struct.stageIds = new java.util.ArrayList<java.lang.Integer>(_list467.size);
-                int _elem468;
-                for (int _i469 = 0; _i469 < _list467.size; ++_i469)
+                org.apache.thrift.protocol.TList _list483 = iprot.readListBegin();
+                struct.stageIds = new java.util.ArrayList<java.lang.Integer>(_list483.size);
+                int _elem484;
+                for (int _i485 = 0; _i485 < _list483.size; ++_i485)
                 {
-                  _elem468 = iprot.readI32();
-                  struct.stageIds.add(_elem468);
+                  _elem484 = iprot.readI32();
+                  struct.stageIds.add(_elem484);
                 }
                 iprot.readListEnd();
               }
@@ -1984,14 +1984,14 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
           case 15: // CASTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list470 = iprot.readListBegin();
-                struct.casters = new java.util.ArrayList<Caster>(_list470.size);
-                @org.apache.thrift.annotation.Nullable Caster _elem471;
-                for (int _i472 = 0; _i472 < _list470.size; ++_i472)
+                org.apache.thrift.protocol.TList _list486 = iprot.readListBegin();
+                struct.casters = new java.util.ArrayList<Caster>(_list486.size);
+                @org.apache.thrift.annotation.Nullable Caster _elem487;
+                for (int _i488 = 0; _i488 < _list486.size; ++_i488)
                 {
-                  _elem471 = new Caster();
-                  _elem471.read(iprot);
-                  struct.casters.add(_elem471);
+                  _elem487 = new Caster();
+                  _elem487.read(iprot);
+                  struct.casters.add(_elem487);
                 }
                 iprot.readListEnd();
               }
@@ -2003,14 +2003,14 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
           case 16: // BROADCASTERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list473 = iprot.readListBegin();
-                struct.broadcasters = new java.util.ArrayList<Broadcaster>(_list473.size);
-                @org.apache.thrift.annotation.Nullable Broadcaster _elem474;
-                for (int _i475 = 0; _i475 < _list473.size; ++_i475)
+                org.apache.thrift.protocol.TList _list489 = iprot.readListBegin();
+                struct.broadcasters = new java.util.ArrayList<Broadcaster>(_list489.size);
+                @org.apache.thrift.annotation.Nullable Broadcaster _elem490;
+                for (int _i491 = 0; _i491 < _list489.size; ++_i491)
                 {
-                  _elem474 = new Broadcaster();
-                  _elem474.read(iprot);
-                  struct.broadcasters.add(_elem474);
+                  _elem490 = new Broadcaster();
+                  _elem490.read(iprot);
+                  struct.broadcasters.add(_elem490);
                 }
                 iprot.readListEnd();
               }
@@ -2115,9 +2115,9 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
         oprot.writeFieldBegin(IMAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.images.size()));
-          for (Image _iter476 : struct.images)
+          for (Image _iter492 : struct.images)
           {
-            _iter476.write(oprot);
+            _iter492.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2127,9 +2127,9 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
         oprot.writeFieldBegin(STAGE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.stageIds.size()));
-          for (int _iter477 : struct.stageIds)
+          for (int _iter493 : struct.stageIds)
           {
-            oprot.writeI32(_iter477);
+            oprot.writeI32(_iter493);
           }
           oprot.writeListEnd();
         }
@@ -2139,9 +2139,9 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
         oprot.writeFieldBegin(CASTERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.casters.size()));
-          for (Caster _iter478 : struct.casters)
+          for (Caster _iter494 : struct.casters)
           {
-            _iter478.write(oprot);
+            _iter494.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2151,9 +2151,9 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
         oprot.writeFieldBegin(BROADCASTERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.broadcasters.size()));
-          for (Broadcaster _iter479 : struct.broadcasters)
+          for (Broadcaster _iter495 : struct.broadcasters)
           {
-            _iter479.write(oprot);
+            _iter495.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2288,36 +2288,36 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
       if (struct.isSetImages()) {
         {
           oprot.writeI32(struct.images.size());
-          for (Image _iter480 : struct.images)
+          for (Image _iter496 : struct.images)
           {
-            _iter480.write(oprot);
+            _iter496.write(oprot);
           }
         }
       }
       if (struct.isSetStageIds()) {
         {
           oprot.writeI32(struct.stageIds.size());
-          for (int _iter481 : struct.stageIds)
+          for (int _iter497 : struct.stageIds)
           {
-            oprot.writeI32(_iter481);
+            oprot.writeI32(_iter497);
           }
         }
       }
       if (struct.isSetCasters()) {
         {
           oprot.writeI32(struct.casters.size());
-          for (Caster _iter482 : struct.casters)
+          for (Caster _iter498 : struct.casters)
           {
-            _iter482.write(oprot);
+            _iter498.write(oprot);
           }
         }
       }
       if (struct.isSetBroadcasters()) {
         {
           oprot.writeI32(struct.broadcasters.size());
-          for (Broadcaster _iter483 : struct.broadcasters)
+          for (Broadcaster _iter499 : struct.broadcasters)
           {
-            _iter483.write(oprot);
+            _iter499.write(oprot);
           }
         }
       }
@@ -2390,55 +2390,55 @@ public class Tournament implements org.apache.thrift.TBase<Tournament, Tournamen
       }
       if (incoming.get(12)) {
         {
-          org.apache.thrift.protocol.TList _list484 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.images = new java.util.ArrayList<Image>(_list484.size);
-          @org.apache.thrift.annotation.Nullable Image _elem485;
-          for (int _i486 = 0; _i486 < _list484.size; ++_i486)
+          org.apache.thrift.protocol.TList _list500 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.images = new java.util.ArrayList<Image>(_list500.size);
+          @org.apache.thrift.annotation.Nullable Image _elem501;
+          for (int _i502 = 0; _i502 < _list500.size; ++_i502)
           {
-            _elem485 = new Image();
-            _elem485.read(iprot);
-            struct.images.add(_elem485);
+            _elem501 = new Image();
+            _elem501.read(iprot);
+            struct.images.add(_elem501);
           }
         }
         struct.setImagesIsSet(true);
       }
       if (incoming.get(13)) {
         {
-          org.apache.thrift.protocol.TList _list487 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.stageIds = new java.util.ArrayList<java.lang.Integer>(_list487.size);
-          int _elem488;
-          for (int _i489 = 0; _i489 < _list487.size; ++_i489)
+          org.apache.thrift.protocol.TList _list503 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.stageIds = new java.util.ArrayList<java.lang.Integer>(_list503.size);
+          int _elem504;
+          for (int _i505 = 0; _i505 < _list503.size; ++_i505)
           {
-            _elem488 = iprot.readI32();
-            struct.stageIds.add(_elem488);
+            _elem504 = iprot.readI32();
+            struct.stageIds.add(_elem504);
           }
         }
         struct.setStageIdsIsSet(true);
       }
       if (incoming.get(14)) {
         {
-          org.apache.thrift.protocol.TList _list490 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.casters = new java.util.ArrayList<Caster>(_list490.size);
-          @org.apache.thrift.annotation.Nullable Caster _elem491;
-          for (int _i492 = 0; _i492 < _list490.size; ++_i492)
+          org.apache.thrift.protocol.TList _list506 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.casters = new java.util.ArrayList<Caster>(_list506.size);
+          @org.apache.thrift.annotation.Nullable Caster _elem507;
+          for (int _i508 = 0; _i508 < _list506.size; ++_i508)
           {
-            _elem491 = new Caster();
-            _elem491.read(iprot);
-            struct.casters.add(_elem491);
+            _elem507 = new Caster();
+            _elem507.read(iprot);
+            struct.casters.add(_elem507);
           }
         }
         struct.setCastersIsSet(true);
       }
       if (incoming.get(15)) {
         {
-          org.apache.thrift.protocol.TList _list493 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.broadcasters = new java.util.ArrayList<Broadcaster>(_list493.size);
-          @org.apache.thrift.annotation.Nullable Broadcaster _elem494;
-          for (int _i495 = 0; _i495 < _list493.size; ++_i495)
+          org.apache.thrift.protocol.TList _list509 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.broadcasters = new java.util.ArrayList<Broadcaster>(_list509.size);
+          @org.apache.thrift.annotation.Nullable Broadcaster _elem510;
+          for (int _i511 = 0; _i511 < _list509.size; ++_i511)
           {
-            _elem494 = new Broadcaster();
-            _elem494.read(iprot);
-            struct.broadcasters.add(_elem494);
+            _elem510 = new Broadcaster();
+            _elem510.read(iprot);
+            struct.broadcasters.add(_elem510);
           }
         }
         struct.setBroadcastersIsSet(true);

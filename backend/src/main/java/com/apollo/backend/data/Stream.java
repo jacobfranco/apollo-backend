@@ -1027,14 +1027,14 @@ public class Stream implements org.apache.thrift.TBase<Stream, Stream._Fields>, 
           case 8: // IMAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list528 = iprot.readListBegin();
-                struct.images = new java.util.ArrayList<Image>(_list528.size);
-                @org.apache.thrift.annotation.Nullable Image _elem529;
-                for (int _i530 = 0; _i530 < _list528.size; ++_i530)
+                org.apache.thrift.protocol.TList _list544 = iprot.readListBegin();
+                struct.images = new java.util.ArrayList<Image>(_list544.size);
+                @org.apache.thrift.annotation.Nullable Image _elem545;
+                for (int _i546 = 0; _i546 < _list544.size; ++_i546)
                 {
-                  _elem529 = new Image();
-                  _elem529.read(iprot);
-                  struct.images.add(_elem529);
+                  _elem545 = new Image();
+                  _elem545.read(iprot);
+                  struct.images.add(_elem545);
                 }
                 iprot.readListEnd();
               }
@@ -1099,9 +1099,9 @@ public class Stream implements org.apache.thrift.TBase<Stream, Stream._Fields>, 
         oprot.writeFieldBegin(IMAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.images.size()));
-          for (Image _iter531 : struct.images)
+          for (Image _iter547 : struct.images)
           {
-            _iter531.write(oprot);
+            _iter547.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1183,9 +1183,9 @@ public class Stream implements org.apache.thrift.TBase<Stream, Stream._Fields>, 
       if (struct.isSetImages()) {
         {
           oprot.writeI32(struct.images.size());
-          for (Image _iter532 : struct.images)
+          for (Image _iter548 : struct.images)
           {
-            _iter532.write(oprot);
+            _iter548.write(oprot);
           }
         }
       }
@@ -1228,14 +1228,14 @@ public class Stream implements org.apache.thrift.TBase<Stream, Stream._Fields>, 
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list533 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.images = new java.util.ArrayList<Image>(_list533.size);
-          @org.apache.thrift.annotation.Nullable Image _elem534;
-          for (int _i535 = 0; _i535 < _list533.size; ++_i535)
+          org.apache.thrift.protocol.TList _list549 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.images = new java.util.ArrayList<Image>(_list549.size);
+          @org.apache.thrift.annotation.Nullable Image _elem550;
+          for (int _i551 = 0; _i551 < _list549.size; ++_i551)
           {
-            _elem534 = new Image();
-            _elem534.read(iprot);
-            struct.images.add(_elem534);
+            _elem550 = new Image();
+            _elem550.read(iprot);
+            struct.images.add(_elem550);
           }
         }
         struct.setImagesIsSet(true);

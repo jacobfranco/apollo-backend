@@ -291,19 +291,6 @@ public class ApolloApiHelpers {
         return getMarkers;
     }
 
-    public static GetReport createGetReport(PostReport params, AccountWithId targetAccount) {
-        GetReport report = new GetReport();
-        report.id = UUID.randomUUID().toString();
-        report.category = params.category;
-        report.comment = params.comment;
-        report.created_at = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-        report.status_ids = params.status_ids;
-        if (params.rule_ids != null)
-            report.rule_ids = params.rule_ids.stream().map(Object::toString).collect(Collectors.toList());
-        report.target_account = new GetAccount(targetAccount);
-        return report;
-    }
-
     public static List<GetNotification> createGetNotifications(List<GetNotification.Bundle> bundles) {
         List<GetNotification> getNotifications = new ArrayList<>();
         for (GetNotification.Bundle bundle : bundles) {

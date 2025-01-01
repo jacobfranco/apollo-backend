@@ -135,6 +135,8 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 Region.class,
                 RejectFollowRequest.class,
                 Release.class,
+                RemoveAccount.class,
+                RemoveAccountWithId.class,
                 RemoveAuthCode.class,
                 RemoveBlockAccount.class,
                 RemoveBookmarkStatus.class,
@@ -154,6 +156,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 RemoveStatusFromFilter.class,
                 RemoveStatusWithId.class,
                 ReplyStatusContent.class,
+                Report.class,
                 Roster.class,
                 Series.class,
                 SocialMediaAccount.class,
@@ -186,7 +189,8 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 TournamentDefaults.class,
                 TournamentLinks.class,
                 TournamentLocation.class,
-                UpdateKeyword.class);
+                UpdateKeyword.class,
+                UserActivity.class);
         for (int i = 0; i < classes.size(); i++) {
             ret.put(i, classes.get(i));
         }

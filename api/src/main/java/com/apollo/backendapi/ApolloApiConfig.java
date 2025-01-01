@@ -62,7 +62,7 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static final LocalDate LOL_SEASON_START = LocalDate.of(2024, 1, 1);
     public static final LocalDate LOL_SEASON_END = LocalDate.of(2024, 12, 31);
 
-    public static final LocalDate LOL_START_TEST = LocalDate.of(2024, 11, 11);
+    public static final LocalDate LOL_START_TEST = LocalDate.of(2024, 12, 27);
     public static final LocalDate LOL_END_TEST = LocalDate.of(2024, 12, 29);
 
     // Bean to handle reactive session repository

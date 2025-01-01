@@ -881,6 +881,26 @@ public class Core implements RamaModule {
                                                                                 removeStatusWithIdVar));
         }
 
+        private static Block removeAccountMacro(String accountIdVar) {
+                String accountVar = Helpers.genVar("account");
+                String removeAccountWithIdVar = Helpers.genVar("removeAccountWithId");
+                return Block.select("$$accountIdToAccount", Path.key(accountIdVar))
+                                .out(accountVar)
+                                .macro(extractFields(accountVar, "*email", "*name"))
+                                .hashPartition(accountIdVar)
+                                .localTransform("$$accountIdToAccount", Path.key(accountIdVar).termVoid())
+                                .hashPartition("*email")
+                                .localTransform("$$emailToAccountId", Path.key("*email").termVoid())
+                                .hashPartition("*name")
+                                .localTransform("$$nameToUser", Path.key("*name").termVoid())
+                                .each((Long accountId, Account account) -> new RemoveAccountWithId(
+                                                accountId, account), accountIdVar, accountVar)
+                                .out(removeAccountWithIdVar)
+                                .depotPartitionAppend("*accountWithIdDepot",
+                                                removeAccountWithIdVar);
+
+        }
+
         /*
          * Accounts require low latency updates (a few millis) so streaming is used for
          * processing (instead
@@ -901,52 +921,63 @@ public class Core implements RamaModule {
                 stream.pstate("$$nameToUser", PState.mapSchema(String.class,
                                 PState.fixedKeysSchema("accountId", Long.class,
                                                 "uuid", String.class)));
+                stream.pstate("$$emailToAccountId", PState.mapSchema(String.class, Long.class));
                 stream.pstate("$$accountIdToAccount", PState.mapSchema(Long.class, Account.class));
 
-                /*
-                 * User registration does three things when that name is not already registered:
-                 * - generates a user id for that user
-                 * - updates $$nameToUser PState (which contains a mapping from name -> user id)
-                 * - updates $$accountIdToAccount PState (which maps user id to Account)
-                 * 
-                 * User registration is implemented to correctly handle:
-                 * - Concurrent registration of same name (first one wins)
-                 * - Failures of topology (e.g. a machine involved in the processing dies midway
-                 * through
-                 * processing). Streaming failures are handled by retrying from the start of the
-                 * topology.
-                 */
                 stream.source("*accountDepot").out("*data")
-                                .macro(extractFields("*data", "*name", "*uuid"))
-                                .localSelect("$$nameToUser", Path.key("*name")).out("*currInfo")
-                                .each(Ops.GET, "*currInfo", "uuid").out("*currUUID")
-                                // By including a UUID with each registration request, we can distinguish
-                                // between:
-                                // - this name is already registered by a different request so we shouldn't
-                                // override it
-                                // - this name was registered by the same request, so we should continue
-                                // finishing the
-                                // registration
-                                .ifTrue(new Expr(Ops.OR, new Expr(Ops.IS_NULL, "*currInfo"),
-                                                new Expr(Ops.EQUAL, "*uuid", "*currUUID")),
-                                                Block.macro(accountIdGen.genId("*accountId"))
-                                                                .localTransform("$$nameToUser",
-                                                                                Path.key("*name").multiPath(Path
-                                                                                                .key("accountId")
-                                                                                                .termVal("*accountId"),
-                                                                                                Path.key("uuid").termVal(
-                                                                                                                "*uuid")))
-                                                                .hashPartition("*accountId")
-                                                                .localTransform("$$accountIdToAccount",
-                                                                                Path.key("*accountId").termVal("*data"))
-                                                                .invokeQuery("getAccountMetadata", null, "*accountId")
-                                                                .out("*metadata")
-                                                                .each((RamaFunction3<Long, Account, AccountMetadata, AccountWithId>) AccountWithId::new,
-                                                                                "*accountId",
-                                                                                "*data", "*metadata")
-                                                                .out("*accountWithId")
-                                                                .depotPartitionAppend("*accountWithIdDepot",
-                                                                                "*accountWithId"));
+                                .subSource("*data",
+                                                SubSource.create(Account.class)
+                                                                .macro(extractFields("*data", "*name", "*email",
+                                                                                "*uuid"))
+                                                                .localSelect("$$nameToUser", Path.key("*name"))
+                                                                .out("*currInfo")
+                                                                .each(Ops.GET, "*currInfo", "uuid").out("*currUUID")
+                                                                // By including a UUID with each registration request,
+                                                                // we can distinguish
+                                                                // between:
+                                                                // - this name is already registered by a different
+                                                                // request so we shouldn't
+                                                                // override it
+                                                                // - this name was registered by the same request, so we
+                                                                // should continue
+                                                                // finishing the
+                                                                // registration
+                                                                .ifTrue(new Expr(Ops.OR,
+                                                                                new Expr(Ops.IS_NULL, "*currInfo"),
+                                                                                new Expr(Ops.EQUAL, "*uuid",
+                                                                                                "*currUUID")),
+                                                                                Block.macro(accountIdGen
+                                                                                                .genId("*accountId"))
+                                                                                                .localTransform("$$nameToUser",
+                                                                                                                Path.key("*name")
+                                                                                                                                .multiPath(Path
+                                                                                                                                                .key("accountId")
+                                                                                                                                                .termVal("*accountId"),
+                                                                                                                                                Path.key("uuid").termVal(
+                                                                                                                                                                "*uuid")))
+                                                                                                .hashPartition("*accountId")
+                                                                                                .localTransform("$$accountIdToAccount",
+                                                                                                                Path.key("*accountId")
+                                                                                                                                .termVal("*data"))
+                                                                                                .invokeQuery("getAccountMetadata",
+                                                                                                                null,
+                                                                                                                "*accountId")
+                                                                                                .out("*metadata")
+                                                                                                .each((RamaFunction3<Long, Account, AccountMetadata, AccountWithId>) AccountWithId::new,
+                                                                                                                "*accountId",
+                                                                                                                "*data",
+                                                                                                                "*metadata")
+                                                                                                .out("*accountWithId")
+                                                                                                .localTransform("$$emailToAccountId",
+                                                                                                                Path.key("*email")
+                                                                                                                                .termVal("*accountId"))
+                                                                                                .depotPartitionAppend(
+                                                                                                                "*accountWithIdDepot",
+                                                                                                                "*accountWithId")),
+
+                                                SubSource.create(RemoveAccount.class)
+                                                                .macro(extractFields("*data", "*accountId"))
+                                                                .macro(removeAccountMacro("*accountId")));
 
                 stream.source("*accountEditDepot", StreamSourceOptions.retryNone()).out("*editAccount")
                                 .macro(extractFields("*editAccount", "*accountId", "*edits"))
@@ -1565,6 +1596,14 @@ public class Core implements RamaModule {
 
         }
 
+        private static void declareReportsTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("reports");
+                stream.pstate("$$reportIdToReport", PState.mapSchema(String.class, Report.class));
+                stream.source("*reportDepot").out("*report")
+                                .macro(extractFields("*report", "*id"))
+                                .localTransform("$$reportIdToReport", Path.key("*id").termVal("*report"));
+        }
+
         private static void declareApplicationTopology(Topologies topologies) {
                 StreamTopology stream = topologies.stream("applications");
                 // Declare a PState to map client IDs to Application objects
@@ -1574,6 +1613,17 @@ public class Core implements RamaModule {
                                 .localTransform("$$clientIdToApplication",
                                                 Path.key(new Expr(Application::getClient_id, "*application"))
                                                                 .termVal("*application"));
+        }
+
+        private static void declareActivityTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("activity");
+                // Declare a PState to map client IDs to Application objects
+                stream.pstate("$$accountIdToTimestamp", PState.mapSchema(Long.class, Long.class));
+                // Source from the application depot
+                stream.source("*userActivityDepot").out("*activity")
+                                .macro(extractFields("*activity", "*accountId", "*timestamp"))
+                                .localTransform("$$accountIdToTimestamp",
+                                                Path.key("*accountId").termVal("*timestamp"));
         }
 
         private void declareQueries(Topologies topologies) {
@@ -2768,6 +2818,35 @@ public class Core implements RamaModule {
                                                 Block.each(Ops.IDENTITY, "*application").out("*result"))
                                 .originPartition();
 
+                topologies.query("getAllUserIds").out("*result")
+                                .allPartition()
+                                .localSelect("$$accountIdToAccount", Path.mapKeys())
+                                .out("*ids")
+                                .originPartition()
+                                .agg(Agg.list("*ids")).out("*result");
+
+                topologies.query("getReportFromReportId", "*id").out("*result")
+                                .hashPartition("*id")
+                                .localSelect("$$reportIdToReport", Path.key("*id")).out("*result")
+                                .originPartition();
+
+                topologies.query("getAllReports").out("*result")
+                                .allPartition()
+                                .localSelect("$$reportIdToReport", Path.mapVals())
+                                .out("*ids")
+                                .originPartition()
+                                .agg(Agg.list("*ids")).out("*result");
+
+                topologies.query("getActiveUsersCount", "*timestamp").out("*result")
+                                .allPartition()
+                                .localSelect("$$accountIdToTimestamp",
+                                                Path.mapVals().filterGreaterThan("*timestamp"))
+                                .out("*timestamps")
+                                .originPartition()
+                                .agg(Agg.list("*timestamps")).out("*list")
+                                .each(Ops.IDENTITY, new Expr(Ops.SIZE, "*list"))
+                                .out("*result");
+
         }
 
         public static class StatusDepotExtractor implements RamaFunction1<TBase, Long> {
@@ -2783,6 +2862,18 @@ public class Core implements RamaModule {
                                 return ((EditStatus) o).status.authorId;
                         else if (o instanceof RemoveStatus)
                                 return ((RemoveStatus) o).accountId;
+                        else
+                                throw new RuntimeException("Unexpected type " + o.getClass());
+                }
+        }
+
+        public static class AccountDepotExtractor implements RamaFunction1<TBase, String> {
+                @Override
+                public String invoke(TBase o) {
+                        if (o instanceof Account)
+                                return ((Account) o).name;
+                        else if (o instanceof RemoveAccount)
+                                return ((RemoveAccount) o).name;
                         else
                                 throw new RuntimeException("Unexpected type " + o.getClass());
                 }
@@ -2808,12 +2899,13 @@ public class Core implements RamaModule {
         public void define(Setup setup, Topologies topologies) {
 
                 setup.declareDepot("*applicationDepot", Depot.hashBy(ApolloHelpers.ExtractClientId.class));
-
+                setup.declareDepot("*userActivityDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*reportDepot", Depot.hashBy(ApolloHelpers.ExtractReportId.class));
                 setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
                 setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
                 setup.declareDepot("*statusWithIdDepot", Depot.disallow());
                 setup.declareDepot("*statusAttachmentWithIdDepot", Depot.hashBy(ApolloHelpers.ExtractUuid.class));
-                setup.declareDepot("*accountDepot", Depot.hashBy(ApolloHelpers.ExtractName.class));
+                setup.declareDepot("*accountDepot", Depot.hashBy(AccountDepotExtractor.class));
                 setup.declareDepot("*accountWithIdDepot", Depot.disallow());
                 setup.declareDepot("*accountEditDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
                 setup.declareDepot("*likeStatusDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
@@ -2849,7 +2941,9 @@ public class Core implements RamaModule {
                 declareMicrobatchTopologies(topologies);
                 declareAccountsTopology(topologies);
                 declareStatusTopology(topologies);
+                declareReportsTopology(topologies);
                 declareApplicationTopology(topologies);
+                declareActivityTopology(topologies);
                 declareQueries(topologies);
 
         }

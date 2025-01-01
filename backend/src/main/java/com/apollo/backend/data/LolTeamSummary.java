@@ -1445,14 +1445,14 @@ public class LolTeamSummary implements org.apache.thrift.TBase<LolTeamSummary, L
           case 10: // PLAYERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list400 = iprot.readListBegin();
-                struct.players = new java.util.ArrayList<LolPlayerSummary>(_list400.size);
-                @org.apache.thrift.annotation.Nullable LolPlayerSummary _elem401;
-                for (int _i402 = 0; _i402 < _list400.size; ++_i402)
+                org.apache.thrift.protocol.TList _list416 = iprot.readListBegin();
+                struct.players = new java.util.ArrayList<LolPlayerSummary>(_list416.size);
+                @org.apache.thrift.annotation.Nullable LolPlayerSummary _elem417;
+                for (int _i418 = 0; _i418 < _list416.size; ++_i418)
                 {
-                  _elem401 = new LolPlayerSummary();
-                  _elem401.read(iprot);
-                  struct.players.add(_elem401);
+                  _elem417 = new LolPlayerSummary();
+                  _elem417.read(iprot);
+                  struct.players.add(_elem417);
                 }
                 iprot.readListEnd();
               }
@@ -1549,9 +1549,9 @@ public class LolTeamSummary implements org.apache.thrift.TBase<LolTeamSummary, L
         oprot.writeFieldBegin(PLAYERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.players.size()));
-          for (LolPlayerSummary _iter403 : struct.players)
+          for (LolPlayerSummary _iter419 : struct.players)
           {
-            _iter403.write(oprot);
+            _iter419.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1671,9 +1671,9 @@ public class LolTeamSummary implements org.apache.thrift.TBase<LolTeamSummary, L
       if (struct.isSetPlayers()) {
         {
           oprot.writeI32(struct.players.size());
-          for (LolPlayerSummary _iter404 : struct.players)
+          for (LolPlayerSummary _iter420 : struct.players)
           {
-            _iter404.write(oprot);
+            _iter420.write(oprot);
           }
         }
       }
@@ -1737,14 +1737,14 @@ public class LolTeamSummary implements org.apache.thrift.TBase<LolTeamSummary, L
       }
       if (incoming.get(9)) {
         {
-          org.apache.thrift.protocol.TList _list405 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.players = new java.util.ArrayList<LolPlayerSummary>(_list405.size);
-          @org.apache.thrift.annotation.Nullable LolPlayerSummary _elem406;
-          for (int _i407 = 0; _i407 < _list405.size; ++_i407)
+          org.apache.thrift.protocol.TList _list421 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.players = new java.util.ArrayList<LolPlayerSummary>(_list421.size);
+          @org.apache.thrift.annotation.Nullable LolPlayerSummary _elem422;
+          for (int _i423 = 0; _i423 < _list421.size; ++_i423)
           {
-            _elem406 = new LolPlayerSummary();
-            _elem406.read(iprot);
-            struct.players.add(_elem406);
+            _elem422 = new LolPlayerSummary();
+            _elem422.read(iprot);
+            struct.players.add(_elem422);
           }
         }
         struct.setPlayersIsSet(true);

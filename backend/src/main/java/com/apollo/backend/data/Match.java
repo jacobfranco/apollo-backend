@@ -1090,14 +1090,14 @@ public class Match implements org.apache.thrift.TBase<Match, Match._Fields>, jav
           case 8: // PARTICIPANTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list312 = iprot.readListBegin();
-                struct.participants = new java.util.ArrayList<Participant>(_list312.size);
-                @org.apache.thrift.annotation.Nullable Participant _elem313;
-                for (int _i314 = 0; _i314 < _list312.size; ++_i314)
+                org.apache.thrift.protocol.TList _list328 = iprot.readListBegin();
+                struct.participants = new java.util.ArrayList<Participant>(_list328.size);
+                @org.apache.thrift.annotation.Nullable Participant _elem329;
+                for (int _i330 = 0; _i330 < _list328.size; ++_i330)
                 {
-                  _elem313 = new Participant();
-                  _elem313.read(iprot);
-                  struct.participants.add(_elem313);
+                  _elem329 = new Participant();
+                  _elem329.read(iprot);
+                  struct.participants.add(_elem329);
                 }
                 iprot.readListEnd();
               }
@@ -1168,9 +1168,9 @@ public class Match implements org.apache.thrift.TBase<Match, Match._Fields>, jav
         oprot.writeFieldBegin(PARTICIPANTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.participants.size()));
-          for (Participant _iter315 : struct.participants)
+          for (Participant _iter331 : struct.participants)
           {
-            _iter315.write(oprot);
+            _iter331.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1258,9 +1258,9 @@ public class Match implements org.apache.thrift.TBase<Match, Match._Fields>, jav
       if (struct.isSetParticipants()) {
         {
           oprot.writeI32(struct.participants.size());
-          for (Participant _iter316 : struct.participants)
+          for (Participant _iter332 : struct.participants)
           {
-            _iter316.write(oprot);
+            _iter332.write(oprot);
           }
         }
       }
@@ -1306,14 +1306,14 @@ public class Match implements org.apache.thrift.TBase<Match, Match._Fields>, jav
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list317 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.participants = new java.util.ArrayList<Participant>(_list317.size);
-          @org.apache.thrift.annotation.Nullable Participant _elem318;
-          for (int _i319 = 0; _i319 < _list317.size; ++_i319)
+          org.apache.thrift.protocol.TList _list333 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.participants = new java.util.ArrayList<Participant>(_list333.size);
+          @org.apache.thrift.annotation.Nullable Participant _elem334;
+          for (int _i335 = 0; _i335 < _list333.size; ++_i335)
           {
-            _elem318 = new Participant();
-            _elem318.read(iprot);
-            struct.participants.add(_elem318);
+            _elem334 = new Participant();
+            _elem334.read(iprot);
+            struct.participants.add(_elem334);
           }
         }
         struct.setParticipantsIsSet(true);

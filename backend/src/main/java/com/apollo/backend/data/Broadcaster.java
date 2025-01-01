@@ -844,14 +844,14 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
           case 6: // BROADCASTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list264 = iprot.readListBegin();
-                struct.broadcasts = new java.util.ArrayList<Broadcast>(_list264.size);
-                @org.apache.thrift.annotation.Nullable Broadcast _elem265;
-                for (int _i266 = 0; _i266 < _list264.size; ++_i266)
+                org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
+                struct.broadcasts = new java.util.ArrayList<Broadcast>(_list280.size);
+                @org.apache.thrift.annotation.Nullable Broadcast _elem281;
+                for (int _i282 = 0; _i282 < _list280.size; ++_i282)
                 {
-                  _elem265 = new Broadcast();
-                  _elem265.read(iprot);
-                  struct.broadcasts.add(_elem265);
+                  _elem281 = new Broadcast();
+                  _elem281.read(iprot);
+                  struct.broadcasts.add(_elem281);
                 }
                 iprot.readListEnd();
               }
@@ -907,9 +907,9 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
         oprot.writeFieldBegin(BROADCASTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.broadcasts.size()));
-          for (Broadcast _iter267 : struct.broadcasts)
+          for (Broadcast _iter283 : struct.broadcasts)
           {
-            _iter267.write(oprot);
+            _iter283.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -977,9 +977,9 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
       if (struct.isSetBroadcasts()) {
         {
           oprot.writeI32(struct.broadcasts.size());
-          for (Broadcast _iter268 : struct.broadcasts)
+          for (Broadcast _iter284 : struct.broadcasts)
           {
-            _iter268.write(oprot);
+            _iter284.write(oprot);
           }
         }
       }
@@ -1014,14 +1014,14 @@ public class Broadcaster implements org.apache.thrift.TBase<Broadcaster, Broadca
       }
       if (incoming.get(5)) {
         {
-          org.apache.thrift.protocol.TList _list269 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.broadcasts = new java.util.ArrayList<Broadcast>(_list269.size);
-          @org.apache.thrift.annotation.Nullable Broadcast _elem270;
-          for (int _i271 = 0; _i271 < _list269.size; ++_i271)
+          org.apache.thrift.protocol.TList _list285 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.broadcasts = new java.util.ArrayList<Broadcast>(_list285.size);
+          @org.apache.thrift.annotation.Nullable Broadcast _elem286;
+          for (int _i287 = 0; _i287 < _list285.size; ++_i287)
           {
-            _elem270 = new Broadcast();
-            _elem270.read(iprot);
-            struct.broadcasts.add(_elem270);
+            _elem286 = new Broadcast();
+            _elem286.read(iprot);
+            struct.broadcasts.add(_elem286);
           }
         }
         struct.setBroadcastsIsSet(true);

@@ -81,10 +81,12 @@ public class ApolloApiApplication {
                 ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"),
                                 "en-US",
-                                UUID.randomUUID().toString(), aliceKeys.publicKey, System.currentTimeMillis()));
+                                UUID.randomUUID().toString(), aliceKeys.publicKey, System.currentTimeMillis(), false,
+                                false));
                 ApolloWebHelpers.SigningKeyPair bobKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US",
-                                UUID.randomUUID().toString(), bobKeys.publicKey, System.currentTimeMillis()));
+                                UUID.randomUUID().toString(), bobKeys.publicKey, System.currentTimeMillis(), false,
+                                false));
                 return cluster;
         }
 
@@ -132,31 +134,29 @@ public class ApolloApiApplication {
                 ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(
                                 new Account("alice", "alice@foo.com", ApolloApiHelpers.encodePassword("alice"), "en-US",
-                                                UUID.randomUUID().toString(), aliceKeys.publicKey, ts += 1));
+                                                UUID.randomUUID().toString(), aliceKeys.publicKey, ts += 1, false,
+                                                false));
+
                 ApolloWebHelpers.SigningKeyPair bobKeys = ApolloWebHelpers.generateKeys();
-                accountDepot.append(new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US",
-                                UUID.randomUUID().toString(), bobKeys.publicKey, ts += 1));
+                accountDepot.append(
+                                new Account("bob", "bob@foo.com", ApolloApiHelpers.encodePassword("bob"), "en-US",
+                                                UUID.randomUUID().toString(), bobKeys.publicKey, ts += 1, false,
+                                                false));
                 ApolloWebHelpers.SigningKeyPair jacobKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(new Account("jacob", "jacob@foo.com", ApolloApiHelpers.encodePassword("jacob"),
-                                "en-US", UUID.randomUUID().toString(), jacobKeys.publicKey, ts += 1));
+                                "en-US", UUID.randomUUID().toString(), jacobKeys.publicKey, ts += 1, true, true));
                 ApolloWebHelpers.SigningKeyPair jordanKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(
                                 new Account("jordan", "jordan@apollo.now", ApolloApiHelpers.encodePassword("jordan"),
                                                 "en-US",
-                                                UUID.randomUUID().toString(), jordanKeys.publicKey, ts += 1));
+                                                UUID.randomUUID().toString(), jordanKeys.publicKey, ts += 1, true,
+                                                true));
                 ApolloWebHelpers.SigningKeyPair blakeKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(
                                 new Account("blake", "blake@apollo.now", ApolloApiHelpers.encodePassword("blake"),
                                                 "en-US",
-                                                UUID.randomUUID().toString(), blakeKeys.publicKey, ts += 1));
-                ApolloWebHelpers.SigningKeyPair dadKeys = ApolloWebHelpers.generateKeys();
-                accountDepot.append(
-                                new Account("dad", "dad@foo.com", ApolloApiHelpers.encodePassword("dad"), "en-US",
-                                                UUID.randomUUID().toString(), dadKeys.publicKey, ts += 1));
-                ApolloWebHelpers.SigningKeyPair momKeys = ApolloWebHelpers.generateKeys();
-                accountDepot.append(
-                                new Account("mom", "mom@foo.com", ApolloApiHelpers.encodePassword("mom"), "en-US",
-                                                UUID.randomUUID().toString(), momKeys.publicKey, ts += 1));
+                                                UUID.randomUUID().toString(), blakeKeys.publicKey, ts += 1, true,
+                                                true));
 
                 // Populate and manipulate data for user relationships and statuses
                 List<Long> fooIds = new ArrayList<>();
@@ -166,7 +166,8 @@ public class ApolloApiApplication {
                         accountDepot
                                         .append(new Account("foo" + i, "foo" + i + "@foo.com",
                                                         ApolloApiHelpers.encodePassword("jacob"),
-                                                        "en-US", UUID.randomUUID().toString(), keys.publicKey, ts += 1)
+                                                        "en-US", UUID.randomUUID().toString(), keys.publicKey, ts += 1,
+                                                        false, false)
                                                         .setDiscoverable(true)
                                                         .setDisplayName("Foo " + i));
                         long fooId = nameToUser.selectOne(Path.key("foo" + i, "accountId"));

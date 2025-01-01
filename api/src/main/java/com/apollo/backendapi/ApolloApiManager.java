@@ -1,14 +1,29 @@
 package com.apollo.backendapi;
 
-import com.google.common.collect.Lists;
-
-import clojure.lang.PersistentHashMap;
-import clojure.lang.PersistentVector;
-
-import java.io.*;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.util.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,46 +32,47 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
-import org.threeten.extra.PeriodDuration;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.AbstractMap.SimpleEntry;
-
+import com.apollo.backend.ApolloHelpers;
+import com.apollo.backend.ApolloWebHelpers;
+import com.apollo.backend.data.*;
+import com.apollo.backend.modules.Core;
+import com.apollo.backend.modules.ESports;
+import com.apollo.backend.modules.GlobalTimelines;
+import com.apollo.backend.modules.Notifications;
+import com.apollo.backend.modules.Relationships;
+import com.apollo.backend.modules.Search;
+import com.apollo.backend.modules.TrendsAndHashtags;
+import com.apollo.backendapi.pojos.*;
+import com.apollo.shared.ApolloSpaces;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.Lists;
+import com.rpl.rama.Depot;
+import com.rpl.rama.PState;
+import com.rpl.rama.Path;
+import com.rpl.rama.ProxyState;
+import com.rpl.rama.QueryTopologyClient;
+import com.rpl.rama.SortedRangeFromOptions;
+import com.rpl.rama.cluster.ClusterManagerBase;
+import com.rpl.rama.diffs.KeyDiff;
+import com.rpl.rama.diffs.NewValueDiff;
+import com.rpl.rama.ops.Ops;
 
+import clojure.lang.PersistentVector;
 import io.github.cdimascio.dotenv.Dotenv;
-import rpl.rama.util.vector_backed_structures.VectorBackedSortedMap;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-
-import com.apollo.backend.*;
-import com.apollo.backend.data.*;
-import com.apollo.backend.modules.*;
-import com.apollo.backendapi.ApolloApiManager.QueryResults;
-import com.apollo.backendapi.pojos.*;
-import com.apollo.shared.ApolloSpaces;
-import com.rpl.rama.*;
-import com.rpl.rama.cluster.ClusterManagerBase;
-import com.rpl.rama.ops.Ops;
-import com.rpl.rama.diffs.*;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ApolloApiManager {
 
@@ -109,9 +125,12 @@ public class ApolloApiManager {
     private final Depot pollVoteDepot;
     private final Depot statusAttachmentWithIdDepot;
     private final Depot applicationDepot;
+    private final Depot reportDepot;
+    private final Depot userActivityDepot;
 
     // Core PStates
     private final PState nameToUser;
+    private final PState emailToAccountId;
     private final PState pinnerToStatusIds;
     private final PState uuidToAttachment;
     private final PState postUUIDToStatusId;
@@ -130,6 +149,7 @@ public class ApolloApiManager {
     // Core Queries
     private final QueryTopologyClient<List<AccountWithId>> getAccountsFromAccountIds;
     private final QueryTopologyClient<StatusQueryResults> getAccountTimeline;
+    private final QueryTopologyClient<List<AccountWithId>> getAllUserIds;
     private final QueryTopologyClient<StatusQueryResults> getStatusesFromPointers;
     private final QueryTopologyClient<Conversation> getConversation;
     private final QueryTopologyClient<List<Conversation>> getConversationTimeline;
@@ -140,6 +160,9 @@ public class ApolloApiManager {
     private final QueryTopologyClient<StatusQueryResults> getDirectTimeline;
     private final QueryTopologyClient<Map<Integer, List<StatusPointer>>> getHomeTimelinesUntil;
     private final QueryTopologyClient<Application> getApplicationFromClientId;
+    private final QueryTopologyClient<List<Report>> getAllReports;
+    private final QueryTopologyClient<Report> getReportFromReportId;
+    private final QueryTopologyClient<Integer> getActiveUsersCount;
 
     // Relationships Depots
     private final Depot authCodeDepot;
@@ -265,9 +288,12 @@ public class ApolloApiManager {
         pollVoteDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*pollVoteDepot");
         statusAttachmentWithIdDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*statusAttachmentWithIdDepot");
         applicationDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*applicationDepot");
+        reportDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*reportDepot");
+        userActivityDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*userActivityDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
+        emailToAccountId = cluster.clusterPState(CORE_MODULE_NAME, "$$emailToAccountId");
         pinnerToStatusIds = cluster.clusterPState(CORE_MODULE_NAME, "$$pinnerToStatusIds");
         accountIdToScheduledStatuses = cluster.clusterPState(CORE_MODULE_NAME, "$$accountIdToScheduledStatuses");
         postUUIDToStatusId = cluster.clusterPState(CORE_MODULE_NAME, "$$postUUIDToStatusId");
@@ -286,6 +312,7 @@ public class ApolloApiManager {
         // Core Queries
         getAccountsFromAccountIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountsFromAccountIds");
         getAccountTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getAccountTimeline");
+        getAllUserIds = cluster.clusterQuery(CORE_MODULE_NAME, "getAllUserIds");
         getStatusesFromPointers = cluster.clusterQuery(CORE_MODULE_NAME, "getStatusesFromPointers");
         getConversation = cluster.clusterQuery(CORE_MODULE_NAME, "getConversation");
         getConversationTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getConversationTimeline");
@@ -296,6 +323,9 @@ public class ApolloApiManager {
         getDirectTimeline = cluster.clusterQuery(CORE_MODULE_NAME, "getDirectTimeline");
         getHomeTimelinesUntil = cluster.clusterQuery(CORE_MODULE_NAME, "getHomeTimelinesUntil");
         getApplicationFromClientId = cluster.clusterQuery(CORE_MODULE_NAME, "getApplicationFromClientId");
+        getAllReports = cluster.clusterQuery(CORE_MODULE_NAME, "getAllReports");
+        getReportFromReportId = cluster.clusterQuery(CORE_MODULE_NAME, "getReportFromReportId");
+        getActiveUsersCount = cluster.clusterQuery(CORE_MODULE_NAME, "getActiveUsersCount");
 
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -543,7 +573,7 @@ public class ApolloApiManager {
         }
         return accountDepot
                 .appendAsync(new Account(params.username, params.email, pwdHash, params.locale, uuid, keys.publicKey,
-                        System.currentTimeMillis()))
+                        System.currentTimeMillis(), false, false))
                 .thenCompose(res -> this.getAccountUUID(params.username))
                 .thenApply(accountUUID -> accountUUID.equals(uuid));
     }
@@ -1366,10 +1396,13 @@ public class ApolloApiManager {
     }
 
     public CompletableFuture<Boolean> postEditAccount(long accountId, List<EditAccountField> edits) {
-        if (edits.size() == 0)
+        if (edits.size() == 0) {
             return CompletableFuture.completedFuture(true);
+        }
         return accountEditDepot.appendAsync(new EditAccount(accountId, edits, System.currentTimeMillis()))
-                .thenApply(res -> true);
+                .thenApply(res -> {
+                    return true;
+                });
     }
 
     public CompletableFuture<List<AccountWithId>> getFamiliarFollowers(long requestAccountId, long targetId) {
@@ -1654,6 +1687,12 @@ public class ApolloApiManager {
                 (offset, limit) -> accountIdToDirectMessages.selectOneAsync(Path.key(accountId, offset).nullToVal(-1L))
                         .thenCompose(timelineIndex -> getDirectTimeline.invokeAsync(accountId, timelineIndex, limit)),
                 offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
+    public CompletableFuture<Boolean> emailExists(String email) {
+        return emailToAccountId
+                .selectOneAsync(Path.key(email))
+                .thenApply(Objects::nonNull);
     }
 
     public CompletableFuture<StatusQueryResults> getLocalTimeline(LocalTimeline timelineType,
@@ -6006,6 +6045,277 @@ public class ApolloApiManager {
                                 return getLiveMatch;
                             });
                 });
+    }
+
+    // Admin stuff
+    public CompletableFuture<List<AccountWithId>> getAllAccounts() {
+        return getAllUserIds.invokeAsync()
+                .thenCompose(ids -> getAccountsFromAccountIds.invokeAsync(null, ids));
+    }
+
+    private boolean isValidPermissionGroup(String group) {
+        return group.equals("admin") || group.equals("moderator");
+    }
+
+    public CompletableFuture<Void> addPermissionGroup(List<String> nicknames, String group) {
+        if (!isValidPermissionGroup(group)) {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid permission group: " + group));
+        }
+
+        // Get accounts from names using Rama query
+        return getAccountsFromNames.invokeAsync(null, nicknames)
+                .thenCompose(accounts -> {
+                    List<CompletableFuture<Boolean>> edits = accounts.stream()
+                            .map(accountWithId -> {
+                                List<EditAccountField> accountEdits = new ArrayList<>();
+                                switch (group) {
+                                    case "admin":
+                                        accountEdits.add(EditAccountField.admin(true));
+                                        accountEdits.add(EditAccountField.moderator(false));
+                                        break;
+                                    case "moderator":
+                                        accountEdits.add(EditAccountField.admin(false));
+                                        accountEdits.add(EditAccountField.moderator(true));
+                                        break;
+                                }
+                                return postEditAccount(accountWithId.accountId, accountEdits);
+                            })
+                            .collect(Collectors.toList());
+
+                    return CompletableFuture.allOf(
+                            edits.toArray(new CompletableFuture[0]));
+                });
+    }
+
+    public CompletableFuture<Void> removePermissionGroup(List<String> nicknames, String group) {
+        if (!isValidPermissionGroup(group)) {
+            return CompletableFuture.failedFuture(
+                    new IllegalArgumentException("Invalid permission group: " + group));
+        }
+
+        return getAccountsFromNames.invokeAsync(null, nicknames)
+                .thenCompose(accounts -> {
+                    List<CompletableFuture<Boolean>> edits = accounts.stream()
+                            .map(accountWithId -> {
+                                List<EditAccountField> accountEdits = new ArrayList<>();
+                                switch (group) {
+                                    case "admin":
+                                        accountEdits.add(EditAccountField.admin(false));
+                                        break;
+                                    case "moderator":
+                                        accountEdits.add(EditAccountField.moderator(false));
+                                        break;
+                                }
+                                return postEditAccount(accountWithId.accountId, accountEdits);
+                            })
+                            .collect(Collectors.toList());
+
+                    return CompletableFuture.allOf(
+                            edits.toArray(new CompletableFuture[0]));
+                });
+    }
+
+    public CompletableFuture<Void> addUserTags(List<String> nicknames, List<String> tags) {
+        return getAccountsFromNames.invokeAsync(null, nicknames)
+                .thenCompose(accounts -> {
+                    List<CompletableFuture<Boolean>> edits = accounts.stream()
+                            .map(accountWithId -> {
+                                List<EditAccountField> accountEdits = new ArrayList<>();
+                                // Get existing tags and add new ones
+                                List<String> updatedTags = new ArrayList<>();
+                                if (accountWithId.account.tags != null) {
+                                    updatedTags.addAll(accountWithId.account.tags);
+                                }
+                                // Add new tags if they don't exist
+                                tags.forEach(tag -> {
+                                    if (!updatedTags.contains(tag)) {
+                                        updatedTags.add(tag);
+                                    }
+                                });
+                                // Handle special case for verified tag
+                                if (tags.contains("verified")) {
+                                    accountEdits.add(EditAccountField.verified(true));
+                                }
+                                accountEdits.add(EditAccountField.tags(updatedTags));
+                                return postEditAccount(accountWithId.accountId, accountEdits);
+                            })
+                            .collect(Collectors.toList());
+                    return CompletableFuture.allOf(
+                            edits.toArray(new CompletableFuture[0]));
+                });
+    }
+
+    public CompletableFuture<Void> removeUserTags(List<String> nicknames, List<String> tags) {
+        return getAccountsFromNames.invokeAsync(null, nicknames)
+                .thenCompose(accounts -> {
+                    List<CompletableFuture<Boolean>> edits = accounts.stream()
+                            .map(accountWithId -> {
+                                List<EditAccountField> accountEdits = new ArrayList<>();
+                                // Remove specified tags from existing tags
+                                List<String> updatedTags = new ArrayList<>();
+                                if (accountWithId.account.tags != null) {
+                                    updatedTags.addAll(accountWithId.account.tags);
+                                    updatedTags.removeAll(tags);
+                                }
+                                // Handle special case for verified tag
+                                if (tags.contains("verified")) {
+                                    accountEdits.add(EditAccountField.verified(false));
+                                }
+                                accountEdits.add(EditAccountField.tags(updatedTags));
+                                return postEditAccount(accountWithId.accountId, accountEdits);
+                            })
+                            .collect(Collectors.toList());
+                    return CompletableFuture.allOf(
+                            edits.toArray(new CompletableFuture[0]));
+                });
+    }
+
+    public CompletableFuture<Void> setSuggestedUsers(List<String> nicknames, boolean suggested) {
+        return getAccountsFromNames.invokeAsync(null, nicknames)
+                .thenCompose(accounts -> {
+                    List<CompletableFuture<Boolean>> edits = accounts.stream()
+                            .map(accountWithId -> {
+                                List<EditAccountField> accountEdits = new ArrayList<>();
+                                // Set the isSuggested field
+                                accountEdits.add(EditAccountField.isSuggested(suggested));
+                                return postEditAccount(accountWithId.accountId, accountEdits);
+                            })
+                            .collect(Collectors.toList());
+                    return CompletableFuture.allOf(
+                            edits.toArray(new CompletableFuture[0]));
+                });
+    }
+
+    // TODO: Possibly add this to moderation log
+    public CompletableFuture<Void> deactivateAccount(Long accountId, String reportId) {
+        return getAccountWithId(null, accountId)
+                .thenCompose(accountWithId -> {
+                    if (accountWithId == null) {
+                        CompletableFuture<Void> future = new CompletableFuture<>();
+                        future.completeExceptionally(new IllegalArgumentException("Account not found"));
+                        return future;
+                    }
+
+                    List<EditAccountField> accountEdits = new ArrayList<>();
+                    accountEdits.add(EditAccountField.suspended(true));
+
+                    return postEditAccount(accountWithId.accountId, accountEdits)
+                            .thenCompose(success -> {
+                                if (!success) {
+                                    CompletableFuture<Void> future = new CompletableFuture<>();
+                                    future.completeExceptionally(new RuntimeException("Failed to deactivate account"));
+                                    return future;
+                                }
+                                return CompletableFuture.completedFuture(null);
+                            });
+                });
+    }
+
+    public CompletableFuture<Boolean> saveReport(PostReport params, long reporterAccountId,
+            AccountWithId targetAccount) {
+        Report thriftReport = new Report();
+        thriftReport.setId(UUID.randomUUID().toString());
+        thriftReport.setState("open");
+        thriftReport.setCategory(params.category);
+        thriftReport.setComment(params.comment);
+        thriftReport.setCreated_at(DateTimeFormatter.ISO_INSTANT.format(Instant.now()));
+        thriftReport.setStatus_ids(params.status_ids);
+        thriftReport.setRule_ids(params.rule_ids.stream()
+                .map(Object::toString)
+                .collect(Collectors.toList()));
+        thriftReport.setTarget_account_id(targetAccount.accountId);
+        thriftReport.setReporter_account_id(reporterAccountId);
+        thriftReport.setAction_taken(false);
+        thriftReport.setForwarded(params.forward);
+
+        return reportDepot.appendAsync(thriftReport).thenApply(res -> true);
+    }
+
+    public CompletableFuture<List<Report>> getReports(Map<String, String> params) {
+        return getAllReports.invokeAsync(null);
+    }
+
+    public CompletableFuture<Void> updateReportState(String id, String newState) {
+        // Validate the new state
+        if (!newState.equals("resolved") && !newState.equals("open")) {
+            CompletableFuture<Void> failedFuture = new CompletableFuture<>();
+            failedFuture.completeExceptionally(
+                    new IllegalArgumentException("Invalid state: " + newState));
+            return failedFuture;
+        }
+
+        // First fetch the existing report
+        return getReportFromReportId.invokeAsync(id)
+                .thenCompose(existingReport -> {
+                    // Create a new Report object with all existing fields
+                    Report updatedReport = new Report();
+                    // Copy all fields from existing report
+                    updatedReport.setId(id);
+                    updatedReport.setCategory(existingReport.getCategory());
+                    updatedReport.setComment(existingReport.getComment());
+                    updatedReport.setCreated_at(existingReport.getCreated_at());
+                    updatedReport.setStatus_ids(existingReport.getStatus_ids());
+                    updatedReport.setRule_ids(existingReport.getRule_ids());
+                    updatedReport.setTarget_account_id(existingReport.getTarget_account_id());
+                    updatedReport.setReporter_account_id(existingReport.getReporter_account_id());
+                    updatedReport.setAction_taken(true);
+                    updatedReport.setForwarded(existingReport.isForwarded());
+
+                    // Append the updated report to the depot
+                    return reportDepot.appendAsync(updatedReport)
+                            .thenApply(result -> null);
+                });
+    }
+
+    public CompletableFuture<Boolean> deleteAccount(long accountId) {
+        return getAccountWithId(null, accountId)
+                .thenCompose(accountWithId -> {
+                    if (accountWithId == null) {
+                        return CompletableFuture.completedFuture(false);
+                    }
+                    return accountDepot
+                            .appendAsync(new RemoveAccount(accountId, accountWithId.account.getName(),
+                                    System.currentTimeMillis()))
+                            .thenApply(res -> true);
+                });
+    }
+
+    public CompletableFuture<GetStatus> deleteStatusInternal(StatusPointer pointer) {
+        return getStatus(pointer.authorId, pointer)
+                .thenCompose(status -> deleteStatus(pointer.authorId, pointer.statusId)
+                        .thenApply(deleted -> status))
+                .thenApply(GetStatus::new);
+    }
+
+    public CompletableFuture<GetInstanceStats> getInstanceStats() {
+        return getAllAccounts()
+                .thenCompose(users -> {
+                    GetInstanceStats stats = new GetInstanceStats();
+                    stats.userCount = users.size();
+                    stats.statusCount = users.stream()
+                            .mapToInt(account -> account.metadata.statusCount)
+                            .sum();
+
+                    // Calculate threshold timestamp as Instant
+                    long thirtyDaysAgo = Instant.now()
+                            .minus(30, ChronoUnit.DAYS)
+                            .toEpochMilli();
+
+                    // Query will compare Instants
+                    return getActiveUsersCount.invokeAsync(thirtyDaysAgo)
+                            .thenApply(activeCount -> {
+                                stats.mau = activeCount;
+                                return stats;
+                            });
+                });
+    }
+
+    public CompletableFuture<Boolean> storeUserActivity(PostUserActivity activity) {
+        long epochMillis = Instant.parse(activity.timestamp).toEpochMilli();
+        return userActivityDepot
+                .appendAsync(new UserActivity(ApolloHelpers.parseAccountId(activity.userId), epochMillis))
+                .thenApply(res -> true);
     }
 
 }

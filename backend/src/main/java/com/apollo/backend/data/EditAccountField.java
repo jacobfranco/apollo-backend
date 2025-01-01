@@ -23,6 +23,12 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
   private static final org.apache.thrift.protocol.TField FIELDS_FIELD_DESC = new org.apache.thrift.protocol.TField("fields", org.apache.thrift.protocol.TType.LIST, (short)12);
   private static final org.apache.thrift.protocol.TField MARKERS_FIELD_DESC = new org.apache.thrift.protocol.TField("markers", org.apache.thrift.protocol.TType.MAP, (short)13);
   private static final org.apache.thrift.protocol.TField PREFERENCES_FIELD_DESC = new org.apache.thrift.protocol.TField("preferences", org.apache.thrift.protocol.TType.MAP, (short)14);
+  private static final org.apache.thrift.protocol.TField ADMIN_FIELD_DESC = new org.apache.thrift.protocol.TField("admin", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.thrift.protocol.TField MODERATOR_FIELD_DESC = new org.apache.thrift.protocol.TField("moderator", org.apache.thrift.protocol.TType.BOOL, (short)16);
+  private static final org.apache.thrift.protocol.TField TAGS_FIELD_DESC = new org.apache.thrift.protocol.TField("tags", org.apache.thrift.protocol.TType.LIST, (short)17);
+  private static final org.apache.thrift.protocol.TField VERIFIED_FIELD_DESC = new org.apache.thrift.protocol.TField("verified", org.apache.thrift.protocol.TType.BOOL, (short)18);
+  private static final org.apache.thrift.protocol.TField IS_SUGGESTED_FIELD_DESC = new org.apache.thrift.protocol.TField("isSuggested", org.apache.thrift.protocol.TType.BOOL, (short)19);
+  private static final org.apache.thrift.protocol.TField SUSPENDED_FIELD_DESC = new org.apache.thrift.protocol.TField("suspended", org.apache.thrift.protocol.TType.BOOL, (short)20);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -39,7 +45,13 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
     AVATAR((short)11, "avatar"),
     FIELDS((short)12, "fields"),
     MARKERS((short)13, "markers"),
-    PREFERENCES((short)14, "preferences");
+    PREFERENCES((short)14, "preferences"),
+    ADMIN((short)15, "admin"),
+    MODERATOR((short)16, "moderator"),
+    TAGS((short)17, "tags"),
+    VERIFIED((short)18, "verified"),
+    IS_SUGGESTED((short)19, "isSuggested"),
+    SUSPENDED((short)20, "suspended");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -83,6 +95,18 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
           return MARKERS;
         case 14: // PREFERENCES
           return PREFERENCES;
+        case 15: // ADMIN
+          return ADMIN;
+        case 16: // MODERATOR
+          return MODERATOR;
+        case 17: // TAGS
+          return TAGS;
+        case 18: // VERIFIED
+          return VERIFIED;
+        case 19: // IS_SUGGESTED
+          return IS_SUGGESTED;
+        case 20: // SUSPENDED
+          return SUSPENDED;
         default:
           return null;
       }
@@ -161,6 +185,19 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.ADMIN, new org.apache.thrift.meta_data.FieldMetaData("admin", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.MODERATOR, new org.apache.thrift.meta_data.FieldMetaData("moderator", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TAGS, new org.apache.thrift.meta_data.FieldMetaData("tags", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.VERIFIED, new org.apache.thrift.meta_data.FieldMetaData("verified", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.IS_SUGGESTED, new org.apache.thrift.meta_data.FieldMetaData("isSuggested", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.SUSPENDED, new org.apache.thrift.meta_data.FieldMetaData("suspended", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(EditAccountField.class, metaDataMap);
   }
@@ -265,6 +302,42 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
     return x;
   }
 
+  public static EditAccountField admin(boolean value) {
+    EditAccountField x = new EditAccountField();
+    x.setAdmin(value);
+    return x;
+  }
+
+  public static EditAccountField moderator(boolean value) {
+    EditAccountField x = new EditAccountField();
+    x.setModerator(value);
+    return x;
+  }
+
+  public static EditAccountField tags(java.util.List<java.lang.String> value) {
+    EditAccountField x = new EditAccountField();
+    x.setTags(value);
+    return x;
+  }
+
+  public static EditAccountField verified(boolean value) {
+    EditAccountField x = new EditAccountField();
+    x.setVerified(value);
+    return x;
+  }
+
+  public static EditAccountField isSuggested(boolean value) {
+    EditAccountField x = new EditAccountField();
+    x.setIsSuggested(value);
+    return x;
+  }
+
+  public static EditAccountField suspended(boolean value) {
+    EditAccountField x = new EditAccountField();
+    x.setSuspended(value);
+    return x;
+  }
+
 
   @Override
   protected void checkType(_Fields setField, java.lang.Object value) throws java.lang.ClassCastException {
@@ -339,6 +412,36 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
           break;
         }
         throw new java.lang.ClassCastException("Was expecting value of type java.util.Map<java.lang.String,java.lang.String> for field 'preferences', but got " + value.getClass().getSimpleName());
+      case ADMIN:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'admin', but got " + value.getClass().getSimpleName());
+      case MODERATOR:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'moderator', but got " + value.getClass().getSimpleName());
+      case TAGS:
+        if (value instanceof java.util.List) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.util.List<java.lang.String> for field 'tags', but got " + value.getClass().getSimpleName());
+      case VERIFIED:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'verified', but got " + value.getClass().getSimpleName());
+      case IS_SUGGESTED:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'isSuggested', but got " + value.getClass().getSimpleName());
+      case SUSPENDED:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'suspended', but got " + value.getClass().getSimpleName());
       default:
         throw new java.lang.IllegalArgumentException("Unknown field id " + setField);
     }
@@ -454,14 +557,14 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
           if (field.type == FIELDS_FIELD_DESC.type) {
             java.util.List<KeyValuePair> fields;
             {
-              org.apache.thrift.protocol.TList _list44 = iprot.readListBegin();
-              fields = new java.util.ArrayList<KeyValuePair>(_list44.size);
-              @org.apache.thrift.annotation.Nullable KeyValuePair _elem45;
-              for (int _i46 = 0; _i46 < _list44.size; ++_i46)
+              org.apache.thrift.protocol.TList _list52 = iprot.readListBegin();
+              fields = new java.util.ArrayList<KeyValuePair>(_list52.size);
+              @org.apache.thrift.annotation.Nullable KeyValuePair _elem53;
+              for (int _i54 = 0; _i54 < _list52.size; ++_i54)
               {
-                _elem45 = new KeyValuePair();
-                _elem45.read(iprot);
-                fields.add(_elem45);
+                _elem53 = new KeyValuePair();
+                _elem53.read(iprot);
+                fields.add(_elem53);
               }
               iprot.readListEnd();
             }
@@ -474,16 +577,16 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
           if (field.type == MARKERS_FIELD_DESC.type) {
             java.util.Map<java.lang.String,Marker> markers;
             {
-              org.apache.thrift.protocol.TMap _map47 = iprot.readMapBegin();
-              markers = new java.util.HashMap<java.lang.String,Marker>(2*_map47.size);
-              @org.apache.thrift.annotation.Nullable java.lang.String _key48;
-              @org.apache.thrift.annotation.Nullable Marker _val49;
-              for (int _i50 = 0; _i50 < _map47.size; ++_i50)
+              org.apache.thrift.protocol.TMap _map55 = iprot.readMapBegin();
+              markers = new java.util.HashMap<java.lang.String,Marker>(2*_map55.size);
+              @org.apache.thrift.annotation.Nullable java.lang.String _key56;
+              @org.apache.thrift.annotation.Nullable Marker _val57;
+              for (int _i58 = 0; _i58 < _map55.size; ++_i58)
               {
-                _key48 = iprot.readString();
-                _val49 = new Marker();
-                _val49.read(iprot);
-                markers.put(_key48, _val49);
+                _key56 = iprot.readString();
+                _val57 = new Marker();
+                _val57.read(iprot);
+                markers.put(_key56, _val57);
               }
               iprot.readMapEnd();
             }
@@ -496,19 +599,83 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
           if (field.type == PREFERENCES_FIELD_DESC.type) {
             java.util.Map<java.lang.String,java.lang.String> preferences;
             {
-              org.apache.thrift.protocol.TMap _map51 = iprot.readMapBegin();
-              preferences = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map51.size);
-              @org.apache.thrift.annotation.Nullable java.lang.String _key52;
-              @org.apache.thrift.annotation.Nullable java.lang.String _val53;
-              for (int _i54 = 0; _i54 < _map51.size; ++_i54)
+              org.apache.thrift.protocol.TMap _map59 = iprot.readMapBegin();
+              preferences = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map59.size);
+              @org.apache.thrift.annotation.Nullable java.lang.String _key60;
+              @org.apache.thrift.annotation.Nullable java.lang.String _val61;
+              for (int _i62 = 0; _i62 < _map59.size; ++_i62)
               {
-                _key52 = iprot.readString();
-                _val53 = iprot.readString();
-                preferences.put(_key52, _val53);
+                _key60 = iprot.readString();
+                _val61 = iprot.readString();
+                preferences.put(_key60, _val61);
               }
               iprot.readMapEnd();
             }
             return preferences;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case ADMIN:
+          if (field.type == ADMIN_FIELD_DESC.type) {
+            java.lang.Boolean admin;
+            admin = iprot.readBool();
+            return admin;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case MODERATOR:
+          if (field.type == MODERATOR_FIELD_DESC.type) {
+            java.lang.Boolean moderator;
+            moderator = iprot.readBool();
+            return moderator;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case TAGS:
+          if (field.type == TAGS_FIELD_DESC.type) {
+            java.util.List<java.lang.String> tags;
+            {
+              org.apache.thrift.protocol.TList _list63 = iprot.readListBegin();
+              tags = new java.util.ArrayList<java.lang.String>(_list63.size);
+              @org.apache.thrift.annotation.Nullable java.lang.String _elem64;
+              for (int _i65 = 0; _i65 < _list63.size; ++_i65)
+              {
+                _elem64 = iprot.readString();
+                tags.add(_elem64);
+              }
+              iprot.readListEnd();
+            }
+            return tags;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case VERIFIED:
+          if (field.type == VERIFIED_FIELD_DESC.type) {
+            java.lang.Boolean verified;
+            verified = iprot.readBool();
+            return verified;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case IS_SUGGESTED:
+          if (field.type == IS_SUGGESTED_FIELD_DESC.type) {
+            java.lang.Boolean isSuggested;
+            isSuggested = iprot.readBool();
+            return isSuggested;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case SUSPENDED:
+          if (field.type == SUSPENDED_FIELD_DESC.type) {
+            java.lang.Boolean suspended;
+            suspended = iprot.readBool();
+            return suspended;
           } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
@@ -573,9 +740,9 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         java.util.List<KeyValuePair> fields = (java.util.List<KeyValuePair>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, fields.size()));
-          for (KeyValuePair _iter55 : fields)
+          for (KeyValuePair _iter66 : fields)
           {
-            _iter55.write(oprot);
+            _iter66.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -584,10 +751,10 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         java.util.Map<java.lang.String,Marker> markers = (java.util.Map<java.lang.String,Marker>)value_;
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, markers.size()));
-          for (java.util.Map.Entry<java.lang.String, Marker> _iter56 : markers.entrySet())
+          for (java.util.Map.Entry<java.lang.String, Marker> _iter67 : markers.entrySet())
           {
-            oprot.writeString(_iter56.getKey());
-            _iter56.getValue().write(oprot);
+            oprot.writeString(_iter67.getKey());
+            _iter67.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -596,13 +763,44 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         java.util.Map<java.lang.String,java.lang.String> preferences = (java.util.Map<java.lang.String,java.lang.String>)value_;
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, preferences.size()));
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter57 : preferences.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter68 : preferences.entrySet())
           {
-            oprot.writeString(_iter57.getKey());
-            oprot.writeString(_iter57.getValue());
+            oprot.writeString(_iter68.getKey());
+            oprot.writeString(_iter68.getValue());
           }
           oprot.writeMapEnd();
         }
+        return;
+      case ADMIN:
+        java.lang.Boolean admin = (java.lang.Boolean)value_;
+        oprot.writeBool(admin);
+        return;
+      case MODERATOR:
+        java.lang.Boolean moderator = (java.lang.Boolean)value_;
+        oprot.writeBool(moderator);
+        return;
+      case TAGS:
+        java.util.List<java.lang.String> tags = (java.util.List<java.lang.String>)value_;
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, tags.size()));
+          for (java.lang.String _iter69 : tags)
+          {
+            oprot.writeString(_iter69);
+          }
+          oprot.writeListEnd();
+        }
+        return;
+      case VERIFIED:
+        java.lang.Boolean verified = (java.lang.Boolean)value_;
+        oprot.writeBool(verified);
+        return;
+      case IS_SUGGESTED:
+        java.lang.Boolean isSuggested = (java.lang.Boolean)value_;
+        oprot.writeBool(isSuggested);
+        return;
+      case SUSPENDED:
+        java.lang.Boolean suspended = (java.lang.Boolean)value_;
+        oprot.writeBool(suspended);
         return;
       default:
         throw new java.lang.IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -663,14 +861,14 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         case FIELDS:
           java.util.List<KeyValuePair> fields;
           {
-            org.apache.thrift.protocol.TList _list58 = iprot.readListBegin();
-            fields = new java.util.ArrayList<KeyValuePair>(_list58.size);
-            @org.apache.thrift.annotation.Nullable KeyValuePair _elem59;
-            for (int _i60 = 0; _i60 < _list58.size; ++_i60)
+            org.apache.thrift.protocol.TList _list70 = iprot.readListBegin();
+            fields = new java.util.ArrayList<KeyValuePair>(_list70.size);
+            @org.apache.thrift.annotation.Nullable KeyValuePair _elem71;
+            for (int _i72 = 0; _i72 < _list70.size; ++_i72)
             {
-              _elem59 = new KeyValuePair();
-              _elem59.read(iprot);
-              fields.add(_elem59);
+              _elem71 = new KeyValuePair();
+              _elem71.read(iprot);
+              fields.add(_elem71);
             }
             iprot.readListEnd();
           }
@@ -678,16 +876,16 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         case MARKERS:
           java.util.Map<java.lang.String,Marker> markers;
           {
-            org.apache.thrift.protocol.TMap _map61 = iprot.readMapBegin();
-            markers = new java.util.HashMap<java.lang.String,Marker>(2*_map61.size);
-            @org.apache.thrift.annotation.Nullable java.lang.String _key62;
-            @org.apache.thrift.annotation.Nullable Marker _val63;
-            for (int _i64 = 0; _i64 < _map61.size; ++_i64)
+            org.apache.thrift.protocol.TMap _map73 = iprot.readMapBegin();
+            markers = new java.util.HashMap<java.lang.String,Marker>(2*_map73.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _key74;
+            @org.apache.thrift.annotation.Nullable Marker _val75;
+            for (int _i76 = 0; _i76 < _map73.size; ++_i76)
             {
-              _key62 = iprot.readString();
-              _val63 = new Marker();
-              _val63.read(iprot);
-              markers.put(_key62, _val63);
+              _key74 = iprot.readString();
+              _val75 = new Marker();
+              _val75.read(iprot);
+              markers.put(_key74, _val75);
             }
             iprot.readMapEnd();
           }
@@ -695,19 +893,53 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         case PREFERENCES:
           java.util.Map<java.lang.String,java.lang.String> preferences;
           {
-            org.apache.thrift.protocol.TMap _map65 = iprot.readMapBegin();
-            preferences = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map65.size);
-            @org.apache.thrift.annotation.Nullable java.lang.String _key66;
-            @org.apache.thrift.annotation.Nullable java.lang.String _val67;
-            for (int _i68 = 0; _i68 < _map65.size; ++_i68)
+            org.apache.thrift.protocol.TMap _map77 = iprot.readMapBegin();
+            preferences = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map77.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _key78;
+            @org.apache.thrift.annotation.Nullable java.lang.String _val79;
+            for (int _i80 = 0; _i80 < _map77.size; ++_i80)
             {
-              _key66 = iprot.readString();
-              _val67 = iprot.readString();
-              preferences.put(_key66, _val67);
+              _key78 = iprot.readString();
+              _val79 = iprot.readString();
+              preferences.put(_key78, _val79);
             }
             iprot.readMapEnd();
           }
           return preferences;
+        case ADMIN:
+          java.lang.Boolean admin;
+          admin = iprot.readBool();
+          return admin;
+        case MODERATOR:
+          java.lang.Boolean moderator;
+          moderator = iprot.readBool();
+          return moderator;
+        case TAGS:
+          java.util.List<java.lang.String> tags;
+          {
+            org.apache.thrift.protocol.TList _list81 = iprot.readListBegin();
+            tags = new java.util.ArrayList<java.lang.String>(_list81.size);
+            @org.apache.thrift.annotation.Nullable java.lang.String _elem82;
+            for (int _i83 = 0; _i83 < _list81.size; ++_i83)
+            {
+              _elem82 = iprot.readString();
+              tags.add(_elem82);
+            }
+            iprot.readListEnd();
+          }
+          return tags;
+        case VERIFIED:
+          java.lang.Boolean verified;
+          verified = iprot.readBool();
+          return verified;
+        case IS_SUGGESTED:
+          java.lang.Boolean isSuggested;
+          isSuggested = iprot.readBool();
+          return isSuggested;
+        case SUSPENDED:
+          java.lang.Boolean suspended;
+          suspended = iprot.readBool();
+          return suspended;
         default:
           throw new java.lang.IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -767,9 +999,9 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         java.util.List<KeyValuePair> fields = (java.util.List<KeyValuePair>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, fields.size()));
-          for (KeyValuePair _iter69 : fields)
+          for (KeyValuePair _iter84 : fields)
           {
-            _iter69.write(oprot);
+            _iter84.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -778,10 +1010,10 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         java.util.Map<java.lang.String,Marker> markers = (java.util.Map<java.lang.String,Marker>)value_;
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, markers.size()));
-          for (java.util.Map.Entry<java.lang.String, Marker> _iter70 : markers.entrySet())
+          for (java.util.Map.Entry<java.lang.String, Marker> _iter85 : markers.entrySet())
           {
-            oprot.writeString(_iter70.getKey());
-            _iter70.getValue().write(oprot);
+            oprot.writeString(_iter85.getKey());
+            _iter85.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -790,13 +1022,44 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         java.util.Map<java.lang.String,java.lang.String> preferences = (java.util.Map<java.lang.String,java.lang.String>)value_;
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, preferences.size()));
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter71 : preferences.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter86 : preferences.entrySet())
           {
-            oprot.writeString(_iter71.getKey());
-            oprot.writeString(_iter71.getValue());
+            oprot.writeString(_iter86.getKey());
+            oprot.writeString(_iter86.getValue());
           }
           oprot.writeMapEnd();
         }
+        return;
+      case ADMIN:
+        java.lang.Boolean admin = (java.lang.Boolean)value_;
+        oprot.writeBool(admin);
+        return;
+      case MODERATOR:
+        java.lang.Boolean moderator = (java.lang.Boolean)value_;
+        oprot.writeBool(moderator);
+        return;
+      case TAGS:
+        java.util.List<java.lang.String> tags = (java.util.List<java.lang.String>)value_;
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, tags.size()));
+          for (java.lang.String _iter87 : tags)
+          {
+            oprot.writeString(_iter87);
+          }
+          oprot.writeListEnd();
+        }
+        return;
+      case VERIFIED:
+        java.lang.Boolean verified = (java.lang.Boolean)value_;
+        oprot.writeBool(verified);
+        return;
+      case IS_SUGGESTED:
+        java.lang.Boolean isSuggested = (java.lang.Boolean)value_;
+        oprot.writeBool(isSuggested);
+        return;
+      case SUSPENDED:
+        java.lang.Boolean suspended = (java.lang.Boolean)value_;
+        oprot.writeBool(suspended);
         return;
       default:
         throw new java.lang.IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -834,6 +1097,18 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
         return MARKERS_FIELD_DESC;
       case PREFERENCES:
         return PREFERENCES_FIELD_DESC;
+      case ADMIN:
+        return ADMIN_FIELD_DESC;
+      case MODERATOR:
+        return MODERATOR_FIELD_DESC;
+      case TAGS:
+        return TAGS_FIELD_DESC;
+      case VERIFIED:
+        return VERIFIED_FIELD_DESC;
+      case IS_SUGGESTED:
+        return IS_SUGGESTED_FIELD_DESC;
+      case SUSPENDED:
+        return SUSPENDED_FIELD_DESC;
       default:
         throw new java.lang.IllegalArgumentException("Unknown field id " + setField);
     }
@@ -1038,6 +1313,84 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
     value_ = java.util.Objects.requireNonNull(value,"_Fields.PREFERENCES");
   }
 
+  public boolean getAdmin() {
+    if (getSetField() == _Fields.ADMIN) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'admin' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setAdmin(boolean value) {
+    setField_ = _Fields.ADMIN;
+    value_ = value;
+  }
+
+  public boolean getModerator() {
+    if (getSetField() == _Fields.MODERATOR) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'moderator' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setModerator(boolean value) {
+    setField_ = _Fields.MODERATOR;
+    value_ = value;
+  }
+
+  public java.util.List<java.lang.String> getTags() {
+    if (getSetField() == _Fields.TAGS) {
+      return (java.util.List<java.lang.String>)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'tags' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setTags(java.util.List<java.lang.String> value) {
+    setField_ = _Fields.TAGS;
+    value_ = java.util.Objects.requireNonNull(value,"_Fields.TAGS");
+  }
+
+  public boolean getVerified() {
+    if (getSetField() == _Fields.VERIFIED) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'verified' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setVerified(boolean value) {
+    setField_ = _Fields.VERIFIED;
+    value_ = value;
+  }
+
+  public boolean getIsSuggested() {
+    if (getSetField() == _Fields.IS_SUGGESTED) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'isSuggested' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setIsSuggested(boolean value) {
+    setField_ = _Fields.IS_SUGGESTED;
+    value_ = value;
+  }
+
+  public boolean getSuspended() {
+    if (getSetField() == _Fields.SUSPENDED) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'suspended' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setSuspended(boolean value) {
+    setField_ = _Fields.SUSPENDED;
+    value_ = value;
+  }
+
   public boolean isSetEmail() {
     return setField_ == _Fields.EMAIL;
   }
@@ -1105,6 +1458,36 @@ public class EditAccountField extends org.apache.thrift.TUnion<EditAccountField,
 
   public boolean isSetPreferences() {
     return setField_ == _Fields.PREFERENCES;
+  }
+
+
+  public boolean isSetAdmin() {
+    return setField_ == _Fields.ADMIN;
+  }
+
+
+  public boolean isSetModerator() {
+    return setField_ == _Fields.MODERATOR;
+  }
+
+
+  public boolean isSetTags() {
+    return setField_ == _Fields.TAGS;
+  }
+
+
+  public boolean isSetVerified() {
+    return setField_ == _Fields.VERIFIED;
+  }
+
+
+  public boolean isSetIsSuggested() {
+    return setField_ == _Fields.IS_SUGGESTED;
+  }
+
+
+  public boolean isSetSuspended() {
+    return setField_ == _Fields.SUSPENDED;
   }
 
 

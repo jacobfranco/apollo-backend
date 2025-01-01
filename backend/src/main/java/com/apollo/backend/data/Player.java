@@ -1620,13 +1620,13 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
           case 5: // ALSO_KNOWN_AS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list352 = iprot.readListBegin();
-                struct.alsoKnownAs = new java.util.ArrayList<java.lang.String>(_list352.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem353;
-                for (int _i354 = 0; _i354 < _list352.size; ++_i354)
+                org.apache.thrift.protocol.TList _list368 = iprot.readListBegin();
+                struct.alsoKnownAs = new java.util.ArrayList<java.lang.String>(_list368.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem369;
+                for (int _i370 = 0; _i370 < _list368.size; ++_i370)
                 {
-                  _elem353 = iprot.readString();
-                  struct.alsoKnownAs.add(_elem353);
+                  _elem369 = iprot.readString();
+                  struct.alsoKnownAs.add(_elem369);
                 }
                 iprot.readListEnd();
               }
@@ -1663,14 +1663,14 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
           case 9: // IMAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list355 = iprot.readListBegin();
-                struct.images = new java.util.ArrayList<Image>(_list355.size);
-                @org.apache.thrift.annotation.Nullable Image _elem356;
-                for (int _i357 = 0; _i357 < _list355.size; ++_i357)
+                org.apache.thrift.protocol.TList _list371 = iprot.readListBegin();
+                struct.images = new java.util.ArrayList<Image>(_list371.size);
+                @org.apache.thrift.annotation.Nullable Image _elem372;
+                for (int _i373 = 0; _i373 < _list371.size; ++_i373)
                 {
-                  _elem356 = new Image();
-                  _elem356.read(iprot);
-                  struct.images.add(_elem356);
+                  _elem372 = new Image();
+                  _elem372.read(iprot);
+                  struct.images.add(_elem372);
                 }
                 iprot.readListEnd();
               }
@@ -1715,13 +1715,13 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
           case 14: // TEAM_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list358 = iprot.readListBegin();
-                struct.teamIds = new java.util.ArrayList<java.lang.Integer>(_list358.size);
-                int _elem359;
-                for (int _i360 = 0; _i360 < _list358.size; ++_i360)
+                org.apache.thrift.protocol.TList _list374 = iprot.readListBegin();
+                struct.teamIds = new java.util.ArrayList<java.lang.Integer>(_list374.size);
+                int _elem375;
+                for (int _i376 = 0; _i376 < _list374.size; ++_i376)
                 {
-                  _elem359 = iprot.readI32();
-                  struct.teamIds.add(_elem359);
+                  _elem375 = iprot.readI32();
+                  struct.teamIds.add(_elem375);
                 }
                 iprot.readListEnd();
               }
@@ -1733,14 +1733,14 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
           case 15: // SOCIAL_MEDIA_ACCOUNTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list361 = iprot.readListBegin();
-                struct.socialMediaAccounts = new java.util.ArrayList<SocialMediaAccount>(_list361.size);
-                @org.apache.thrift.annotation.Nullable SocialMediaAccount _elem362;
-                for (int _i363 = 0; _i363 < _list361.size; ++_i363)
+                org.apache.thrift.protocol.TList _list377 = iprot.readListBegin();
+                struct.socialMediaAccounts = new java.util.ArrayList<SocialMediaAccount>(_list377.size);
+                @org.apache.thrift.annotation.Nullable SocialMediaAccount _elem378;
+                for (int _i379 = 0; _i379 < _list377.size; ++_i379)
                 {
-                  _elem362 = new SocialMediaAccount();
-                  _elem362.read(iprot);
-                  struct.socialMediaAccounts.add(_elem362);
+                  _elem378 = new SocialMediaAccount();
+                  _elem378.read(iprot);
+                  struct.socialMediaAccounts.add(_elem378);
                 }
                 iprot.readListEnd();
               }
@@ -1795,9 +1795,9 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
         oprot.writeFieldBegin(ALSO_KNOWN_AS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.alsoKnownAs.size()));
-          for (java.lang.String _iter364 : struct.alsoKnownAs)
+          for (java.lang.String _iter380 : struct.alsoKnownAs)
           {
-            oprot.writeString(_iter364);
+            oprot.writeString(_iter380);
           }
           oprot.writeListEnd();
         }
@@ -1822,9 +1822,9 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
         oprot.writeFieldBegin(IMAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.images.size()));
-          for (Image _iter365 : struct.images)
+          for (Image _iter381 : struct.images)
           {
-            _iter365.write(oprot);
+            _iter381.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1852,9 +1852,9 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
         oprot.writeFieldBegin(TEAM_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.teamIds.size()));
-          for (int _iter366 : struct.teamIds)
+          for (int _iter382 : struct.teamIds)
           {
-            oprot.writeI32(_iter366);
+            oprot.writeI32(_iter382);
           }
           oprot.writeListEnd();
         }
@@ -1864,9 +1864,9 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
         oprot.writeFieldBegin(SOCIAL_MEDIA_ACCOUNTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.socialMediaAccounts.size()));
-          for (SocialMediaAccount _iter367 : struct.socialMediaAccounts)
+          for (SocialMediaAccount _iter383 : struct.socialMediaAccounts)
           {
-            _iter367.write(oprot);
+            _iter383.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1958,9 +1958,9 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
       if (struct.isSetAlsoKnownAs()) {
         {
           oprot.writeI32(struct.alsoKnownAs.size());
-          for (java.lang.String _iter368 : struct.alsoKnownAs)
+          for (java.lang.String _iter384 : struct.alsoKnownAs)
           {
-            oprot.writeString(_iter368);
+            oprot.writeString(_iter384);
           }
         }
       }
@@ -1976,9 +1976,9 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
       if (struct.isSetImages()) {
         {
           oprot.writeI32(struct.images.size());
-          for (Image _iter369 : struct.images)
+          for (Image _iter385 : struct.images)
           {
-            _iter369.write(oprot);
+            _iter385.write(oprot);
           }
         }
       }
@@ -1997,18 +1997,18 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
       if (struct.isSetTeamIds()) {
         {
           oprot.writeI32(struct.teamIds.size());
-          for (int _iter370 : struct.teamIds)
+          for (int _iter386 : struct.teamIds)
           {
-            oprot.writeI32(_iter370);
+            oprot.writeI32(_iter386);
           }
         }
       }
       if (struct.isSetSocialMediaAccounts()) {
         {
           oprot.writeI32(struct.socialMediaAccounts.size());
-          for (SocialMediaAccount _iter371 : struct.socialMediaAccounts)
+          for (SocialMediaAccount _iter387 : struct.socialMediaAccounts)
           {
-            _iter371.write(oprot);
+            _iter387.write(oprot);
           }
         }
       }
@@ -2039,13 +2039,13 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list372 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.alsoKnownAs = new java.util.ArrayList<java.lang.String>(_list372.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem373;
-          for (int _i374 = 0; _i374 < _list372.size; ++_i374)
+          org.apache.thrift.protocol.TList _list388 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.alsoKnownAs = new java.util.ArrayList<java.lang.String>(_list388.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem389;
+          for (int _i390 = 0; _i390 < _list388.size; ++_i390)
           {
-            _elem373 = iprot.readString();
-            struct.alsoKnownAs.add(_elem373);
+            _elem389 = iprot.readString();
+            struct.alsoKnownAs.add(_elem389);
           }
         }
         struct.setAlsoKnownAsIsSet(true);
@@ -2065,14 +2065,14 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TList _list375 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.images = new java.util.ArrayList<Image>(_list375.size);
-          @org.apache.thrift.annotation.Nullable Image _elem376;
-          for (int _i377 = 0; _i377 < _list375.size; ++_i377)
+          org.apache.thrift.protocol.TList _list391 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.images = new java.util.ArrayList<Image>(_list391.size);
+          @org.apache.thrift.annotation.Nullable Image _elem392;
+          for (int _i393 = 0; _i393 < _list391.size; ++_i393)
           {
-            _elem376 = new Image();
-            _elem376.read(iprot);
-            struct.images.add(_elem376);
+            _elem392 = new Image();
+            _elem392.read(iprot);
+            struct.images.add(_elem392);
           }
         }
         struct.setImagesIsSet(true);
@@ -2096,27 +2096,27 @@ public class Player implements org.apache.thrift.TBase<Player, Player._Fields>, 
       }
       if (incoming.get(13)) {
         {
-          org.apache.thrift.protocol.TList _list378 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.teamIds = new java.util.ArrayList<java.lang.Integer>(_list378.size);
-          int _elem379;
-          for (int _i380 = 0; _i380 < _list378.size; ++_i380)
+          org.apache.thrift.protocol.TList _list394 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.teamIds = new java.util.ArrayList<java.lang.Integer>(_list394.size);
+          int _elem395;
+          for (int _i396 = 0; _i396 < _list394.size; ++_i396)
           {
-            _elem379 = iprot.readI32();
-            struct.teamIds.add(_elem379);
+            _elem395 = iprot.readI32();
+            struct.teamIds.add(_elem395);
           }
         }
         struct.setTeamIdsIsSet(true);
       }
       if (incoming.get(14)) {
         {
-          org.apache.thrift.protocol.TList _list381 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.socialMediaAccounts = new java.util.ArrayList<SocialMediaAccount>(_list381.size);
-          @org.apache.thrift.annotation.Nullable SocialMediaAccount _elem382;
-          for (int _i383 = 0; _i383 < _list381.size; ++_i383)
+          org.apache.thrift.protocol.TList _list397 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.socialMediaAccounts = new java.util.ArrayList<SocialMediaAccount>(_list397.size);
+          @org.apache.thrift.annotation.Nullable SocialMediaAccount _elem398;
+          for (int _i399 = 0; _i399 < _list397.size; ++_i399)
           {
-            _elem382 = new SocialMediaAccount();
-            _elem382.read(iprot);
-            struct.socialMediaAccounts.add(_elem382);
+            _elem398 = new SocialMediaAccount();
+            _elem398.read(iprot);
+            struct.socialMediaAccounts.add(_elem398);
           }
         }
         struct.setSocialMediaAccountsIsSet(true);

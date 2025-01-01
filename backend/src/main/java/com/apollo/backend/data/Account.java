@@ -17,16 +17,22 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
   private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField PUBLIC_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("publicKey", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)7);
-  private static final org.apache.thrift.protocol.TField DISPLAY_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("displayName", org.apache.thrift.protocol.TType.STRING, (short)8);
-  private static final org.apache.thrift.protocol.TField BIO_FIELD_DESC = new org.apache.thrift.protocol.TField("bio", org.apache.thrift.protocol.TType.STRING, (short)9);
-  private static final org.apache.thrift.protocol.TField LOCKED_FIELD_DESC = new org.apache.thrift.protocol.TField("locked", org.apache.thrift.protocol.TType.BOOL, (short)10);
-  private static final org.apache.thrift.protocol.TField BOT_FIELD_DESC = new org.apache.thrift.protocol.TField("bot", org.apache.thrift.protocol.TType.BOOL, (short)11);
-  private static final org.apache.thrift.protocol.TField DISCOVERABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("discoverable", org.apache.thrift.protocol.TType.BOOL, (short)12);
-  private static final org.apache.thrift.protocol.TField HEADER_FIELD_DESC = new org.apache.thrift.protocol.TField("header", org.apache.thrift.protocol.TType.STRUCT, (short)13);
-  private static final org.apache.thrift.protocol.TField AVATAR_FIELD_DESC = new org.apache.thrift.protocol.TField("avatar", org.apache.thrift.protocol.TType.STRUCT, (short)14);
-  private static final org.apache.thrift.protocol.TField FIELDS_FIELD_DESC = new org.apache.thrift.protocol.TField("fields", org.apache.thrift.protocol.TType.LIST, (short)15);
-  private static final org.apache.thrift.protocol.TField MARKERS_FIELD_DESC = new org.apache.thrift.protocol.TField("markers", org.apache.thrift.protocol.TType.MAP, (short)16);
-  private static final org.apache.thrift.protocol.TField PREFERENCES_FIELD_DESC = new org.apache.thrift.protocol.TField("preferences", org.apache.thrift.protocol.TType.MAP, (short)17);
+  private static final org.apache.thrift.protocol.TField ADMIN_FIELD_DESC = new org.apache.thrift.protocol.TField("admin", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField MODERATOR_FIELD_DESC = new org.apache.thrift.protocol.TField("moderator", org.apache.thrift.protocol.TType.BOOL, (short)9);
+  private static final org.apache.thrift.protocol.TField DISPLAY_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("displayName", org.apache.thrift.protocol.TType.STRING, (short)10);
+  private static final org.apache.thrift.protocol.TField BIO_FIELD_DESC = new org.apache.thrift.protocol.TField("bio", org.apache.thrift.protocol.TType.STRING, (short)11);
+  private static final org.apache.thrift.protocol.TField LOCKED_FIELD_DESC = new org.apache.thrift.protocol.TField("locked", org.apache.thrift.protocol.TType.BOOL, (short)12);
+  private static final org.apache.thrift.protocol.TField BOT_FIELD_DESC = new org.apache.thrift.protocol.TField("bot", org.apache.thrift.protocol.TType.BOOL, (short)13);
+  private static final org.apache.thrift.protocol.TField DISCOVERABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("discoverable", org.apache.thrift.protocol.TType.BOOL, (short)14);
+  private static final org.apache.thrift.protocol.TField HEADER_FIELD_DESC = new org.apache.thrift.protocol.TField("header", org.apache.thrift.protocol.TType.STRUCT, (short)15);
+  private static final org.apache.thrift.protocol.TField AVATAR_FIELD_DESC = new org.apache.thrift.protocol.TField("avatar", org.apache.thrift.protocol.TType.STRUCT, (short)16);
+  private static final org.apache.thrift.protocol.TField FIELDS_FIELD_DESC = new org.apache.thrift.protocol.TField("fields", org.apache.thrift.protocol.TType.LIST, (short)17);
+  private static final org.apache.thrift.protocol.TField MARKERS_FIELD_DESC = new org.apache.thrift.protocol.TField("markers", org.apache.thrift.protocol.TType.MAP, (short)18);
+  private static final org.apache.thrift.protocol.TField PREFERENCES_FIELD_DESC = new org.apache.thrift.protocol.TField("preferences", org.apache.thrift.protocol.TType.MAP, (short)19);
+  private static final org.apache.thrift.protocol.TField VERIFIED_FIELD_DESC = new org.apache.thrift.protocol.TField("verified", org.apache.thrift.protocol.TType.BOOL, (short)20);
+  private static final org.apache.thrift.protocol.TField IS_SUGGESTED_FIELD_DESC = new org.apache.thrift.protocol.TField("isSuggested", org.apache.thrift.protocol.TType.BOOL, (short)21);
+  private static final org.apache.thrift.protocol.TField SUSPENDED_FIELD_DESC = new org.apache.thrift.protocol.TField("suspended", org.apache.thrift.protocol.TType.BOOL, (short)22);
+  private static final org.apache.thrift.protocol.TField TAGS_FIELD_DESC = new org.apache.thrift.protocol.TField("tags", org.apache.thrift.protocol.TType.LIST, (short)23);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AccountStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AccountTupleSchemeFactory();
@@ -38,6 +44,8 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
   public @org.apache.thrift.annotation.Nullable java.lang.String uuid; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String publicKey; // required
   public long timestamp; // required
+  public boolean admin; // required
+  public boolean moderator; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String displayName; // optional
   public @org.apache.thrift.annotation.Nullable java.lang.String bio; // optional
   public boolean locked; // optional
@@ -48,6 +56,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
   public @org.apache.thrift.annotation.Nullable java.util.List<KeyValuePair> fields; // optional
   public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,Marker> markers; // optional
   public @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> preferences; // optional
+  public boolean verified; // optional
+  public boolean isSuggested; // optional
+  public boolean suspended; // optional
+  public @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> tags; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -58,16 +70,22 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     UUID((short)5, "uuid"),
     PUBLIC_KEY((short)6, "publicKey"),
     TIMESTAMP((short)7, "timestamp"),
-    DISPLAY_NAME((short)8, "displayName"),
-    BIO((short)9, "bio"),
-    LOCKED((short)10, "locked"),
-    BOT((short)11, "bot"),
-    DISCOVERABLE((short)12, "discoverable"),
-    HEADER((short)13, "header"),
-    AVATAR((short)14, "avatar"),
-    FIELDS((short)15, "fields"),
-    MARKERS((short)16, "markers"),
-    PREFERENCES((short)17, "preferences");
+    ADMIN((short)8, "admin"),
+    MODERATOR((short)9, "moderator"),
+    DISPLAY_NAME((short)10, "displayName"),
+    BIO((short)11, "bio"),
+    LOCKED((short)12, "locked"),
+    BOT((short)13, "bot"),
+    DISCOVERABLE((short)14, "discoverable"),
+    HEADER((short)15, "header"),
+    AVATAR((short)16, "avatar"),
+    FIELDS((short)17, "fields"),
+    MARKERS((short)18, "markers"),
+    PREFERENCES((short)19, "preferences"),
+    VERIFIED((short)20, "verified"),
+    IS_SUGGESTED((short)21, "isSuggested"),
+    SUSPENDED((short)22, "suspended"),
+    TAGS((short)23, "tags");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -97,26 +115,38 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
           return PUBLIC_KEY;
         case 7: // TIMESTAMP
           return TIMESTAMP;
-        case 8: // DISPLAY_NAME
+        case 8: // ADMIN
+          return ADMIN;
+        case 9: // MODERATOR
+          return MODERATOR;
+        case 10: // DISPLAY_NAME
           return DISPLAY_NAME;
-        case 9: // BIO
+        case 11: // BIO
           return BIO;
-        case 10: // LOCKED
+        case 12: // LOCKED
           return LOCKED;
-        case 11: // BOT
+        case 13: // BOT
           return BOT;
-        case 12: // DISCOVERABLE
+        case 14: // DISCOVERABLE
           return DISCOVERABLE;
-        case 13: // HEADER
+        case 15: // HEADER
           return HEADER;
-        case 14: // AVATAR
+        case 16: // AVATAR
           return AVATAR;
-        case 15: // FIELDS
+        case 17: // FIELDS
           return FIELDS;
-        case 16: // MARKERS
+        case 18: // MARKERS
           return MARKERS;
-        case 17: // PREFERENCES
+        case 19: // PREFERENCES
           return PREFERENCES;
+        case 20: // VERIFIED
+          return VERIFIED;
+        case 21: // IS_SUGGESTED
+          return IS_SUGGESTED;
+        case 22: // SUSPENDED
+          return SUSPENDED;
+        case 23: // TAGS
+          return TAGS;
         default:
           return null;
       }
@@ -161,11 +191,16 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
 
   // isset id assignments
   private static final int __TIMESTAMP_ISSET_ID = 0;
-  private static final int __LOCKED_ISSET_ID = 1;
-  private static final int __BOT_ISSET_ID = 2;
-  private static final int __DISCOVERABLE_ISSET_ID = 3;
-  private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DISPLAY_NAME,_Fields.BIO,_Fields.LOCKED,_Fields.BOT,_Fields.DISCOVERABLE,_Fields.HEADER,_Fields.AVATAR,_Fields.FIELDS,_Fields.MARKERS,_Fields.PREFERENCES};
+  private static final int __ADMIN_ISSET_ID = 1;
+  private static final int __MODERATOR_ISSET_ID = 2;
+  private static final int __LOCKED_ISSET_ID = 3;
+  private static final int __BOT_ISSET_ID = 4;
+  private static final int __DISCOVERABLE_ISSET_ID = 5;
+  private static final int __VERIFIED_ISSET_ID = 6;
+  private static final int __ISSUGGESTED_ISSET_ID = 7;
+  private static final int __SUSPENDED_ISSET_ID = 8;
+  private short __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.DISPLAY_NAME,_Fields.BIO,_Fields.LOCKED,_Fields.BOT,_Fields.DISCOVERABLE,_Fields.HEADER,_Fields.AVATAR,_Fields.FIELDS,_Fields.MARKERS,_Fields.PREFERENCES,_Fields.VERIFIED,_Fields.IS_SUGGESTED,_Fields.SUSPENDED,_Fields.TAGS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -183,6 +218,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
+    tmpMap.put(_Fields.ADMIN, new org.apache.thrift.meta_data.FieldMetaData("admin", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.MODERATOR, new org.apache.thrift.meta_data.FieldMetaData("moderator", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.DISPLAY_NAME, new org.apache.thrift.meta_data.FieldMetaData("displayName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.BIO, new org.apache.thrift.meta_data.FieldMetaData("bio", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -208,6 +247,15 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.VERIFIED, new org.apache.thrift.meta_data.FieldMetaData("verified", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.IS_SUGGESTED, new org.apache.thrift.meta_data.FieldMetaData("isSuggested", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.SUSPENDED, new org.apache.thrift.meta_data.FieldMetaData("suspended", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TAGS, new org.apache.thrift.meta_data.FieldMetaData("tags", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Account.class, metaDataMap);
   }
@@ -222,7 +270,9 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     java.lang.String locale,
     java.lang.String uuid,
     java.lang.String publicKey,
-    long timestamp)
+    long timestamp,
+    boolean admin,
+    boolean moderator)
   {
     this();
     this.name = name;
@@ -233,6 +283,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     this.publicKey = publicKey;
     this.timestamp = timestamp;
     setTimestampIsSet(true);
+    this.admin = admin;
+    setAdminIsSet(true);
+    this.moderator = moderator;
+    setModeratorIsSet(true);
   }
 
   /**
@@ -259,6 +313,8 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       this.publicKey = other.publicKey;
     }
     this.timestamp = other.timestamp;
+    this.admin = other.admin;
+    this.moderator = other.moderator;
     if (other.isSetDisplayName()) {
       this.displayName = other.displayName;
     }
@@ -300,6 +356,13 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       java.util.Map<java.lang.String,java.lang.String> __this__preferences = new java.util.HashMap<java.lang.String,java.lang.String>(other.preferences);
       this.preferences = __this__preferences;
     }
+    this.verified = other.verified;
+    this.isSuggested = other.isSuggested;
+    this.suspended = other.suspended;
+    if (other.isSetTags()) {
+      java.util.List<java.lang.String> __this__tags = new java.util.ArrayList<java.lang.String>(other.tags);
+      this.tags = __this__tags;
+    }
   }
 
   @Override
@@ -317,6 +380,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     this.publicKey = null;
     setTimestampIsSet(false);
     this.timestamp = 0;
+    setAdminIsSet(false);
+    this.admin = false;
+    setModeratorIsSet(false);
+    this.moderator = false;
     this.displayName = null;
     this.bio = null;
     setLockedIsSet(false);
@@ -330,6 +397,13 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     this.fields = null;
     this.markers = null;
     this.preferences = null;
+    setVerifiedIsSet(false);
+    this.verified = false;
+    setIsSuggestedIsSet(false);
+    this.isSuggested = false;
+    setSuspendedIsSet(false);
+    this.suspended = false;
+    this.tags = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -503,6 +577,52 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
 
   public void setTimestampIsSet(boolean value) {
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
+  }
+
+  public boolean isAdmin() {
+    return this.admin;
+  }
+
+  public Account setAdmin(boolean admin) {
+    this.admin = admin;
+    setAdminIsSet(true);
+    return this;
+  }
+
+  public void unsetAdmin() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ADMIN_ISSET_ID);
+  }
+
+  /** Returns true if field admin is set (has been assigned a value) and false otherwise */
+  public boolean isSetAdmin() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ADMIN_ISSET_ID);
+  }
+
+  public void setAdminIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ADMIN_ISSET_ID, value);
+  }
+
+  public boolean isModerator() {
+    return this.moderator;
+  }
+
+  public Account setModerator(boolean moderator) {
+    this.moderator = moderator;
+    setModeratorIsSet(true);
+    return this;
+  }
+
+  public void unsetModerator() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __MODERATOR_ISSET_ID);
+  }
+
+  /** Returns true if field moderator is set (has been assigned a value) and false otherwise */
+  public boolean isSetModerator() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __MODERATOR_ISSET_ID);
+  }
+
+  public void setModeratorIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __MODERATOR_ISSET_ID, value);
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -787,6 +907,116 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     }
   }
 
+  public boolean isVerified() {
+    return this.verified;
+  }
+
+  public Account setVerified(boolean verified) {
+    this.verified = verified;
+    setVerifiedIsSet(true);
+    return this;
+  }
+
+  public void unsetVerified() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __VERIFIED_ISSET_ID);
+  }
+
+  /** Returns true if field verified is set (has been assigned a value) and false otherwise */
+  public boolean isSetVerified() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __VERIFIED_ISSET_ID);
+  }
+
+  public void setVerifiedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __VERIFIED_ISSET_ID, value);
+  }
+
+  public boolean isIsSuggested() {
+    return this.isSuggested;
+  }
+
+  public Account setIsSuggested(boolean isSuggested) {
+    this.isSuggested = isSuggested;
+    setIsSuggestedIsSet(true);
+    return this;
+  }
+
+  public void unsetIsSuggested() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ISSUGGESTED_ISSET_ID);
+  }
+
+  /** Returns true if field isSuggested is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsSuggested() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ISSUGGESTED_ISSET_ID);
+  }
+
+  public void setIsSuggestedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ISSUGGESTED_ISSET_ID, value);
+  }
+
+  public boolean isSuspended() {
+    return this.suspended;
+  }
+
+  public Account setSuspended(boolean suspended) {
+    this.suspended = suspended;
+    setSuspendedIsSet(true);
+    return this;
+  }
+
+  public void unsetSuspended() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SUSPENDED_ISSET_ID);
+  }
+
+  /** Returns true if field suspended is set (has been assigned a value) and false otherwise */
+  public boolean isSetSuspended() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SUSPENDED_ISSET_ID);
+  }
+
+  public void setSuspendedIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SUSPENDED_ISSET_ID, value);
+  }
+
+  public int getTagsSize() {
+    return (this.tags == null) ? 0 : this.tags.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<java.lang.String> getTagsIterator() {
+    return (this.tags == null) ? null : this.tags.iterator();
+  }
+
+  public void addToTags(java.lang.String elem) {
+    if (this.tags == null) {
+      this.tags = new java.util.ArrayList<java.lang.String>();
+    }
+    this.tags.add(elem);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.List<java.lang.String> getTags() {
+    return this.tags;
+  }
+
+  public Account setTags(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> tags) {
+    this.tags = tags;
+    return this;
+  }
+
+  public void unsetTags() {
+    this.tags = null;
+  }
+
+  /** Returns true if field tags is set (has been assigned a value) and false otherwise */
+  public boolean isSetTags() {
+    return this.tags != null;
+  }
+
+  public void setTagsIsSet(boolean value) {
+    if (!value) {
+      this.tags = null;
+    }
+  }
+
   @Override
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
@@ -843,6 +1073,22 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         unsetTimestamp();
       } else {
         setTimestamp((java.lang.Long)value);
+      }
+      break;
+
+    case ADMIN:
+      if (value == null) {
+        unsetAdmin();
+      } else {
+        setAdmin((java.lang.Boolean)value);
+      }
+      break;
+
+    case MODERATOR:
+      if (value == null) {
+        unsetModerator();
+      } else {
+        setModerator((java.lang.Boolean)value);
       }
       break;
 
@@ -926,6 +1172,38 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       }
       break;
 
+    case VERIFIED:
+      if (value == null) {
+        unsetVerified();
+      } else {
+        setVerified((java.lang.Boolean)value);
+      }
+      break;
+
+    case IS_SUGGESTED:
+      if (value == null) {
+        unsetIsSuggested();
+      } else {
+        setIsSuggested((java.lang.Boolean)value);
+      }
+      break;
+
+    case SUSPENDED:
+      if (value == null) {
+        unsetSuspended();
+      } else {
+        setSuspended((java.lang.Boolean)value);
+      }
+      break;
+
+    case TAGS:
+      if (value == null) {
+        unsetTags();
+      } else {
+        setTags((java.util.List<java.lang.String>)value);
+      }
+      break;
+
     }
   }
 
@@ -953,6 +1231,12 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
 
     case TIMESTAMP:
       return getTimestamp();
+
+    case ADMIN:
+      return isAdmin();
+
+    case MODERATOR:
+      return isModerator();
 
     case DISPLAY_NAME:
       return getDisplayName();
@@ -984,6 +1268,18 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     case PREFERENCES:
       return getPreferences();
 
+    case VERIFIED:
+      return isVerified();
+
+    case IS_SUGGESTED:
+      return isIsSuggested();
+
+    case SUSPENDED:
+      return isSuspended();
+
+    case TAGS:
+      return getTags();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1010,6 +1306,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       return isSetPublicKey();
     case TIMESTAMP:
       return isSetTimestamp();
+    case ADMIN:
+      return isSetAdmin();
+    case MODERATOR:
+      return isSetModerator();
     case DISPLAY_NAME:
       return isSetDisplayName();
     case BIO:
@@ -1030,6 +1330,14 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       return isSetMarkers();
     case PREFERENCES:
       return isSetPreferences();
+    case VERIFIED:
+      return isSetVerified();
+    case IS_SUGGESTED:
+      return isSetIsSuggested();
+    case SUSPENDED:
+      return isSetSuspended();
+    case TAGS:
+      return isSetTags();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1107,6 +1415,24 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       if (!(this_present_timestamp && that_present_timestamp))
         return false;
       if (this.timestamp != that.timestamp)
+        return false;
+    }
+
+    boolean this_present_admin = true;
+    boolean that_present_admin = true;
+    if (this_present_admin || that_present_admin) {
+      if (!(this_present_admin && that_present_admin))
+        return false;
+      if (this.admin != that.admin)
+        return false;
+    }
+
+    boolean this_present_moderator = true;
+    boolean that_present_moderator = true;
+    if (this_present_moderator || that_present_moderator) {
+      if (!(this_present_moderator && that_present_moderator))
+        return false;
+      if (this.moderator != that.moderator)
         return false;
     }
 
@@ -1200,6 +1526,42 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         return false;
     }
 
+    boolean this_present_verified = true && this.isSetVerified();
+    boolean that_present_verified = true && that.isSetVerified();
+    if (this_present_verified || that_present_verified) {
+      if (!(this_present_verified && that_present_verified))
+        return false;
+      if (this.verified != that.verified)
+        return false;
+    }
+
+    boolean this_present_isSuggested = true && this.isSetIsSuggested();
+    boolean that_present_isSuggested = true && that.isSetIsSuggested();
+    if (this_present_isSuggested || that_present_isSuggested) {
+      if (!(this_present_isSuggested && that_present_isSuggested))
+        return false;
+      if (this.isSuggested != that.isSuggested)
+        return false;
+    }
+
+    boolean this_present_suspended = true && this.isSetSuspended();
+    boolean that_present_suspended = true && that.isSetSuspended();
+    if (this_present_suspended || that_present_suspended) {
+      if (!(this_present_suspended && that_present_suspended))
+        return false;
+      if (this.suspended != that.suspended)
+        return false;
+    }
+
+    boolean this_present_tags = true && this.isSetTags();
+    boolean that_present_tags = true && that.isSetTags();
+    if (this_present_tags || that_present_tags) {
+      if (!(this_present_tags && that_present_tags))
+        return false;
+      if (!this.tags.equals(that.tags))
+        return false;
+    }
+
     return true;
   }
 
@@ -1232,6 +1594,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       hashCode = hashCode * 8191 + publicKey.hashCode();
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
+
+    hashCode = hashCode * 8191 + ((admin) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((moderator) ? 131071 : 524287);
 
     hashCode = hashCode * 8191 + ((isSetDisplayName()) ? 131071 : 524287);
     if (isSetDisplayName())
@@ -1272,6 +1638,22 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     hashCode = hashCode * 8191 + ((isSetPreferences()) ? 131071 : 524287);
     if (isSetPreferences())
       hashCode = hashCode * 8191 + preferences.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetVerified()) ? 131071 : 524287);
+    if (isSetVerified())
+      hashCode = hashCode * 8191 + ((verified) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetIsSuggested()) ? 131071 : 524287);
+    if (isSetIsSuggested())
+      hashCode = hashCode * 8191 + ((isSuggested) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetSuspended()) ? 131071 : 524287);
+    if (isSetSuspended())
+      hashCode = hashCode * 8191 + ((suspended) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetTags()) ? 131071 : 524287);
+    if (isSetTags())
+      hashCode = hashCode * 8191 + tags.hashCode();
 
     return hashCode;
   }
@@ -1350,6 +1732,26 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     }
     if (isSetTimestamp()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, other.timestamp);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetAdmin(), other.isSetAdmin());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAdmin()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.admin, other.admin);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetModerator(), other.isSetModerator());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetModerator()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.moderator, other.moderator);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1454,6 +1856,46 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetVerified(), other.isSetVerified());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetVerified()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.verified, other.verified);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetIsSuggested(), other.isSetIsSuggested());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsSuggested()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isSuggested, other.isSuggested);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetSuspended(), other.isSetSuspended());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSuspended()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.suspended, other.suspended);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetTags(), other.isSetTags());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTags()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tags, other.tags);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1528,6 +1970,14 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
     if (!first) sb.append(", ");
     sb.append("timestamp:");
     sb.append(this.timestamp);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("admin:");
+    sb.append(this.admin);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("moderator:");
+    sb.append(this.moderator);
     first = false;
     if (isSetDisplayName()) {
       if (!first) sb.append(", ");
@@ -1617,6 +2067,34 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       }
       first = false;
     }
+    if (isSetVerified()) {
+      if (!first) sb.append(", ");
+      sb.append("verified:");
+      sb.append(this.verified);
+      first = false;
+    }
+    if (isSetIsSuggested()) {
+      if (!first) sb.append(", ");
+      sb.append("isSuggested:");
+      sb.append(this.isSuggested);
+      first = false;
+    }
+    if (isSetSuspended()) {
+      if (!first) sb.append(", ");
+      sb.append("suspended:");
+      sb.append(this.suspended);
+      first = false;
+    }
+    if (isSetTags()) {
+      if (!first) sb.append(", ");
+      sb.append("tags:");
+      if (this.tags == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tags);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1642,6 +2120,8 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'publicKey' was not present! Struct: " + toString());
     }
     // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'admin' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'moderator' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
     if (header != null) {
       header.validate();
@@ -1745,7 +2225,23 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 8: // DISPLAY_NAME
+          case 8: // ADMIN
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.admin = iprot.readBool();
+              struct.setAdminIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // MODERATOR
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.moderator = iprot.readBool();
+              struct.setModeratorIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // DISPLAY_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.displayName = iprot.readString();
               struct.setDisplayNameIsSet(true);
@@ -1753,7 +2249,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 9: // BIO
+          case 11: // BIO
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.bio = iprot.readString();
               struct.setBioIsSet(true);
@@ -1761,7 +2257,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 10: // LOCKED
+          case 12: // LOCKED
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.locked = iprot.readBool();
               struct.setLockedIsSet(true);
@@ -1769,7 +2265,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 11: // BOT
+          case 13: // BOT
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.bot = iprot.readBool();
               struct.setBotIsSet(true);
@@ -1777,7 +2273,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 12: // DISCOVERABLE
+          case 14: // DISCOVERABLE
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.discoverable = iprot.readBool();
               struct.setDiscoverableIsSet(true);
@@ -1785,7 +2281,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 13: // HEADER
+          case 15: // HEADER
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
               struct.header = new AttachmentWithId();
               struct.header.read(iprot);
@@ -1794,7 +2290,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 14: // AVATAR
+          case 16: // AVATAR
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
               struct.avatar = new AttachmentWithId();
               struct.avatar.read(iprot);
@@ -1803,7 +2299,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // FIELDS
+          case 17: // FIELDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
@@ -1822,7 +2318,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 16: // MARKERS
+          case 18: // MARKERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map3 = iprot.readMapBegin();
@@ -1843,7 +2339,7 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 17: // PREFERENCES
+          case 19: // PREFERENCES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
                 org.apache.thrift.protocol.TMap _map7 = iprot.readMapBegin();
@@ -1863,6 +2359,48 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 20: // VERIFIED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.verified = iprot.readBool();
+              struct.setVerifiedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 21: // IS_SUGGESTED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.isSuggested = iprot.readBool();
+              struct.setIsSuggestedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 22: // SUSPENDED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.suspended = iprot.readBool();
+              struct.setSuspendedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 23: // TAGS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list11 = iprot.readListBegin();
+                struct.tags = new java.util.ArrayList<java.lang.String>(_list11.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem12;
+                for (int _i13 = 0; _i13 < _list11.size; ++_i13)
+                {
+                  _elem12 = iprot.readString();
+                  struct.tags.add(_elem12);
+                }
+                iprot.readListEnd();
+              }
+              struct.setTagsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1873,6 +2411,12 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       // check for required fields of primitive type, which can't be checked in the validate method
       if (!struct.isSetTimestamp()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'timestamp' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetAdmin()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'admin' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetModerator()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'moderator' was not found in serialized data! Struct: " + toString());
       }
       struct.validate();
     }
@@ -1914,6 +2458,12 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       }
       oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
       oprot.writeI64(struct.timestamp);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(ADMIN_FIELD_DESC);
+      oprot.writeBool(struct.admin);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MODERATOR_FIELD_DESC);
+      oprot.writeBool(struct.moderator);
       oprot.writeFieldEnd();
       if (struct.displayName != null) {
         if (struct.isSetDisplayName()) {
@@ -1963,9 +2513,9 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
           oprot.writeFieldBegin(FIELDS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.fields.size()));
-            for (KeyValuePair _iter11 : struct.fields)
+            for (KeyValuePair _iter14 : struct.fields)
             {
-              _iter11.write(oprot);
+              _iter14.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1977,10 +2527,10 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
           oprot.writeFieldBegin(MARKERS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.markers.size()));
-            for (java.util.Map.Entry<java.lang.String, Marker> _iter12 : struct.markers.entrySet())
+            for (java.util.Map.Entry<java.lang.String, Marker> _iter15 : struct.markers.entrySet())
             {
-              oprot.writeString(_iter12.getKey());
-              _iter12.getValue().write(oprot);
+              oprot.writeString(_iter15.getKey());
+              _iter15.getValue().write(oprot);
             }
             oprot.writeMapEnd();
           }
@@ -1992,12 +2542,41 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
           oprot.writeFieldBegin(PREFERENCES_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.preferences.size()));
-            for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter13 : struct.preferences.entrySet())
+            for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter16 : struct.preferences.entrySet())
             {
-              oprot.writeString(_iter13.getKey());
-              oprot.writeString(_iter13.getValue());
+              oprot.writeString(_iter16.getKey());
+              oprot.writeString(_iter16.getValue());
             }
             oprot.writeMapEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetVerified()) {
+        oprot.writeFieldBegin(VERIFIED_FIELD_DESC);
+        oprot.writeBool(struct.verified);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetIsSuggested()) {
+        oprot.writeFieldBegin(IS_SUGGESTED_FIELD_DESC);
+        oprot.writeBool(struct.isSuggested);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetSuspended()) {
+        oprot.writeFieldBegin(SUSPENDED_FIELD_DESC);
+        oprot.writeBool(struct.suspended);
+        oprot.writeFieldEnd();
+      }
+      if (struct.tags != null) {
+        if (struct.isSetTags()) {
+          oprot.writeFieldBegin(TAGS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tags.size()));
+            for (java.lang.String _iter17 : struct.tags)
+            {
+              oprot.writeString(_iter17);
+            }
+            oprot.writeListEnd();
           }
           oprot.writeFieldEnd();
         }
@@ -2027,6 +2606,8 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       oprot.writeString(struct.uuid);
       oprot.writeString(struct.publicKey);
       oprot.writeI64(struct.timestamp);
+      oprot.writeBool(struct.admin);
+      oprot.writeBool(struct.moderator);
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetDisplayName()) {
         optionals.set(0);
@@ -2058,7 +2639,19 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       if (struct.isSetPreferences()) {
         optionals.set(9);
       }
-      oprot.writeBitSet(optionals, 10);
+      if (struct.isSetVerified()) {
+        optionals.set(10);
+      }
+      if (struct.isSetIsSuggested()) {
+        optionals.set(11);
+      }
+      if (struct.isSetSuspended()) {
+        optionals.set(12);
+      }
+      if (struct.isSetTags()) {
+        optionals.set(13);
+      }
+      oprot.writeBitSet(optionals, 14);
       if (struct.isSetDisplayName()) {
         oprot.writeString(struct.displayName);
       }
@@ -2083,29 +2676,47 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       if (struct.isSetFields()) {
         {
           oprot.writeI32(struct.fields.size());
-          for (KeyValuePair _iter14 : struct.fields)
+          for (KeyValuePair _iter18 : struct.fields)
           {
-            _iter14.write(oprot);
+            _iter18.write(oprot);
           }
         }
       }
       if (struct.isSetMarkers()) {
         {
           oprot.writeI32(struct.markers.size());
-          for (java.util.Map.Entry<java.lang.String, Marker> _iter15 : struct.markers.entrySet())
+          for (java.util.Map.Entry<java.lang.String, Marker> _iter19 : struct.markers.entrySet())
           {
-            oprot.writeString(_iter15.getKey());
-            _iter15.getValue().write(oprot);
+            oprot.writeString(_iter19.getKey());
+            _iter19.getValue().write(oprot);
           }
         }
       }
       if (struct.isSetPreferences()) {
         {
           oprot.writeI32(struct.preferences.size());
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter16 : struct.preferences.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter20 : struct.preferences.entrySet())
           {
-            oprot.writeString(_iter16.getKey());
-            oprot.writeString(_iter16.getValue());
+            oprot.writeString(_iter20.getKey());
+            oprot.writeString(_iter20.getValue());
+          }
+        }
+      }
+      if (struct.isSetVerified()) {
+        oprot.writeBool(struct.verified);
+      }
+      if (struct.isSetIsSuggested()) {
+        oprot.writeBool(struct.isSuggested);
+      }
+      if (struct.isSetSuspended()) {
+        oprot.writeBool(struct.suspended);
+      }
+      if (struct.isSetTags()) {
+        {
+          oprot.writeI32(struct.tags.size());
+          for (java.lang.String _iter21 : struct.tags)
+          {
+            oprot.writeString(_iter21);
           }
         }
       }
@@ -2128,7 +2739,11 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       struct.setPublicKeyIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(10);
+      struct.admin = iprot.readBool();
+      struct.setAdminIsSet(true);
+      struct.moderator = iprot.readBool();
+      struct.setModeratorIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(14);
       if (incoming.get(0)) {
         struct.displayName = iprot.readString();
         struct.setDisplayNameIsSet(true);
@@ -2161,48 +2776,73 @@ public class Account implements org.apache.thrift.TBase<Account, Account._Fields
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list17 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.fields = new java.util.ArrayList<KeyValuePair>(_list17.size);
-          @org.apache.thrift.annotation.Nullable KeyValuePair _elem18;
-          for (int _i19 = 0; _i19 < _list17.size; ++_i19)
+          org.apache.thrift.protocol.TList _list22 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.fields = new java.util.ArrayList<KeyValuePair>(_list22.size);
+          @org.apache.thrift.annotation.Nullable KeyValuePair _elem23;
+          for (int _i24 = 0; _i24 < _list22.size; ++_i24)
           {
-            _elem18 = new KeyValuePair();
-            _elem18.read(iprot);
-            struct.fields.add(_elem18);
+            _elem23 = new KeyValuePair();
+            _elem23.read(iprot);
+            struct.fields.add(_elem23);
           }
         }
         struct.setFieldsIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TMap _map20 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
-          struct.markers = new java.util.HashMap<java.lang.String,Marker>(2*_map20.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key21;
-          @org.apache.thrift.annotation.Nullable Marker _val22;
-          for (int _i23 = 0; _i23 < _map20.size; ++_i23)
+          org.apache.thrift.protocol.TMap _map25 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT); 
+          struct.markers = new java.util.HashMap<java.lang.String,Marker>(2*_map25.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key26;
+          @org.apache.thrift.annotation.Nullable Marker _val27;
+          for (int _i28 = 0; _i28 < _map25.size; ++_i28)
           {
-            _key21 = iprot.readString();
-            _val22 = new Marker();
-            _val22.read(iprot);
-            struct.markers.put(_key21, _val22);
+            _key26 = iprot.readString();
+            _val27 = new Marker();
+            _val27.read(iprot);
+            struct.markers.put(_key26, _val27);
           }
         }
         struct.setMarkersIsSet(true);
       }
       if (incoming.get(9)) {
         {
-          org.apache.thrift.protocol.TMap _map24 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
-          struct.preferences = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map24.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key25;
-          @org.apache.thrift.annotation.Nullable java.lang.String _val26;
-          for (int _i27 = 0; _i27 < _map24.size; ++_i27)
+          org.apache.thrift.protocol.TMap _map29 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
+          struct.preferences = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map29.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key30;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val31;
+          for (int _i32 = 0; _i32 < _map29.size; ++_i32)
           {
-            _key25 = iprot.readString();
-            _val26 = iprot.readString();
-            struct.preferences.put(_key25, _val26);
+            _key30 = iprot.readString();
+            _val31 = iprot.readString();
+            struct.preferences.put(_key30, _val31);
           }
         }
         struct.setPreferencesIsSet(true);
+      }
+      if (incoming.get(10)) {
+        struct.verified = iprot.readBool();
+        struct.setVerifiedIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.isSuggested = iprot.readBool();
+        struct.setIsSuggestedIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.suspended = iprot.readBool();
+        struct.setSuspendedIsSet(true);
+      }
+      if (incoming.get(13)) {
+        {
+          org.apache.thrift.protocol.TList _list33 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.tags = new java.util.ArrayList<java.lang.String>(_list33.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem34;
+          for (int _i35 = 0; _i35 < _list33.size; ++_i35)
+          {
+            _elem34 = iprot.readString();
+            struct.tags.add(_elem34);
+          }
+        }
+        struct.setTagsIsSet(true);
       }
     }
   }

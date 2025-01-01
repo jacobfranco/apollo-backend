@@ -603,14 +603,14 @@ public class Country implements org.apache.thrift.TBase<Country, Country._Fields
           case 4: // IMAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list384 = iprot.readListBegin();
-                struct.images = new java.util.ArrayList<Image>(_list384.size);
-                @org.apache.thrift.annotation.Nullable Image _elem385;
-                for (int _i386 = 0; _i386 < _list384.size; ++_i386)
+                org.apache.thrift.protocol.TList _list400 = iprot.readListBegin();
+                struct.images = new java.util.ArrayList<Image>(_list400.size);
+                @org.apache.thrift.annotation.Nullable Image _elem401;
+                for (int _i402 = 0; _i402 < _list400.size; ++_i402)
                 {
-                  _elem385 = new Image();
-                  _elem385.read(iprot);
-                  struct.images.add(_elem385);
+                  _elem401 = new Image();
+                  _elem401.read(iprot);
+                  struct.images.add(_elem401);
                 }
                 iprot.readListEnd();
               }
@@ -652,9 +652,9 @@ public class Country implements org.apache.thrift.TBase<Country, Country._Fields
         oprot.writeFieldBegin(IMAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.images.size()));
-          for (Image _iter387 : struct.images)
+          for (Image _iter403 : struct.images)
           {
-            _iter387.write(oprot);
+            _iter403.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -704,9 +704,9 @@ public class Country implements org.apache.thrift.TBase<Country, Country._Fields
       if (struct.isSetImages()) {
         {
           oprot.writeI32(struct.images.size());
-          for (Image _iter388 : struct.images)
+          for (Image _iter404 : struct.images)
           {
-            _iter388.write(oprot);
+            _iter404.write(oprot);
           }
         }
       }
@@ -730,14 +730,14 @@ public class Country implements org.apache.thrift.TBase<Country, Country._Fields
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list389 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.images = new java.util.ArrayList<Image>(_list389.size);
-          @org.apache.thrift.annotation.Nullable Image _elem390;
-          for (int _i391 = 0; _i391 < _list389.size; ++_i391)
+          org.apache.thrift.protocol.TList _list405 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.images = new java.util.ArrayList<Image>(_list405.size);
+          @org.apache.thrift.annotation.Nullable Image _elem406;
+          for (int _i407 = 0; _i407 < _list405.size; ++_i407)
           {
-            _elem390 = new Image();
-            _elem390.read(iprot);
-            struct.images.add(_elem390);
+            _elem406 = new Image();
+            _elem406.read(iprot);
+            struct.images.add(_elem406);
           }
         }
         struct.setImagesIsSet(true);

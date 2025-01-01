@@ -578,13 +578,13 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
           case 3: // PLAYER_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list320 = iprot.readListBegin();
-                struct.playerIds = new java.util.ArrayList<java.lang.Integer>(_list320.size);
-                int _elem321;
-                for (int _i322 = 0; _i322 < _list320.size; ++_i322)
+                org.apache.thrift.protocol.TList _list336 = iprot.readListBegin();
+                struct.playerIds = new java.util.ArrayList<java.lang.Integer>(_list336.size);
+                int _elem337;
+                for (int _i338 = 0; _i338 < _list336.size; ++_i338)
                 {
-                  _elem321 = iprot.readI32();
-                  struct.playerIds.add(_elem321);
+                  _elem337 = iprot.readI32();
+                  struct.playerIds.add(_elem337);
                 }
                 iprot.readListEnd();
               }
@@ -627,9 +627,9 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
         oprot.writeFieldBegin(PLAYER_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.playerIds.size()));
-          for (int _iter323 : struct.playerIds)
+          for (int _iter339 : struct.playerIds)
           {
-            oprot.writeI32(_iter323);
+            oprot.writeI32(_iter339);
           }
           oprot.writeListEnd();
         }
@@ -679,9 +679,9 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
       if (struct.isSetPlayerIds()) {
         {
           oprot.writeI32(struct.playerIds.size());
-          for (int _iter324 : struct.playerIds)
+          for (int _iter340 : struct.playerIds)
           {
-            oprot.writeI32(_iter324);
+            oprot.writeI32(_iter340);
           }
         }
       }
@@ -704,13 +704,13 @@ public class Roster implements org.apache.thrift.TBase<Roster, Roster._Fields>, 
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list325 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
-          struct.playerIds = new java.util.ArrayList<java.lang.Integer>(_list325.size);
-          int _elem326;
-          for (int _i327 = 0; _i327 < _list325.size; ++_i327)
+          org.apache.thrift.protocol.TList _list341 = iprot.readListBegin(org.apache.thrift.protocol.TType.I32);
+          struct.playerIds = new java.util.ArrayList<java.lang.Integer>(_list341.size);
+          int _elem342;
+          for (int _i343 = 0; _i343 < _list341.size; ++_i343)
           {
-            _elem326 = iprot.readI32();
-            struct.playerIds.add(_elem326);
+            _elem342 = iprot.readI32();
+            struct.playerIds.add(_elem342);
           }
         }
         struct.setPlayerIdsIsSet(true);

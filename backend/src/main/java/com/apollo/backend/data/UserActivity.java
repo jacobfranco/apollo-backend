@@ -7,28 +7,22 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fields>, java.io.Serializable, Cloneable, Comparable<PollVote> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("PollVote");
+public class UserActivity implements org.apache.thrift.TBase<UserActivity, UserActivity._Fields>, java.io.Serializable, Cloneable, Comparable<UserActivity> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("UserActivity");
 
   private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField TARGET_FIELD_DESC = new org.apache.thrift.protocol.TField("target", org.apache.thrift.protocol.TType.STRUCT, (short)2);
-  private static final org.apache.thrift.protocol.TField CHOICES_FIELD_DESC = new org.apache.thrift.protocol.TField("choices", org.apache.thrift.protocol.TType.SET, (short)3);
-  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)4);
+  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)2);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new PollVoteStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new PollVoteTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new UserActivityStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new UserActivityTupleSchemeFactory();
 
   public long accountId; // required
-  public @org.apache.thrift.annotation.Nullable StatusPointer target; // required
-  public @org.apache.thrift.annotation.Nullable java.util.Set<java.lang.Integer> choices; // required
   public long timestamp; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ACCOUNT_ID((short)1, "accountId"),
-    TARGET((short)2, "target"),
-    CHOICES((short)3, "choices"),
-    TIMESTAMP((short)4, "timestamp");
+    TIMESTAMP((short)2, "timestamp");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -46,11 +40,7 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
       switch(fieldId) {
         case 1: // ACCOUNT_ID
           return ACCOUNT_ID;
-        case 2: // TARGET
-          return TARGET;
-        case 3: // CHOICES
-          return CHOICES;
-        case 4: // TIMESTAMP
+        case 2: // TIMESTAMP
           return TIMESTAMP;
         default:
           return null;
@@ -103,31 +93,22 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.TARGET, new org.apache.thrift.meta_data.FieldMetaData("target", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StatusPointer.class)));
-    tmpMap.put(_Fields.CHOICES, new org.apache.thrift.meta_data.FieldMetaData("choices", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32))));
     tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PollVote.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(UserActivity.class, metaDataMap);
   }
 
-  public PollVote() {
+  public UserActivity() {
   }
 
-  public PollVote(
+  public UserActivity(
     long accountId,
-    StatusPointer target,
-    java.util.Set<java.lang.Integer> choices,
     long timestamp)
   {
     this();
     this.accountId = accountId;
     setAccountIdIsSet(true);
-    this.target = target;
-    this.choices = choices;
     this.timestamp = timestamp;
     setTimestampIsSet(true);
   }
@@ -135,30 +116,21 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public PollVote(PollVote other) {
+  public UserActivity(UserActivity other) {
     __isset_bitfield = other.__isset_bitfield;
     this.accountId = other.accountId;
-    if (other.isSetTarget()) {
-      this.target = new StatusPointer(other.target);
-    }
-    if (other.isSetChoices()) {
-      java.util.Set<java.lang.Integer> __this__choices = new java.util.HashSet<java.lang.Integer>(other.choices);
-      this.choices = __this__choices;
-    }
     this.timestamp = other.timestamp;
   }
 
   @Override
-  public PollVote deepCopy() {
-    return new PollVote(this);
+  public UserActivity deepCopy() {
+    return new UserActivity(this);
   }
 
   @Override
   public void clear() {
     setAccountIdIsSet(false);
     this.accountId = 0;
-    this.target = null;
-    this.choices = null;
     setTimestampIsSet(false);
     this.timestamp = 0;
   }
@@ -167,7 +139,7 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     return this.accountId;
   }
 
-  public PollVote setAccountId(long accountId) {
+  public UserActivity setAccountId(long accountId) {
     this.accountId = accountId;
     setAccountIdIsSet(true);
     return this;
@@ -186,77 +158,11 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
-  @org.apache.thrift.annotation.Nullable
-  public StatusPointer getTarget() {
-    return this.target;
-  }
-
-  public PollVote setTarget(@org.apache.thrift.annotation.Nullable StatusPointer target) {
-    this.target = target;
-    return this;
-  }
-
-  public void unsetTarget() {
-    this.target = null;
-  }
-
-  /** Returns true if field target is set (has been assigned a value) and false otherwise */
-  public boolean isSetTarget() {
-    return this.target != null;
-  }
-
-  public void setTargetIsSet(boolean value) {
-    if (!value) {
-      this.target = null;
-    }
-  }
-
-  public int getChoicesSize() {
-    return (this.choices == null) ? 0 : this.choices.size();
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<java.lang.Integer> getChoicesIterator() {
-    return (this.choices == null) ? null : this.choices.iterator();
-  }
-
-  public void addToChoices(int elem) {
-    if (this.choices == null) {
-      this.choices = new java.util.HashSet<java.lang.Integer>();
-    }
-    this.choices.add(elem);
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.Set<java.lang.Integer> getChoices() {
-    return this.choices;
-  }
-
-  public PollVote setChoices(@org.apache.thrift.annotation.Nullable java.util.Set<java.lang.Integer> choices) {
-    this.choices = choices;
-    return this;
-  }
-
-  public void unsetChoices() {
-    this.choices = null;
-  }
-
-  /** Returns true if field choices is set (has been assigned a value) and false otherwise */
-  public boolean isSetChoices() {
-    return this.choices != null;
-  }
-
-  public void setChoicesIsSet(boolean value) {
-    if (!value) {
-      this.choices = null;
-    }
-  }
-
   public long getTimestamp() {
     return this.timestamp;
   }
 
-  public PollVote setTimestamp(long timestamp) {
+  public UserActivity setTimestamp(long timestamp) {
     this.timestamp = timestamp;
     setTimestampIsSet(true);
     return this;
@@ -286,22 +192,6 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
       }
       break;
 
-    case TARGET:
-      if (value == null) {
-        unsetTarget();
-      } else {
-        setTarget((StatusPointer)value);
-      }
-      break;
-
-    case CHOICES:
-      if (value == null) {
-        unsetChoices();
-      } else {
-        setChoices((java.util.Set<java.lang.Integer>)value);
-      }
-      break;
-
     case TIMESTAMP:
       if (value == null) {
         unsetTimestamp();
@@ -320,12 +210,6 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     case ACCOUNT_ID:
       return getAccountId();
 
-    case TARGET:
-      return getTarget();
-
-    case CHOICES:
-      return getChoices();
-
     case TIMESTAMP:
       return getTimestamp();
 
@@ -343,10 +227,6 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     switch (field) {
     case ACCOUNT_ID:
       return isSetAccountId();
-    case TARGET:
-      return isSetTarget();
-    case CHOICES:
-      return isSetChoices();
     case TIMESTAMP:
       return isSetTimestamp();
     }
@@ -355,12 +235,12 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof PollVote)
-      return this.equals((PollVote)that);
+    if (that instanceof UserActivity)
+      return this.equals((UserActivity)that);
     return false;
   }
 
-  public boolean equals(PollVote that) {
+  public boolean equals(UserActivity that) {
     if (that == null)
       return false;
     if (this == that)
@@ -372,24 +252,6 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
       if (!(this_present_accountId && that_present_accountId))
         return false;
       if (this.accountId != that.accountId)
-        return false;
-    }
-
-    boolean this_present_target = true && this.isSetTarget();
-    boolean that_present_target = true && that.isSetTarget();
-    if (this_present_target || that_present_target) {
-      if (!(this_present_target && that_present_target))
-        return false;
-      if (!this.target.equals(that.target))
-        return false;
-    }
-
-    boolean this_present_choices = true && this.isSetChoices();
-    boolean that_present_choices = true && that.isSetChoices();
-    if (this_present_choices || that_present_choices) {
-      if (!(this_present_choices && that_present_choices))
-        return false;
-      if (!this.choices.equals(that.choices))
         return false;
     }
 
@@ -411,21 +273,13 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((isSetTarget()) ? 131071 : 524287);
-    if (isSetTarget())
-      hashCode = hashCode * 8191 + target.hashCode();
-
-    hashCode = hashCode * 8191 + ((isSetChoices()) ? 131071 : 524287);
-    if (isSetChoices())
-      hashCode = hashCode * 8191 + choices.hashCode();
-
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(PollVote other) {
+  public int compareTo(UserActivity other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -438,26 +292,6 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     }
     if (isSetAccountId()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.accountId, other.accountId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetTarget(), other.isSetTarget());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTarget()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.target, other.target);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetChoices(), other.isSetChoices());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetChoices()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.choices, other.choices);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -493,27 +327,11 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("PollVote(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("UserActivity(");
     boolean first = true;
 
     sb.append("accountId:");
     sb.append(this.accountId);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("target:");
-    if (this.target == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.target);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("choices:");
-    if (this.choices == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.choices);
-    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("timestamp:");
@@ -526,17 +344,8 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
-    if (target == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'target' was not present! Struct: " + toString());
-    }
-    if (choices == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'choices' was not present! Struct: " + toString());
-    }
     // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
-    if (target != null) {
-      target.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -557,17 +366,17 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     }
   }
 
-  private static class PollVoteStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class UserActivityStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public PollVoteStandardScheme getScheme() {
-      return new PollVoteStandardScheme();
+    public UserActivityStandardScheme getScheme() {
+      return new UserActivityStandardScheme();
     }
   }
 
-  private static class PollVoteStandardScheme extends org.apache.thrift.scheme.StandardScheme<PollVote> {
+  private static class UserActivityStandardScheme extends org.apache.thrift.scheme.StandardScheme<UserActivity> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, PollVote struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, UserActivity struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -585,34 +394,7 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TARGET
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.target = new StatusPointer();
-              struct.target.read(iprot);
-              struct.setTargetIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // CHOICES
-            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
-              {
-                org.apache.thrift.protocol.TSet _set182 = iprot.readSetBegin();
-                struct.choices = new java.util.HashSet<java.lang.Integer>(2*_set182.size);
-                int _elem183;
-                for (int _i184 = 0; _i184 < _set182.size; ++_i184)
-                {
-                  _elem183 = iprot.readI32();
-                  struct.choices.add(_elem183);
-                }
-                iprot.readSetEnd();
-              }
-              struct.setChoicesIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 4: // TIMESTAMP
+          case 2: // TIMESTAMP
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.timestamp = iprot.readI64();
               struct.setTimestampIsSet(true);
@@ -638,30 +420,13 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, PollVote struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, UserActivity struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
       oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      if (struct.target != null) {
-        oprot.writeFieldBegin(TARGET_FIELD_DESC);
-        struct.target.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      if (struct.choices != null) {
-        oprot.writeFieldBegin(CHOICES_FIELD_DESC);
-        {
-          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I32, struct.choices.size()));
-          for (int _iter185 : struct.choices)
-          {
-            oprot.writeI32(_iter185);
-          }
-          oprot.writeSetEnd();
-        }
-        oprot.writeFieldEnd();
-      }
       oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
       oprot.writeI64(struct.timestamp);
       oprot.writeFieldEnd();
@@ -671,49 +436,27 @@ public class PollVote implements org.apache.thrift.TBase<PollVote, PollVote._Fie
 
   }
 
-  private static class PollVoteTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class UserActivityTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public PollVoteTupleScheme getScheme() {
-      return new PollVoteTupleScheme();
+    public UserActivityTupleScheme getScheme() {
+      return new UserActivityTupleScheme();
     }
   }
 
-  private static class PollVoteTupleScheme extends org.apache.thrift.scheme.TupleScheme<PollVote> {
+  private static class UserActivityTupleScheme extends org.apache.thrift.scheme.TupleScheme<UserActivity> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, PollVote struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, UserActivity struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeI64(struct.accountId);
-      struct.target.write(oprot);
-      {
-        oprot.writeI32(struct.choices.size());
-        for (int _iter186 : struct.choices)
-        {
-          oprot.writeI32(_iter186);
-        }
-      }
       oprot.writeI64(struct.timestamp);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, PollVote struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, UserActivity struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.accountId = iprot.readI64();
       struct.setAccountIdIsSet(true);
-      struct.target = new StatusPointer();
-      struct.target.read(iprot);
-      struct.setTargetIsSet(true);
-      {
-        org.apache.thrift.protocol.TSet _set187 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
-        struct.choices = new java.util.HashSet<java.lang.Integer>(2*_set187.size);
-        int _elem188;
-        for (int _i189 = 0; _i189 < _set187.size; ++_i189)
-        {
-          _elem188 = iprot.readI32();
-          struct.choices.add(_elem188);
-        }
-      }
-      struct.setChoicesIsSet(true);
       struct.timestamp = iprot.readI64();
       struct.setTimestampIsSet(true);
     }

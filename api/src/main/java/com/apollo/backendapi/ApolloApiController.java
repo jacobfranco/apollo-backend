@@ -211,7 +211,6 @@ public class ApolloApiController {
      */
 
     // TODO: Added Object return type - make sure not broken now
-    // Define a POST endpoint for creating new accounts
     @PostMapping("/api/accounts")
     public Mono<Object> postAccount(WebSession session, ServerHttpResponse response,
             @RequestBody(required = true) PostAccount params) {
@@ -332,6 +331,12 @@ public class ApolloApiController {
                 .flatMap(accountId -> Mono.fromFuture(manager.getAccountWithId(accountId)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(GetAccount::new);
+    }
+
+    @GetMapping("/api/accounts/checkEmail")
+    public Mono<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        return Mono.fromFuture(manager.emailExists(email))
+                .map(exists -> Map.of("exists", exists));
     }
 
     @PatchMapping(value = "/api/accounts/update_credentials", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -720,15 +725,11 @@ public class ApolloApiController {
     @DeleteMapping("/api/statuses/{id}")
     public Mono<GetStatus> deleteStatus(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
-        StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(id);
-        if (statusPointer.authorId != requestAccountId)
+        StatusPointer pointer = ApolloHelpers.parseStatusPointer(id);
+        if (pointer.authorId != requestAccountId) {
             return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return Mono.fromFuture(manager.getStatus(requestAccountId, statusPointer))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .flatMap(status -> Mono.zip(Mono.just(status),
-                        Mono.fromFuture(manager.deleteStatus(requestAccountId, statusPointer.statusId))))
-                .map(Tuple2::getT1)
-                .map(GetStatus::new);
+        }
+        return Mono.fromFuture(manager.deleteStatusInternal(pointer));
     }
 
     @GetMapping("/api/statuses/{id}/source")
@@ -1266,9 +1267,7 @@ public class ApolloApiController {
      * ======================================
      * - GET /api/bookmarks
      * - GET /api/likes
-     * - GET /api/reports
      * - GET /api/directory
-     * - POST /api/reports
      * ======================================
      */
 
@@ -1293,18 +1292,6 @@ public class ApolloApiController {
                 .map(statusQueryResults -> {
                     ApolloApiHelpers.setStatusLinkHeader(exchange, statusQueryResults);
                     return ApolloApiHelpers.createGetStatuses(statusQueryResults);
-                });
-    }
-
-    @PostMapping("/api/reports")
-    public Mono<GetReport> postReport(WebSession session, @RequestBody(required = false) PostReport params) {
-        long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.getAccountWithId(ApolloHelpers.parseAccountId(params.account_id)))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .map(accountWithId -> {
-                    LoggerFactory.getLogger(ApolloApiController.class).info("Report from account {}:\n{}",
-                            requestAccountId, params);
-                    return ApolloApiHelpers.createGetReport(params, accountWithId);
                 });
     }
 
@@ -1925,7 +1912,7 @@ public class ApolloApiController {
     }
 
     /*
-     * Instance/Admin Endpoints
+     * Instance Endpoints
      * ======================================
      * - GET /api/instance/rules
      * ======================================
@@ -2085,6 +2072,246 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.getAsset(assetId))
                 .map(asset -> new GetAsset(asset))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found")));
+    }
+
+    /*
+     * Admin Endpoints
+     * ======================================
+     * - GET /api/admin/accounts
+     * ======================================
+     */
+
+    @GetMapping("/api/admin/accounts")
+    public Mono<List<GetAccount>> getAllAdminAccounts(WebSession session, ServerHttpResponse response) {
+        logger.info("getAllAdminAccounts - Fetching all accounts");
+        return Mono.fromFuture(manager.getAllAccounts())
+                .flatMap(accounts -> {
+                    if (accounts == null || accounts.isEmpty()) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No accounts found");
+                    }
+                    // Convert to GetAccount
+                    List<GetAccount> responseBody = accounts.stream()
+                            .map(GetAccount::new)
+                            .collect(Collectors.toList());
+                    return Mono.just(responseBody);
+                })
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not fetch accounts", ex);
+                });
+    }
+
+    @PostMapping("/api/admin/users/permission_group/{group}")
+    public Mono<Void> addPermissionGroup(
+            @PathVariable String group,
+            @RequestBody List<String> nicknames,
+            WebSession session,
+            ServerHttpResponse response) {
+        logger.info("addPermissionGroup - Adding users {} to group {}", nicknames, group);
+        return Mono.fromFuture(manager.addPermissionGroup(nicknames, group))
+                .then()
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not add permission group", ex);
+                });
+    }
+
+    @DeleteMapping("/api/admin/users/permission_group/{group}")
+    public Mono<Void> removePermissionGroup(
+            @PathVariable String group,
+            @RequestBody List<String> nicknames,
+            WebSession session,
+            ServerHttpResponse response) {
+        logger.info("removePermissionGroup - Removing users {} from group {}", nicknames, group);
+        return Mono.fromFuture(manager.removePermissionGroup(nicknames, group))
+                .then()
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not remove permission group", ex);
+                });
+    }
+
+    @PutMapping("/api/admin/users/tag")
+    public Mono<Void> addUserTags(
+            @RequestBody Map<String, Object> request,
+            WebSession session,
+            ServerHttpResponse response) {
+        List<String> nicknames = (List<String>) request.get("nicknames");
+        List<String> tags = (List<String>) request.get("tags");
+
+        logger.info("addUserTags - Adding tags {} to users {}", tags, nicknames);
+        return Mono.fromFuture(manager.addUserTags(nicknames, tags))
+                .then()
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not add tags", ex);
+                });
+    }
+
+    @DeleteMapping("/api/admin/users/tag")
+    public Mono<Void> removeUserTags(
+            @RequestBody Map<String, Object> request,
+            WebSession session,
+            ServerHttpResponse response) {
+        List<String> nicknames = (List<String>) request.get("nicknames");
+        List<String> tags = (List<String>) request.get("tags");
+
+        logger.info("removeUserTags - Removing tags {} from users {}", tags, nicknames);
+        return Mono.fromFuture(manager.removeUserTags(nicknames, tags))
+                .then()
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not remove tags", ex);
+                });
+    }
+
+    @PatchMapping("/api/admin/users/suggest")
+    public Mono<Void> suggestUsers(
+            @RequestBody Map<String, Object> request,
+            WebSession session,
+            ServerHttpResponse response) {
+        List<String> nicknames = (List<String>) request.get("nicknames");
+        logger.info("suggestUsers - Setting users {} as suggested", nicknames);
+        return Mono.fromFuture(manager.setSuggestedUsers(nicknames, true))
+                .then()
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not suggest users", ex);
+                });
+    }
+
+    @PatchMapping("/api/admin/users/unsuggest")
+    public Mono<Void> unsuggestUsers(
+            @RequestBody Map<String, Object> request,
+            WebSession session,
+            ServerHttpResponse response) {
+        List<String> nicknames = (List<String>) request.get("nicknames");
+        logger.info("unsuggestUsers - Removing suggested status from users {}", nicknames);
+        return Mono.fromFuture(manager.setSuggestedUsers(nicknames, false))
+                .then()
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not unsuggest users", ex);
+                });
+    }
+
+    @PostMapping("/api/reports")
+    public Mono<Void> submitReport(WebSession session, @RequestBody PostReport params) {
+        long reporterAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getAccountWithId(null, ApolloHelpers.parseAccountId(params.account_id)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(targetAccount -> Mono.fromFuture(manager.saveReport(params, reporterAccountId, targetAccount)))
+                .then();
+    }
+
+    @GetMapping("/api/admin/reports")
+    public Mono<List<GetReport>> getReports(@RequestParam Map<String, String> params, WebSession session) {
+        return Mono.fromFuture(manager.getReports(params))
+                .flatMap(rawReports -> {
+                    List<Mono<GetReport>> enrichedReports = rawReports.stream()
+                            .map(report -> {
+                                // Fetch reporter account
+                                Mono<AccountWithId> reporterAccount = Mono.fromFuture(
+                                        manager.getAccountWithId(null, report.getReporter_account_id()));
+                                // Fetch target account
+                                Mono<AccountWithId> targetAccount = Mono.fromFuture(
+                                        manager.getAccountWithId(null, report.getTarget_account_id()));
+                                // Combine them
+                                return Mono.zip(reporterAccount, targetAccount)
+                                        .map(tuple -> {
+                                            GetReport getReport = new GetReport(report);
+
+                                            // Create account Map
+                                            Map<String, Object> reporterAccountMap = new HashMap<>();
+                                            reporterAccountMap.put("account", new HashMap<String, Object>() {
+                                                {
+                                                    put("id",
+                                                            ApolloHelpers.serializeAccountId(tuple.getT1().accountId));
+                                                }
+                                            });
+                                            getReport.account = reporterAccountMap;
+
+                                            // Create target account Map
+                                            Map<String, Object> targetAccountMap = new HashMap<>();
+                                            targetAccountMap.put("account", new HashMap<String, Object>() {
+                                                {
+                                                    put("id",
+                                                            ApolloHelpers.serializeAccountId(tuple.getT2().accountId));
+                                                }
+                                            });
+                                            getReport.target_account = targetAccountMap;
+
+                                            return getReport;
+                                        });
+                            })
+                            .collect(Collectors.toList());
+                    return Mono.zip(enrichedReports, resultArray -> Arrays.stream(resultArray)
+                            .map(obj -> (GetReport) obj)
+                            .collect(Collectors.toList()));
+                });
+    }
+
+    @PostMapping("/api/admin/reports/{id}/{action}")
+    public Mono<Void> updateReportState(
+            @PathVariable String id,
+            @PathVariable String action,
+            WebSession session) {
+        if (!action.equals("resolve") && !action.equals("reopen")) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action"));
+        }
+        String newState = action.equals("resolve") ? "resolved" : "open";
+        return Mono.fromFuture(manager.updateReportState(id, newState))
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not update report state",
+                            ex);
+                });
+    }
+
+    @PostMapping("/api/admin/accounts/{accountId}/action")
+    public Mono<Void> deactivateAccount(
+            @PathVariable String accountId,
+            @RequestBody Map<String, String> params,
+            WebSession session) {
+        if (!"disable".equals(params.get("type"))) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Invalid action type"));
+        }
+        String reportId = params.get("report_id");
+        return Mono.fromFuture(manager.deactivateAccount(ApolloHelpers.parseAccountId(accountId), reportId))
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not deactivate account", ex);
+                });
+    }
+
+    @DeleteMapping("/api/admin/users")
+    public Mono<String> deleteUser(
+            @RequestBody Map<String, String> request,
+            WebSession session,
+            ServerHttpResponse response) {
+        String accountId = request.get("accountId");
+        logger.info("deleteUser - Deleting user {}", accountId);
+        return Mono.fromFuture(manager.deleteAccount(ApolloHelpers.parseAccountId(accountId)))
+                .map(success -> success ? "User deleted successfully" : "Failed to delete user")
+                .onErrorResume(ex -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Could not delete user");
+                });
+    }
+
+    @DeleteMapping("/api/admin/statuses/{id}")
+    public Mono<GetStatus> adminDeleteStatus(@PathVariable("id") String id) {
+        StatusPointer pointer = ApolloHelpers.parseStatusPointer(id);
+        return Mono.fromFuture(manager.deleteStatusInternal(pointer));
+    }
+
+    @GetMapping("/api/admin/instance")
+    public Mono<GetInstanceStats> getInstanceStats() {
+        return Mono.fromFuture(manager.getInstanceStats());
+    }
+
+    @PostMapping("/api/admin/track-activity")
+    public Mono<Boolean> trackActivity(@RequestBody PostUserActivity activity) {
+        return Mono.fromFuture(manager.storeUserActivity(activity));
     }
 
 }

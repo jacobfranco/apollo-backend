@@ -506,13 +506,13 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
           case 3: // LANGUAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list80 = iprot.readListBegin();
-                struct.languages = new java.util.ArrayList<java.lang.String>(_list80.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem81;
-                for (int _i82 = 0; _i82 < _list80.size; ++_i82)
+                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
+                struct.languages = new java.util.ArrayList<java.lang.String>(_list96.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem97;
+                for (int _i98 = 0; _i98 < _list96.size; ++_i98)
                 {
-                  _elem81 = iprot.readString();
-                  struct.languages.add(_elem81);
+                  _elem97 = iprot.readString();
+                  struct.languages.add(_elem97);
                 }
                 iprot.readListEnd();
               }
@@ -554,9 +554,9 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
           oprot.writeFieldBegin(LANGUAGES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.languages.size()));
-            for (java.lang.String _iter83 : struct.languages)
+            for (java.lang.String _iter99 : struct.languages)
             {
-              oprot.writeString(_iter83);
+              oprot.writeString(_iter99);
             }
             oprot.writeListEnd();
           }
@@ -591,9 +591,9 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       if (struct.isSetLanguages()) {
         {
           oprot.writeI32(struct.languages.size());
-          for (java.lang.String _iter84 : struct.languages)
+          for (java.lang.String _iter100 : struct.languages)
           {
-            oprot.writeString(_iter84);
+            oprot.writeString(_iter100);
           }
         }
       }
@@ -609,13 +609,13 @@ public class Follower implements org.apache.thrift.TBase<Follower, Follower._Fie
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list85 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.languages = new java.util.ArrayList<java.lang.String>(_list85.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem86;
-          for (int _i87 = 0; _i87 < _list85.size; ++_i87)
+          org.apache.thrift.protocol.TList _list101 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.languages = new java.util.ArrayList<java.lang.String>(_list101.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem102;
+          for (int _i103 = 0; _i103 < _list101.size; ++_i103)
           {
-            _elem86 = iprot.readString();
-            struct.languages.add(_elem86);
+            _elem102 = iprot.readString();
+            struct.languages.add(_elem102);
           }
         }
         struct.setLanguagesIsSet(true);

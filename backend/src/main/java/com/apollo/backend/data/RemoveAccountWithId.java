@@ -7,25 +7,22 @@
 package com.apollo.backend.data;
 
 @SuppressWarnings({"cast", "rawtypes", "serial", "unchecked", "unused"})
-public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAccount._Fields>, java.io.Serializable, Cloneable, Comparable<EditAccount> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("EditAccount");
+public class RemoveAccountWithId implements org.apache.thrift.TBase<RemoveAccountWithId, RemoveAccountWithId._Fields>, java.io.Serializable, Cloneable, Comparable<RemoveAccountWithId> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RemoveAccountWithId");
 
   private static final org.apache.thrift.protocol.TField ACCOUNT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("accountId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField EDITS_FIELD_DESC = new org.apache.thrift.protocol.TField("edits", org.apache.thrift.protocol.TType.LIST, (short)2);
-  private static final org.apache.thrift.protocol.TField TIMESTAMP_FIELD_DESC = new org.apache.thrift.protocol.TField("timestamp", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField ACCOUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("account", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
-  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new EditAccountStandardSchemeFactory();
-  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new EditAccountTupleSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new RemoveAccountWithIdStandardSchemeFactory();
+  private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new RemoveAccountWithIdTupleSchemeFactory();
 
   public long accountId; // required
-  public @org.apache.thrift.annotation.Nullable java.util.List<EditAccountField> edits; // required
-  public long timestamp; // required
+  public @org.apache.thrift.annotation.Nullable Account account; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ACCOUNT_ID((short)1, "accountId"),
-    EDITS((short)2, "edits"),
-    TIMESTAMP((short)3, "timestamp");
+    ACCOUNT((short)2, "account");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,10 +40,8 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
       switch(fieldId) {
         case 1: // ACCOUNT_ID
           return ACCOUNT_ID;
-        case 2: // EDITS
-          return EDITS;
-        case 3: // TIMESTAMP
-          return TIMESTAMP;
+        case 2: // ACCOUNT
+          return ACCOUNT;
         default:
           return null;
       }
@@ -91,73 +86,59 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
 
   // isset id assignments
   private static final int __ACCOUNTID_ISSET_ID = 0;
-  private static final int __TIMESTAMP_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ACCOUNT_ID, new org.apache.thrift.meta_data.FieldMetaData("accountId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "AccountId")));
-    tmpMap.put(_Fields.EDITS, new org.apache.thrift.meta_data.FieldMetaData("edits", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EditAccountField.class))));
-    tmpMap.put(_Fields.TIMESTAMP, new org.apache.thrift.meta_data.FieldMetaData("timestamp", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64        , "Timestamp")));
+    tmpMap.put(_Fields.ACCOUNT, new org.apache.thrift.meta_data.FieldMetaData("account", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Account.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(EditAccount.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RemoveAccountWithId.class, metaDataMap);
   }
 
-  public EditAccount() {
+  public RemoveAccountWithId() {
   }
 
-  public EditAccount(
+  public RemoveAccountWithId(
     long accountId,
-    java.util.List<EditAccountField> edits,
-    long timestamp)
+    Account account)
   {
     this();
     this.accountId = accountId;
     setAccountIdIsSet(true);
-    this.edits = edits;
-    this.timestamp = timestamp;
-    setTimestampIsSet(true);
+    this.account = account;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public EditAccount(EditAccount other) {
+  public RemoveAccountWithId(RemoveAccountWithId other) {
     __isset_bitfield = other.__isset_bitfield;
     this.accountId = other.accountId;
-    if (other.isSetEdits()) {
-      java.util.List<EditAccountField> __this__edits = new java.util.ArrayList<EditAccountField>(other.edits.size());
-      for (EditAccountField other_element : other.edits) {
-        __this__edits.add(new EditAccountField(other_element));
-      }
-      this.edits = __this__edits;
+    if (other.isSetAccount()) {
+      this.account = new Account(other.account);
     }
-    this.timestamp = other.timestamp;
   }
 
   @Override
-  public EditAccount deepCopy() {
-    return new EditAccount(this);
+  public RemoveAccountWithId deepCopy() {
+    return new RemoveAccountWithId(this);
   }
 
   @Override
   public void clear() {
     setAccountIdIsSet(false);
     this.accountId = 0;
-    this.edits = null;
-    setTimestampIsSet(false);
-    this.timestamp = 0;
+    this.account = null;
   }
 
   public long getAccountId() {
     return this.accountId;
   }
 
-  public EditAccount setAccountId(long accountId) {
+  public RemoveAccountWithId setAccountId(long accountId) {
     this.accountId = accountId;
     setAccountIdIsSet(true);
     return this;
@@ -176,68 +157,29 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ACCOUNTID_ISSET_ID, value);
   }
 
-  public int getEditsSize() {
-    return (this.edits == null) ? 0 : this.edits.size();
-  }
-
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<EditAccountField> getEditsIterator() {
-    return (this.edits == null) ? null : this.edits.iterator();
+  public Account getAccount() {
+    return this.account;
   }
 
-  public void addToEdits(EditAccountField elem) {
-    if (this.edits == null) {
-      this.edits = new java.util.ArrayList<EditAccountField>();
-    }
-    this.edits.add(elem);
-  }
-
-  @org.apache.thrift.annotation.Nullable
-  public java.util.List<EditAccountField> getEdits() {
-    return this.edits;
-  }
-
-  public EditAccount setEdits(@org.apache.thrift.annotation.Nullable java.util.List<EditAccountField> edits) {
-    this.edits = edits;
+  public RemoveAccountWithId setAccount(@org.apache.thrift.annotation.Nullable Account account) {
+    this.account = account;
     return this;
   }
 
-  public void unsetEdits() {
-    this.edits = null;
+  public void unsetAccount() {
+    this.account = null;
   }
 
-  /** Returns true if field edits is set (has been assigned a value) and false otherwise */
-  public boolean isSetEdits() {
-    return this.edits != null;
+  /** Returns true if field account is set (has been assigned a value) and false otherwise */
+  public boolean isSetAccount() {
+    return this.account != null;
   }
 
-  public void setEditsIsSet(boolean value) {
+  public void setAccountIsSet(boolean value) {
     if (!value) {
-      this.edits = null;
+      this.account = null;
     }
-  }
-
-  public long getTimestamp() {
-    return this.timestamp;
-  }
-
-  public EditAccount setTimestamp(long timestamp) {
-    this.timestamp = timestamp;
-    setTimestampIsSet(true);
-    return this;
-  }
-
-  public void unsetTimestamp() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
-  }
-
-  /** Returns true if field timestamp is set (has been assigned a value) and false otherwise */
-  public boolean isSetTimestamp() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __TIMESTAMP_ISSET_ID);
-  }
-
-  public void setTimestampIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TIMESTAMP_ISSET_ID, value);
   }
 
   @Override
@@ -251,19 +193,11 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
       }
       break;
 
-    case EDITS:
+    case ACCOUNT:
       if (value == null) {
-        unsetEdits();
+        unsetAccount();
       } else {
-        setEdits((java.util.List<EditAccountField>)value);
-      }
-      break;
-
-    case TIMESTAMP:
-      if (value == null) {
-        unsetTimestamp();
-      } else {
-        setTimestamp((java.lang.Long)value);
+        setAccount((Account)value);
       }
       break;
 
@@ -277,11 +211,8 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
     case ACCOUNT_ID:
       return getAccountId();
 
-    case EDITS:
-      return getEdits();
-
-    case TIMESTAMP:
-      return getTimestamp();
+    case ACCOUNT:
+      return getAccount();
 
     }
     throw new java.lang.IllegalStateException();
@@ -297,22 +228,20 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
     switch (field) {
     case ACCOUNT_ID:
       return isSetAccountId();
-    case EDITS:
-      return isSetEdits();
-    case TIMESTAMP:
-      return isSetTimestamp();
+    case ACCOUNT:
+      return isSetAccount();
     }
     throw new java.lang.IllegalStateException();
   }
 
   @Override
   public boolean equals(java.lang.Object that) {
-    if (that instanceof EditAccount)
-      return this.equals((EditAccount)that);
+    if (that instanceof RemoveAccountWithId)
+      return this.equals((RemoveAccountWithId)that);
     return false;
   }
 
-  public boolean equals(EditAccount that) {
+  public boolean equals(RemoveAccountWithId that) {
     if (that == null)
       return false;
     if (this == that)
@@ -327,21 +256,12 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
         return false;
     }
 
-    boolean this_present_edits = true && this.isSetEdits();
-    boolean that_present_edits = true && that.isSetEdits();
-    if (this_present_edits || that_present_edits) {
-      if (!(this_present_edits && that_present_edits))
+    boolean this_present_account = true && this.isSetAccount();
+    boolean that_present_account = true && that.isSetAccount();
+    if (this_present_account || that_present_account) {
+      if (!(this_present_account && that_present_account))
         return false;
-      if (!this.edits.equals(that.edits))
-        return false;
-    }
-
-    boolean this_present_timestamp = true;
-    boolean that_present_timestamp = true;
-    if (this_present_timestamp || that_present_timestamp) {
-      if (!(this_present_timestamp && that_present_timestamp))
-        return false;
-      if (this.timestamp != that.timestamp)
+      if (!this.account.equals(that.account))
         return false;
     }
 
@@ -354,17 +274,15 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(accountId);
 
-    hashCode = hashCode * 8191 + ((isSetEdits()) ? 131071 : 524287);
-    if (isSetEdits())
-      hashCode = hashCode * 8191 + edits.hashCode();
-
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(timestamp);
+    hashCode = hashCode * 8191 + ((isSetAccount()) ? 131071 : 524287);
+    if (isSetAccount())
+      hashCode = hashCode * 8191 + account.hashCode();
 
     return hashCode;
   }
 
   @Override
-  public int compareTo(EditAccount other) {
+  public int compareTo(RemoveAccountWithId other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -381,22 +299,12 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetEdits(), other.isSetEdits());
+    lastComparison = java.lang.Boolean.compare(isSetAccount(), other.isSetAccount());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetEdits()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.edits, other.edits);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetTimestamp(), other.isSetTimestamp());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetTimestamp()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timestamp, other.timestamp);
+    if (isSetAccount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.account, other.account);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -422,23 +330,19 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
 
   @Override
   public java.lang.String toString() {
-    java.lang.StringBuilder sb = new java.lang.StringBuilder("EditAccount(");
+    java.lang.StringBuilder sb = new java.lang.StringBuilder("RemoveAccountWithId(");
     boolean first = true;
 
     sb.append("accountId:");
     sb.append(this.accountId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("edits:");
-    if (this.edits == null) {
+    sb.append("account:");
+    if (this.account == null) {
       sb.append("null");
     } else {
-      sb.append(this.edits);
+      sb.append(this.account);
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("timestamp:");
-    sb.append(this.timestamp);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -447,11 +351,13 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // alas, we cannot check 'accountId' because it's a primitive and you chose the non-beans generator.
-    if (edits == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'edits' was not present! Struct: " + toString());
+    if (account == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'account' was not present! Struct: " + toString());
     }
-    // alas, we cannot check 'timestamp' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
+    if (account != null) {
+      account.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -472,17 +378,17 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
     }
   }
 
-  private static class EditAccountStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class RemoveAccountWithIdStandardSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public EditAccountStandardScheme getScheme() {
-      return new EditAccountStandardScheme();
+    public RemoveAccountWithIdStandardScheme getScheme() {
+      return new RemoveAccountWithIdStandardScheme();
     }
   }
 
-  private static class EditAccountStandardScheme extends org.apache.thrift.scheme.StandardScheme<EditAccount> {
+  private static class RemoveAccountWithIdStandardScheme extends org.apache.thrift.scheme.StandardScheme<RemoveAccountWithId> {
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol iprot, EditAccount struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, RemoveAccountWithId struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -500,29 +406,11 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // EDITS
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list88 = iprot.readListBegin();
-                struct.edits = new java.util.ArrayList<EditAccountField>(_list88.size);
-                @org.apache.thrift.annotation.Nullable EditAccountField _elem89;
-                for (int _i90 = 0; _i90 < _list88.size; ++_i90)
-                {
-                  _elem89 = new EditAccountField();
-                  _elem89.read(iprot);
-                  struct.edits.add(_elem89);
-                }
-                iprot.readListEnd();
-              }
-              struct.setEditsIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 3: // TIMESTAMP
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.timestamp = iprot.readI64();
-              struct.setTimestampIsSet(true);
+          case 2: // ACCOUNT
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.account = new Account();
+              struct.account.read(iprot);
+              struct.setAccountIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -538,83 +426,52 @@ public class EditAccount implements org.apache.thrift.TBase<EditAccount, EditAcc
       if (!struct.isSetAccountId()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'accountId' was not found in serialized data! Struct: " + toString());
       }
-      if (!struct.isSetTimestamp()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'timestamp' was not found in serialized data! Struct: " + toString());
-      }
       struct.validate();
     }
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol oprot, EditAccount struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, RemoveAccountWithId struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(ACCOUNT_ID_FIELD_DESC);
       oprot.writeI64(struct.accountId);
       oprot.writeFieldEnd();
-      if (struct.edits != null) {
-        oprot.writeFieldBegin(EDITS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.edits.size()));
-          for (EditAccountField _iter91 : struct.edits)
-          {
-            _iter91.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
+      if (struct.account != null) {
+        oprot.writeFieldBegin(ACCOUNT_FIELD_DESC);
+        struct.account.write(oprot);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(TIMESTAMP_FIELD_DESC);
-      oprot.writeI64(struct.timestamp);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
   }
 
-  private static class EditAccountTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
+  private static class RemoveAccountWithIdTupleSchemeFactory implements org.apache.thrift.scheme.SchemeFactory {
     @Override
-    public EditAccountTupleScheme getScheme() {
-      return new EditAccountTupleScheme();
+    public RemoveAccountWithIdTupleScheme getScheme() {
+      return new RemoveAccountWithIdTupleScheme();
     }
   }
 
-  private static class EditAccountTupleScheme extends org.apache.thrift.scheme.TupleScheme<EditAccount> {
+  private static class RemoveAccountWithIdTupleScheme extends org.apache.thrift.scheme.TupleScheme<RemoveAccountWithId> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, EditAccount struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, RemoveAccountWithId struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeI64(struct.accountId);
-      {
-        oprot.writeI32(struct.edits.size());
-        for (EditAccountField _iter92 : struct.edits)
-        {
-          _iter92.write(oprot);
-        }
-      }
-      oprot.writeI64(struct.timestamp);
+      struct.account.write(oprot);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, EditAccount struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, RemoveAccountWithId struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.accountId = iprot.readI64();
       struct.setAccountIdIsSet(true);
-      {
-        org.apache.thrift.protocol.TList _list93 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.edits = new java.util.ArrayList<EditAccountField>(_list93.size);
-        @org.apache.thrift.annotation.Nullable EditAccountField _elem94;
-        for (int _i95 = 0; _i95 < _list93.size; ++_i95)
-        {
-          _elem94 = new EditAccountField();
-          _elem94.read(iprot);
-          struct.edits.add(_elem94);
-        }
-      }
-      struct.setEditsIsSet(true);
-      struct.timestamp = iprot.readI64();
-      struct.setTimestampIsSet(true);
+      struct.account = new Account();
+      struct.account.read(iprot);
+      struct.setAccountIsSet(true);
     }
   }
 

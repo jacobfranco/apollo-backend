@@ -61,16 +61,22 @@ struct Account {
   5: required string uuid;
   6: required string publicKey; 
   7: required Timestamp timestamp;
-  8: optional string displayName;
-  9: optional string bio;
-  10: optional bool locked;
-  11: optional bool bot;
-  12: optional bool discoverable;
-  13: optional AttachmentWithId header;
-  14: optional AttachmentWithId avatar;
-  15: optional list<KeyValuePair> fields;
-  16: optional map<string, Marker> markers;
-  17: optional map<string, string> preferences;
+  8: required bool admin;
+  9: required bool moderator;
+  10: optional string displayName;
+  11: optional string bio;
+  12: optional bool locked;
+  13: optional bool bot;
+  14: optional bool discoverable;
+  15: optional AttachmentWithId header;
+  16: optional AttachmentWithId avatar;
+  17: optional list<KeyValuePair> fields;
+  18: optional map<string, Marker> markers;
+  19: optional map<string, string> preferences;
+  20: optional bool verified;
+  21: optional bool isSuggested;
+  22: optional bool suspended;
+  23: optional list<string> tags;
 }
 
 
@@ -148,6 +154,12 @@ union EditAccountField {
   12: list<KeyValuePair> fields;
   13: map<string, Marker> markers;
   14: map<string, string> preferences;
+  15: bool admin;
+  16: bool moderator;
+  17: list<string> tags;
+  18: bool verified;
+  19: bool isSuggested;
+  20: bool suspended;
 }
 
 struct EditAccount {
@@ -1375,6 +1387,37 @@ struct TeamSchedule {
 struct PlayerSchedule {
   1: i32 id
   2: i32 seriesId
+}
+
+struct Report {
+  1: string id;
+  2: string state;  
+  3: string category;
+  4: string comment;
+  5: string created_at;
+  6: list<string> status_ids;
+  7: list<string> rule_ids;
+  8: i64 target_account_id;
+  9: i64 reporter_account_id;
+  10: bool action_taken;
+  11: optional string action_taken_at;
+  12: bool forwarded;
+}
+
+struct RemoveAccount {
+  1: required AccountId accountId;
+  2: required string name;
+  3: required Timestamp timestamp;
+}
+
+struct RemoveAccountWithId {
+  1: required AccountId accountId;
+  2: required Account account;
+}
+
+struct UserActivity {
+  1: required AccountId accountId;
+  2: required i64 timestamp;  
 }
 
 

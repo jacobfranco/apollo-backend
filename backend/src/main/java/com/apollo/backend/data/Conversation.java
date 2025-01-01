@@ -597,14 +597,14 @@ public class Conversation implements org.apache.thrift.TBase<Conversation, Conve
           case 3: // ACCOUNTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list206 = iprot.readListBegin();
-                struct.accounts = new java.util.ArrayList<AccountWithId>(_list206.size);
-                @org.apache.thrift.annotation.Nullable AccountWithId _elem207;
-                for (int _i208 = 0; _i208 < _list206.size; ++_i208)
+                org.apache.thrift.protocol.TList _list222 = iprot.readListBegin();
+                struct.accounts = new java.util.ArrayList<AccountWithId>(_list222.size);
+                @org.apache.thrift.annotation.Nullable AccountWithId _elem223;
+                for (int _i224 = 0; _i224 < _list222.size; ++_i224)
                 {
-                  _elem207 = new AccountWithId();
-                  _elem207.read(iprot);
-                  struct.accounts.add(_elem207);
+                  _elem223 = new AccountWithId();
+                  _elem223.read(iprot);
+                  struct.accounts.add(_elem223);
                 }
                 iprot.readListEnd();
               }
@@ -654,9 +654,9 @@ public class Conversation implements org.apache.thrift.TBase<Conversation, Conve
         oprot.writeFieldBegin(ACCOUNTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.accounts.size()));
-          for (AccountWithId _iter209 : struct.accounts)
+          for (AccountWithId _iter225 : struct.accounts)
           {
-            _iter209.write(oprot);
+            _iter225.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -691,9 +691,9 @@ public class Conversation implements org.apache.thrift.TBase<Conversation, Conve
       oprot.writeBool(struct.unread);
       {
         oprot.writeI32(struct.accounts.size());
-        for (AccountWithId _iter210 : struct.accounts)
+        for (AccountWithId _iter226 : struct.accounts)
         {
-          _iter210.write(oprot);
+          _iter226.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -714,14 +714,14 @@ public class Conversation implements org.apache.thrift.TBase<Conversation, Conve
       struct.unread = iprot.readBool();
       struct.setUnreadIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list211 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.accounts = new java.util.ArrayList<AccountWithId>(_list211.size);
-        @org.apache.thrift.annotation.Nullable AccountWithId _elem212;
-        for (int _i213 = 0; _i213 < _list211.size; ++_i213)
+        org.apache.thrift.protocol.TList _list227 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.accounts = new java.util.ArrayList<AccountWithId>(_list227.size);
+        @org.apache.thrift.annotation.Nullable AccountWithId _elem228;
+        for (int _i229 = 0; _i229 < _list227.size; ++_i229)
         {
-          _elem212 = new AccountWithId();
-          _elem212.read(iprot);
-          struct.accounts.add(_elem212);
+          _elem228 = new AccountWithId();
+          _elem228.read(iprot);
+          struct.accounts.add(_elem228);
         }
       }
       struct.setAccountsIsSet(true);

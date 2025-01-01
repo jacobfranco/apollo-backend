@@ -114,12 +114,12 @@ public class ApolloApiStreamingConfig {
             // Create a custom ObjectMapper for this serialization
             ObjectMapper customMapper = OBJECT_MAPPER.copy();
             customMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
-    
+
             // Serialize the GetSeries object with the custom mapper
             String seriesStr = customMapper.writeValueAsString(getSeries);
-    
+
             GetStreamEvent event = new GetStreamEvent(stream, "series_update", seriesStr);
-    
+
             // Serialize the event with the custom mapper
             return customMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
@@ -127,26 +127,22 @@ public class ApolloApiStreamingConfig {
             return null;
         }
     }
-    
 
     private static String serializeEvent(GetMatch getMatch, String stream) {
         try {
             ObjectMapper customMapper = OBJECT_MAPPER.copy();
             customMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
-    
+
             String matchStr = customMapper.writeValueAsString(getMatch);
-    
+
             GetStreamEvent event = new GetStreamEvent(stream, "match_update", matchStr);
-    
+
             return customMapper.writeValueAsString(event);
         } catch (JsonProcessingException e) {
             logger.error("Error serializing GetMatch: {}", e.getMessage(), e);
             return null;
         }
     }
-    
-    
-    
 
     public static void sendStatusPointer(WebSocketSession session, FluxSink<WebSocketMessage> sink, String stream,
             Long accountId, StatusPointer statusPointer) {
@@ -221,7 +217,7 @@ public class ApolloApiStreamingConfig {
             });
         }
     }
-    
+
     public static void sendMatchUpdate(GetMatch getMatch) {
         String stream = "match_updates";
         String eventStr = serializeEvent(getMatch, stream);
@@ -233,7 +229,6 @@ public class ApolloApiStreamingConfig {
             });
         }
     }
-    
 
     // caches of the latest query results of each global timeline
     public static final ConcurrentHashMap<LocalTimeline, ConcurrentSkipListMap<Long, StatusQueryResult>> LOCAL_TIMELINE_TO_INDEX_TO_STATUS = new ConcurrentHashMap() {
@@ -303,14 +298,15 @@ public class ApolloApiStreamingConfig {
 
                     // TODO: Change this so that its uniform i.e. get rid of local/remote
                     if ("public".equals(stream) || "public:local".equals(stream) || "public:remote".equals(stream)) {
-    SESSION_ID_TO_STATE.put(wsSessionId,
-            new StreamState(session, accountId, sink, stream, new ArrayList<>()));
-} else if (stream.startsWith("live-match") || stream.startsWith("series_updates") || stream.startsWith("match_updates")) { 
-    SESSION_ID_TO_STATE.put(wsSessionId,
-            new StreamState(session, accountId, sink, stream, new ArrayList<>()));
-    // **Note:** Live match summaries, series updates, and match updates will be pushed manually via ApolloApiManager
-}
- else {
+                        SESSION_ID_TO_STATE.put(wsSessionId,
+                                new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+                    } else if (stream.startsWith("live-match") || stream.startsWith("series_updates")
+                            || stream.startsWith("match_updates")) {
+                        SESSION_ID_TO_STATE.put(wsSessionId,
+                                new StreamState(session, accountId, sink, stream, new ArrayList<>()));
+                        // **Note:** Live match summaries, series updates, and match updates will be
+                        // pushed manually via ApolloApiManager
+                    } else {
                         ProxyState.Callback<SortedMap> statusCallback = (SortedMap newVal, Diff diff,
                                 SortedMap oldVal) -> {
                             StatusPointerDiffProcessor processor = new StatusPointerDiffProcessor();

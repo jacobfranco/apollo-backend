@@ -79,6 +79,12 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractReportId extends ExtractField {
+    public ExtractReportId() {
+      super("id");
+    }
+  }
+
   public static class ExtractItem extends ExtractField {
     public ExtractItem() {
       super("item");

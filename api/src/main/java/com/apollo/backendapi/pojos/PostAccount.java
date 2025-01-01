@@ -6,7 +6,6 @@ public class PostAccount {
     public String password;
     public Boolean agreement;
     public String locale;
-    public String reason;
 
     public PostAccount() {
     }
@@ -18,6 +17,5 @@ public class PostAccount {
         this.password = password;
         this.agreement = agreement;
         this.locale = locale;
-        this.reason = reason;
     }
 }

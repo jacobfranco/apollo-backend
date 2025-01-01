@@ -93,8 +93,7 @@ public class GlobalTimelines implements RamaModule {
 
   @Override
   public void define(Setup setup, Topologies topologies) {
-    // Core setup remains unchanged, focusing on handling statuses for local
-    // timeline
+
     setup.clusterDepot("*statusWithIdDepot", Core.class.getName(), "*statusWithIdDepot");
     setup.clusterPState("$$accountIdToAccountTimeline", Core.class.getName(), "$$accountIdToAccountTimeline");
     setup.clusterQuery("*getStatusesFromPointers", Core.class.getName(), "getStatusesFromPointers");

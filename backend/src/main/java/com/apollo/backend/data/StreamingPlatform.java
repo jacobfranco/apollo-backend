@@ -603,14 +603,14 @@ public class StreamingPlatform implements org.apache.thrift.TBase<StreamingPlatf
           case 4: // IMAGES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list520 = iprot.readListBegin();
-                struct.images = new java.util.ArrayList<Image>(_list520.size);
-                @org.apache.thrift.annotation.Nullable Image _elem521;
-                for (int _i522 = 0; _i522 < _list520.size; ++_i522)
+                org.apache.thrift.protocol.TList _list536 = iprot.readListBegin();
+                struct.images = new java.util.ArrayList<Image>(_list536.size);
+                @org.apache.thrift.annotation.Nullable Image _elem537;
+                for (int _i538 = 0; _i538 < _list536.size; ++_i538)
                 {
-                  _elem521 = new Image();
-                  _elem521.read(iprot);
-                  struct.images.add(_elem521);
+                  _elem537 = new Image();
+                  _elem537.read(iprot);
+                  struct.images.add(_elem537);
                 }
                 iprot.readListEnd();
               }
@@ -652,9 +652,9 @@ public class StreamingPlatform implements org.apache.thrift.TBase<StreamingPlatf
         oprot.writeFieldBegin(IMAGES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.images.size()));
-          for (Image _iter523 : struct.images)
+          for (Image _iter539 : struct.images)
           {
-            _iter523.write(oprot);
+            _iter539.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -704,9 +704,9 @@ public class StreamingPlatform implements org.apache.thrift.TBase<StreamingPlatf
       if (struct.isSetImages()) {
         {
           oprot.writeI32(struct.images.size());
-          for (Image _iter524 : struct.images)
+          for (Image _iter540 : struct.images)
           {
-            _iter524.write(oprot);
+            _iter540.write(oprot);
           }
         }
       }
@@ -730,14 +730,14 @@ public class StreamingPlatform implements org.apache.thrift.TBase<StreamingPlatf
       }
       if (incoming.get(3)) {
         {
-          org.apache.thrift.protocol.TList _list525 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.images = new java.util.ArrayList<Image>(_list525.size);
-          @org.apache.thrift.annotation.Nullable Image _elem526;
-          for (int _i527 = 0; _i527 < _list525.size; ++_i527)
+          org.apache.thrift.protocol.TList _list541 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.images = new java.util.ArrayList<Image>(_list541.size);
+          @org.apache.thrift.annotation.Nullable Image _elem542;
+          for (int _i543 = 0; _i543 < _list541.size; ++_i543)
           {
-            _elem526 = new Image();
-            _elem526.read(iprot);
-            struct.images.add(_elem526);
+            _elem542 = new Image();
+            _elem542.read(iprot);
+            struct.images.add(_elem542);
           }
         }
         struct.setImagesIsSet(true);

@@ -575,16 +575,16 @@ public class ItemStats implements org.apache.thrift.TBase<ItemStats, ItemStats._
           case 1: // DAY_BUCKETS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map254 = iprot.readMapBegin();
-                struct.dayBuckets = new java.util.HashMap<java.lang.Long,DayBucket>(2*_map254.size);
-                long _key255;
-                @org.apache.thrift.annotation.Nullable DayBucket _val256;
-                for (int _i257 = 0; _i257 < _map254.size; ++_i257)
+                org.apache.thrift.protocol.TMap _map270 = iprot.readMapBegin();
+                struct.dayBuckets = new java.util.HashMap<java.lang.Long,DayBucket>(2*_map270.size);
+                long _key271;
+                @org.apache.thrift.annotation.Nullable DayBucket _val272;
+                for (int _i273 = 0; _i273 < _map270.size; ++_i273)
                 {
-                  _key255 = iprot.readI64();
-                  _val256 = new DayBucket();
-                  _val256.read(iprot);
-                  struct.dayBuckets.put(_key255, _val256);
+                  _key271 = iprot.readI64();
+                  _val272 = new DayBucket();
+                  _val272.read(iprot);
+                  struct.dayBuckets.put(_key271, _val272);
                 }
                 iprot.readMapEnd();
               }
@@ -646,10 +646,10 @@ public class ItemStats implements org.apache.thrift.TBase<ItemStats, ItemStats._
         oprot.writeFieldBegin(DAY_BUCKETS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, struct.dayBuckets.size()));
-          for (java.util.Map.Entry<java.lang.Long, DayBucket> _iter258 : struct.dayBuckets.entrySet())
+          for (java.util.Map.Entry<java.lang.Long, DayBucket> _iter274 : struct.dayBuckets.entrySet())
           {
-            oprot.writeI64(_iter258.getKey());
-            _iter258.getValue().write(oprot);
+            oprot.writeI64(_iter274.getKey());
+            _iter274.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -684,10 +684,10 @@ public class ItemStats implements org.apache.thrift.TBase<ItemStats, ItemStats._
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.dayBuckets.size());
-        for (java.util.Map.Entry<java.lang.Long, DayBucket> _iter259 : struct.dayBuckets.entrySet())
+        for (java.util.Map.Entry<java.lang.Long, DayBucket> _iter275 : struct.dayBuckets.entrySet())
         {
-          oprot.writeI64(_iter259.getKey());
-          _iter259.getValue().write(oprot);
+          oprot.writeI64(_iter275.getKey());
+          _iter275.getValue().write(oprot);
         }
       }
       oprot.writeI64(struct.statusCount);
@@ -699,16 +699,16 @@ public class ItemStats implements org.apache.thrift.TBase<ItemStats, ItemStats._
     public void read(org.apache.thrift.protocol.TProtocol prot, ItemStats struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map260 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT); 
-        struct.dayBuckets = new java.util.HashMap<java.lang.Long,DayBucket>(2*_map260.size);
-        long _key261;
-        @org.apache.thrift.annotation.Nullable DayBucket _val262;
-        for (int _i263 = 0; _i263 < _map260.size; ++_i263)
+        org.apache.thrift.protocol.TMap _map276 = iprot.readMapBegin(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT); 
+        struct.dayBuckets = new java.util.HashMap<java.lang.Long,DayBucket>(2*_map276.size);
+        long _key277;
+        @org.apache.thrift.annotation.Nullable DayBucket _val278;
+        for (int _i279 = 0; _i279 < _map276.size; ++_i279)
         {
-          _key261 = iprot.readI64();
-          _val262 = new DayBucket();
-          _val262.read(iprot);
-          struct.dayBuckets.put(_key261, _val262);
+          _key277 = iprot.readI64();
+          _val278 = new DayBucket();
+          _val278.read(iprot);
+          struct.dayBuckets.put(_key277, _val278);
         }
       }
       struct.setDayBucketsIsSet(true);

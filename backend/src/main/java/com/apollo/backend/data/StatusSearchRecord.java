@@ -487,13 +487,13 @@ public class StatusSearchRecord implements org.apache.thrift.TBase<StatusSearchR
           case 1: // TERMS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set238 = iprot.readSetBegin();
-                struct.terms = new java.util.HashSet<java.lang.String>(2*_set238.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem239;
-                for (int _i240 = 0; _i240 < _set238.size; ++_i240)
+                org.apache.thrift.protocol.TSet _set254 = iprot.readSetBegin();
+                struct.terms = new java.util.HashSet<java.lang.String>(2*_set254.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem255;
+                for (int _i256 = 0; _i256 < _set254.size; ++_i256)
                 {
-                  _elem239 = iprot.readString();
-                  struct.terms.add(_elem239);
+                  _elem255 = iprot.readString();
+                  struct.terms.add(_elem255);
                 }
                 iprot.readSetEnd();
               }
@@ -538,9 +538,9 @@ public class StatusSearchRecord implements org.apache.thrift.TBase<StatusSearchR
         oprot.writeFieldBegin(TERMS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.terms.size()));
-          for (java.lang.String _iter241 : struct.terms)
+          for (java.lang.String _iter257 : struct.terms)
           {
-            oprot.writeString(_iter241);
+            oprot.writeString(_iter257);
           }
           oprot.writeSetEnd();
         }
@@ -584,9 +584,9 @@ public class StatusSearchRecord implements org.apache.thrift.TBase<StatusSearchR
       if (struct.isSetTerms()) {
         {
           oprot.writeI32(struct.terms.size());
-          for (java.lang.String _iter242 : struct.terms)
+          for (java.lang.String _iter258 : struct.terms)
           {
-            oprot.writeString(_iter242);
+            oprot.writeString(_iter258);
           }
         }
       }
@@ -604,13 +604,13 @@ public class StatusSearchRecord implements org.apache.thrift.TBase<StatusSearchR
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TSet _set243 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.terms = new java.util.HashSet<java.lang.String>(2*_set243.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem244;
-          for (int _i245 = 0; _i245 < _set243.size; ++_i245)
+          org.apache.thrift.protocol.TSet _set259 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.terms = new java.util.HashSet<java.lang.String>(2*_set259.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem260;
+          for (int _i261 = 0; _i261 < _set259.size; ++_i261)
           {
-            _elem244 = iprot.readString();
-            struct.terms.add(_elem244);
+            _elem260 = iprot.readString();
+            struct.terms.add(_elem260);
           }
         }
         struct.setTermsIsSet(true);

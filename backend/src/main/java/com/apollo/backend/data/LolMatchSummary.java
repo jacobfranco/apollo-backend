@@ -960,13 +960,13 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
           case 8: // ASSET_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set392 = iprot.readSetBegin();
-                struct.assetIds = new java.util.HashSet<java.lang.Integer>(2*_set392.size);
-                int _elem393;
-                for (int _i394 = 0; _i394 < _set392.size; ++_i394)
+                org.apache.thrift.protocol.TSet _set408 = iprot.readSetBegin();
+                struct.assetIds = new java.util.HashSet<java.lang.Integer>(2*_set408.size);
+                int _elem409;
+                for (int _i410 = 0; _i410 < _set408.size; ++_i410)
                 {
-                  _elem393 = iprot.readI32();
-                  struct.assetIds.add(_elem393);
+                  _elem409 = iprot.readI32();
+                  struct.assetIds.add(_elem409);
                 }
                 iprot.readSetEnd();
               }
@@ -1026,9 +1026,9 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
         oprot.writeFieldBegin(ASSET_IDS_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I32, struct.assetIds.size()));
-          for (int _iter395 : struct.assetIds)
+          for (int _iter411 : struct.assetIds)
           {
-            oprot.writeI32(_iter395);
+            oprot.writeI32(_iter411);
           }
           oprot.writeSetEnd();
         }
@@ -1102,9 +1102,9 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       if (struct.isSetAssetIds()) {
         {
           oprot.writeI32(struct.assetIds.size());
-          for (int _iter396 : struct.assetIds)
+          for (int _iter412 : struct.assetIds)
           {
-            oprot.writeI32(_iter396);
+            oprot.writeI32(_iter412);
           }
         }
       }
@@ -1147,13 +1147,13 @@ public class LolMatchSummary implements org.apache.thrift.TBase<LolMatchSummary,
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TSet _set397 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
-          struct.assetIds = new java.util.HashSet<java.lang.Integer>(2*_set397.size);
-          int _elem398;
-          for (int _i399 = 0; _i399 < _set397.size; ++_i399)
+          org.apache.thrift.protocol.TSet _set413 = iprot.readSetBegin(org.apache.thrift.protocol.TType.I32);
+          struct.assetIds = new java.util.HashSet<java.lang.Integer>(2*_set413.size);
+          int _elem414;
+          for (int _i415 = 0; _i415 < _set413.size; ++_i415)
           {
-            _elem398 = iprot.readI32();
-            struct.assetIds.add(_elem398);
+            _elem414 = iprot.readI32();
+            struct.assetIds.add(_elem414);
           }
         }
         struct.setAssetIdsIsSet(true);
