@@ -3,8 +3,6 @@ package com.apollo.backendapi.pojos;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.*;
-import com.apollo.shared.ApolloSpaces;
-import com.apollo.shared.pojos.GetSpace;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -182,15 +180,9 @@ public class GetStatus {
                     this.tags.add(new GetTag(tokenContent));
                     break;
                 case SPACE:
-                    GetSpace predefinedSpace = ApolloSpaces.SPACE_MAP.get(tokenContent);
-                    if (predefinedSpace != null) {
-                        String spaceUrl = String.format("/s/%s", predefinedSpace.id);
-                        this.content += String.format("<a href=\"%s%s\">%s</a>", ApolloConfig.FRONTEND_URL,
-                                spaceUrl, predefinedSpace.id);
-                        this.spaces.add(predefinedSpace);
-                    } else {
-                        this.content += tokenContent;
-                    }
+                    this.content += String.format("<a href=\"%s/s/%s\">%s</a>", ApolloConfig.FRONTEND_URL,
+                            tokenContent, tokenContent);
+                    this.spaces.add(new GetSpace(tokenContent, ApolloApiHelpers.getSpaceNameFromId(tokenContent)));
                     break;
                 case MENTION:
                     if (mentions.containsKey(tokenContent)) {

@@ -264,13 +264,10 @@ public class Relationships implements RamaModule {
     TopologyScheduler muteScheduler = new TopologyScheduler("$$mutes");
     muteScheduler.declarePStates(stream);
 
-    // TODO: Maybe not needed
-    KeyToLinkedEntitySetPStateGroup featurerToFeaturees = new KeyToLinkedEntitySetPStateGroup("$$featurerToFeaturees",
-        Long.class, Long.class).descending();
-    featurerToFeaturees.declarePStates(stream);
-
     stream.pstate("$$hashtagToFollowers", PState.mapSchema(String.class, PState.setSchema(Long.class).subindexed()));
-    stream.pstate("$$spaceToFollowers", PState.mapSchema(String.class, PState.setSchema(Long.class).subindexed()));
+    stream.pstate("$$followerIdToHashtags", PState.mapSchema(Long.class, PState.setSchema(String.class)));
+    stream.pstate("$$spaceIdToFollowers", PState.mapSchema(String.class, PState.setSchema(Long.class).subindexed()));
+    stream.pstate("$$followerIdToSpaceIds", PState.mapSchema(Long.class, PState.setSchema(String.class)));
     stream.source("*followAndBlockAccountDepot", StreamSourceOptions.retryAllAfter()).out("*initialData")
         .anchor("SocialGraphRoot")
         .each(Ops.IDENTITY, "*initialData").out("*data")
@@ -478,33 +475,31 @@ public class Relationships implements RamaModule {
                         .filterPred(Ops.IDENTITY))
                     .termVoid())));
 
-    // TODO: Maybe remove
-    stream.source("*featureAccountDepot", StreamSourceOptions.retryAllAfter()).out("*data")
-        .subSource("*data",
-            SubSource.create(FeatureAccount.class)
-                .macro(extractFields("*data", "*accountId", "*targetId"))
-                .macro(featurerToFeaturees.addToLinkedSet("*accountId", "*targetId")),
-            SubSource.create(RemoveFeatureAccount.class)
-                .macro(extractFields("*data", "*accountId", "*targetId"))
-                .macro(featurerToFeaturees.removeFromLinkedSet("*accountId", "*targetId")));
-
     stream.source("*followHashtagDepot", StreamSourceOptions.retryAllAfter()).out("*data")
         .subSource("*data",
             SubSource.create(FollowHashtag.class)
                 .macro(extractFields("*data", "*accountId", "*token"))
-                .localTransform("$$hashtagToFollowers", Path.key("*token").voidSetElem().termVal("*accountId")),
+                .localTransform("$$hashtagToFollowers", Path.key("*token").voidSetElem().termVal("*accountId"))
+                .hashPartition("*accountId")
+                .localTransform("$$followerIdToHashtags", Path.key("*accountId").voidSetElem().termVal("*token")),
             SubSource.create(RemoveFollowHashtag.class)
                 .macro(extractFields("*data", "*accountId", "*token"))
-                .localTransform("$$hashtagToFollowers", Path.key("*token").setElem("*accountId").termVoid()));
+                .localTransform("$$hashtagToFollowers", Path.key("*token").setElem("*accountId").termVoid())
+                .hashPartition("*accountId")
+                .localTransform("$$followerIdToHashtags", Path.key("*accountId").setElem("*token").termVoid()));
 
     stream.source("*followSpaceDepot", StreamSourceOptions.retryAllAfter()).out("*data")
         .subSource("*data",
             SubSource.create(FollowSpace.class)
                 .macro(extractFields("*data", "*accountId", "*token"))
-                .localTransform("$$spaceToFollowers", Path.key("*token").voidSetElem().termVal("*accountId")),
+                .localTransform("$$spaceIdToFollowers", Path.key("*token").voidSetElem().termVal("*accountId"))
+                .hashPartition("*accountId")
+                .localTransform("$$followerIdToSpaceIds", Path.key("*accountId").voidSetElem().termVal("*token")),
             SubSource.create(RemoveFollowSpace.class)
                 .macro(extractFields("*data", "*accountId", "*token"))
-                .localTransform("$$spaceToFollowers", Path.key("*token").setElem("*accountId").termVoid()));
+                .localTransform("$$spaceIdToFollowers", Path.key("*token").setElem("*accountId").termVoid())
+                .hashPartition("*accountId")
+                .localTransform("$$followerIdToSpaceIds", Path.key("*accountId").setElem("*token").termVoid()));
 
     stream.pstate("$$authCodeToAccountId", PState.mapSchema(String.class, Long.class));
 
@@ -534,13 +529,12 @@ public class Relationships implements RamaModule {
     Boolean blocking = bools.get(2);
     Boolean blockedBy = bools.get(3);
     Boolean muting = bools.get(4);
-    Boolean endorsed = bools.get(5);
-    Boolean requested = bools.get(6);
+    Boolean requested = bools.get(5);
     return new AccountRelationshipQueryResult().setAccountId(accountId).setFollowing(following).setShowingBoosts(true)
         .setNotifying(false).setLanguages(new ArrayList<>())
         .setFollowedBy(followedBy).setBlocking(blocking).setBlockedBy(blockedBy).setMuting(muting)
         .setMutingNotifications(false)
-        .setRequested(requested).setDomainBlocking(false).setEndorsed(endorsed).setNote(note == null ? "" : note);
+        .setRequested(requested).setNote(note == null ? "" : note);
   }
 
   private static SubBatch followCounts(String microbatchVar) {
@@ -664,7 +658,6 @@ public class Relationships implements RamaModule {
   public void define(Setup setup, Topologies topologies) {
     setup.declareDepot("*followAndBlockAccountDepot", Depot.hashBy(ExtractAccountId.class));
     setup.declareDepot("*muteAccountDepot", Depot.hashBy(ExtractAccountId.class));
-    setup.declareDepot("*featureAccountDepot", Depot.hashBy(ExtractAccountId.class));
     setup.declareDepot("*followHashtagDepot", Depot.hashBy(ExtractToken.class));
     setup.declareDepot("*followSpaceDepot", Depot.hashBy(ExtractToken.class));
     setup.declareDepot("*filterDepot", Depot.hashBy(ExtractFilterAccountId.class));
@@ -810,8 +803,6 @@ public class Relationships implements RamaModule {
         .out("*muting")
         .localSelect("$$accountIdToSuppressions", Path.key("*accountId", "blocked").view(Ops.CONTAINS, "*targetId"))
         .out("*blocking")
-        .localSelect("$$featurerToFeaturees", Path.key("*accountId", "*targetId")).out("*featuringIndex")
-        .each(Ops.IS_NOT_NULL, "*featuringIndex").out("*endorsed")
         .localSelect("$$accountIdToTargetIdToNote", Path.key("*accountId", "*targetId")).out("*note")
         .hashPartition("*targetId")
         .localSelect("$$accountIdToFollowRequests", Path.key("*targetId", "*accountId")).out("*requestedId")
@@ -826,9 +817,9 @@ public class Relationships implements RamaModule {
         .out("*blockedBy")
         .each(
             (Boolean following, Boolean followedBy, Boolean blocking, Boolean blockedBy, Boolean muting,
-                Boolean endorsed, Boolean requested) -> Arrays.asList(following, followedBy, blocking, blockedBy,
-                    muting, endorsed, requested),
-            "*following", "*followedBy", "*blocking", "*blockedBy", "*muting", "*endorsed", "*requested")
+                Boolean requested) -> Arrays.asList(following, followedBy, blocking, blockedBy,
+                    muting, requested),
+            "*following", "*followedBy", "*blocking", "*blockedBy", "*muting", "*requested")
         .out("*bools")
         .each(Relationships::createAccountRelationship, "*targetId", "*bools", "*note").out("*relationship")
         .each((AccountRelationshipQueryResult result, Follower followerPointer, Boolean notifying) -> {
@@ -880,6 +871,18 @@ public class Relationships implements RamaModule {
                   return ret;
                 }, "*personalizedRes", "*globalRes").out("*res"),
             Block.each(Ops.IDENTITY, "*personalizedRes").out("*res"));
+
+    topologies.query("getFollowedHashtagsFromAccountId", "*accountId").out("*hashtags")
+        .hashPartition("*accountId")
+        .localSelect("$$followerIdToHashtags", Path.key("*accountId"))
+        .out("*hashtags")
+        .originPartition();
+
+    topologies.query("getFollowedSpaceIdsFromAccountId", "*accountId").out("*spaceIds")
+        .hashPartition("*accountId")
+        .localSelect("$$followerIdToSpaceIds", Path.key("*accountId"))
+        .out("*spaceIds")
+        .originPartition();
 
     // This is used in unit tests to add another topology used for doing assertions.
     if (testTopologiesHook != null)

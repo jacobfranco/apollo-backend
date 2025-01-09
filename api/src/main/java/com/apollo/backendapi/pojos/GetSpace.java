@@ -1,12 +1,14 @@
-package com.apollo.shared.pojos;
+package com.apollo.backendapi.pojos;
 
 import java.util.*;
 
+import com.apollo.backendapi.ApolloApiHelpers;
 import com.rpl.rama.RamaSerializable;
 
 public class GetSpace implements RamaSerializable {
+    public String id;
     public String name;
-    public String url;
+    public String linkUrl;
     public String imageUrl;
 
     public static class HistoryItem {
@@ -26,15 +28,11 @@ public class GetSpace implements RamaSerializable {
 
     public List<HistoryItem> history = new ArrayList<>();
     public Boolean following; // optional
-    public String id;
-    public boolean trendable;
-    public boolean usable;
-    public boolean requires_review;
 
-    public GetSpace(String name, String id, String imageUrl) {
+    public GetSpace(String id, String name) {
+        this.id = id; // Id is stored as "lol" or "cs"
         this.name = name;
-        this.url = "/s/" + id;
-        this.id = id;
-        this.imageUrl = imageUrl;
+        this.linkUrl = "/s/" + id;
+        this.imageUrl = "https://yoapollo.s3.us-east-2.amazonaws.com/spaces/" + id + ".webp";
     }
 }

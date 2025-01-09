@@ -5,7 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -48,7 +47,6 @@ import com.apollo.backend.modules.Relationships;
 import com.apollo.backend.modules.Search;
 import com.apollo.backend.modules.TrendsAndHashtags;
 import com.apollo.backendapi.pojos.*;
-import com.apollo.shared.ApolloSpaces;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -79,12 +77,11 @@ public class ApolloApiManager {
     private ObjectMapper objectMapper;
 
     private static final Logger logger = LogManager.getLogger(ApolloApiManager.class);
-
-    // Load environment variables for Abios
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = Dotenv.configure()
+            .filename(".env")
+            .load();
     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
     private static final AwsCredentialsProvider credentialsProvider;
-
     private final AbiosApiClient apiClient;
 
     private Map<Integer, Roster> rosterCache = new ConcurrentHashMap<>();
@@ -168,7 +165,6 @@ public class ApolloApiManager {
     private final Depot authCodeDepot;
     private final Depot followAndBlockAccountDepot;
     private final Depot muteAccountDepot;
-    private final Depot featureAccountDepot;
     private final Depot filterDepot;
     private final Depot removeFollowSuggestionDepot;
     private final Depot followHashtagDepot;
@@ -184,12 +180,14 @@ public class ApolloApiManager {
     private final PState postUUIDToGeneratedId;
     private final PState accountIdToFilterIdToFilter;
     private final PState hashtagToFollowers;
-    private final PState spaceToFollowers;
+    private final PState spaceIdToFollowers;
 
     // Relationship Queries
     private final QueryTopologyClient<AccountRelationshipQueryResult> getAccountRelationship;
     private final QueryTopologyClient<List<Long>> getFamiliarFollowers;
     private final QueryTopologyClient<Set<Long>> getWhoToFollowSuggestions;
+    private final QueryTopologyClient<Set<String>> getFollowedHashtagsFromAccountId;
+    private final QueryTopologyClient<Set<String>> getFollowedSpaceIdsFromAccountId;
 
     // Notifications Depots
     private final Depot dismissDepot;
@@ -197,20 +195,27 @@ public class ApolloApiManager {
     // Notifications PStates
     private final PState accountIdToNotificationsTimeline;
 
-    // Hashtag PStates
+    // Trends Depots
+    private final Depot spaceDepot;
+
+    // Trends PStates
+    private final PState statusTrends;
     private final PState hashtagTrends;
     private final PState spaceTrends;
-    private final PState statusTrends;
     private final PState accountIdToHashtagActivity;
+    private final PState accountIdToSpaceActivity;
     private final PState hashtagToStatusPointers;
     private final PState hashtagToStatusPointersReverse;
+    private final PState spaceToStatusPointers;
     private final PState spaceToStatusPointersReverse;
 
-    // Hashtag Queries
+    // Trends Queries
     private final QueryTopologyClient<Map<String, ItemStats>> batchHashtagStats;
     private final QueryTopologyClient<StatusQueryResults> getHashtagTimeline;
     private final QueryTopologyClient<Map<String, ItemStats>> batchSpaceStats;
     private final QueryTopologyClient<StatusQueryResults> getSpaceTimeline;
+    private final QueryTopologyClient<Space> getSpaceFromSpaceId;
+    private final QueryTopologyClient<List<Space>> getAllSpaces;
 
     // Search PStates
     private final PState activeAccountIds;
@@ -220,6 +225,7 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Map> profileTermsSearch;
     private final QueryTopologyClient<Map> statusTermsSearch;
     private final QueryTopologyClient<Map> hashtagSearch;
+    private final QueryTopologyClient<Map> spaceSearch;
 
     // Global Timelines PStates
     private final PState localTimeline;
@@ -331,7 +337,6 @@ public class ApolloApiManager {
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
         followAndBlockAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followAndBlockAccountDepot");
         muteAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*muteAccountDepot");
-        featureAccountDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*featureAccountDepot");
         filterDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*filterDepot");
         removeFollowSuggestionDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*removeFollowSuggestionDepot");
         followHashtagDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*followHashtagDepot");
@@ -348,36 +353,46 @@ public class ApolloApiManager {
         postUUIDToGeneratedId = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$postUUIDToGeneratedId");
         accountIdToFilterIdToFilter = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$accountIdToFilterIdToFilter");
         hashtagToFollowers = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$hashtagToFollowers");
-        spaceToFollowers = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$spaceToFollowers");
+        spaceIdToFollowers = cluster.clusterPState(RELATIONSHIPS_MODULE_NAME, "$$spaceIdToFollowers");
 
         // Relationships Queries
         getAccountRelationship = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getAccountRelationship");
         getFamiliarFollowers = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getFamiliarFollowers");
         getWhoToFollowSuggestions = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME, "getWhoToFollowSuggestions");
+        getFollowedHashtagsFromAccountId = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME,
+                "getFollowedHashtagsFromAccountId");
+        getFollowedSpaceIdsFromAccountId = cluster.clusterQuery(RELATIONSHIPS_MODULE_NAME,
+                "getFollowedSpaceIdsFromAccountId");
 
         // Notifications Depots
         dismissDepot = cluster.clusterDepot(NOTIFICATIONS_MODULE_NAME, "*dismissDepot");
 
-        // Notifications PStates
+        // Notification Pstates
         accountIdToNotificationsTimeline = cluster.clusterPState(NOTIFICATIONS_MODULE_NAME,
                 "$$accountIdToNotificationsTimeline");
 
-        // Hashtag/Trends PStates
-        hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
+        // Trends Depots
+        spaceDepot = cluster.clusterDepot(HASHTAGS_MODULE_NAME, "*spaceDepot");
+
+        // Trends PStates
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
+        hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
+        spaceTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$spaceTrends");
         accountIdToHashtagActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToHashtagActivity");
+        accountIdToSpaceActivity = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$accountIdToSpaceActivity");
         hashtagToStatusPointers = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagToStatusPointers");
         hashtagToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME,
                 "$$hashtagToStatusPointersReverse");
-        spaceTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$spaceTrends");
-        spaceToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME,
-                "$$spaceToStatusPointersReverse");
+        spaceToStatusPointers = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$spaceToStatusPointers");
+        spaceToStatusPointersReverse = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$spaceToStatusPointersReverse");
 
-        // Hashtag Queries
+        // Trends Queries
         batchHashtagStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchHashtagStats");
         getHashtagTimeline = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getHashtagTimeline");
         batchSpaceStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchSpaceStats");
         getSpaceTimeline = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getSpaceTimeline");
+        getSpaceFromSpaceId = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getSpaceFromSpaceId");
+        getAllSpaces = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getAllSpaces");
 
         // Search PStates
         activeAccountIds = cluster.clusterPState(SEARCH_MODULE_NAME, "$$activeAccountIds");
@@ -387,6 +402,7 @@ public class ApolloApiManager {
         profileTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "profileTermsSearch");
         statusTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "statusTermsSearch");
         hashtagSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "hashtagSearch");
+        spaceSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "spaceSearch");
 
         // Global Timelines PStates
         localTimeline = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$localTimeline");
@@ -808,17 +824,6 @@ public class ApolloApiManager {
     public CompletableFuture<Boolean> postRemoveBlockAccount(long blockerId, long blockeeId) {
         return followAndBlockAccountDepot
                 .appendAsync(new RemoveBlockAccount(blockerId, blockeeId, System.currentTimeMillis()))
-                .thenApply(res -> true);
-    }
-
-    public CompletableFuture<Boolean> postFeatureAccount(long featurerId, long featureeId) {
-        return featureAccountDepot.appendAsync(new FeatureAccount(featurerId, featureeId, System.currentTimeMillis()))
-                .thenApply(res -> true);
-    }
-
-    public CompletableFuture<Boolean> postRemoveFeatureAccount(long featurerId, long featureeId) {
-        return featureAccountDepot
-                .appendAsync(new RemoveFeatureAccount(featurerId, featureeId, System.currentTimeMillis()))
                 .thenApply(res -> true);
     }
 
@@ -1444,6 +1449,23 @@ public class ApolloApiManager {
         }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 
+    public CompletableFuture<StatusQueryResults> getSpaceStatuses(Long requestAccountIdMaybe, long authorId,
+            String space, StatusPointer offsetMaybe, Integer limitMaybe) {
+        return queryStatusesWithPaging((offset, limit) -> {
+            SortedRangeFromOptions rangeOptions = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+            return accountIdToSpaceActivity
+                    .selectAsync(Path.key(authorId, space, "timeline")
+                            .sortedSetRangeFrom(offset.statusId, rangeOptions).all())
+                    .thenCompose((List<Object> statusIds) -> {
+                        QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, false);
+                        List<StatusPointer> pointers = statusIds.stream()
+                                .map((statusId) -> new StatusPointer(authorId, (Long) statusId))
+                                .collect(Collectors.toList());
+                        return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, pointers, filterOptions);
+                    });
+        }, offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+    }
+
     public CompletableFuture<QueryResults<GetNotification.Bundle, Long>> getNotificationsTimeline(long accountId,
             Long offsetMaybe, Integer limitMaybe, List<String> typesMaybe, List<String> excludeTypesMaybe) {
         int defaultLimit = 15;
@@ -1827,6 +1849,30 @@ public class ApolloApiManager {
         });
     }
 
+    public CompletableFuture<QueryResults<SimpleEntry<String, ItemStats>, Map>> getSpaceSearch(String term,
+            Map startParamsMaybe, Integer limitMaybe) {
+        int defaultLimit = 40;
+        int maxLimit = 80;
+        int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
+        CompletableFuture<Map> matchListFuture = spaceSearch.invokeAsync(term, startParamsMaybe, limit);
+
+        return matchListFuture.thenCompose(result -> {
+            Map nextParams = ApolloApiHelpers.createSearchParams(result);
+            List<String> matchList = (List<String>) result.get("matchList");
+            return batchSpaceStats.invokeAsync(matchList.stream().distinct().collect(Collectors.toList()))
+                    .thenApply(spaceToStats -> {
+                        if (spaceToStats == null)
+                            spaceToStats = new HashMap<>();
+                        List<SimpleEntry<String, ItemStats>> results = new ArrayList<>();
+                        for (Map.Entry<String, ItemStats> entry : spaceToStats.entrySet()) {
+                            results.add(new SimpleEntry<>(entry.getKey(), entry.getValue()));
+                        }
+                        return new QueryResults<>(results, nextParams == null, nextParams,
+                                ApolloApiHelpers.createLinkHeaderParams(nextParams));
+                    });
+        });
+    }
+
     public CompletableFuture<Conversation> getConversationFromStatusId(long accountId, StatusPointer pointer) {
         return statusIdToConvoId
                 .selectOneAsync(pointer.authorId, Path.key(pointer.statusId).nullToVal(pointer.statusId))
@@ -1905,18 +1951,20 @@ public class ApolloApiManager {
                 callback);
     }
 
+    public CompletableFuture<ProxyState<SortedMap>> proxySpaceTimeline(String space,
+            ProxyState.Callback<SortedMap> callback) {
+        return spaceToStatusPointers.proxyAsync(Path.key(space).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT),
+                callback);
+    }
+
     public CompletableFuture<ProxyState<SortedMap>> proxyDirectTimeline(long accountId,
             ProxyState.Callback<SortedMap> callback) {
         return accountIdToDirectMessagesById.proxyAsync(Path.key(accountId).sortedMapRangeFrom(0L, STREAM_QUERY_LIMIT),
                 callback);
     }
 
-    // TODO: Idk if this works
-    public CompletableFuture<List<String>> getFollowedHashtags(long accountId) {
-        return hashtagToFollowers.selectAsync(Path.key(accountId).all())
-                .thenApply(entries -> entries.stream()
-                        .map(Object::toString)
-                        .collect(Collectors.toList()));
+    public CompletableFuture<Set<String>> getFollowedHashtags(long accountId) {
+        return getFollowedHashtagsFromAccountId.invokeAsync(accountId);
     }
 
     // eSports
@@ -5510,43 +5558,27 @@ public class ApolloApiManager {
 
     // Spaces
 
-    public CompletableFuture<ItemStats> getSpaceStats(String space) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
-            return CompletableFuture.completedFuture(null);
-        }
-        return batchSpaceStats.invokeAsync(Arrays.asList(space)).thenApply(info -> info.get(space));
+    public CompletableFuture<ItemStats> getSpaceStats(String spaceId) {
+        return batchSpaceStats.invokeAsync(Arrays.asList(spaceId))
+                .thenApply(info -> info.get(spaceId));
     }
 
-    public CompletableFuture<Boolean> postFollowSpace(long accountId, String space) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
-            return CompletableFuture.completedFuture(false);
-        }
-        return followSpaceDepot.appendAsync(new FollowSpace(accountId, space, System.currentTimeMillis()))
+    public CompletableFuture<Boolean> postFollowSpace(long accountId, String spaceId) {
+        return followSpaceDepot.appendAsync(new FollowSpace(accountId, spaceId, System.currentTimeMillis()))
                 .thenApply(res -> true);
     }
 
-    public CompletableFuture<Boolean> postRemoveFollowSpace(long accountId, String space) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
-            return CompletableFuture.completedFuture(false);
-        }
-        return followSpaceDepot.appendAsync(new RemoveFollowSpace(accountId, space, System.currentTimeMillis()))
+    public CompletableFuture<Boolean> postRemoveFollowSpace(long accountId, String spaceId) {
+        return followSpaceDepot.appendAsync(new RemoveFollowSpace(accountId, spaceId, System.currentTimeMillis()))
                 .thenApply(res -> true);
     }
 
-    public CompletableFuture<Boolean> isFollowingSpace(long accountId, String space) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
-            return CompletableFuture.completedFuture(false);
-        }
-        return spaceToFollowers.selectOneAsync(Path.key(space).view(Ops.CONTAINS, accountId));
+    public CompletableFuture<Boolean> isFollowingSpace(long accountId, String spaceId) {
+        return spaceIdToFollowers.selectOneAsync(Path.key(spaceId).view(Ops.CONTAINS, accountId));
     }
 
-    // TODO: Idk if this works
-    public CompletableFuture<List<String>> getFollowedSpaces(long accountId) {
-        return spaceToFollowers.selectAsync(Path.key(accountId).all())
-                .thenApply(entries -> entries.stream()
-                        .map(Object::toString)
-                        .filter(ApolloSpaces.SPACE_MAP::containsKey)
-                        .collect(Collectors.toList()));
+    public CompletableFuture<Set<String>> getFollowedSpaceIds(long accountId) {
+        return getFollowedSpaceIdsFromAccountId.invokeAsync(accountId);
     }
 
     public CompletableFuture<Map<String, ItemStats>> getTrendingSpaces(Integer limitMaybe, Integer offsetMaybe) {
@@ -5555,27 +5587,27 @@ public class ApolloApiManager {
         int maxLimit = 20;
         int limit = Math.min(limitMaybe == null ? defaultLimit : limitMaybe, maxLimit);
         return spaceTrends.selectAsync(Path.all().first())
-                .thenApply(spaces -> spaces.stream()
-                        .filter(ApolloSpaces.SPACE_MAP::containsKey)
-                        .skip(offset)
-                        .limit(limit)
-                        .collect(Collectors.toList()))
+                .thenApply(spaces -> spaces.stream().skip(offset).limit(limit).collect(Collectors.toList()))
                 .thenCompose(batchSpaceStats::invokeAsync)
                 .thenApply(res -> res == null ? new HashMap<>() : res);
     }
 
     public CompletableFuture<StatusQueryResults> getSpaceTimeline(String space, Long requestAccountIdMaybe,
             StatusPointer offsetMaybe, Integer limitMaybe) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(space)) {
-            return CompletableFuture
-                    .completedFuture(new StatusQueryResults(new ArrayList<>(), new HashMap<>(), false, false));
-        }
-        return queryStatusesWithPaging(
-                (offset, limit) -> spaceToStatusPointersReverse
-                        .selectOneAsync(Path.key(space, offset).nullToVal(-1L))
-                        .thenCompose(timelineIndex -> getSpaceTimeline.invokeAsync(space, requestAccountIdMaybe,
-                                timelineIndex, limit)),
-                offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+        return getSpaceFromSpaceId(space)
+                .thenCompose(spaceResult -> {
+                    if (spaceResult == null) {
+                        return CompletableFuture.completedFuture(
+                                new StatusQueryResults(new ArrayList<>(), new HashMap<>(), false, false));
+                    }
+                    return queryStatusesWithPaging(
+                            (offset, limit) -> spaceToStatusPointersReverse
+                                    .selectOneAsync(Path.key(space, offset).nullToVal(-1L))
+                                    .thenCompose(
+                                            timelineIndex -> getSpaceTimeline.invokeAsync(space, requestAccountIdMaybe,
+                                                    timelineIndex, limit)),
+                            offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
+                });
     }
 
     // OAuth
@@ -6316,6 +6348,28 @@ public class ApolloApiManager {
         return userActivityDepot
                 .appendAsync(new UserActivity(ApolloHelpers.parseAccountId(activity.userId), epochMillis))
                 .thenApply(res -> true);
+    }
+
+    public void initializeSpaces(List<Space> spaces) {
+        for (Space space : spaces) {
+            spaceDepot.appendAsync(space);
+        }
+    }
+
+    public CompletableFuture<Space> getSpaceFromSpaceId(String id) {
+        return getSpaceFromSpaceId.invokeAsync(id);
+    }
+
+    public CompletableFuture<List<Space>> getAllSpaces() {
+        return getAllSpaces.invokeAsync();
+    }
+
+    public CompletableFuture<Boolean> saveSpace(PostSpace params) {
+        Space space = new Space();
+        space.setId(params.id);
+        space.setName(params.name);
+
+        return spaceDepot.appendAsync(space).thenApply(res -> true);
     }
 
 }

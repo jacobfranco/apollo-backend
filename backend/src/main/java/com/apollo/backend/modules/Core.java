@@ -546,16 +546,11 @@ public class Core implements RamaModule {
                                 .each(Ops.EXPAND, "*keyAndVal").out("*hashtagFanout", "*nextIndex")
                                 .localTransform("$$hashtagFanoutToIndex", Path.key("*hashtagFanout").termVoid())
                                 .macro(extractFields("*hashtagFanout", "*authorId", "*statusId", "*hashtag"))
-                                .anchor("HashtagFanoutContinue")
-
-                                // continue fanout of new statuses to spaces
-                                .hook("FanoutRoot")
-                                .allPartition()
                                 .localSelect("$$spaceFanoutToIndex", Path.all()).out("*keyAndVal")
                                 .each(Ops.EXPAND, "*keyAndVal").out("*spaceFanout", "*nextIndex")
                                 .localTransform("$$spaceFanoutToIndex", Path.key("*spaceFanout").termVoid())
-                                .macro(extractFields("*spaceFanout", "*authorId", "*statusId", "*space"))
-                                .anchor("SpaceFanoutContinue")
+                                .macro(extractFields("*spaceFanout", "*authorId", "*statusId", "*spaceId"))
+                                .anchor("HashtagFanoutContinue")
 
                                 // handle incoming depot appends
                                 .hook("FanoutRoot")
@@ -633,18 +628,16 @@ public class Core implements RamaModule {
                                                                                                                                 .each(Ops.EXPLODE,
                                                                                                                                                 "*hashtags")
                                                                                                                                 .out("*hashtag")
-                                                                                                                                .anchor("NormalHashtagFanout")
-                                                                                                                                // Add
-                                                                                                                                // space
-                                                                                                                                // fanout
-                                                                                                                                .hook("NormalHashtagFanout")
+                                                                                                                                .each(Token::parseTokens,
+                                                                                                                                                "*text")
+                                                                                                                                .out("*tokens")
                                                                                                                                 .each(Token::filterSpaces,
                                                                                                                                                 "*tokens")
-                                                                                                                                .out("*spaces")
+                                                                                                                                .out("*spaceIds")
                                                                                                                                 .each(Ops.EXPLODE,
-                                                                                                                                                "*spaces")
-                                                                                                                                .out("*space")
-                                                                                                                                .anchor("NormalSpaceFanout"))))
+                                                                                                                                                "*spaceIds")
+                                                                                                                                .out("*spaceId")
+                                                                                                                                .anchor("NormalHashtagFanout"))))
 
                                 .hook("NormalFanoutBegin")
                                 .select("$$partitionedFollowersControl", Path.key("*authorId")).out("*tasks")
@@ -730,17 +723,16 @@ public class Core implements RamaModule {
                                                 new Expr(Ops.CURRENT_MICROBATCH_ID))
 
                                 // fan out new status to spaces
-                                .unify("NormalSpaceFanout", "SpaceFanoutContinue")
                                 .each((RamaFunction2<Long, Long, StatusPointer>) StatusPointer::new, "*authorId",
                                                 "*statusId")
                                 .out("*statusPointer")
-                                .hashPartition("$$spaceToFollowers", "*space")
-                                .macro(safeFetchSetFollowers("$$spaceToFollowers", "*space", "*nextIndex",
+                                .hashPartition("$$spaceIdToFollowers", "*spaceId")
+                                .macro(safeFetchSetFollowers("$$spaceIdToFollowers", "*spaceId", "*nextIndex",
                                                 singlePartitionFanoutLimit, "*fetchedFollowerIds", "*nextFollowerId"))
                                 // update fanout pstate if necessary
                                 .ifTrue(new Expr(Ops.IS_NOT_NULL, "*nextFollowerId"),
                                                 Block.each((RamaFunction3<Long, Long, String, SpaceFanout>) SpaceFanout::new,
-                                                                "*authorId", "*statusId", "*space")
+                                                                "*authorId", "*statusId", "*spaceId")
                                                                 .out("*followerFanout")
                                                                 .localTransform("$$spaceFanoutToIndex",
                                                                                 Path.key("*followerFanout").termVal(
@@ -2833,9 +2825,9 @@ public class Core implements RamaModule {
                 topologies.query("getAllReports").out("*result")
                                 .allPartition()
                                 .localSelect("$$reportIdToReport", Path.mapVals())
-                                .out("*ids")
+                                .out("*reports")
                                 .originPartition()
-                                .agg(Agg.list("*ids")).out("*result");
+                                .agg(Agg.list("*reports")).out("*result");
 
                 topologies.query("getActiveUsersCount", "*timestamp").out("*result")
                                 .allPartition()
@@ -2933,7 +2925,7 @@ public class Core implements RamaModule {
                 setup.clusterPState("$$partitionedFollowers", Relationships.class.getName(), "$$partitionedFollowers");
 
                 setup.clusterPState("$$hashtagToFollowers", Relationships.class.getName(), "$$hashtagToFollowers");
-                setup.clusterPState("$$spaceToFollowers", Relationships.class.getName(), "$$spaceToFollowers");
+                setup.clusterPState("$$spaceIdToFollowers", Relationships.class.getName(), "$$spaceIdToFollowers");
                 setup.clusterPState("$$accountIdToFilterIdToFilter", Relationships.class.getName(),
                                 "$$accountIdToFilterIdToFilter");
 

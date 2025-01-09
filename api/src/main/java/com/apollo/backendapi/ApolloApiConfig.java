@@ -1,5 +1,6 @@
 package com.apollo.backendapi;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.*;
 import org.springframework.http.*;
@@ -10,6 +11,7 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.session.*;
 import org.springframework.session.config.annotation.web.server.EnableSpringWebSession;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.config.*;
 import org.springframework.web.reactive.function.server.*;
 import org.springframework.web.server.*;
@@ -47,6 +49,7 @@ public class ApolloApiConfig implements WebFluxConfigurer {
         S3_OPTIONS.bucketName = "yoapollo";
         S3_OPTIONS.url = "https://yoapollo.s3.us-east-2.amazonaws.com";
     }
+
     // Maximum allowable lengths for various user inputs
     // TODO: Review This
     public static final int MAX_STATUS_LENGTH = 500;
@@ -59,11 +62,11 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static final int MAX_POLL_CHOICE_LENGTH = 30;
 
     // ESports Config
-    public static final LocalDate LOL_SEASON_START = LocalDate.of(2024, 1, 1);
-    public static final LocalDate LOL_SEASON_END = LocalDate.of(2024, 12, 31);
+    public static final LocalDate LOL_SEASON_START = LocalDate.of(2025, 1, 1);
+    public static final LocalDate LOL_SEASON_END = LocalDate.of(2025, 12, 31);
 
-    public static final LocalDate LOL_START_TEST = LocalDate.of(2024, 12, 27);
-    public static final LocalDate LOL_END_TEST = LocalDate.of(2024, 12, 29);
+    public static final LocalDate LOL_START_TEST = LocalDate.of(2025, 1, 1);
+    public static final LocalDate LOL_END_TEST = LocalDate.of(2025, 3, 24);
 
     // Bean to handle reactive session repository
     @Bean
@@ -207,4 +210,5 @@ public class ApolloApiConfig implements WebFluxConfigurer {
                 .addResourceLocations("classpath:/public/")
                 .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS)); // Set cache control for static resources
     }
+
 }

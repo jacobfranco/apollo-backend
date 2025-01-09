@@ -21,8 +21,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
   private static final org.apache.thrift.protocol.TField MUTING_FIELD_DESC = new org.apache.thrift.protocol.TField("muting", org.apache.thrift.protocol.TType.BOOL, (short)9);
   private static final org.apache.thrift.protocol.TField MUTING_NOTIFICATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("mutingNotifications", org.apache.thrift.protocol.TType.BOOL, (short)10);
   private static final org.apache.thrift.protocol.TField REQUESTED_FIELD_DESC = new org.apache.thrift.protocol.TField("requested", org.apache.thrift.protocol.TType.BOOL, (short)11);
-  private static final org.apache.thrift.protocol.TField DOMAIN_BLOCKING_FIELD_DESC = new org.apache.thrift.protocol.TField("domainBlocking", org.apache.thrift.protocol.TType.BOOL, (short)12);
-  private static final org.apache.thrift.protocol.TField ENDORSED_FIELD_DESC = new org.apache.thrift.protocol.TField("endorsed", org.apache.thrift.protocol.TType.BOOL, (short)13);
   private static final org.apache.thrift.protocol.TField NOTE_FIELD_DESC = new org.apache.thrift.protocol.TField("note", org.apache.thrift.protocol.TType.STRING, (short)14);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AccountRelationshipQueryResultStandardSchemeFactory();
@@ -39,8 +37,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
   public boolean muting; // required
   public boolean mutingNotifications; // required
   public boolean requested; // required
-  public boolean domainBlocking; // required
-  public boolean endorsed; // required
   public @org.apache.thrift.annotation.Nullable java.lang.String note; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -56,8 +52,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     MUTING((short)9, "muting"),
     MUTING_NOTIFICATIONS((short)10, "mutingNotifications"),
     REQUESTED((short)11, "requested"),
-    DOMAIN_BLOCKING((short)12, "domainBlocking"),
-    ENDORSED((short)13, "endorsed"),
     NOTE((short)14, "note");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
@@ -96,10 +90,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
           return MUTING_NOTIFICATIONS;
         case 11: // REQUESTED
           return REQUESTED;
-        case 12: // DOMAIN_BLOCKING
-          return DOMAIN_BLOCKING;
-        case 13: // ENDORSED
-          return ENDORSED;
         case 14: // NOTE
           return NOTE;
         default:
@@ -155,8 +145,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
   private static final int __MUTING_ISSET_ID = 7;
   private static final int __MUTINGNOTIFICATIONS_ISSET_ID = 8;
   private static final int __REQUESTED_ISSET_ID = 9;
-  private static final int __DOMAINBLOCKING_ISSET_ID = 10;
-  private static final int __ENDORSED_ISSET_ID = 11;
   private short __isset_bitfield = 0;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -184,10 +172,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.REQUESTED, new org.apache.thrift.meta_data.FieldMetaData("requested", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.DOMAIN_BLOCKING, new org.apache.thrift.meta_data.FieldMetaData("domainBlocking", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ENDORSED, new org.apache.thrift.meta_data.FieldMetaData("endorsed", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.NOTE, new org.apache.thrift.meta_data.FieldMetaData("note", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
@@ -209,8 +193,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     boolean muting,
     boolean mutingNotifications,
     boolean requested,
-    boolean domainBlocking,
-    boolean endorsed,
     java.lang.String note)
   {
     this();
@@ -235,10 +217,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     setMutingNotificationsIsSet(true);
     this.requested = requested;
     setRequestedIsSet(true);
-    this.domainBlocking = domainBlocking;
-    setDomainBlockingIsSet(true);
-    this.endorsed = endorsed;
-    setEndorsedIsSet(true);
     this.note = note;
   }
 
@@ -261,8 +239,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     this.muting = other.muting;
     this.mutingNotifications = other.mutingNotifications;
     this.requested = other.requested;
-    this.domainBlocking = other.domainBlocking;
-    this.endorsed = other.endorsed;
     if (other.isSetNote()) {
       this.note = other.note;
     }
@@ -296,10 +272,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     this.mutingNotifications = false;
     setRequestedIsSet(false);
     this.requested = false;
-    setDomainBlockingIsSet(false);
-    this.domainBlocking = false;
-    setEndorsedIsSet(false);
-    this.endorsed = false;
     this.note = null;
   }
 
@@ -574,52 +546,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __REQUESTED_ISSET_ID, value);
   }
 
-  public boolean isDomainBlocking() {
-    return this.domainBlocking;
-  }
-
-  public AccountRelationshipQueryResult setDomainBlocking(boolean domainBlocking) {
-    this.domainBlocking = domainBlocking;
-    setDomainBlockingIsSet(true);
-    return this;
-  }
-
-  public void unsetDomainBlocking() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __DOMAINBLOCKING_ISSET_ID);
-  }
-
-  /** Returns true if field domainBlocking is set (has been assigned a value) and false otherwise */
-  public boolean isSetDomainBlocking() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __DOMAINBLOCKING_ISSET_ID);
-  }
-
-  public void setDomainBlockingIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DOMAINBLOCKING_ISSET_ID, value);
-  }
-
-  public boolean isEndorsed() {
-    return this.endorsed;
-  }
-
-  public AccountRelationshipQueryResult setEndorsed(boolean endorsed) {
-    this.endorsed = endorsed;
-    setEndorsedIsSet(true);
-    return this;
-  }
-
-  public void unsetEndorsed() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ENDORSED_ISSET_ID);
-  }
-
-  /** Returns true if field endorsed is set (has been assigned a value) and false otherwise */
-  public boolean isSetEndorsed() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ENDORSED_ISSET_ID);
-  }
-
-  public void setEndorsedIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ENDORSED_ISSET_ID, value);
-  }
-
   @org.apache.thrift.annotation.Nullable
   public java.lang.String getNote() {
     return this.note;
@@ -736,22 +662,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
       }
       break;
 
-    case DOMAIN_BLOCKING:
-      if (value == null) {
-        unsetDomainBlocking();
-      } else {
-        setDomainBlocking((java.lang.Boolean)value);
-      }
-      break;
-
-    case ENDORSED:
-      if (value == null) {
-        unsetEndorsed();
-      } else {
-        setEndorsed((java.lang.Boolean)value);
-      }
-      break;
-
     case NOTE:
       if (value == null) {
         unsetNote();
@@ -800,12 +710,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     case REQUESTED:
       return isRequested();
 
-    case DOMAIN_BLOCKING:
-      return isDomainBlocking();
-
-    case ENDORSED:
-      return isEndorsed();
-
     case NOTE:
       return getNote();
 
@@ -843,10 +747,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
       return isSetMutingNotifications();
     case REQUESTED:
       return isSetRequested();
-    case DOMAIN_BLOCKING:
-      return isSetDomainBlocking();
-    case ENDORSED:
-      return isSetEndorsed();
     case NOTE:
       return isSetNote();
     }
@@ -965,24 +865,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
         return false;
     }
 
-    boolean this_present_domainBlocking = true;
-    boolean that_present_domainBlocking = true;
-    if (this_present_domainBlocking || that_present_domainBlocking) {
-      if (!(this_present_domainBlocking && that_present_domainBlocking))
-        return false;
-      if (this.domainBlocking != that.domainBlocking)
-        return false;
-    }
-
-    boolean this_present_endorsed = true;
-    boolean that_present_endorsed = true;
-    if (this_present_endorsed || that_present_endorsed) {
-      if (!(this_present_endorsed && that_present_endorsed))
-        return false;
-      if (this.endorsed != that.endorsed)
-        return false;
-    }
-
     boolean this_present_note = true && this.isSetNote();
     boolean that_present_note = true && that.isSetNote();
     if (this_present_note || that_present_note) {
@@ -1022,10 +904,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     hashCode = hashCode * 8191 + ((mutingNotifications) ? 131071 : 524287);
 
     hashCode = hashCode * 8191 + ((requested) ? 131071 : 524287);
-
-    hashCode = hashCode * 8191 + ((domainBlocking) ? 131071 : 524287);
-
-    hashCode = hashCode * 8191 + ((endorsed) ? 131071 : 524287);
 
     hashCode = hashCode * 8191 + ((isSetNote()) ? 131071 : 524287);
     if (isSetNote())
@@ -1152,26 +1030,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetDomainBlocking(), other.isSetDomainBlocking());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetDomainBlocking()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.domainBlocking, other.domainBlocking);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = java.lang.Boolean.compare(isSetEndorsed(), other.isSetEndorsed());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetEndorsed()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.endorsed, other.endorsed);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = java.lang.Boolean.compare(isSetNote(), other.isSetNote());
     if (lastComparison != 0) {
       return lastComparison;
@@ -1254,14 +1112,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     sb.append(this.requested);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("domainBlocking:");
-    sb.append(this.domainBlocking);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("endorsed:");
-    sb.append(this.endorsed);
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("note:");
     if (this.note == null) {
       sb.append("null");
@@ -1288,8 +1138,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
     // alas, we cannot check 'muting' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'mutingNotifications' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'requested' because it's a primitive and you chose the non-beans generator.
-    // alas, we cannot check 'domainBlocking' because it's a primitive and you chose the non-beans generator.
-    // alas, we cannot check 'endorsed' because it's a primitive and you chose the non-beans generator.
     if (note == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'note' was not present! Struct: " + toString());
     }
@@ -1432,22 +1280,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 12: // DOMAIN_BLOCKING
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.domainBlocking = iprot.readBool();
-              struct.setDomainBlockingIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 13: // ENDORSED
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.endorsed = iprot.readBool();
-              struct.setEndorsedIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           case 14: // NOTE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.note = iprot.readString();
@@ -1493,12 +1325,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
       }
       if (!struct.isSetRequested()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'requested' was not found in serialized data! Struct: " + toString());
-      }
-      if (!struct.isSetDomainBlocking()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'domainBlocking' was not found in serialized data! Struct: " + toString());
-      }
-      if (!struct.isSetEndorsed()) {
-        throw new org.apache.thrift.protocol.TProtocolException("Required field 'endorsed' was not found in serialized data! Struct: " + toString());
       }
       struct.validate();
     }
@@ -1550,12 +1376,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
       oprot.writeFieldBegin(REQUESTED_FIELD_DESC);
       oprot.writeBool(struct.requested);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(DOMAIN_BLOCKING_FIELD_DESC);
-      oprot.writeBool(struct.domainBlocking);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(ENDORSED_FIELD_DESC);
-      oprot.writeBool(struct.endorsed);
-      oprot.writeFieldEnd();
       if (struct.note != null) {
         oprot.writeFieldBegin(NOTE_FIELD_DESC);
         oprot.writeString(struct.note);
@@ -1596,8 +1416,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
       oprot.writeBool(struct.muting);
       oprot.writeBool(struct.mutingNotifications);
       oprot.writeBool(struct.requested);
-      oprot.writeBool(struct.domainBlocking);
-      oprot.writeBool(struct.endorsed);
       oprot.writeString(struct.note);
     }
 
@@ -1635,10 +1453,6 @@ public class AccountRelationshipQueryResult implements org.apache.thrift.TBase<A
       struct.setMutingNotificationsIsSet(true);
       struct.requested = iprot.readBool();
       struct.setRequestedIsSet(true);
-      struct.domainBlocking = iprot.readBool();
-      struct.setDomainBlockingIsSet(true);
-      struct.endorsed = iprot.readBool();
-      struct.setEndorsedIsSet(true);
       struct.note = iprot.readString();
       struct.setNoteIsSet(true);
     }

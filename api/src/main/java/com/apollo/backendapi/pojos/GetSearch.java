@@ -6,12 +6,16 @@ public class GetSearch {
     public List<GetAccount> accounts;
     public List<GetStatus> statuses;
     public List<GetTag> hashtags;
+    public List<GetSpace> spaces;
 
-    public GetSearch() { }
+    public GetSearch() {
+    }
 
-    public GetSearch(List<GetAccount> accounts, List<GetStatus> statuses, List<GetTag> hashtags) {
+    public GetSearch(List<GetAccount> accounts, List<GetStatus> statuses, List<GetTag> hashtags,
+            List<GetSpace> spaces) {
         this.accounts = accounts;
         this.statuses = statuses;
         this.hashtags = hashtags;
+        this.spaces = spaces;
     }
 }

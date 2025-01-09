@@ -4,7 +4,6 @@
   "java.project.sourcePaths": [],
   "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx8G -Xms100m -Xlog:disable",
   "workbench.colorTheme": "Nightcall (No Italics)",
-  "workbench.iconTheme": "quill-icons-minimal",
   "workbench.productIconTheme": "icons-carbon",
   "editor.renderWhitespace": "none",
   "editor.minimap.renderCharacters": false,

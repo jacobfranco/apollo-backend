@@ -16,10 +16,10 @@ public class GetRelationship {
     public boolean muting;
     public boolean muting_notifications;
     public boolean requested;
-    public boolean endorsed;
     public String note;
 
-    public GetRelationship() { }
+    public GetRelationship() {
+    }
 
     public GetRelationship(String accountId, AccountRelationshipQueryResult result) {
         this.id = accountId;
@@ -33,7 +33,6 @@ public class GetRelationship {
         this.muting = result.muting;
         this.muting_notifications = result.mutingNotifications;
         this.requested = result.requested;
-        this.endorsed = result.endorsed;
         this.note = result.note;
     }
 }

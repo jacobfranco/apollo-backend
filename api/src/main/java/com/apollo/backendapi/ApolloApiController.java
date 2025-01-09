@@ -3,8 +3,6 @@ package com.apollo.backendapi;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
-import com.apollo.shared.ApolloSpaces;
-import com.apollo.shared.pojos.GetSpace;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.*;
@@ -512,6 +510,7 @@ public class ApolloApiController {
                 null, null, null, null, null, null, null, null, null, null, null);
     }
 
+    // TODO: Does this work ?
     @GetMapping("/api/accounts/{id}/statuses")
     public Mono<List<GetStatus>> getAccountStatuses(WebSession session, ServerWebExchange exchange,
             @PathVariable("id") String id,
@@ -521,7 +520,8 @@ public class ApolloApiController {
             @RequestParam(required = false) Boolean exclude_replies,
             @RequestParam(required = false) Boolean exclude_reposts,
             @RequestParam(required = false) Boolean pinned,
-            @RequestParam(required = false) String tagged) {
+            @RequestParam(required = false) String tagged,
+            @RequestParam(required = false) String space) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId"); // allowed to be null
         StatusPointer statusPointer = ApolloHelpers.parseStatusPointer(max_id);
         long timelineAccountId = ApolloHelpers.parseAccountId(id);
@@ -532,6 +532,8 @@ public class ApolloApiController {
             future = manager.getAttachmentStatuses(requestAccountId, timelineAccountId, statusPointer, limit);
         else if (tagged != null)
             future = manager.getTaggedStatuses(requestAccountId, timelineAccountId, tagged, statusPointer, limit);
+        else if (space != null)
+            future = manager.getSpaceStatuses(requestAccountId, timelineAccountId, space, statusPointer, limit);
         else
             future = manager.getAccountTimeline(requestAccountId, timelineAccountId, statusPointer, limit,
                     exclude_replies == null || !exclude_replies, exclude_reposts == null || !exclude_reposts);
@@ -973,32 +975,6 @@ public class ApolloApiController {
     }
 
     /*
-     * Pin Actions Endpoints
-     * ======================================
-     * - POST /api/accounts/{id}/pin
-     * - POST /api/accounts/{id}/unpin
-     * ======================================
-     */
-
-    @PostMapping("/api/accounts/{id}/pin")
-    public Mono<GetRelationship> postFeatureAccount(WebSession session, @PathVariable("id") String id) {
-        long requestAccountId = getMandatoryAccountId(session);
-        long featureeId = ApolloHelpers.parseAccountId(id);
-        return Mono.fromFuture(manager.postFeatureAccount(requestAccountId, featureeId))
-                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
-                .map(result -> new GetRelationship(id, result));
-    }
-
-    @PostMapping("/api/accounts/{id}/unpin")
-    public Mono<GetRelationship> postRemoveFeatureAccount(WebSession session, @PathVariable("id") String id) {
-        long requestAccountId = getMandatoryAccountId(session);
-        long featureeId = ApolloHelpers.parseAccountId(id);
-        return Mono.fromFuture(manager.postRemoveFeatureAccount(requestAccountId, featureeId))
-                .flatMap(result -> Mono.fromFuture(manager.getAccountRelationship(requestAccountId, featureeId)))
-                .map(result -> new GetRelationship(id, result));
-    }
-
-    /*
      * Conversation Actions Endpoints
      * ======================================
      * - POST /api/conversations/{id}/read
@@ -1054,7 +1030,8 @@ public class ApolloApiController {
             @RequestParam(required = false) Integer offset) {
         return Mono.fromFuture(manager.getTrendingSpaces(limit, offset))
                 .map(stats -> stats.entrySet().stream()
-                        .map(entry -> ApolloApiHelpers.createGetSpace(entry.getKey(), entry.getValue(), false))
+                        .map(entry -> ApolloApiHelpers.createGetSpace(entry.getKey(),
+                                ApolloApiHelpers.getSpaceNameFromId(entry.getKey()), entry.getValue(), false))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()));
     }
@@ -1700,15 +1677,26 @@ public class ApolloApiController {
                 .flatMap(res -> this.getTag(session, id));
     }
 
-    // TODO: Idk if this works
     @GetMapping("/api/followed_tags")
-    public Mono<List<String>> getFollowedTags(WebSession session) {
+    public Mono<List<GetTag>> getFollowedTags(WebSession session) {
         Long requestAccountId = (Long) session.getAttributes().get("accountId");
         if (requestAccountId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        return Mono.fromFuture(manager.getFollowedHashtags(requestAccountId));
+        return Mono.fromFuture(manager.getFollowedHashtags(requestAccountId))
+                .flatMap(followedSet -> {
+                    List<CompletableFuture<GetTag>> futures = followedSet.stream()
+                            .map(hashtag -> manager.getHashtagStats(hashtag)
+                                    .thenApply(stats -> ApolloApiHelpers.createGetTag(hashtag, stats, true)))
+                            .collect(Collectors.toList());
+
+                    return Mono.fromFuture(
+                            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                                    .thenApply(ignored -> futures.stream()
+                                            .map(CompletableFuture::join)
+                                            .collect(Collectors.toList())));
+                });
     }
 
     /*
@@ -1723,54 +1711,76 @@ public class ApolloApiController {
      */
 
     @GetMapping("/api/spaces")
-    public Set<GetSpace> getAllSpaces() {
-        // Convert the List to a Set to return unique objects
-        return ApolloSpaces.SPACES.stream().collect(Collectors.toSet());
+    public Mono<List<GetSpace>> getAllSpaces(WebSession session) {
+        return Mono.fromFuture(manager.getAllSpaces())
+                .flatMap(allSpaces -> {
+                    Long requestAccountId = (Long) session.getAttributes().get("accountId");
+                    if (requestAccountId == null) {
+                        return Mono.just(
+                                allSpaces.stream()
+                                        .map(space -> new GetSpace(space.id, space.name))
+                                        .collect(Collectors.toList()));
+                    }
+
+                    return Mono.fromFuture(manager.getFollowedSpaceIds(requestAccountId))
+                            .onErrorResume(e -> {
+                                // Log the error but continue with empty set
+                                logger.error("Error fetching followed spaces", e);
+                                return Mono.just(Collections.emptySet());
+                            })
+                            .defaultIfEmpty(Collections.emptySet())
+                            .map(userFollowedSet -> {
+                                return allSpaces.stream()
+                                        .map(space -> {
+                                            GetSpace getSpace = new GetSpace(space.id, space.name);
+                                            getSpace.following = userFollowedSet.contains(space.id);
+                                            return getSpace;
+                                        })
+                                        .collect(Collectors.toList());
+                            });
+                });
     }
 
     @GetMapping("/api/spaces/{id}")
     public Mono<GetSpace> getSpace(WebSession session, @PathVariable("id") String id) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(id)) {
-            return Mono.empty();
-        }
         Long requestAccountId = (Long) session.getAttributes().get("accountId");
-        return Mono.fromFuture(manager.getSpaceStats(id))
-                .flatMap(stats -> (requestAccountId == null ? Mono.just(false)
-                        : Mono.fromFuture(manager.isFollowingSpace(requestAccountId, id)))
-                        .map(isFollowing -> ApolloApiHelpers.createGetSpace(id, stats, isFollowing)));
+        return Mono.fromFuture(manager.getSpaceFromSpaceId(id))
+                .flatMap(space -> {
+                    if (space == null) {
+                        return Mono.empty();
+                    }
+                    return Mono.fromFuture(manager.getSpaceStats(id))
+                            .flatMap(stats -> (requestAccountId == null ? Mono.just(false)
+                                    : Mono.fromFuture(manager.isFollowingSpace(requestAccountId, id)))
+                                    .map(isFollowing -> ApolloApiHelpers.createGetSpace(id,
+                                            ApolloApiHelpers.getSpaceNameFromId(id), stats, isFollowing)));
+                });
     }
 
     @PostMapping("/api/spaces/{id}/follow")
     public Mono<GetSpace> postFollowSpace(WebSession session, @PathVariable("id") String id) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(id)) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
-        }
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.postFollowSpace(requestAccountId, id))
-                .flatMap(res -> this.getSpace(session, id));
+        return Mono.fromFuture(manager.getSpaceFromSpaceId(id))
+                .flatMap(space -> {
+                    if (space == null) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
+                    }
+                    return Mono.fromFuture(manager.postFollowSpace(requestAccountId, id))
+                            .flatMap(res -> this.getSpace(session, id));
+                });
     }
 
     @PostMapping("/api/spaces/{id}/unfollow")
     public Mono<GetSpace> postUnfollowSpace(WebSession session, @PathVariable("id") String id) {
-        if (!ApolloSpaces.SPACE_MAP.containsKey(id)) {
-            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
-        }
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.postRemoveFollowSpace(requestAccountId, id))
-                .flatMap(res -> this.getSpace(session, id));
-    }
-
-    // TODO: Idk if this works
-    @GetMapping("/api/followed_spaces")
-    public Mono<List<String>> getFollowedSpaces(WebSession session) {
-        Long requestAccountId = (Long) session.getAttributes().get("accountId");
-        if (requestAccountId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-        return Mono.fromFuture(manager.getFollowedSpaces(requestAccountId))
-                .map(spaces -> spaces.stream()
-                        .filter(ApolloSpaces.SPACE_MAP::containsKey)
-                        .collect(Collectors.toList()));
+        return Mono.fromFuture(manager.getSpaceFromSpaceId(id))
+                .flatMap(space -> {
+                    if (space == null) {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
+                    }
+                    return Mono.fromFuture(manager.postRemoveFollowSpace(requestAccountId, id))
+                            .flatMap(res -> this.getSpace(session, id));
+                });
     }
 
     /*
@@ -1879,19 +1889,31 @@ public class ApolloApiController {
             @RequestParam(required = false) String start_term) throws MalformedURLException {
         long requestAccountId = getMandatoryAccountId(session);
         List<String> terms = Arrays.asList(q.toLowerCase().trim().split("\\s+"));
-        // TODO: Removed resolveURL bit - verify to see if it still works
         Map startParams = ApolloApiHelpers.createSearchParams(start_next_id, start_term);
-        return Mono.zip(Mono.fromFuture((type == null || type.equals("accounts")) && (offset == null || offset == 0L)
-                ? manager.getProfileSearch(requestAccountId, terms, startParams, limit, following != null && following)
-                : CompletableFuture.completedFuture(
-                        new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null, null))),
+
+        return Mono.zip(
+                // Account search
+                Mono.fromFuture((type == null || type.equals("accounts")) && (offset == null || offset == 0L)
+                        ? manager.getProfileSearch(requestAccountId, terms, startParams, limit,
+                                following != null && following)
+                        : CompletableFuture.completedFuture(
+                                new ApolloApiManager.QueryResults<AccountWithId, Map>(new ArrayList<>(), true, null,
+                                        null))),
+                // Status search
                 Mono.fromFuture((type == null || type.equals("statuses")) && (offset == null || offset == 0L)
                         ? manager.getStatusSearch(requestAccountId, ApolloHelpers.parseAccountId(account_id), terms,
                                 startParams, limit)
                         : CompletableFuture.completedFuture(new ApolloApiManager.QueryResults<StatusQueryResult, Map>(
                                 new ArrayList<>(), true, null, null))),
+                // Hashtag search
                 Mono.fromFuture((type == null || type.equals("hashtags")) && (offset == null || offset == 0L)
                         ? manager.getHashtagSearch(terms.get(0), startParams, limit)
+                        : CompletableFuture
+                                .completedFuture(new ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map>(
+                                        new ArrayList<>(), true, null, null))),
+                // Space search
+                Mono.fromFuture((type == null || type.equals("spaces")) && (offset == null || offset == 0L)
+                        ? manager.getSpaceSearch(terms.get(0), startParams, limit)
                         : CompletableFuture
                                 .completedFuture(new ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map>(
                                         new ArrayList<>(), true, null, null))))
@@ -1899,15 +1921,22 @@ public class ApolloApiController {
                     ApolloApiManager.QueryResults<AccountWithId, Map> accounts = results.getT1();
                     ApolloApiManager.QueryResults<StatusQueryResult, Map> statuses = results.getT2();
                     ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map> hashtags = results.getT3();
+                    ApolloApiManager.QueryResults<SimpleEntry<String, ItemStats>, Map> spaces = results.getT4();
+
                     if ("accounts".equals(type))
                         ApolloApiHelpers.setLinkHeader(exchange, accounts);
                     else if ("statuses".equals(type))
                         ApolloApiHelpers.setLinkHeader(exchange, statuses);
                     else if ("hashtags".equals(type))
                         ApolloApiHelpers.setLinkHeader(exchange, hashtags);
-                    return new GetSearch(ApolloApiHelpers.createGetAccounts(accounts.results),
+                    else if ("spaces".equals(type))
+                        ApolloApiHelpers.setLinkHeader(exchange, spaces);
+
+                    return new GetSearch(
+                            ApolloApiHelpers.createGetAccounts(accounts.results),
                             ApolloApiHelpers.createGetStatuses(statuses.results),
-                            ApolloApiHelpers.createGetTags(hashtags.results));
+                            ApolloApiHelpers.createGetTags(hashtags.results),
+                            ApolloApiHelpers.createGetSpaces(spaces.results));
                 });
     }
 
@@ -2312,6 +2341,11 @@ public class ApolloApiController {
     @PostMapping("/api/admin/track-activity")
     public Mono<Boolean> trackActivity(@RequestBody PostUserActivity activity) {
         return Mono.fromFuture(manager.storeUserActivity(activity));
+    }
+
+    @PostMapping("/api/admin/spaces")
+    public Mono<Void> postSpace(WebSession session, @RequestBody PostSpace params) {
+        return Mono.fromFuture(manager.saveSpace(params)).then();
     }
 
 }

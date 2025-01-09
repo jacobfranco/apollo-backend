@@ -338,6 +338,16 @@ public class ApolloApiStreamingConfig {
                                     .proxyHashtagTimeline(tag, statusCallback)
                                     .thenAccept(proxy -> SESSION_ID_TO_STATE.put(wsSessionId,
                                             new StreamState(session, accountId, sink, stream, Arrays.asList(proxy))));
+                        } else if ("space".equals(stream)) {
+                            if (!params.containsKey("space")) {
+                                sink.complete();
+                                return;
+                            }
+                            String space = params.get("space").get(0);
+                            ApolloApiController.manager
+                                    .proxySpaceTimeline(space, statusCallback)
+                                    .thenAccept(proxy -> SESSION_ID_TO_STATE.put(wsSessionId,
+                                            new StreamState(session, accountId, sink, stream, Arrays.asList(proxy))));
                         } else if ("user".equals(stream)) {
                             if (accountId == null)
                                 return; // login required

@@ -10,7 +10,6 @@ import com.rpl.rama.*;
 import com.rpl.rama.helpers.*;
 import com.rpl.rama.module.*;
 import com.rpl.rama.ops.*;
-import com.apollo.shared.ApolloSpaces;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -20,7 +19,7 @@ import static com.apollo.backend.ApolloHelpers.*;
 
 /*
  * This module implements trending links, trending hashtags, trending statuses,
- * featured hashtags on an account's profile, and hashtag timelines.
+ * and hashtag timelines.
  *
  * For trending links and hashtags, the general approach is to have one
  * PState storing stats for all links/hashtags. When any link/hashtag is updated,
@@ -38,7 +37,6 @@ public class TrendsAndHashtags implements RamaModule {
         public int topAmt = 100;
         public int accountRecentHashtagsAmount = 10;
         public int accountRecentSpacesAmount = 10;
-        // public int featureHashtagLimit = 10;
 
         // HyperLogLog is used to efficiently compute the approximate number of unique
         // users
@@ -319,13 +317,21 @@ public class TrendsAndHashtags implements RamaModule {
                 return ret;
         }
 
+        private static void declareSpaceTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("space");
+                stream.pstate("$$spaceIdToSpace", PState.mapSchema(String.class, Space.class));
+                stream.source("*spaceDepot").out("*space")
+                                .macro(extractFields("*space", "*id"))
+                                .localTransform("$$spaceIdToSpace",
+                                                Path.key("*id").termVal("*space"));
+        }
+
         @Override
         public void define(Setup setup, Topologies topologies) {
                 setup.declareDepot("*reviewHashtagDepot", Depot.hashBy(ExtractItem.class));
                 setup.declareDepot("*reviewSpaceDepot", Depot.hashBy(ExtractItem.class));
                 setup.declareDepot("*reviewLinkDepot", Depot.hashBy(ExtractItem.class));
-                // setup.declareDepot("*featureHashtagDepot",
-                // Depot.hashBy(ExtractAccountId.class));
+                setup.declareDepot("*spaceDepot", Depot.hashBy(ApolloHelpers.ExtractId.class));
                 setup.declareTickDepot("*decayTick", this.decayTickTimeMillis);
                 setup.declareTickDepot("*reviewTick", this.reviewTickTimeMillis);
 
@@ -336,6 +342,8 @@ public class TrendsAndHashtags implements RamaModule {
                                 "$$accountIdToAccountTimeline");
 
                 setup.clusterQuery("*getStatusesFromPointers", Core.class.getName(), "getStatusesFromPointers");
+
+                declareSpaceTopology(topologies);
 
                 MicrobatchTopology core = topologies.microbatch("core");
 
@@ -467,10 +475,6 @@ public class TrendsAndHashtags implements RamaModule {
                                                                                 Block.materialize("*authorId",
                                                                                                 "*statusId",
                                                                                                 "*timestamp", "*spaces")
-                                                                                                // TODO: Maybe need to
-                                                                                                // reference the spaces
-                                                                                                // map and remove
-                                                                                                // invalid entries
                                                                                                 .out("$$spaces"))
                                                                 .ifTrue(new Expr(Ops.GREATER_THAN,
                                                                                 new Expr(Ops.SIZE, "*links"), 0),
@@ -562,6 +566,7 @@ public class TrendsAndHashtags implements RamaModule {
                                                 "$$hashtagStats",
                                                 "$$hashtagTrends"))
 
+                                .hook("dataRoot")
                                 .macro(trendsRankingMacro(TrendsAndHashtags::itemHistorySubBatch, "$$spaces",
                                                 "$$spaceStats",
                                                 "$$spaceTrends"))
@@ -597,10 +602,11 @@ public class TrendsAndHashtags implements RamaModule {
                 core.source("*decayTick").out("*microbatch")
                                 .explodeMicrobatch("*microbatch")
                                 .globalPartition("$$hashtagTrends")
+                                .globalPartition("$$spaceTrends")
                                 .localTransform("$$hashtagTrends", Path.term(TrendsAndHashtags::decayTrends))
+                                .localTransform("$$spaceTrends", Path.term(TrendsAndHashtags::decayTrends))
                                 .localTransform("$$linkTrends", Path.term(TrendsAndHashtags::decayTrends))
-                                .localTransform("$$statusTrends", Path.term(TrendsAndHashtags::decayTrends))
-                                .localTransform("$$spaceTrends", Path.term(TrendsAndHashtags::decayTrends));
+                                .localTransform("$$statusTrends", Path.term(TrendsAndHashtags::decayTrends));
 
                 core.source("*reviewTick").out("*microbatch")
                                 .explodeMicrobatch("*microbatch")
@@ -615,36 +621,6 @@ public class TrendsAndHashtags implements RamaModule {
                 reviewImpl(review, "*reviewHashtagDepot", "$$reviewedHashtags");
                 reviewImpl(review, "*reviewSpaceDepot", "$$reviewedSpaces");
                 reviewImpl(review, "*reviewLinkDepot", "$$reviewedLinks");
-
-                /*
-                 * TODO: Maybe remove
-                 * StreamTopology feature = topologies.stream("feature");
-                 * KeyToLinkedEntitySetPStateGroup featurerToHashtags = new
-                 * KeyToLinkedEntitySetPStateGroup(
-                 * "$$featurerToHashtags",
-                 * Long.class, String.class);
-                 * featurerToHashtags.declarePStates(feature);
-                 * feature.pstate("$$accountIdToFeaturedHashtags", PState.mapSchema(Long.class,
-                 * List.class));
-                 * feature.source("*featureHashtagDepot",
-                 * StreamSourceOptions.retryAllAfter()).out("*data")
-                 * .subSource("*data",
-                 * SubSource.create(FeatureHashtag.class)
-                 * .macro(extractFields("*data", "*accountId", "*hashtag"))
-                 * .localSelect("$$featurerToHashtags",
-                 * Path.key("*accountId").view(Ops.SIZE))
-                 * .out("*currSize")
-                 * .ifTrue(new Expr(Ops.LESS_THAN, "*currSize",
-                 * featureHashtagLimit),
-                 * Block.macro(featurerToHashtags
-                 * .addToLinkedSet("*accountId",
-                 * "*hashtag"))),
-                 * SubSource.create(RemoveFeatureHashtag.class)
-                 * .macro(extractFields("*data", "*accountId", "*hashtag"))
-                 * .macro(featurerToHashtags.removeFromLinkedSet(
-                 * "*accountId", "*hashtag")));
-                 * 
-                 */
 
                 batchItemQuery(topologies, "batchHashtagStats", "$$hashtagStats", "$$reviewedHashtags");
                 batchItemQuery(topologies, "batchSpaceStats", "$$spaceStats", "$$reviewedSpaces");
@@ -691,26 +667,19 @@ public class TrendsAndHashtags implements RamaModule {
                                                 false)
                                 .out("*results")
                                 .originPartition();
-                /*
-                 * TODO: Maybe remove
-                 * topologies.query("getFeaturedHashtags", "*accountId").out("*results")
-                 * .hashPartition("*accountId")
-                 * .localSelect("$$featurerToHashtagsById", Path.key("*accountId").mapVals())
-                 * .out("*hashtag")
-                 * .localSelect("$$accountIdToHashtagActivity", Path.key("*accountId",
-                 * "*hashtag")
-                 * .subselect(Path.multiPath(Path.key("timeline").view(Ops.SIZE),
-                 * Path.key("lastStatusMillis").nullToVal(-1L))))
-                 * .out("*tuple")
-                 * .each(Ops.EXPAND, "*tuple").out("*numStatuses", "*lastStatusMillis")
-                 * .each((RamaFunction3<String, Integer, Long, FeaturedHashtagInfo>)
-                 * FeaturedHashtagInfo::new,
-                 * "*hashtag",
-                 * "*numStatuses", "*lastStatusMillis")
-                 * .out("*featuredHashtagInfo")
-                 * .originPartition()
-                 * .agg(Agg.list("*featuredHashtagInfo")).out("*results");
-                 * 
-                 */
+
+                topologies.query("getSpaceFromSpaceId", "*id").out("*space")
+                                .hashPartition("*id")
+                                .localSelect("$$spaceIdToSpace", Path.key("*id"))
+                                .out("*space")
+                                .originPartition();
+
+                topologies.query("getAllSpaces").out("*result")
+                                .allPartition()
+                                .localSelect("$$spaceIdToSpace", Path.mapVals())
+                                .out("*spaces")
+                                .originPartition()
+                                .agg(Agg.list("*spaces")).out("*result");
+
         }
 }

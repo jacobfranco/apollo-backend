@@ -55,6 +55,18 @@ public class ApolloHelpers {
     }
   }
 
+  public static class ExtractId extends ExtractField {
+    public ExtractId() {
+      super("id");
+    }
+  }
+
+  public static class ExtractUrl extends ExtractField {
+    public ExtractUrl() {
+      super("url");
+    }
+  }
+
   public static class ExtractCode extends ExtractField {
     public ExtractCode() {
       super("code");

@@ -5,19 +5,22 @@ import java.util.*;
 public class GetTag {
     public String name;
     public String url;
+
     public static class HistoryItem {
         public String day; // unix timestamp
         public String uses; // counted usage
         public String accounts; // number of accounts using the tag
 
-        public HistoryItem() { }
+        public HistoryItem() {
+        }
 
         public HistoryItem(long day, int uses, int accounts) {
             this.day = (day * 60 * 60 * 24) + "";
-            this.uses = uses+"";
-            this.accounts = accounts+"";
+            this.uses = uses + "";
+            this.accounts = accounts + "";
         }
     }
+
     public List<HistoryItem> history = new ArrayList<>();
     public Boolean following; // optional
     public String id;
@@ -25,7 +28,8 @@ public class GetTag {
     public boolean usable;
     public boolean requires_review;
 
-    public GetTag() { }
+    public GetTag() {
+    }
 
     public GetTag(String name) {
         this.name = name;

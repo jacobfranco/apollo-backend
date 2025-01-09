@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
-
+    
     <parent>
-        <groupId>com.apollo</groupId>
-        <artifactId>apollo-backend</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.7</version>
+        <relativePath/>
     </parent>
 
+    <groupId>com.apollo</groupId>
     <artifactId>backendapi</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <name>backendapi</name>
     <description>Backend API</description>
 
     <properties>
+        <java.version>17</java.version>
+        <rama.version>0.22.0</rama.version>
+        <rama-helpers.version>0.9.3</rama-helpers.version>
         <custom.final.name>backend-api</custom.final.name>
+        <jackson-bom.version>2.17.2</jackson-bom.version>
+        <commons-lang3.version>3.16.0</commons-lang3.version>
+        <commons-text.version>1.12.0</commons-text.version>
+        <http-kit.version>2.7.0</http-kit.version>
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -45,15 +54,19 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-core</artifactId>
         </dependency>
+
+        <!-- AWS Dependencies -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.20.18</version>
+        </dependency>
+
+        <!-- Utility Libraries -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20240303</version>
-        </dependency>
-        <dependency>
-            <groupId>com.apollo</groupId>
-            <artifactId>shared</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.bucket4j</groupId>
@@ -65,32 +78,26 @@
             <artifactId>jcodec</artifactId>
             <version>0.2.5</version>
         </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>2.20.18</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.15.4</version>
-        </dependency>
+
+        <!-- Apache Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
+            <version>${commons-text.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.16.0</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
+
+        <!-- HTTP Clients -->
         <dependency>
             <groupId>http-kit</groupId>
             <artifactId>http-kit</artifactId>
-            <version>2.7.0</version>
+            <version>${http-kit.version}</version>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
             <version>2.2.0</version>
@@ -100,18 +107,34 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.13</version>
         </dependency>
+
+        <!-- Rama Dependencies -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
+            <groupId>com.rpl</groupId>
+            <artifactId>rama</artifactId>
+            <version>${rama.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
+            <groupId>com.rpl</groupId>
+            <artifactId>rama-helpers</artifactId>
+            <version>${rama-helpers.version}</version>
         </dependency>
+
+        <!-- Backend Module -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
+            <groupId>com.apollo</groupId>
+            <artifactId>backend</artifactId>
+            <version>${project.version}</version>
         </dependency>
+
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -133,49 +156,25 @@
             <version>1.5.3</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.rpl</groupId>
-            <artifactId>rama</artifactId>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.rpl</groupId>
-            <artifactId>rama-helpers</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.clearspring.analytics</groupId>
-            <artifactId>stream</artifactId>
-            <version>2.9.5</version>
-        </dependency>
-        <dependency>
-        <groupId>org.apache.poi</groupId>
-        <artifactId>poi</artifactId>
-        <version>5.2.3</version>
-    </dependency>
-    <dependency>
-        <groupId>org.apache.poi</groupId>
-        <artifactId>poi-ooxml</artifactId>
-        <version>5.2.3</version>
-    </dependency>
-        <dependency>
-            <groupId>com.apollo</groupId>
-            <artifactId>backend</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>nexus-releases</id>
+            <url>https://nexus.redplanetlabs.com/repository/maven-public-releases</url>
+        </repository>
+        <repository>
+            <id>clojars.org</id>
+            <url>https://clojars.org/repo</url>
+        </repository>
+    </repositories>
+
     <build>
+        <finalName>${custom.final.name}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.7.7</version>
             </plugin>
         </plugins>
     </build>

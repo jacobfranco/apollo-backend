@@ -3,11 +3,6 @@ package com.apollo.backendapi;
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backendapi.pojos.*;
-import com.apollo.shared.ApolloSpaces;
-import com.apollo.shared.pojos.GetSpace;
-
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.io.*;
 import java.net.*;
 import java.security.*;
@@ -27,6 +22,7 @@ import org.jcodec.common.io.NIOUtils;
 import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.security.crypto.password.*;
 import org.springframework.web.server.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -37,10 +33,6 @@ import software.amazon.awssdk.services.s3.model.*;
 public class ApolloApiHelpers {
 
     private static final DelegatingPasswordEncoder PASSWORD_ENCODER;
-
-    private static final Dotenv dotenv = Dotenv.load();
-    private static final String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
-    private static final String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
 
     static {
         HashMap<String, PasswordEncoder> encoders = new HashMap<>();
@@ -321,21 +313,12 @@ public class ApolloApiHelpers {
             throw new RuntimeException("Invalid attachment type");
     }
 
-    public static GetSpace createGetSpace(String spaceId, ItemStats stats, boolean isFollowing) {
-        GetSpace predefinedSpace = ApolloSpaces.SPACE_MAP.get(spaceId);
-        if (predefinedSpace == null) {
-            throw new IllegalArgumentException("Invalid space ID: " + spaceId);
-        }
-
-        GetSpace space = new GetSpace(predefinedSpace.name, predefinedSpace.id,
-                predefinedSpace.imageUrl);
-
-        if (stats != null && stats.dayBuckets != null) {
-            stats.dayBuckets.forEach((day, bucket) -> {
-                space.history.add(new GetSpace.HistoryItem(day, bucket.uses, bucket.accounts));
-            });
-        }
-
+    public static GetSpace createGetSpace(String spaceId, String spaceName, ItemStats stats, boolean isFollowing) {
+        GetSpace space = new GetSpace(spaceId, spaceName);
+        Map<Long, DayBucket> buckets = stats.dayBuckets;
+        buckets.forEach((Long day, DayBucket b) -> {
+            space.history.add(new GetSpace.HistoryItem(day, b.uses, b.accounts));
+        });
         space.following = isFollowing;
         return space;
     }
@@ -343,9 +326,388 @@ public class ApolloApiHelpers {
     public static List<GetSpace> createGetSpaces(Map<String, ItemStats> spaceToStats) {
         List<GetSpace> getSpaces = new ArrayList<>();
         spaceToStats.forEach((String space, ItemStats stats) -> {
-            getSpaces.add(createGetSpace(space, stats, false));
+            getSpaces.add(createGetSpace(space, ApolloApiHelpers.getSpaceNameFromId(space), stats, false));
         });
         return getSpaces;
+    }
+
+    public static List<GetSpace> createGetSpaces(List<SimpleEntry<String, ItemStats>> spaceToStats) {
+        List<GetSpace> getSpaces = new ArrayList<>();
+        for (SimpleEntry<String, ItemStats> entry : spaceToStats) {
+            getSpaces.add(createGetSpace(entry.getKey(), ApolloApiHelpers.getSpaceNameFromId(entry.getKey()),
+                    entry.getValue(), false));
+        }
+        return getSpaces;
+    }
+
+    protected static final List<Space> SPACES = Arrays.asList(
+            new Space("7todie", "7 Days to Die"),
+            new Space("ahatintime", "A Hat in Time"),
+            new Space("aplaguetale", "A Plague Tale: Innocence"),
+            new Space("awayout", "A Way Out"),
+            new Space("aceattorney", "Ace Attorney"),
+            new Space("adventurequest", "Adventure Quest"),
+            new Space("aoe", "Age of Empires"),
+            new Space("ageofwonders", "Age of Wonders"),
+            new Space("alanwake", "Alan Wake"),
+            new Space("alienisolation", "Alien: Isolation"),
+            new Space("avp", "Aliens vs. Predator"),
+            new Space("americantrucksim", "American Truck Simulator"),
+            new Space("amongus", "Among Us"),
+            new Space("animalcrossing", "Animal Crossing"),
+            new Space("anno1800", "Anno 1800"),
+            new Space("antichamber", "Antichamber"),
+            new Space("apex", "Apex Legends"),
+            new Space("arksurvival", "Ark: Survival Evolved"),
+            new Space("arma3", "Arma 3"),
+            new Space("armello", "Armello"),
+            new Space("assassinscreed", "Assassin's Creed"),
+            new Space("astrobot", "Astro Bot"),
+            new Space("astroneer", "Astroneer"),
+            new Space("atelierryza", "Atelier Ryza"),
+            new Space("babaisyou", "Baba Is You"),
+            new Space("back4blood", "Back 4 Blood"),
+            new Space("balatro", "Balatro"),
+            new Space("bg3", "Baldur's Gate 3"),
+            new Space("banana", "Banana"),
+            new Space("batmanak", "Batman: Arkham Knight"),
+            new Space("battleblock", "Battleblock Theater"),
+            new Space("battlefield", "Battlefield"),
+            new Space("battletech", "Battletech"),
+            new Space("beatsaber", "Beat Saber"),
+            new Space("besiege", "Besiege"),
+            new Space("beyondtwosouls", "Beyond: Two Souls"),
+            new Space("biomutant", "Biomutant"),
+            new Space("bioshock", "Bioshock"),
+            new Space("blackdesert", "Black Desert Online"),
+            new Space("blackmesa", "Black Mesa"),
+            new Space("wukong", "Black Myth: Wukong"),
+            new Space("blasphemous", "Blasphemous 2"),
+            new Space("bloodborne", "Bloodborne"),
+            new Space("btd", "Bloons Tower Defense"),
+            new Space("borderlands", "Borderlands"),
+            new Space("bully", "Bully"),
+            new Space("cod", "Call of Duty"),
+            new Space("carmechsim", "Car Mechanic Simulator"),
+            new Space("castlecrashers", "Castle Crashers"),
+            new Space("castlevania", "Castlevania"),
+            new Space("celeste", "Celeste"),
+            new Space("childrenofmorta", "Children of Morta"),
+            new Space("chivalry2", "Chivalry 2"),
+            new Space("citiesskylines", "Cities Skylines"),
+            new Space("civ", "Civilization Series"),
+            new Space("coc", "Clash of Clans"),
+            new Space("clashroyale", "Clash Royale"),
+            new Space("companyofheroes", "Company of Heroes"),
+            new Space("control", "Control"),
+            new Space("crashbandicoot", "Crash Bandicoot"),
+            new Space("cryptnecrodancer", "Crypt of the NecroDancer"),
+            new Space("crysis", "Crysis"),
+            new Space("cs", "Counter Strike"),
+            new Space("cuphead", "Cuphead"),
+            new Space("cyberpunk2077", "Cyberpunk 2077"),
+            new Space("darksouls", "Dark Souls 1"),
+            new Space("darksouls2", "Dark Souls 2"),
+            new Space("darksouls3", "Dark Souls 3"),
+            new Space("darkestdungeon", "Darkest Dungeon"),
+            new Space("darksiders", "Darksiders"),
+            new Space("darkwood", "Darkwood"),
+            new Space("dayz", "DayZ"),
+            new Space("dbd", "Dead by Daylight"),
+            new Space("deathstranding", "Death Stranding"),
+            new Space("deathloop", "Deathloop"),
+            new Space("deeprockgalactic", "Deep Rock Galactic"),
+            new Space("demonssouls", "Demons Souls"),
+            new Space("descenders", "Descenders"),
+            new Space("destiny2", "Destiny 2"),
+            new Space("becomehuman", "Detroit: Become Human"),
+            new Space("deus-ex", "Deus Ex"),
+            new Space("dmc", "Devil May Cry"),
+            new Space("diablo", "Diablo"),
+            new Space("discoelysium", "Disco Elysium"),
+            new Space("dishonored", "Dishonored 2"),
+            new Space("divinity2", "Divinity: Original Sin 2"),
+            new Space("dontstarve", "Don't Starve Together"),
+            new Space("doom", "Doom Eternal"),
+            new Space("dota2", "Dota 2"),
+            new Space("dragonage", "Dragon Age"),
+            new Space("dbfighterz", "Dragon Ball FighterZ"),
+            new Space("sparkingzero", "Dragon Ball Sparking Zero"),
+            new Space("dragonquest", "Dragon Quest"),
+            new Space("dragonfable", "DragonFable"),
+            new Space("dragonsdogma", "Dragon's Dogma"),
+            new Space("dungeondefenders", "Dungeon Defenders"),
+            new Space("dyinglight", "Dying Light"),
+            new Space("dysonsphere", "Dyson Sphere Program"),
+            new Space("eafc", "EA FC"),
+            new Space("eco", "Eco"),
+            new Space("eldenring", "Elden Ring"),
+            new Space("tesonline", "Elder Scrolls Online"),
+            new Space("elex", "Elex"),
+            new Space("elitedangerous", "Elite Dangerous"),
+            new Space("enderal", "Enderal: Forgotten Stories"),
+            new Space("endlessspace", "Endless Space"),
+            new Space("enterthegungeon", "Enter the Gungeon"),
+            new Space("eternalreturn", "Eternal Return"),
+            new Space("eu4", "Europa Universalis IV"),
+            new Space("eveonline", "EVE Online"),
+            new Space("factorio", "Factorio"),
+            new Space("fallguys", "Fall Guys"),
+            new Space("fallout", "Fallout"),
+            new Space("farcry", "Far Cry"),
+            new Space("ff", "Final Fantasy"),
+            new Space("fireemblem", "Fire Emblem"),
+            new Space("fnaf", "Five Nights at Freddy's"),
+            new Space("forhonor", "For Honor"),
+            new Space("forager", "Forager"),
+            new Space("fortnite", "Fortnite"),
+            new Space("forza", "Forza"),
+            new Space("frostpunk", "Frostpunk"),
+            new Space("ftl", "FTL: Faster Than Light"),
+            new Space("gangbeasts", "Gang Beasts"),
+            new Space("gmod", "Garry's Mod"),
+            new Space("genshinimpact", "Genshin Impact"),
+            new Space("geometrydash", "Geometry Dash"),
+            new Space("gettingoverit", "Getting Over It"),
+            new Space("tsushima", "Ghost of Tsushima"),
+            new Space("ghostwiretokyo", "Ghostwire: Tokyo"),
+            new Space("goatsim", "Goat Simulator"),
+            new Space("gow", "God of War"),
+            new Space("gta", "Grand Theft Auto"),
+            new Space("graveyardkeeper", "Graveyard Keeper"),
+            new Space("grimdawn", "Grim Dawn"),
+            new Space("gris", "Gris"),
+            new Space("guildwars", "Guild Wars"),
+            new Space("guiltygear", "Guilty Gear"),
+            new Space("guitarhero", "Guitar Hero"),
+            new Space("gunfirereborn", "Gunfire Reborn"),
+            new Space("hades", "Hades"),
+            new Space("halflife", "Half-Life"),
+            new Space("halo", "Halo"),
+            new Space("hearthstone", "Hearthstone"),
+            new Space("heartsofiron", "Hearts of Iron"),
+            new Space("heavyrain", "Heavy Rain"),
+            new Space("hellblade", "Hellblade: Senua's Sacrifice"),
+            new Space("helldivers", "Helldivers 2"),
+            new Space("herosiege", "Hero Siege"),
+            new Space("homm", "Heroes of Might and Magic"),
+            new Space("hots", "Heroes of the Storm"),
+            new Space("herosland", "Hero's Land"),
+            new Space("hitman", "Hitman"),
+            new Space("hk", "Hollow Knight"),
+            new Space("hfw", "Horizon Forbidden West"),
+            new Space("hzd", "Horizon Zero Dawn"),
+            new Space("hotlinemiami", "Hotline Miami"),
+            new Space("houseflipper", "House Flipper"),
+            new Space("hff", "Human: Fall Flat"),
+            new Space("humankind", "Humankind"),
+            new Space("huntshowdown", "Hunt: Showdown 1896"),
+            new Space("imperatorrome", "Imperator: Rome"),
+            new Space("injustice", "Injustice"),
+            new Space("inscryption", "Inscryption"),
+            new Space("insidethebackrooms", "Inside the Backrooms"),
+            new Space("itt", "It Takes Two"),
+            new Space("katamari", "Katamari Series"),
+            new Space("kenshi", "Kenshi"),
+            new Space("ksp", "Kerbal Space Program"),
+            new Space("kingdomhearts", "Kingdom Hearts"),
+            new Space("kac", "Kingdoms and Castles"),
+            new Space("kirby", "Kirby"),
+            new Space("kocity", "Knockout City"),
+            new Space("lanoire", "L.A. Noire"),
+            new Space("lol", "League of Legends"),
+            new Space("l4d", "Left 4 Dead"),
+            new Space("botw", "Legend of Zelda: Breath of the Wild"),
+            new Space("totk", "Legend of Zelda: Tears of the Kingdom"),
+            new Space("legostarwars", "LEGO Star Wars"),
+            new Space("lifeisstrange", "Life is Strange"),
+            new Space("likeadragon", "Like a Dragon: Infinite Wealth"),
+            new Space("ln2", "Little Nightmares II"),
+            new Space("lbp", "LittleBigPlanet"),
+            new Space("lobotomycorp", "Lobotomy Corporation"),
+            new Space("loophero", "Loop Hero"),
+            new Space("madden", "Madden"),
+            new Space("mafia", "Mafia"),
+            new Space("mario", "Mario"),
+            new Space("masseffect", "Mass Effect"),
+            new Space("maxpayne", "Max Payne"),
+            new Space("meddynasty", "Medieval Dynasty"),
+            new Space("megaman", "Mega Man"),
+            new Space("mg", "Metal Gear"),
+            new Space("metalslug", "Metal Slug"),
+            new Space("refantazio", "Metaphor: ReFantazio"),
+            new Space("metroexodus", "Metro Exodus"),
+            new Space("msflightsim", "Microsoft Flight Simulator"),
+            new Space("minecraft", "Minecraft"),
+            new Space("mirrorsedge", "Mirror's Edge"),
+            new Space("theshow", "MLB The Show"),
+            new Space("monsterhunter", "Monster Hunter"),
+            new Space("monstertrain", "Monster Train"),
+            new Space("mordhau", "Mordhau"),
+            new Space("morrowind", "Morrowind"),
+            new Space("mk", "Mortal Kombat"),
+            new Space("mnb", "Mount and Blade"),
+            new Space("mudrunner", "Mudrunner"),
+            new Space("mysummercar", "My Summer Car"),
+            new Space("mytimeatportia", "My Time at Portia"),
+            new Space("nba2k", "NBA2K"),
+            new Space("neva", "Neva"),
+            new Space("newworld", "New World: Aeternum"),
+            new Space("eanhl", "NHL"),
+            new Space("nierreplicant", "NieR Replicant"),
+            new Space("nierautomata", "NieR: Automata"),
+            new Space("nioh", "Nioh"),
+            new Space("nms", "No Man's Sky"),
+            new Space("noita", "Noita"),
+            new Space("oblivion", "Oblivion"),
+            new Space("okami", "Okami"),
+            new Space("ori", "Ori"),
+            new Space("outerwilds", "Outer Wilds"),
+            new Space("outerworlds", "Outer Worlds"),
+            new Space("overcooked", "Overcooked"),
+            new Space("ow2", "Overwatch 2"),
+            new Space("pathofexile", "Path of Exile"),
+            new Space("payday", "Payday"),
+            new Space("persona", "Persona"),
+            new Space("pillarsofeternity", "Pillars of Eternity"),
+            new Space("plagueinc", "Plague Inc."),
+            new Space("planetside", "Planetside 2"),
+            new Space("pvz", "Plants vs. Zombies"),
+            new Space("pokemon", "Pokemon"),
+            new Space("portal", "Portal"),
+            new Space("prey", "Prey"),
+            new Space("prisonarchitect", "Prison Architect"),
+            new Space("zomboid", "Project Zomboid"),
+            new Space("pubg", "PUBG"),
+            new Space("quake", "Quake"),
+            new Space("r6", "Rainbow Six Siege"),
+            new Space("rotmg", "Realm of the Mad God"),
+            new Space("rdr", "Red Dead Redemption"),
+            new Space("residentevil", "Resident Evil"),
+            new Space("rimworld", "Rimworld"),
+            new Space("riskofrain", "Risk of Rain"),
+            new Space("roblox", "Roblox"),
+            new Space("rockband", "Rock Band"),
+            new Space("rocketleague", "Rocket League"),
+            new Space("roguelegacy", "Rogue Legacy"),
+            new Space("rct", "RollerCoaster Tycoon"),
+            new Space("runescape", "Runescape"),
+            new Space("rust", "Rust"),
+            new Space("saintsrow", "Saint's Row"),
+            new Space("satisfactory", "Satisfactory"),
+            new Space("seaofthieves", "Sea of Thieves"),
+            new Space("sekiro", "Sekiro"),
+            new Space("som", "Shadow of Mordor"),
+            new Space("sotc", "Shadow of the Colossus"),
+            new Space("sow", "Shadow of War"),
+            new Space("silenthill", "Silent Hill 2"),
+            new Space("skyrim", "Skyrim"),
+            new Space("slaythespire", "Slay the Spire"),
+            new Space("sleepingdogs", "Sleeping Dogs"),
+            new Space("slimerancher", "Slime Rancher"),
+            new Space("smite", "Smite"),
+            new Space("sniperelite", "Sniper Elite"),
+            new Space("sonic", "Sonic the Hedgehog"),
+            new Space("spiderman", "Spider-Man"),
+            new Space("spore", "Spore"),
+            new Space("stalker", "Stalker"),
+            new Space("starcitizen", "Star Citizen"),
+            new Space("swbattlefront", "Star Wars Battlefront"),
+            new Space("starcraft", "StarCraft"),
+            new Space("stardewvalley", "Stardew Valley"),
+            new Space("stellarblade", "Stellar Blade"),
+            new Space("stellaris", "Stellaris"),
+            new Space("stray", "Stray"),
+            new Space("streetfighter", "Street Fighter"),
+            new Space("subnautica", "Subnautica"),
+            new Space("sunhaven", "Sun Haven"),
+            new Space("smash", "Super Smash Bros"),
+            new Space("taleofimmortal", "Tale of Immortal"),
+            new Space("talesofarise", "Tales of Arise"),
+            new Space("tf2", "Team Fortress 2"),
+            new Space("teardown", "Teardown"),
+            new Space("tekken", "Tekken"),
+            new Space("terraria", "Terraria"),
+            new Space("tboi", "The Binding of Isaac"),
+            new Space("escapists", "The Escapists"),
+            new Space("evilwithin", "The Evil Within"),
+            new Space("firstdescendant", "The First Descendant"),
+            new Space("theforest", "The Forest"),
+            new Space("tlou", "The Last of Us"),
+            new Space("longdark", "The Long Dark"),
+            new Space("lotrmoria", "The Lord of the Rings: Return to Moria"),
+            new Space("outlasttrials", "The Outlast Trials"),
+            new Space("sims", "The Sims"),
+            new Space("stanleyparable", "The Stanley Parable"),
+            new Space("talosprinciple", "The Talos Principle"),
+            new Space("witcher", "The Witcher"),
+            new Space("witcher2", "The Witcher II"),
+            new Space("witcher3", "The Witcher III"),
+            new Space("witness", "The Witness"),
+            new Space("warofmine", "This War of Mine"),
+            new Space("timberborn", "Timberborn"),
+            new Space("titanfall", "Titanfall 2"),
+            new Space("torchlight", "Torchlight"),
+            new Space("totalwar", "Total War"),
+            new Space("tunic", "Tunic"),
+            new Space("uncharted", "Uncharted"),
+            new Space("unchartedwaters", "Uncharted Waters Origin"),
+            new Space("undertale", "Undertale"),
+            new Space("goosegame", "Untitled Goose Game"),
+            new Space("valheim", "Valheim"),
+            new Space("val", "Valorant"),
+            new Space("vampiresurvivors", "Vampire Survivors"),
+            new Space("warframe", "Warframe"),
+            new Space("wh40k", "Warhammer 40K: Space Marine"),
+            new Space("wasteland", "Wasteland"),
+            new Space("edithfinch", "What Remains of Edith Finch"),
+            new Space("wow", "World of Warcraft"),
+            new Space("xcom2", "XCOM 2"),
+            new Space("lolesports", "League of Legends Esports"),
+            new Space("valesports", "Valorant Esports"),
+            new Space("csesports", "Counter Strike Esports"),
+            new Space("honesports", "Honor of Kings Esports"),
+            new Space("pubgmobileesports", "PUBG Mobile Esports"),
+            new Space("pubgesports", "PUBG: Battlegrounds Esports"),
+            new Space("fortniteesports", "Fortnite Esports"),
+            new Space("r6esports", "Rainbow Six Siege Esports"),
+            new Space("mlbbesports", "Mobile Legends Esports"),
+            new Space("codesports", "Call of Duty Esports"),
+            new Space("apexesports", "Apex Legends Esports"),
+            new Space("rocketleagueesports", "Rocket League Esports"),
+            new Space("tftesports", "Teamfight Tactics Esports"),
+            new Space("cfesports", "CrossFire Esports"),
+            new Space("freefiresports", "Free Fire Esports"),
+            new Space("sfesports", "Street Fighter Esports"),
+            new Space("eafcesports", "EA Sports FC Esports"),
+            new Space("warzoneesports", "Call of Duty: Warzone Esports"),
+            new Space("owesports", "Overwatch Esports"),
+            new Space("aovesports", "Arena of Valor Esports"),
+            new Space("pokemonesports", "Pokemon Esports"),
+            new Space("sc2esports", "StarCraft II Esports"),
+            new Space("haloesports", "Halo Esports"),
+            new Space("tekkenesports", "Tekken Esports"),
+            new Space("mtgesports", "Magic: The Gathering Esports"),
+            new Space("nba2kesports", "NBA 2K Esports"),
+            new Space("cocesports", "Clash of Clans Esports"),
+            new Space("maddenesports", "Madden NFL Esports"),
+            new Space("rennsportesports", "Rennsport Esports"),
+            new Space("wowesports", "World of Warcraft Esports"),
+            new Space("idvesports", "Identity V Esports"),
+            new Space("smashesports", "Super Smash Bros Esports"),
+            new Space("hearthstoneesports", "Hearthstone Esports"),
+            new Space("hotsesports", "Heroes of the Storm Esports"),
+            new Space("smiteesports", "Smite Esports"),
+            new Space("brawlstarsesports", "Brawl Stars Esports"),
+            new Space("clashroyaleesports", "Clash Royale Esports"));
+
+    public static String getSpaceNameFromId(String id) {
+        String spaceId = id.substring(id.lastIndexOf('/') + 1);
+        return SPACES.stream()
+                .filter(space -> space.id.endsWith(spaceId))
+                .findFirst()
+                .map(space -> space.name)
+                .orElse(spaceId);
     }
 
 }

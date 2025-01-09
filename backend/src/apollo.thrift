@@ -261,18 +261,6 @@ struct RemoveBookmarkStatus {
   3: required Timestamp timestamp;
 }
 
-struct FeatureAccount {
-  1: required AccountId accountId;
-  2: required AccountId targetId;
-  3: required Timestamp timestamp;
-}
-
-struct RemoveFeatureAccount {
-  1: required AccountId accountId;
-  2: required AccountId targetId;
-  3: required Timestamp timestamp;
-}
-
 struct MuteAccount {
   1: required AccountId accountId;
   2: required AccountId targetId;
@@ -537,24 +525,6 @@ struct RemoveFollowHashtag {
   3: required Timestamp timestamp;
 }
 
-struct FeatureHashtag {
-  1: required AccountId accountId;
-  2: required string hashtag;
-  3: required Timestamp timestamp;
-}
-
-struct RemoveFeatureHashtag {
-  1: required AccountId accountId;
-  2: required string hashtag;
-  3: required Timestamp timestamp;
-}
-
-struct FeaturedHashtagInfo {
-  1: required string hashtag;
-  2: required i32 numStatuses;
-  3: required Timestamp timestamp;
-}
-
 struct AddFilter {
   1: required Filter filter;
   2: required string uuid;
@@ -631,8 +601,6 @@ struct AccountRelationshipQueryResult {
   9: required bool muting;
   10: required bool mutingNotifications;
   11: required bool requested;
-  12: required bool domainBlocking;
-  13: required bool endorsed;
   14: required string note;
 }
 
@@ -705,7 +673,7 @@ struct Application {
 struct SpaceFanout {
   1: required AccountId authorId;
   2: required StatusId statusId;
-  3: required string space;
+  3: required string spaceId;
 }
 
 struct FollowSpace {
@@ -1420,6 +1388,11 @@ struct UserActivity {
   2: required i64 timestamp;  
 }
 
+struct Space {
+  1: required string id;
+  2: required string name;
+ 
+}
 
 
 

@@ -1,36 +1,25 @@
 package com.apollo.backendapi;
 
-// This file initializes the backend application using Spring Boot.
-
-// Apollo
 import com.apollo.backend.*;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.*;
 import com.apollo.backend.serialization.ApolloSerialization;
 
-// Rama
 import com.rpl.rama.*;
 import com.rpl.rama.test.*;
 
-// Spring
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import software.amazon.awssdk.core.exception.SdkClientException;
 
-// Java
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
-// Define the main class and entry point for a Spring Boot application
+import org.springframework.context.ApplicationContext;
+
 @SpringBootApplication
 public class ApolloApiApplication {
         // Main method to start the application
@@ -93,12 +82,10 @@ public class ApolloApiApplication {
         public static InProcessCluster initIPC() throws NoSuchAlgorithmException, IOException, NoSuchProviderException {
                 @SuppressWarnings("rawtypes") // Suppress warnings for raw types in the list of serializers
                 List<Class> sers = new ArrayList<>();
-                // Add custom serialization class to the list
                 sers.add(ApolloSerialization.class);
-                // Create an InProcessCluster with the specified serializers
                 InProcessCluster ipc = InProcessCluster.create(sers);
 
-                // Instantiate and launch various modules with their configurations
+                // Instantiate and launch modules
                 Relationships relationshipsModule = new Relationships();
                 String relationshipsModuleName = Relationships.class.getName();
                 ipc.launchModule(relationshipsModule, new LaunchConfig(2, 1));
@@ -122,14 +109,11 @@ public class ApolloApiApplication {
                 ESports eSportsModule = new ESports();
                 ipc.launchModule(eSportsModule, new LaunchConfig(2, 1));
 
-                // Set the controller manager to a new instance of ApolloApiManager with the IPC
                 ApolloApiController.manager = new ApolloApiManager(ipc);
 
-                // Time manipulation for data entries
                 int weekMillis = 1000 * 60 * 60 * 24 * 7;
                 long ts = System.currentTimeMillis() - weekMillis;
 
-                // Append accounts and configure their properties
                 Depot accountDepot = ipc.clusterDepot(coreModuleName, "*accountDepot");
                 ApolloWebHelpers.SigningKeyPair aliceKeys = ApolloWebHelpers.generateKeys();
                 accountDepot.append(
@@ -158,7 +142,6 @@ public class ApolloApiApplication {
                                                 UUID.randomUUID().toString(), blakeKeys.publicKey, ts += 1, true,
                                                 true));
 
-                // Populate and manipulate data for user relationships and statuses
                 List<Long> fooIds = new ArrayList<>();
                 PState nameToUser = ipc.clusterPState(coreModuleName, "$$nameToUser");
                 for (int i = 0; i < 50; i++) {
@@ -182,7 +165,6 @@ public class ApolloApiApplication {
                                 "*followAndBlockAccountDepot");
                 followAndBlockAccountDepot.append(new FollowAccount(bobId, aliceId, ts += 1));
 
-                // Loop through the generated IDs to create relationships and statuses
                 for (long fooId : fooIds) {
                         followAndBlockAccountDepot.append(new FollowAccount(bobId, fooId, ts += 1));
                         followAndBlockAccountDepot.append(new FollowAccount(fooId, bobId, ts += 1));
@@ -272,8 +254,17 @@ public class ApolloApiApplication {
                                 System.out.println("WebSocket connection started successfully.");
                         } catch (Exception e) {
                                 System.err.println("Error starting WebSocket connection: " + e.getMessage());
-                                // Optionally, implement retry logic or alerting mechanisms here
                         }
+                } else {
+                        System.err.println("ApolloApiController.manager is null. Unable to fetch eSports data.");
+                }
+        }
+
+        @PostConstruct
+        public void initializeSpaces() {
+                System.out.println("Initializing spaces");
+                if (ApolloApiController.manager != null) {
+                        ApolloApiController.manager.initializeSpaces(ApolloApiHelpers.SPACES);
                 } else {
                         System.err.println("ApolloApiController.manager is null. Unable to fetch eSports data.");
                 }

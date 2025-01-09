@@ -78,6 +78,8 @@ public class Search implements RamaModule {
                         collector.emit(hashtag.substring(0, i));
         }
 
+        // TODO: Idk if this is right
+
         public static MatchInfo numSpaceTermMatches(Object spaceObj, String searchTerm, Object ignore) {
                 return new MatchInfo(spaceObj, ((String) spaceObj).startsWith(searchTerm) ? 1 : 0);
         }
