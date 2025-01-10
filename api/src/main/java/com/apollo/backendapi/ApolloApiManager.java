@@ -78,7 +78,7 @@ public class ApolloApiManager {
 
     private static final Logger logger = LogManager.getLogger(ApolloApiManager.class);
     private static final Dotenv dotenv = Dotenv.configure()
-            .filename("/.env")
+            .filename(".env")
             .load();
     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
     private static final AwsCredentialsProvider credentialsProvider;
