@@ -1,5 +1,5 @@
 target/
 logs/
-api/.env
+.env
 .DS_Store
 settings.json
