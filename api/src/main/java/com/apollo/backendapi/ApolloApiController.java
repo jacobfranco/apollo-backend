@@ -2348,4 +2348,9 @@ public class ApolloApiController {
         return Mono.fromFuture(manager.saveSpace(params)).then();
     }
 
+    @GetMapping("/api/metrics")
+    public Mono<GetMetrics> getMetrics() {
+        return Mono.just(new GetMetrics(ApolloApiMetrics.HOURLY_METRICS));
+    }
+
 }

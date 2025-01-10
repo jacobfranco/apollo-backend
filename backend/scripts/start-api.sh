@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# HINT: Make an alias for running this
+# alias api='sh /path/to/Apollo/apollo-backend/backend/scripts/start-api.sh dev'
+
 # Create Rama temp directory in /tmp
 RAMA_TEMP="/tmp/rama_temp"
 if [ ! -d "$RAMA_TEMP" ]; then

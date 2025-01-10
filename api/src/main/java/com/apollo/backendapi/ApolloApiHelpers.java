@@ -704,7 +704,7 @@ public class ApolloApiHelpers {
     public static String getSpaceNameFromId(String id) {
         String spaceId = id.substring(id.lastIndexOf('/') + 1);
         return SPACES.stream()
-                .filter(space -> space.id.endsWith(spaceId))
+                .filter(space -> space.id.equals(spaceId))
                 .findFirst()
                 .map(space -> space.name)
                 .orElse(spaceId);
