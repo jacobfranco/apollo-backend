@@ -172,7 +172,6 @@ public class ApolloApiController {
                 });
     }
 
-    // TODO: See if this still works
     // Define a POST endpoint for revoking OAuth tokens with JSON payload
     @PostMapping(value = "/oauth/revoke", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<Object> postRevokeOauthToken(@RequestBody(required = true) PostRevokeToken params) {
@@ -208,7 +207,6 @@ public class ApolloApiController {
      * ======================================
      */
 
-    // TODO: Added Object return type - make sure not broken now
     @PostMapping("/api/accounts")
     public Mono<Object> postAccount(WebSession session, ServerHttpResponse response,
             @RequestBody(required = true) PostAccount params) {
@@ -510,7 +508,6 @@ public class ApolloApiController {
                 null, null, null, null, null, null, null, null, null, null, null);
     }
 
-    // TODO: Does this work ?
     @GetMapping("/api/accounts/{id}/statuses")
     public Mono<List<GetStatus>> getAccountStatuses(WebSession session, ServerWebExchange exchange,
             @PathVariable("id") String id,
