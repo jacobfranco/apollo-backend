@@ -79,6 +79,7 @@ public class ApolloApiManager {
     private static final Logger logger = LogManager.getLogger(ApolloApiManager.class);
     private static final Dotenv dotenv = Dotenv.configure()
             .filename(".env")
+            .ignoreIfMissing()
             .load();
     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
     private static final AwsCredentialsProvider credentialsProvider;
@@ -5630,18 +5631,23 @@ public class ApolloApiManager {
     }
 
     static {
-        if (System.getenv("AWS_EXECUTION_ENV") != null) {
-            System.out.println("Running on EC2, using default credentials provider chain");
-            credentialsProvider = DefaultCredentialsProvider.create();
+        // First try system environment variables
+        String accessKeyId = System.getenv("AWS_ACCESS_KEY_ID");
+        String secretAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY");
+
+        if (accessKeyId != null && secretAccessKey != null) {
+            System.out.println("Using AWS credentials from system environment");
+            credentialsProvider = StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
         } else {
-            System.out.println("Local development, loading from .env file");
-            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
-            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+            System.out.println("Falling back to .env file");
+            // Try .env file as fallback
+            accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+            secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
 
             if (accessKeyId == null || secretAccessKey == null) {
-                throw new IllegalStateException("AWS credentials not found in .env file");
+                throw new IllegalStateException("AWS credentials not found in environment or .env file");
             }
-
             credentialsProvider = StaticCredentialsProvider.create(
                     AwsBasicCredentials.create(accessKeyId, secretAccessKey));
         }
