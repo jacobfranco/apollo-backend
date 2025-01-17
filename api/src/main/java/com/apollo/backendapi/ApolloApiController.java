@@ -2350,4 +2350,9 @@ public class ApolloApiController {
         return Mono.just(new GetMetrics(ApolloApiMetrics.HOURLY_METRICS));
     }
 
+    @GetMapping("/")
+    public ResponseEntity<String> rootCheck() {
+        return ResponseEntity.ok("OK");
+    }
+
 }
