@@ -1,37 +1,31 @@
 package com.apollo.backendapi;
 
-import com.apollo.backend.*;
-import com.apollo.backend.data.*;
-import com.apollo.backendapi.pojos.*;
-
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.*;
-import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.http.*;
-import org.springframework.http.codec.multipart.Part;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.codec.multipart.FormFieldPart;
-
-import org.apache.commons.io.FilenameUtils;
-
-import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.AbstractMap.SimpleEntry;
-import java.net.*;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import java.nio.charset.Charset;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
-
-import org.slf4j.LoggerFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.*;
+import org.springframework.http.codec.multipart.*;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.*;
+
+import com.apollo.backend.ApolloHelpers;
+import com.apollo.backend.data.*;
+import com.apollo.backendapi.pojos.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import reactor.core.publisher.Mono;
 
 @RestController
 @CrossOrigin(exposedHeaders = { "Link" })
@@ -2353,6 +2347,82 @@ public class ApolloApiController {
     @GetMapping("/")
     public ResponseEntity<String> rootCheck() {
         return ResponseEntity.ok("OK");
+    }
+
+    @PostMapping("/api/change_password")
+    public Mono<GetAccount> changePassword(
+            WebSession session,
+            @RequestBody Map<String, String> request) {
+
+        long requestAccountId = getMandatoryAccountId(session);
+
+        String currentPassword = request.get("password");
+        String newPassword = request.get("new_password");
+        String confirmation = request.get("new_password_confirmation");
+
+        return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithId -> {
+                    // Verify old password matches using the correct method
+                    if (!ApolloApiHelpers.matchesPassword(currentPassword, accountWithId.account.pwdHash)) {
+                        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid current password");
+                    }
+
+                    // Verify new password and confirmation match
+                    if (!newPassword.equals(confirmation)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "New password and confirmation do not match");
+                    }
+
+                    // Create new password hash using the correct method
+                    String newPwdHash = ApolloApiHelpers.encodePassword(newPassword);
+
+                    // Update account with new password
+                    List<EditAccountField> edits = new ArrayList<>();
+                    edits.add(EditAccountField.pwdHash(newPwdHash));
+
+                    return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits));
+                })
+                .flatMap(result -> Mono.fromFuture(manager.getAccountWithId(requestAccountId)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetAccount::new);
+    }
+
+    @PostMapping("/api/change_email")
+    public Mono<GetAccount> changeEmail(
+            WebSession session,
+            @RequestBody Map<String, String> request) {
+
+        long requestAccountId = getMandatoryAccountId(session);
+
+        String newEmail = request.get("email");
+        String password = request.get("password");
+
+        return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithId -> {
+                    // Verify password using the correct method
+                    if (!ApolloApiHelpers.matchesPassword(password, accountWithId.account.pwdHash)) {
+                        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
+                    }
+
+                    // Check if email already exists
+                    return Mono.fromFuture(manager.emailExists(newEmail))
+                            .flatMap(exists -> {
+                                if (exists) {
+                                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+                                }
+
+                                // Update account with new email
+                                List<EditAccountField> edits = new ArrayList<>();
+                                edits.add(EditAccountField.email(newEmail));
+
+                                return Mono.fromFuture(manager.postEditAccount(requestAccountId, edits));
+                            });
+                })
+                .flatMap(result -> Mono.fromFuture(manager.getAccountWithId(requestAccountId)))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(GetAccount::new);
     }
 
 }
