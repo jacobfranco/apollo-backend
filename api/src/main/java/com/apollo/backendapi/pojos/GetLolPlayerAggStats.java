@@ -13,6 +13,7 @@ public class GetLolPlayerAggStats {
     public double averageAssists;
     public int totalCreepScore;
     public double averageCreepScore;
+    public double kda;
 
     public GetLolPlayerAggStats(LolPlayerAggStats stats) {
         this.id = stats.getId();
@@ -25,5 +26,6 @@ public class GetLolPlayerAggStats {
         this.averageAssists = stats.getAverageAssists();
         this.totalCreepScore = stats.getTotalCreepScore();
         this.averageCreepScore = stats.getAverageCreepScore();
+        this.kda = (stats.getAverageKills() + stats.getAverageAssists()) / (averageDeaths == 0 ? 1 : averageDeaths);
     }
 }
