@@ -53,7 +53,7 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     // Maximum allowable lengths for various user inputs
     // TODO: Review This
     public static final int MAX_STATUS_LENGTH = 500;
-    public static final int MAX_DISPLAY_NAME_LENGTH = 20;
+    public static final int MAX_DISPLAY_NAME_LENGTH = 50;
     public static final int MAX_BIO_LENGTH = 280;
     public static final int MAX_FIELD_LENGTH = 40;
     public static final int MAX_LIST_LENGTH = 40;
