@@ -45,6 +45,7 @@ public class ApolloSerialization extends ThriftSerialization<TBase<?, ?>> {
                 EditAccount.class,
                 EditAccountField.class,
                 EditConversation.class,
+                EditFilter.class,
                 EditScheduledStatusPublishTime.class,
                 EditStatus.class,
                 Filter.class,
