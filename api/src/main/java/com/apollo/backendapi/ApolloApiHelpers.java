@@ -394,6 +394,7 @@ public class ApolloApiHelpers {
             new Space("celeste", "Celeste"),
             new Space("childrenofmorta", "Children of Morta"),
             new Space("chivalry2", "Chivalry 2"),
+            new Space("cinnabunny", "Cinabunny"),
             new Space("citiesskylines", "Cities Skylines"),
             new Space("civ", "Civilization Series"),
             new Space("coc", "Clash of Clans"),

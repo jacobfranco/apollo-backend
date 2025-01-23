@@ -26,6 +26,8 @@ public class GetLolTeamAggStats {
     public int totalSeries;
     public int totalSeriesWins;
     public int totalSeriesLosses;
+    public int totalWinRate;
+    public int seriesWinRate;
 
     public GetLolTeamAggStats(LolTeamAggStats stats) {
         this.totalMatches = stats.getTotalMatches();
@@ -51,5 +53,7 @@ public class GetLolTeamAggStats {
         this.totalSeries = stats.getTotalSeries();
         this.totalSeriesWins = stats.getTotalSeriesWins();
         this.totalSeriesLosses = stats.getTotalSeriesLosses();
+        this.totalWinRate = stats.getTotalWins() / (stats.getTotalMatches() == 0 ? 1 : stats.getTotalMatches());
+        this.seriesWinRate = stats.getTotalSeriesWins() / (stats.getTotalSeries() == 0 ? 1 : stats.getTotalSeries());
     }
 }

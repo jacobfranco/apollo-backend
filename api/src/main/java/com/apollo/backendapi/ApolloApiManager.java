@@ -77,7 +77,14 @@ public class ApolloApiManager {
     private ObjectMapper objectMapper;
 
     private static final Logger logger = LogManager.getLogger(ApolloApiManager.class);
+<<<<<<< HEAD
     private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+=======
+    private static final Dotenv dotenv = Dotenv.configure()
+            .filename(".env")
+            .ignoreIfMissing()
+            .load();
+>>>>>>> dev
     private static final String ABIOS_SECRET = dotenv.get("ABIOS_SECRET");
     private static final AwsCredentialsProvider credentialsProvider;
     private final AbiosApiClient apiClient;
@@ -2994,8 +3001,6 @@ public class ApolloApiManager {
             logger.error("parseJsonToPostSeriesList - Unexpected Series JSON structure: " + jsonData);
             throw new IllegalArgumentException("Unexpected JSON structure for series");
         }
-
-        logger.info("parseJsonToPostSeriesList - Successfully parsed " + seriesList.size() + " PostSeries objects.");
         return seriesList;
     }
 
@@ -3969,18 +3974,26 @@ public class ApolloApiManager {
         logger.info("getSeriesSchedule - Fetching series schedule from " + startTime + " to " + endTime);
         return getSeriesFromStartTime.invokeAsync(startTime, endTime)
                 .thenCompose(result -> {
+                    if (result == null) {
+                        logger.info("getSeriesSchedule - No data found for the given time range");
+                        return CompletableFuture.completedFuture(Collections.emptyList());
+                    }
+
                     @SuppressWarnings("unchecked")
                     Map<Long, Map<Integer, Series>> aggregatedResult = (Map<Long, Map<Integer, Series>>) result;
 
-                    TreeMap<Long, Map<Integer, Series>> sortedResult = new TreeMap<>(aggregatedResult);
-                    logger.info("getSeriesSchedule - Aggregated and sorted series data.");
-
-                    List<Series> seriesList = new ArrayList<>();
-                    for (Map<Integer, Series> innerMap : sortedResult.values()) {
-                        seriesList.addAll(innerMap.values());
+                    if (aggregatedResult.isEmpty()) {
+                        return CompletableFuture.completedFuture(Collections.emptyList());
                     }
 
-                    logger.info("getSeriesSchedule - Total Series fetched: " + seriesList.size());
+                    TreeMap<Long, Map<Integer, Series>> sortedResult = new TreeMap<>(aggregatedResult);
+                    logger.info("getSeriesSchedule - Aggregated and sorted series data.");
+                    List<Series> seriesList = new ArrayList<>();
+                    for (Map<Integer, Series> innerMap : sortedResult.values()) {
+                        if (innerMap != null) { // Add null check here
+                            seriesList.addAll(innerMap.values());
+                        }
+                    }
                     return processSeriesList(seriesList);
                 });
     }
@@ -4021,7 +4034,6 @@ public class ApolloApiManager {
     }
 
     private CompletableFuture<List<GetSeries>> processSeriesList(List<Series> seriesList) {
-        logger.info("processSeriesList - Processing list of Series. Count: " + seriesList.size());
 
         if (seriesList.isEmpty()) {
             logger.warn("processSeriesList - Received an empty series list.");
@@ -5628,18 +5640,23 @@ public class ApolloApiManager {
     }
 
     static {
-        if (System.getenv("AWS_EXECUTION_ENV") != null) {
-            System.out.println("Running on EC2, using default credentials provider chain");
-            credentialsProvider = DefaultCredentialsProvider.create();
+        // First try system environment variables
+        String accessKeyId = System.getenv("AWS_ACCESS_KEY_ID");
+        String secretAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY");
+
+        if (accessKeyId != null && secretAccessKey != null) {
+            System.out.println("Using AWS credentials from system environment");
+            credentialsProvider = StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretAccessKey));
         } else {
-            System.out.println("Local development, loading from .env file");
-            String accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
-            String secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
+            System.out.println("Falling back to .env file");
+            // Try .env file as fallback
+            accessKeyId = dotenv.get("AWS_ACCESS_KEY_ID");
+            secretAccessKey = dotenv.get("AWS_SECRET_ACCESS_KEY");
 
             if (accessKeyId == null || secretAccessKey == null) {
-                throw new IllegalStateException("AWS credentials not found in .env file");
+                throw new IllegalStateException("AWS credentials not found in environment or .env file");
             }
-
             credentialsProvider = StaticCredentialsProvider.create(
                     AwsBasicCredentials.create(accessKeyId, secretAccessKey));
         }

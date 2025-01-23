@@ -14,34 +14,33 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 
 import java.io.*;
 import java.security.*;
+import java.time.LocalDate;
 import java.util.*;
 
 import javax.annotation.PostConstruct;
-
-import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
 public class ApolloApiApplication {
         // Main method to start the application
         public static void main(String[] args) throws NoSuchAlgorithmException, IOException, NoSuchProviderException {
-                // Check if more than one argument is provided to configure API URLs
+                // For running real cluster in prod
                 if (args.length > 1) {
                         ApolloConfig.API_URL = args[1];
                         ApolloConfig.API_WEB_SOCKET_URL = args[2];
                         ApolloConfig.API_DOMAIN = args[3];
                         ApolloConfig.FRONTEND_URL = args[4];
+                        ApolloApiConfig.LOL_SEASON_START = LocalDate.of(2025, 1, 1);
+                        ApolloApiConfig.LOL_SEASON_END = LocalDate.of(2025, 12, 31);
                 }
 
-                // Initialize Amazon S3 client
+                // Initialize S3
                 try {
                         ApolloApiHelpers.initS3Client();
                 } catch (SdkClientException e) {
-                        // Handle exceptions by printing stack trace and setting S3 options to null
                         e.printStackTrace();
                         ApolloApiConfig.S3_OPTIONS = null;
                 }
 
-                // Initialize the cluster manager with configuration if arguments are provided
                 if (args.length > 0) {
                         ApolloApiController.manager = new ApolloApiManager(
                                         RamaClusterManager.openInternal(new HashMap<String, Object>() {
@@ -53,7 +52,7 @@ public class ApolloApiApplication {
                                                 }
                                         }));
                 } else {
-                        // Initialize In-Process Cluster if no arguments are provided
+                        // For dev, we init IPC
                         initIPC();
                 }
 
@@ -231,6 +230,9 @@ public class ApolloApiApplication {
                                         System.currentTimeMillis()));
                 }
 
+                ApolloApiConfig.LOL_SEASON_START = LocalDate.of(2025, 1, 1);
+                ApolloApiConfig.LOL_SEASON_END = LocalDate.of(2025, 3, 31);
+
                 return ipc;
         }
 
@@ -244,10 +246,8 @@ public class ApolloApiApplication {
                         ApolloApiController.manager.fetchAllLolSubstages();
                         ApolloApiController.manager.fetchAllLolCasters();
                         ApolloApiController.manager.fetchAllLolAssets();
-                        ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_START_TEST,
-                                        ApolloApiConfig.LOL_END_TEST);
-                        // ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
-                        // ApolloApiConfig.LOL_SEASON_END);
+                        ApolloApiController.manager.fetchAllLolSeries(ApolloApiConfig.LOL_SEASON_START,
+                                        ApolloApiConfig.LOL_SEASON_END);
                         // Start WebSocket connection after data fetching
                         try {
                                 ApolloApiController.manager.startWebSocketConnection();

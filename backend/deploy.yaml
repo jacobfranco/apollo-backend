@@ -1,0 +1,10 @@
+custom.serializations:
+  - "com.apollo.backend.serialization.ApolloSerialization"
+worker.child.opts: >-
+  -Xms12g -Xmx12g 
+  -Dbackend.api.url=https://api.apollo.now 
+  -Dbackend.api.web.socket.url=wss://api.apollo.now 
+  -Dbackend.api.domain=api.apollo.now 
+  -Dbackend.frontend.url=https://apollo.now
+pstate.validate.subindexed.structure.locations: false
+pstate.maximal.schema.validations: false

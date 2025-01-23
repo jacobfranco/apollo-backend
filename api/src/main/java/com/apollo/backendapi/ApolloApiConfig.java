@@ -53,7 +53,7 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     // Maximum allowable lengths for various user inputs
     // TODO: Review This
     public static final int MAX_STATUS_LENGTH = 500;
-    public static final int MAX_DISPLAY_NAME_LENGTH = 20;
+    public static final int MAX_DISPLAY_NAME_LENGTH = 50;
     public static final int MAX_BIO_LENGTH = 280;
     public static final int MAX_FIELD_LENGTH = 40;
     public static final int MAX_LIST_LENGTH = 40;
@@ -62,11 +62,8 @@ public class ApolloApiConfig implements WebFluxConfigurer {
     public static final int MAX_POLL_CHOICE_LENGTH = 30;
 
     // ESports Config
-    public static final LocalDate LOL_SEASON_START = LocalDate.of(2025, 1, 1);
-    public static final LocalDate LOL_SEASON_END = LocalDate.of(2025, 12, 31);
-
-    public static final LocalDate LOL_START_TEST = LocalDate.of(2025, 1, 1);
-    public static final LocalDate LOL_END_TEST = LocalDate.of(2025, 3, 24);
+    public static LocalDate LOL_SEASON_START;
+    public static LocalDate LOL_SEASON_END;
 
     // Bean to handle reactive session repository
     @Bean
