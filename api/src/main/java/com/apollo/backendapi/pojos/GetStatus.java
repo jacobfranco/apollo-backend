@@ -175,19 +175,28 @@ public class GetStatus {
                     this.content += String.format("<a href=\"%s\">%s</a>", tokenContent, tokenContent);
                     break;
                 case HASHTAG:
-                    this.content += String.format("<a href=\"%s/tags/%s\">%s</a>", ApolloConfig.FRONTEND_URL,
-                            tokenContent, tokenContent);
+                    // Remove the tokenContent = "#" + content bit
+                    this.content += String.format("<a href=\"%s/tags/%s\">#%s</a>",
+                            ApolloConfig.FRONTEND_URL,
+                            tokenContent,
+                            tokenContent);
                     this.tags.add(new GetTag(tokenContent));
                     break;
                 case SPACE:
-                    this.content += String.format("<a href=\"%s/s/%s\">%s</a>", ApolloConfig.FRONTEND_URL,
-                            tokenContent, tokenContent);
+                    // Include the s/ in the displayed link
+                    this.content += String.format("<a href=\"%s/s/%s\">s/%s</a>",
+                            ApolloConfig.FRONTEND_URL,
+                            tokenContent,
+                            tokenContent);
                     this.spaces.add(new GetSpace(tokenContent, ApolloApiHelpers.getSpaceNameFromId(tokenContent)));
                     break;
                 case MENTION:
                     if (mentions.containsKey(tokenContent)) {
-                        this.content += String.format("<a href=\"%s/@%s\">%s</a>", ApolloConfig.FRONTEND_URL,
-                                tokenContent, tokenContent);
+                        // Remove the tokenContent = "@" + content bit
+                        this.content += String.format("<a href=\"%s/@%s\">@%s</a>",
+                                ApolloConfig.FRONTEND_URL,
+                                tokenContent,
+                                tokenContent);
                         localMentions.put(tokenContent, mentions.get(tokenContent));
                     } else
                         this.content += tokenContent;

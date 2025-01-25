@@ -32,7 +32,7 @@ public class GetSpace implements RamaSerializable {
     public GetSpace(String id, String name) {
         this.id = id; // Id is stored as "lol" or "cs"
         this.name = name;
-        this.linkUrl = "/s/" + id;
+        this.linkUrl = "s/" + id;
         this.imageUrl = "https://yoapollo.s3.us-east-2.amazonaws.com/spaces/" + id + ".webp";
     }
 }

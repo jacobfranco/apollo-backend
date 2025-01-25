@@ -546,11 +546,16 @@ public class Core implements RamaModule {
                                 .each(Ops.EXPAND, "*keyAndVal").out("*hashtagFanout", "*nextIndex")
                                 .localTransform("$$hashtagFanoutToIndex", Path.key("*hashtagFanout").termVoid())
                                 .macro(extractFields("*hashtagFanout", "*authorId", "*statusId", "*hashtag"))
+                                .anchor("HashtagFanoutContinue")
+
+                                // Add new hook chain for spaces
+                                .hook("FanoutRoot")
+                                .allPartition()
                                 .localSelect("$$spaceFanoutToIndex", Path.all()).out("*keyAndVal")
                                 .each(Ops.EXPAND, "*keyAndVal").out("*spaceFanout", "*nextIndex")
                                 .localTransform("$$spaceFanoutToIndex", Path.key("*spaceFanout").termVoid())
                                 .macro(extractFields("*spaceFanout", "*authorId", "*statusId", "*spaceId"))
-                                .anchor("HashtagFanoutContinue")
+                                .anchor("SpaceFanoutContinue")
 
                                 // handle incoming depot appends
                                 .hook("FanoutRoot")
@@ -628,16 +633,15 @@ public class Core implements RamaModule {
                                                                                                                                 .each(Ops.EXPLODE,
                                                                                                                                                 "*hashtags")
                                                                                                                                 .out("*hashtag")
-                                                                                                                                .each(Token::parseTokens,
-                                                                                                                                                "*text")
-                                                                                                                                .out("*tokens")
+                                                                                                                                .anchor("NormalHashtagFanout")
+
                                                                                                                                 .each(Token::filterSpaces,
                                                                                                                                                 "*tokens")
                                                                                                                                 .out("*spaceIds")
                                                                                                                                 .each(Ops.EXPLODE,
                                                                                                                                                 "*spaceIds")
                                                                                                                                 .out("*spaceId")
-                                                                                                                                .anchor("NormalHashtagFanout"))))
+                                                                                                                                .anchor("NormalSpaceFanout"))))
 
                                 .hook("NormalFanoutBegin")
                                 .select("$$partitionedFollowersControl", Path.key("*authorId")).out("*tasks")
@@ -723,6 +727,7 @@ public class Core implements RamaModule {
                                                 new Expr(Ops.CURRENT_MICROBATCH_ID))
 
                                 // fan out new status to spaces
+                                .unify("NormalSpaceFanout", "SpaceFanoutContinue")
                                 .each((RamaFunction2<Long, Long, StatusPointer>) StatusPointer::new, "*authorId",
                                                 "*statusId")
                                 .out("*statusPointer")
