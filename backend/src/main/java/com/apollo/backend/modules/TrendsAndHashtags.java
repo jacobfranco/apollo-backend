@@ -437,15 +437,6 @@ public class TrendsAndHashtags implements RamaModule {
                                                                                                 .each(Token::filterSpaces,
                                                                                                                 "*tokens")
                                                                                                 .out("*spaces")
-                                                                                                .each(Ops.EXPLODE,
-                                                                                                                "*spaces")
-                                                                                                .out("*spaceId")
-                                                                                                .select("$$spaceIdToSpace",
-                                                                                                                Path.key("*spaceId"))
-                                                                                                .out("*foundSpace")
-                                                                                                .keepTrue(new Expr(
-                                                                                                                Ops.IS_NOT_NULL,
-                                                                                                                "*foundSpace"))
                                                                                                 .each(Token::filterLinks,
                                                                                                                 "*tokens")
                                                                                                 .out("*rawLinks")

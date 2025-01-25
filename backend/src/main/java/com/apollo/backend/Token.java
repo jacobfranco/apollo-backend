@@ -2,7 +2,6 @@ package com.apollo.backend;
 
 import java.util.*;
 import com.rpl.rama.*;
-import com.apollo.backend.modules.TrendsAndHashtags;
 
 public class Token implements RamaSerializable {
     private static final HashSet<Character> linkBoundaryChars = new HashSet<>(Arrays.asList(

@@ -465,8 +465,6 @@ public class Search implements RamaModule {
                                 .each(Token::parseTokens, "*text").out("*tokens")
                                 .each(Token::filterSpaces, "*tokens").out("*spaces")
                                 .each(Ops.EXPLODE, "*spaces").out("*spaceId")
-                                .select("$$spaceIdToSpace", Path.key("*spaceId")).out("*foundSpace")
-                                .keepTrue(new Expr(Ops.IS_NOT_NULL, "*foundSpace"))
                                 .each(Search::emitSpaceTokens, "*spaceId").out("*prefix")
                                 .hashPartition("*prefix")
                                 .macro(spacePrefixes.addItem("*prefix", "*spaceId"))

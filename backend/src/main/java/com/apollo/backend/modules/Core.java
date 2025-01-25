@@ -555,6 +555,7 @@ public class Core implements RamaModule {
                                 .each(Ops.EXPAND, "*keyAndVal").out("*spaceFanout", "*nextIndex")
                                 .localTransform("$$spaceFanoutToIndex", Path.key("*spaceFanout").termVoid())
                                 .macro(extractFields("*spaceFanout", "*authorId", "*statusId", "*spaceId"))
+
                                 .anchor("SpaceFanoutContinue")
 
                                 // handle incoming depot appends
@@ -641,14 +642,6 @@ public class Core implements RamaModule {
                                                                                                                                 .each(Ops.EXPLODE,
                                                                                                                                                 "*spaceIds")
                                                                                                                                 .out("*spaceId")
-
-                                                                                                                                .select("$$spaceIdToSpace",
-                                                                                                                                                Path.key("*spaceId"))
-                                                                                                                                .out("*foundSpace")
-
-                                                                                                                                .keepTrue(new Expr(
-                                                                                                                                                Ops.IS_NOT_NULL,
-                                                                                                                                                "*foundSpace"))
 
                                                                                                                                 .anchor("NormalSpaceFanout"))))
 
