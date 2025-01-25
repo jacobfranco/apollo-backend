@@ -317,21 +317,11 @@ public class TrendsAndHashtags implements RamaModule {
                 return ret;
         }
 
-        private static void declareSpaceTopology(Topologies topologies) {
-                StreamTopology stream = topologies.stream("space");
-                stream.pstate("$$spaceIdToSpace", PState.mapSchema(String.class, Space.class));
-                stream.source("*spaceDepot").out("*space")
-                                .macro(extractFields("*space", "*id"))
-                                .localTransform("$$spaceIdToSpace",
-                                                Path.key("*id").termVal("*space"));
-        }
-
         @Override
         public void define(Setup setup, Topologies topologies) {
                 setup.declareDepot("*reviewHashtagDepot", Depot.hashBy(ExtractItem.class));
                 setup.declareDepot("*reviewSpaceDepot", Depot.hashBy(ExtractItem.class));
                 setup.declareDepot("*reviewLinkDepot", Depot.hashBy(ExtractItem.class));
-                setup.declareDepot("*spaceDepot", Depot.hashBy(ApolloHelpers.ExtractId.class));
                 setup.declareTickDepot("*decayTick", this.decayTickTimeMillis);
                 setup.declareTickDepot("*reviewTick", this.reviewTickTimeMillis);
 
@@ -341,9 +331,9 @@ public class TrendsAndHashtags implements RamaModule {
                 setup.clusterPState("$$accountIdToAccountTimeline", Core.class.getName(),
                                 "$$accountIdToAccountTimeline");
 
-                setup.clusterQuery("*getStatusesFromPointers", Core.class.getName(), "getStatusesFromPointers");
+                setup.clusterPState("$$spaceIdToSpace", Core.class.getName(), "$$spaceIdToSpace");
 
-                declareSpaceTopology(topologies);
+                setup.clusterQuery("*getStatusesFromPointers", Core.class.getName(), "getStatusesFromPointers");
 
                 MicrobatchTopology core = topologies.microbatch("core");
 
@@ -447,9 +437,17 @@ public class TrendsAndHashtags implements RamaModule {
                                                                                                 .each(Token::filterSpaces,
                                                                                                                 "*tokens")
                                                                                                 .out("*spaces")
+                                                                                                .each(Ops.EXPLODE,
+                                                                                                                "*spaces")
+                                                                                                .out("*spaceId")
+                                                                                                .select("$$spaceIdToSpace",
+                                                                                                                Path.key("*spaceId"))
+                                                                                                .out("*foundSpace")
+                                                                                                .keepTrue(new Expr(
+                                                                                                                Ops.IS_NOT_NULL,
+                                                                                                                "*foundSpace"))
                                                                                                 .each(Token::filterLinks,
                                                                                                                 "*tokens")
-
                                                                                                 .out("*rawLinks")
                                                                                                 .each((Set<String> links) -> {
                                                                                                         Set ret = new HashSet();
@@ -667,19 +665,5 @@ public class TrendsAndHashtags implements RamaModule {
                                                 false)
                                 .out("*results")
                                 .originPartition();
-
-                topologies.query("getSpaceFromSpaceId", "*id").out("*space")
-                                .hashPartition("*id")
-                                .localSelect("$$spaceIdToSpace", Path.key("*id"))
-                                .out("*space")
-                                .originPartition();
-
-                topologies.query("getAllSpaces").out("*result")
-                                .allPartition()
-                                .localSelect("$$spaceIdToSpace", Path.mapVals())
-                                .out("*spaces")
-                                .originPartition()
-                                .agg(Agg.list("*spaces")).out("*result");
-
         }
 }

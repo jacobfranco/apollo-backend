@@ -367,6 +367,7 @@ public class Search implements RamaModule {
                 setup.clusterDepot("*reviewSpaceDepot", TrendsAndHashtags.class.getName(), "*reviewSpaceDepot");
                 setup.clusterPState("$$nameToUser", Core.class.getName(), "$$nameToUser");
                 setup.clusterPState("$$accountIdToAccount", Core.class.getName(), "$$accountIdToAccount");
+                setup.clusterPState("$$spaceIdToSpace", Core.class.getName(), "$$spaceIdToSpace");
                 setup.clusterQuery("*getAccountsFromAccountIds", Core.class.getName(), "getAccountsFromAccountIds");
 
                 MicrobatchTopology search = topologies.microbatch("search");
@@ -463,10 +464,12 @@ public class Search implements RamaModule {
                                 .keepTrue(new Expr(Ops.EQUAL, StatusVisibility.Public, "*visibility"))
                                 .each(Token::parseTokens, "*text").out("*tokens")
                                 .each(Token::filterSpaces, "*tokens").out("*spaces")
-                                .each(Ops.EXPLODE, "*spaces").out("*space")
-                                .each(Search::emitSpaceTokens, "*space").out("*prefix")
+                                .each(Ops.EXPLODE, "*spaces").out("*spaceId")
+                                .select("$$spaceIdToSpace", Path.key("*spaceId")).out("*foundSpace")
+                                .keepTrue(new Expr(Ops.IS_NOT_NULL, "*foundSpace"))
+                                .each(Search::emitSpaceTokens, "*spaceId").out("*prefix")
                                 .hashPartition("*prefix")
-                                .macro(spacePrefixes.addItem("*prefix", "*space"))
+                                .macro(spacePrefixes.addItem("*prefix", "*spaceId"))
 
                                 .hook("FanoutRoot")
                                 .each(Ops.IDENTITY, "*authorId").out("*targetAccountId")

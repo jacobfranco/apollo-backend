@@ -1,6 +1,7 @@
 package com.apollo.backend;
 
 import com.apollo.backend.data.*;
+import com.apollo.backend.modules.TrendsAndHashtags;
 import com.apollo.backend.ops.*;
 import com.rpl.rama.*;
 import com.rpl.rama.Helpers;

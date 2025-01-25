@@ -795,4 +795,14 @@ public class ApolloApiHelpers {
                 .orElse(spaceId);
     }
 
+    public static boolean spaceExists(String id) {
+        // same normalization logic as getSpaceNameFromId
+        String normalizedId = id.startsWith("/") ? id.substring(1) : id;
+        String spaceId = normalizedId.startsWith("s/") ? normalizedId.substring(2) : normalizedId;
+
+        // Returns true if we find a matching ID in SPACES
+        return SPACES.stream()
+                .anyMatch(space -> space.id.equals(spaceId));
+    }
+
 }

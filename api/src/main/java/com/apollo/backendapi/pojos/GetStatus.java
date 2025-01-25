@@ -182,14 +182,23 @@ public class GetStatus {
                             tokenContent);
                     this.tags.add(new GetTag(tokenContent));
                     break;
-                case SPACE:
-                    // Include the s/ in the displayed link
-                    this.content += String.format("<a href=\"%s/s/%s\">s/%s</a>",
-                            ApolloConfig.FRONTEND_URL,
-                            tokenContent,
-                            tokenContent);
-                    this.spaces.add(new GetSpace(tokenContent, ApolloApiHelpers.getSpaceNameFromId(tokenContent)));
+                case SPACE: {
+                    // If the space doesn't exist, treat as normal text
+                    if (!ApolloApiHelpers.spaceExists(token.content)) {
+                        // just append "s/whatever" as plain text
+                        this.content += ("s/" + tokenContent);
+                    } else {
+                        // It's valid => produce your link
+                        this.content += String.format("<a href=\"%s/s/%s\">s/%s</a>",
+                                ApolloConfig.FRONTEND_URL,
+                                tokenContent,
+                                tokenContent);
+                        // Only add to `this.spaces` if valid
+                        this.spaces.add(new GetSpace(token.content,
+                                ApolloApiHelpers.getSpaceNameFromId(token.content)));
+                    }
                     break;
+                }
                 case MENTION:
                     if (mentions.containsKey(tokenContent)) {
                         // Remove the tokenContent = "@" + content bit

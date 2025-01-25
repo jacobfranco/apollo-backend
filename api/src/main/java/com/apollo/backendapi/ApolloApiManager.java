@@ -125,6 +125,7 @@ public class ApolloApiManager {
     private final Depot applicationDepot;
     private final Depot reportDepot;
     private final Depot userActivityDepot;
+    private final Depot spaceDepot;
 
     // Core PStates
     private final PState nameToUser;
@@ -195,9 +196,6 @@ public class ApolloApiManager {
 
     // Notifications PStates
     private final PState accountIdToNotificationsTimeline;
-
-    // Trends Depots
-    private final Depot spaceDepot;
 
     // Trends PStates
     private final PState statusTrends;
@@ -297,6 +295,7 @@ public class ApolloApiManager {
         applicationDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*applicationDepot");
         reportDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*reportDepot");
         userActivityDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*userActivityDepot");
+        spaceDepot = cluster.clusterDepot(CORE_MODULE_NAME, "*spaceDepot");
 
         // Core PStates
         nameToUser = cluster.clusterPState(CORE_MODULE_NAME, "$$nameToUser");
@@ -333,6 +332,8 @@ public class ApolloApiManager {
         getAllReports = cluster.clusterQuery(CORE_MODULE_NAME, "getAllReports");
         getReportFromReportId = cluster.clusterQuery(CORE_MODULE_NAME, "getReportFromReportId");
         getActiveUsersCount = cluster.clusterQuery(CORE_MODULE_NAME, "getActiveUsersCount");
+        getSpaceFromSpaceId = cluster.clusterQuery(CORE_MODULE_NAME, "getSpaceFromSpaceId");
+        getAllSpaces = cluster.clusterQuery(CORE_MODULE_NAME, "getAllSpaces");
 
         // Relationships Depots
         authCodeDepot = cluster.clusterDepot(RELATIONSHIPS_MODULE_NAME, "*authCodeDepot");
@@ -372,9 +373,6 @@ public class ApolloApiManager {
         accountIdToNotificationsTimeline = cluster.clusterPState(NOTIFICATIONS_MODULE_NAME,
                 "$$accountIdToNotificationsTimeline");
 
-        // Trends Depots
-        spaceDepot = cluster.clusterDepot(HASHTAGS_MODULE_NAME, "*spaceDepot");
-
         // Trends PStates
         statusTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$statusTrends");
         hashtagTrends = cluster.clusterPState(HASHTAGS_MODULE_NAME, "$$hashtagTrends");
@@ -392,8 +390,6 @@ public class ApolloApiManager {
         getHashtagTimeline = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getHashtagTimeline");
         batchSpaceStats = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "batchSpaceStats");
         getSpaceTimeline = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getSpaceTimeline");
-        getSpaceFromSpaceId = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getSpaceFromSpaceId");
-        getAllSpaces = cluster.clusterQuery(HASHTAGS_MODULE_NAME, "getAllSpaces");
 
         // Search PStates
         activeAccountIds = cluster.clusterPState(SEARCH_MODULE_NAME, "$$activeAccountIds");

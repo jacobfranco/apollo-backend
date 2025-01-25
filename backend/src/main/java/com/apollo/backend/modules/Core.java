@@ -641,6 +641,15 @@ public class Core implements RamaModule {
                                                                                                                                 .each(Ops.EXPLODE,
                                                                                                                                                 "*spaceIds")
                                                                                                                                 .out("*spaceId")
+
+                                                                                                                                .select("$$spaceIdToSpace",
+                                                                                                                                                Path.key("*spaceId"))
+                                                                                                                                .out("*foundSpace")
+
+                                                                                                                                .keepTrue(new Expr(
+                                                                                                                                                Ops.IS_NOT_NULL,
+                                                                                                                                                "*foundSpace"))
+
                                                                                                                                 .anchor("NormalSpaceFanout"))))
 
                                 .hook("NormalFanoutBegin")
@@ -1621,6 +1630,15 @@ public class Core implements RamaModule {
                                 .macro(extractFields("*activity", "*accountId", "*timestamp"))
                                 .localTransform("$$accountIdToTimestamp",
                                                 Path.key("*accountId").termVal("*timestamp"));
+        }
+
+        private static void declareSpaceTopology(Topologies topologies) {
+                StreamTopology stream = topologies.stream("space");
+                stream.pstate("$$spaceIdToSpace", PState.mapSchema(String.class, Space.class));
+                stream.source("*spaceDepot").out("*space")
+                                .macro(extractFields("*space", "*id"))
+                                .localTransform("$$spaceIdToSpace",
+                                                Path.key("*id").termVal("*space"));
         }
 
         private void declareQueries(Topologies topologies) {
@@ -2844,6 +2862,19 @@ public class Core implements RamaModule {
                                 .each(Ops.IDENTITY, new Expr(Ops.SIZE, "*list"))
                                 .out("*result");
 
+                topologies.query("getSpaceFromSpaceId", "*id").out("*space")
+                                .hashPartition("*id")
+                                .localSelect("$$spaceIdToSpace", Path.key("*id"))
+                                .out("*space")
+                                .originPartition();
+
+                topologies.query("getAllSpaces").out("*result")
+                                .allPartition()
+                                .localSelect("$$spaceIdToSpace", Path.mapVals())
+                                .out("*spaces")
+                                .originPartition()
+                                .agg(Agg.list("*spaces")).out("*result");
+
         }
 
         public static class StatusDepotExtractor implements RamaFunction1<TBase, Long> {
@@ -2897,6 +2928,7 @@ public class Core implements RamaModule {
 
                 setup.declareDepot("*applicationDepot", Depot.hashBy(ApolloHelpers.ExtractClientId.class));
                 setup.declareDepot("*userActivityDepot", Depot.hashBy(ApolloHelpers.ExtractAccountId.class));
+                setup.declareDepot("*spaceDepot", Depot.hashBy(ApolloHelpers.ExtractId.class));
                 setup.declareDepot("*reportDepot", Depot.hashBy(ApolloHelpers.ExtractReportId.class));
                 setup.declareDepot("*statusDepot", Depot.hashBy(StatusDepotExtractor.class));
                 setup.declareDepot("*scheduledStatusDepot", Depot.hashBy(ScheduledStatusDepotExtractor.class));
@@ -2941,6 +2973,7 @@ public class Core implements RamaModule {
                 declareReportsTopology(topologies);
                 declareApplicationTopology(topologies);
                 declareActivityTopology(topologies);
+                declareSpaceTopology(topologies);
                 declareQueries(topologies);
 
         }
