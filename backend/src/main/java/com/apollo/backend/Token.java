@@ -49,7 +49,9 @@ public class Token implements RamaSerializable {
             // All special tokens now follow the same pattern
             if (!linkParsing && ch == 's' && i + 1 < content.length() && content.charAt(i + 1) == '/') {
                 finishToken(tokens, currentToken);
-                currentToken = new Token(TokenKind.SPACE, "");
+                String potentialSpaceId = content.substring(i + 2).split("[\\s.,!?]")[0];
+                currentToken = validSpaceIds.contains(potentialSpaceId) ? new Token(TokenKind.SPACE, "")
+                        : new Token(TokenKind.WORD, "s/" + potentialSpaceId);
                 i++;
             }
             // Hashtags - simplified like spaces
@@ -140,4 +142,62 @@ public class Token implements RamaSerializable {
     public String toString() {
         return "Token{kind=" + kind + ", content='" + content + '\'' + '}';
     }
+
+    private static final HashSet<String> validSpaceIds = new HashSet<>(Arrays.asList(
+            "7todie", "8ball", "hatintime", "plaguetale", "awayout", "aceattorney", "aq", "aoe", "aow", "alanwake",
+            "alienisolation", "avp", "americantruck", "amongus", "angrybirds", "animalcrossing", "anno1800",
+            "antichamber",
+            "apex", "arksurvival", "arma", "armello", "armoredcore", "ac", "astrobot", "astroneer", "atelierryza",
+            "atomfall", "avowed", "b4b", "balatro", "bg3", "banana", "batmanak", "battleblock", "bf", "battletech",
+            "beamng", "beatsaber", "besiege", "b2s", "biomutant", "bioshock", "blackdesert", "blackmesa", "wukong",
+            "blasphemous", "blockblast", "bb", "btd", "borderlands", "brawlhalla", "brotato", "bully", "cod",
+            "candycrush",
+            "carmechanic", "castlecrashers", "castlevania", "celeste", "checkers", "chess", "morta", "chivalry2",
+            "cinnabunny", "skylines", "citizensleeper", "civ", "coc", "clashroyale", "coh", "control", "crabgame",
+            "crashbandicoot", "ck", "necrodancer", "crysis", "cuphead", "cyberpunk", "ds1", "ds2", "ds3",
+            "darkestdungeon",
+            "darksiders", "darkwood", "dayz", "dbd", "deathstranding", "deathloop", "deeprockgalactic", "deltaforce",
+            "demonssouls", "descenders", "destiny2", "becomehuman", "deus-ex", "dmc", "diablo", "discoelysium",
+            "dishonored", "divinity2", "dontstarve", "doom", "dota2", "dragonage", "dbfighterz", "sparkingzero",
+            "dragonquest", "df", "dragonsdogma", "dungeondefenders", "dyinglight", "dynastywarrior", "dysonsphere",
+            "eafc", "eco", "efootball", "eldenring", "nightreign", "tesonline", "elex", "elitedangerous", "enderal",
+            "endlessspace", "gungeon", "eternalreturn", "eutruck", "eu4", "eve", "fable", "factorio", "fallguys",
+            "fallout", "farcry", "farmsim", "ff", "fireemblem", "fnaf", "fbmanager", "forhonor", "forager", "fortnite",
+            "forza", "frostpunk", "ftl", "gangbeasts", "gardenscapes", "gmod", "genshin", "geoguessr", "geometrydash",
+            "overit", "tsushima", "goy", "ghostwiretokyo", "goatsim", "gow", "ggd", "gta", "graveyardkeeper",
+            "grimdawn",
+            "gris", "guildwars", "guiltygear", "guitarhero", "gunfirereborn", "h1z1", "hades", "halflife", "halo",
+            "hearthstone", "hoi", "heavyrain", "hellblade", "helldivers", "herosiege", "homm", "hots", "herosland",
+            "hitman", "hogwarts", "hk", "homescapes", "hok", "hfw", "hzd", "hotlinemiami", "houseflipper", "hff",
+            "humankind", "huntshowdown", "imperator", "injustice", "inscryption", "backrooms", "intergalactic", "inzoi",
+            "itt", "judas", "katamari", "kenshi", "ksp", "killingfloor", "kh", "kac", "kirby", "kocity", "lanoire",
+            "lol", "l4d", "botw", "totk", "legosw", "lethalcompany", "lis", "likeadragon", "limbus", "ln2", "lbp",
+            "lobotomy", "loophero", "lostark", "lumaisland", "madden", "mafia", "mancala", "marathon", "mario",
+            "marvelrivals", "masseffect", "maxpayne", "meddynasty", "megaman", "mg", "metalslug", "refantazio",
+            "metroexodus", "metroidprime", "msflightsim", "mc", "minesweeper", "mir4", "mirrorsedge", "theshow",
+            "monopoly", "monsterhunter", "monsterstrike", "monstertrain", "mordhau", "morrowind", "mk", "mnb",
+            "mudrunner", "summercar", "portia", "naraka", "nba2k", "neva", "newworld", "eanhl", "replicant", "automata",
+            "nioh", "nirvananoir", "nivalis", "nms", "noita", "oblivion", "okami", "oncehuman", "ori", "outerwilds",
+            "outerworlds", "overcooked", "overwatch", "palworld", "poe", "payday", "persona", "pillars", "plagueinc",
+            "planetside", "pvz", "pokemon", "portal", "prey", "prisonarchitect", "zomboid", "pubg", "quake", "rm3d",
+            "raft", "r6", "rotmg", "rdr", "re", "rimworld", "riskofrain", "roblox", "rockband", "rl", "roguelegacy",
+            "rct", "royalmatch", "runescape", "russianfishing", "rust", "saintsrow", "satisfactory", "scum",
+            "seaofthieves", "sekiro", "som", "sotc", "sow", "silenthill", "skyrim", "sts", "sleepingdogs",
+            "slimerancher",
+            "smite", "sniperelite", "solitaire", "sonicdash", "sonic", "sotf", "spacewar", "spiderman", "splitfiction",
+            "splitgate", "spore", "squad", "stalcraft", "stalker", "starcitizen", "swbattlefront", "starcraft",
+            "stardew", "stellarblade", "stellaris", "stray", "sf", "strinova", "stumbleguys", "subnautica",
+            "subwaysurfers", "sunhaven", "mariorun", "smash", "supervive", "taleofimmortal", "talesofarise", "tots",
+            "tf2", "teardown", "tekken", "terraria", "tft", "tboi", "escapists", "evilwithin", "thefinals", "tfd",
+            "theforest", "tlou", "longdark", "lotrmoria", "outlasttrials", "sims", "stanley", "talosprinciple",
+            "witcher", "witcher2", "witcher3", "witness", "thehunter", "warofmine", "tal", "timberborn", "titanfall",
+            "torchlight", "totalwar", "township", "tunic", "uncharted", "unchartedwaters", "undertale", "goosegame",
+            "valheim", "val", "vampiresurvivors", "warrobots", "warthunder", "warframe", "wh40k", "wasteland",
+            "edithfinch", "wordle", "wot", "wow", "xcom", "yugiohmd", "lolesports", "valesports", "csesports",
+            "honesports", "pubgmobileesports", "pubgesports", "fortniteesports", "r6esports", "mlbbesports",
+            "codesports", "apexesports", "rocketleagueesports", "tftesports", "cfesports", "freefiresports",
+            "sfesports", "eafcesports", "warzoneesports", "owesports", "aovesports", "pokemonesports", "sc2esports",
+            "haloesports", "tekkenesports", "mtgesports", "nba2kesports", "cocesports", "maddenesports",
+            "rennsportesports", "wowesports", "idvesports", "smashesports", "hearthstoneesports", "hotsesports",
+            "smiteesports", "brawlstarsesports", "clashroyaleesports"));
 }
