@@ -928,6 +928,17 @@ public class ApolloApiController {
                 });
     }
 
+    @GetMapping("/api/mutes")
+    public Mono<List<GetAccount>> getMutes(ServerWebExchange exchange, WebSession session,
+            @RequestParam(required = false) String max_id, @RequestParam(required = false) Integer limit) {
+        long requestAccountId = getMandatoryAccountId(session);
+        return Mono.fromFuture(manager.getMutes(requestAccountId, ApolloHelpers.parseAccountId(max_id), limit))
+                .map(queryResults -> {
+                    ApolloApiHelpers.setLinkHeader(exchange, queryResults);
+                    return ApolloApiHelpers.createGetAccounts(queryResults.results);
+                });
+    }
+
     @PostMapping("/api/accounts/{id}/block")
     public Mono<GetRelationship> postBlockAccount(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);

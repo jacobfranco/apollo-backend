@@ -1056,6 +1056,31 @@ public class ApolloApiManager {
                 MAX_PAGING_ITERATIONS);
     }
 
+    public CompletableFuture<QueryResults<AccountWithId, Long>> getMutes(long muterId, Long offsetMaybe,
+            Integer limitMaybe) {
+        return queryWithPaging(
+                (offset, limit) -> {
+                    SortedRangeFromOptions options = SortedRangeFromOptions.excludeStart().maxAmt(limit);
+                    CompletableFuture<List<Long>> muteeIdsFuture = accountIdToSuppressions
+                            .selectAsync(Path.key(muterId, "muted").sortedMapRangeFrom(offset, options).mapKeys());
+                    return muteeIdsFuture.thenCompose(this::getAccountsFromAccountIds)
+                            .thenApply(accountWithIds -> {
+                                Long lastId = null;
+                                List<SimpleEntry<String, String>> linkHeaderParams = null;
+                                if (accountWithIds.size() > 0) {
+                                    lastId = accountWithIds.get(accountWithIds.size() - 1).accountId;
+                                    linkHeaderParams = Arrays.asList(
+                                            new SimpleEntry<>("max_id", ApolloHelpers.serializeAccountId(lastId)));
+                                }
+                                return new QueryResults<>(accountWithIds, accountWithIds.size() < limit, lastId,
+                                        linkHeaderParams);
+                            });
+                },
+                offsetMaybe == null ? -1L : offsetMaybe,
+                Math.min(limitMaybe == null ? DEFAULT_LIMIT : limitMaybe, MAX_LIMIT),
+                MAX_PAGING_ITERATIONS);
+    }
+
     public CompletableFuture<StatusQueryResult> postLikeStatus(long likerId, StatusPointer pointer) {
         return likeStatusDepot.appendAsync(new LikeStatus(likerId, pointer, System.currentTimeMillis()))
                 .thenCompose(res -> this.getStatus(likerId, pointer))
@@ -5846,22 +5871,20 @@ public class ApolloApiManager {
             LiveLolMatchSummary thriftLiveSummary = convertToThriftLiveLolMatchSummary(liveSummary);
 
             // Store in Rama
-            liveLolMatchSummaryDepot.appendAsync(thriftLiveSummary).join();
-
-            // Get enriched live match
-            CompletableFuture<GetLiveMatch> liveMatchFuture = getLiveMatch(thriftLiveSummary.getMatchId());
-
-            liveMatchFuture.thenAccept(getLiveMatch -> {
-                if (getLiveMatch != null) {
-                    broadcastLiveMatchSummary(getLiveMatch);
-                    logger.info("Broadcasted live match update for matchId: {}", getLiveMatch.id);
-                } else {
-                    logger.warn("No live match found for matchId: {}", thriftLiveSummary.getMatchId());
-                }
-            }).exceptionally(e -> {
-                logger.error("Error processing live match update", e);
-                return null;
-            });
+            liveLolMatchSummaryDepot.appendAsync(thriftLiveSummary)
+                    .thenCompose(v -> getLiveMatch(thriftLiveSummary.getMatchId()))
+                    .thenAccept(getLiveMatch -> {
+                        if (getLiveMatch != null) {
+                            broadcastLiveMatchSummary(getLiveMatch);
+                            logger.info("Broadcasted live match update for matchId: {}", getLiveMatch.id);
+                        } else {
+                            logger.warn("No live match found for matchId: {}", thriftLiveSummary.getMatchId());
+                        }
+                    })
+                    .exceptionally(e -> {
+                        logger.error("Error processing live match update", e);
+                        return null;
+                    });
 
         } catch (Exception e) {
             logger.error("Error processing live LoL match summary", e);
