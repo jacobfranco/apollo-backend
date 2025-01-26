@@ -1751,27 +1751,15 @@ public class ApolloApiController {
     @PostMapping("/api/spaces/{id}/follow")
     public Mono<GetSpace> postFollowSpace(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.getSpaceFromSpaceId(id))
-                .flatMap(space -> {
-                    if (space == null) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
-                    }
-                    return Mono.fromFuture(manager.postFollowSpace(requestAccountId, id))
-                            .flatMap(res -> this.getSpace(session, id));
-                });
+        return Mono.fromFuture(manager.postFollowSpace(requestAccountId, id))
+                .flatMap(res -> this.getSpace(session, id));
     }
 
     @PostMapping("/api/spaces/{id}/unfollow")
     public Mono<GetSpace> postUnfollowSpace(WebSession session, @PathVariable("id") String id) {
         long requestAccountId = getMandatoryAccountId(session);
-        return Mono.fromFuture(manager.getSpaceFromSpaceId(id))
-                .flatMap(space -> {
-                    if (space == null) {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Space not found"));
-                    }
-                    return Mono.fromFuture(manager.postRemoveFollowSpace(requestAccountId, id))
-                            .flatMap(res -> this.getSpace(session, id));
-                });
+        return Mono.fromFuture(manager.postRemoveFollowSpace(requestAccountId, id))
+                .flatMap(res -> this.getSpace(session, id));
     }
 
     /*

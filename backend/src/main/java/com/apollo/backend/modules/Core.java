@@ -628,6 +628,7 @@ public class Core implements RamaModule {
                                                                                                                                 .each(Token::parseTokens,
                                                                                                                                                 "*text")
                                                                                                                                 .out("*tokens")
+                                                                                                                                .anchor("TokenRoot")
                                                                                                                                 .each(Token::filterHashtags,
                                                                                                                                                 "*tokens")
                                                                                                                                 .out("*hashtags")
@@ -635,7 +636,7 @@ public class Core implements RamaModule {
                                                                                                                                                 "*hashtags")
                                                                                                                                 .out("*hashtag")
                                                                                                                                 .anchor("NormalHashtagFanout")
-
+                                                                                                                                .hook("TokenRoot")
                                                                                                                                 .each(Token::filterSpaces,
                                                                                                                                                 "*tokens")
                                                                                                                                 .out("*spaceIds")

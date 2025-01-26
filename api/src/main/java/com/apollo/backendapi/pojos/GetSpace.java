@@ -2,7 +2,6 @@ package com.apollo.backendapi.pojos;
 
 import java.util.*;
 
-import com.apollo.backendapi.ApolloApiHelpers;
 import com.rpl.rama.RamaSerializable;
 
 public class GetSpace implements RamaSerializable {
