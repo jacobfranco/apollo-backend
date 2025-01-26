@@ -2413,4 +2413,27 @@ public class ApolloApiController {
                 .map(GetAccount::new);
     }
 
+    @PostMapping("/api/delete_account")
+    public Mono<Map<String, String>> deleteAccount(
+            WebSession session,
+            @RequestBody Map<String, String> request) {
+        long requestAccountId = getMandatoryAccountId(session);
+        String password = request.get("password");
+
+        return Mono.fromFuture(manager.getAccountWithId(requestAccountId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(accountWithId -> {
+                    if (!ApolloApiHelpers.matchesPassword(password, accountWithId.account.pwdHash)) {
+                        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
+                    }
+                    return Mono.fromFuture(manager.deleteAccount(requestAccountId));
+                })
+                .map(result -> {
+                    if (!result) {
+                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete account");
+                    }
+                    return Map.of("status", "success", "message", "Account deleted successfully");
+                });
+    }
+
 }
