@@ -41,7 +41,6 @@ import com.apollo.backend.ApolloWebHelpers;
 import com.apollo.backend.data.*;
 import com.apollo.backend.modules.Core;
 import com.apollo.backend.modules.ESports;
-import com.apollo.backend.modules.GlobalTimelines;
 import com.apollo.backend.modules.Notifications;
 import com.apollo.backend.modules.Relationships;
 import com.apollo.backend.modules.Search;
@@ -107,7 +106,6 @@ public class ApolloApiManager {
     public static final String HASHTAGS_MODULE_NAME = TrendsAndHashtags.class.getName();
     public static final String SEARCH_MODULE_NAME = Search.class.getName();
     public static final String NOTIFICATIONS_MODULE_NAME = Notifications.class.getName();
-    public static final String GLOBAL_TIMELINES_MODULE_NAME = GlobalTimelines.class.getName();
     public static final String ESPORTS_MODULE_NAME = ESports.class.getName();
 
     // Core Depots
@@ -225,9 +223,6 @@ public class ApolloApiManager {
     private final QueryTopologyClient<Map> statusTermsSearch;
     private final QueryTopologyClient<Map> hashtagSearch;
     private final QueryTopologyClient<Map> spaceSearch;
-
-    // Global Timelines PStates
-    private final PState localTimeline;
 
     // ESports Depots
     private final Depot seriesDepot;
@@ -400,9 +395,6 @@ public class ApolloApiManager {
         statusTermsSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "statusTermsSearch");
         hashtagSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "hashtagSearch");
         spaceSearch = cluster.clusterQuery(SEARCH_MODULE_NAME, "spaceSearch");
-
-        // Global Timelines PStates
-        localTimeline = cluster.clusterPState(GLOBAL_TIMELINES_MODULE_NAME, "$$localTimeline");
 
         // ESports Depots
         seriesDepot = cluster.clusterDepot(ESPORTS_MODULE_NAME, "*seriesDepot");
@@ -1737,54 +1729,6 @@ public class ApolloApiManager {
         return emailToAccountId
                 .selectOneAsync(Path.key(email))
                 .thenApply(Objects::nonNull);
-    }
-
-    public CompletableFuture<StatusQueryResults> getLocalTimeline(LocalTimeline timelineType,
-            Long requestAccountIdMaybe, StatusPointer offsetMaybe, Integer limitMaybe) {
-        // unlike other timelines, this one is queried entirely from an in-memory cache.
-        // this is because the global timeline is the same for everyone, so querying the
-        // backend every time would be wasteful. if the user is logged in, we still need
-        // to query, to ensure that their blocks/mutes are accounted for in the results.
-        return queryStatusesWithPaging((offset, limit) -> {
-            long timelineIndex = ApolloApiStreamingConfig.LOCAL_TIMELINE_TO_STATUS_POINTER_TO_INDEX.get(timelineType)
-                    .getOrDefault(offset, -1L);
-            SortedMap<Long, StatusQueryResult> submap = ApolloApiStreamingConfig.LOCAL_TIMELINE_TO_INDEX_TO_STATUS
-                    .get(timelineType).tailMap(timelineIndex, false);
-            // if not logged in, return results entirely from cache
-            if (requestAccountIdMaybe == null) {
-                List<StatusPointer> statusPointers = new ArrayList<>();
-                List<StatusResultWithId> results = new ArrayList<>();
-                Map<String, AccountWithId> mentions = new HashMap<>();
-                for (Map.Entry<Long, StatusQueryResult> entry : submap.entrySet()) {
-                    StatusQueryResult r = entry.getValue();
-                    statusPointers.add(new StatusPointer(r.result.status.author.accountId, r.result.statusId));
-                    results.add(r.result);
-                    mentions.putAll(r.mentions);
-                    if (statusPointers.size() == limit)
-                        break;
-                }
-                StatusQueryResults statusQueryResults = new StatusQueryResults(results, mentions, false, false);
-                ApolloHelpers.updateStatusQueryResults(statusQueryResults, statusPointers, limit, false);
-                return CompletableFuture.completedFuture(statusQueryResults);
-            }
-            // if logged in, get status pointers from cache and then query the backend for
-            // the full results.
-            // this ensures that blocks/mutes are taken into account.
-            else {
-                List<StatusPointer> statusPointers = new ArrayList<>();
-                for (Map.Entry<Long, StatusQueryResult> entry : submap.entrySet()) {
-                    StatusQueryResult r = entry.getValue();
-                    statusPointers.add(new StatusPointer(r.result.status.author.accountId, r.result.statusId));
-                    if (statusPointers.size() == limit)
-                        break;
-                }
-                QueryFilterOptions filterOptions = new QueryFilterOptions(FilterContext.Public, true);
-                return getStatusesFromPointers.invokeAsync(requestAccountIdMaybe, statusPointers, filterOptions)
-                        .thenApply(statusQueryResults -> ApolloHelpers.updateStatusQueryResults(statusQueryResults,
-                                statusPointers, limit, false));
-            }
-        },
-                offsetMaybe, limitMaybe, MAX_PAGING_ITERATIONS);
     }
 
     public void resolveStatusPointers(Map<StatusPointer, Long> statusPointerToIndex,

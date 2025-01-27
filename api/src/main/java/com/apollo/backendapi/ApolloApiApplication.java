@@ -96,9 +96,6 @@ public class ApolloApiApplication {
                 TrendsAndHashtags hashtagsModule = new TrendsAndHashtags();
                 ipc.launchModule(hashtagsModule, new LaunchConfig(2, 1));
 
-                GlobalTimelines globalTimelinesModule = new GlobalTimelines();
-                ipc.launchModule(globalTimelinesModule, new LaunchConfig(2, 1));
-
                 Notifications notificationsModule = new Notifications();
                 ipc.launchModule(notificationsModule, new LaunchConfig(2, 1));
 

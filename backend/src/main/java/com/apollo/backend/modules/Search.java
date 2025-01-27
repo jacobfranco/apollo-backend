@@ -31,6 +31,7 @@ public class Search implements RamaModule {
         // these constants can be overrided in tests
         public int pageAmount = 500;
         public int maxDirectorySize = 1000;
+        public int maxPerMicrobatch = 400;
 
         public static class MatchInfo {
                 public Object res;
@@ -39,6 +40,41 @@ public class Search implements RamaModule {
                 public MatchInfo(Object res, int termMatches) {
                         this.res = res;
                         this.termMatches = termMatches;
+                }
+        }
+
+        public static class DataFilter implements RamaCombinerAgg<PersistentVector> {
+                int _maxAmt;
+
+                public DataFilter(int maxAmt) {
+                        _maxAmt = maxAmt;
+                }
+
+                @Override
+                public PersistentVector combine(PersistentVector curr, PersistentVector arg) {
+                        PersistentVector ret = curr;
+                        if (curr.count() == 1
+                                        && ((PersistentVector) curr.nth(0)).nth(1) instanceof ModuleInstanceInfo) {
+                                ret = ((PersistentVector) curr.nth(0)).pop();
+                        }
+                        if (arg.count() == 1 && ((PersistentVector) arg.nth(0)).nth(1) instanceof ModuleInstanceInfo) {
+                                PersistentVector tuple = (PersistentVector) arg.nth(0);
+                                int numTasks = ((ModuleInstanceInfo) tuple.nth(1)).getNumTasks();
+                                int maxSize = _maxAmt / numTasks;
+                                if (ret.count() < maxSize)
+                                        ret = ret.cons(tuple.nth(0));
+                        } else {
+                                Iterator it = arg.iterator();
+                                while (ret.count() < _maxAmt && it.hasNext()) {
+                                        ret = ret.cons(it.next());
+                                }
+                        }
+                        return ret;
+                }
+
+                @Override
+                public PersistentVector zeroVal() {
+                        return PersistentVector.EMPTY;
                 }
         }
 
@@ -306,24 +342,28 @@ public class Search implements RamaModule {
                                 .keepTrue(new Expr(Ops.IS_INSTANCE_OF, StatusWithId.class, "*data"))
                                 .macro(extractFields("*data", "*statusId", "*status"))
                                 .macro(extractFields("*status", "*authorId", "*content", "*timestamp"))
+                                .each(ApolloHelpers::getStatusVisibility, "*status").out("*visibility")
+                                .keepTrue(new Expr(Ops.AND, new Expr(Ops.EQUAL, "*visibility", StatusVisibility.Public),
+                                                new Expr(Ops.NOT,
+                                                                new Expr(Ops.IS_INSTANCE_OF, BoostStatusContent.class,
+                                                                                "*content"))))
                                 .each(Ops.MODULE_INSTANCE_INFO).out("*moduleInfo")
                                 .each(Ops.TUPLE, new Expr(Ops.TUPLE, new Expr(Ops.TUPLE, "*data", "*timestamp"),
                                                 "*moduleInfo"))
                                 .out("*tupleInit")
                                 .globalPartition()
-                                .agg(Agg.combiner(new GlobalTimelines.DataFilter(maxDirectorySize), "*tupleInit"))
-                                .out("*allTuples")
-                                // sort by timestamp so status IDs are added in correct order
-                                .each((PersistentVector tuples) -> {
+                                .agg(Agg.combiner(new DataFilter(maxPerMicrobatch), "*tupleInit")).out("*allTuples")
+                                .each((PersistentVector tuples, OutputCollector collector) -> {
                                         List<PersistentVector> l = new ArrayList(tuples);
                                         l.sort((Object o1, Object o2) -> {
                                                 PersistentVector v1 = (PersistentVector) o1;
                                                 PersistentVector v2 = (PersistentVector) o2;
                                                 return ((Long) v1.nth(1)).compareTo((Long) v2.nth(1));
                                         });
-                                        return l.stream().map(v -> v.nth(0)).collect(Collectors.toList());
-                                }, "*allTuples").out("*statusWithIds");
-                return new SubBatch(b, "*statusWithIds");
+                                        for (PersistentVector tuple : l)
+                                                collector.emit(tuple.nth(0));
+                                }, "*allTuples").out("*statusWithId");
+                return new SubBatch(b, "*statusWithId");
         }
 
         private static PersistentVector prependId(List<Long> v, long id, int maxSize, Boolean shouldInclude) {

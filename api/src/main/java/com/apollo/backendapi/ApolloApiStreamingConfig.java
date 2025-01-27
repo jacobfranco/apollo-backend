@@ -230,20 +230,6 @@ public class ApolloApiStreamingConfig {
         }
     }
 
-    // caches of the latest query results of each global timeline
-    public static final ConcurrentHashMap<LocalTimeline, ConcurrentSkipListMap<Long, StatusQueryResult>> LOCAL_TIMELINE_TO_INDEX_TO_STATUS = new ConcurrentHashMap() {
-        {
-            put(LocalTimeline.Public, new ConcurrentSkipListMap<>());
-        }
-    };
-    public static final ConcurrentHashMap<LocalTimeline, ConcurrentHashMap<StatusPointer, Long>> LOCAL_TIMELINE_TO_STATUS_POINTER_TO_INDEX = new ConcurrentHashMap() {
-        {
-            put(LocalTimeline.Public, new ConcurrentHashMap<>());
-        }
-    };
-    public static final int GLOBAL_TIMELINE_CACHE_SIZE = 4000; // how many statuses to keep in memory for each timeline
-    public static final int GLOBAL_TIMELINE_QUERY_LIMIT = 10; // how many statuses to query on each iteration
-
     public static class StatusPointerDiffProcessor implements Diff.Processor, KeyDiff.Processor {
         public List<StatusPointer> statusPointers = new ArrayList<>();
 
